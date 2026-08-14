@@ -138,23 +138,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     }
   };
 
-  // One-click quick demo accounts
-  const handleDemoSelect = async (demoId: string, demoPass: string) => {
-    setStudentIdOrEmail(demoId);
-    setLoginPassword(demoPass);
-    setLoginError(null);
-    setIsLoginLoading(true);
-
-    const res = await login(demoId, demoPass);
-    setIsLoginLoading(false);
-
-    if (res?.success || res === true) {
-      navigate('/dashboard');
-    } else {
-      setLoginError(res?.error || 'Authentication failed');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#F7F9FC] text-slate-900 flex items-center justify-center p-4 md:p-8 font-sans">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border border-[#E2E8F0] overflow-hidden flex flex-col md:flex-row">
@@ -406,44 +389,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       Register Now <ArrowRight className="w-3 h-3" />
                     </button>
                   </p>
-                </div>
-
-                {/* One-Click Demo Accounts */}
-                <div className="mt-6 pt-5 border-t border-[#E2E8F0]">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2.5 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" /> One-Click Quick Demo Accounts
-                  </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleDemoSelect('252-134-022', 'password123')}
-                      className="p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/60 text-left transition-all group"
-                    >
-                      <span className="text-[10px] font-bold text-blue-600 block uppercase">Student</span>
-                      <span className="text-xs font-bold text-slate-900 block truncate group-hover:text-blue-700">Tanvir / Rashed</span>
-                      <span className="text-[10px] text-slate-500">58th Batch</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDemoSelect('252-134-001', 'password123')}
-                      className="p-2.5 rounded-xl border border-amber-200 bg-amber-50/60 hover:bg-amber-100/60 text-left transition-all group"
-                    >
-                      <span className="text-[10px] font-bold text-amber-600 block uppercase">Class Rep (CR)</span>
-                      <span className="text-xs font-bold text-slate-900 block truncate group-hover:text-amber-700">Naimur / Mahmud</span>
-                      <span className="text-[10px] text-slate-500">CR Dashboard</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDemoSelect('ADMIN-001', 'password123')}
-                      className="p-2.5 rounded-xl border border-rose-200 bg-rose-50/60 hover:bg-rose-100/60 text-left transition-all group"
-                    >
-                      <span className="text-[10px] font-bold text-rose-600 block uppercase">Admin</span>
-                      <span className="text-xs font-bold text-slate-900 block truncate group-hover:text-rose-700">Dr. Mahbubur</span>
-                      <span className="text-[10px] text-slate-500">Full System</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             )}

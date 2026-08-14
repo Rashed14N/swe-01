@@ -23,47 +23,19 @@ const SESSION_STORAGE_KEY = 'swe_portal_auth_session';
 
 const MOCK_DEFAULT_USERS: User[] = [
   {
-    id: 'usr_student_1',
-    studentId: '211-35-101',
-    name: 'Tanvir Hossain',
-    email: 'tanvir.swe@student.mu.edu.bd',
-    role: 'STUDENT',
+    id: 'user-admin-1',
+    studentId: 'ADMIN-001',
+    name: 'System Administrator',
+    email: 'admin@swe.edu',
+    role: 'ADMIN',
     batchId: 'batch_58',
-    batchName: '58th Batch',
-    currentSemester: 5,
+    batchName: 'All Batches',
+    currentSemester: 0,
     status: 'ACTIVE',
     profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
-  {
-    id: 'usr_cr_1',
-    studentId: '211-35-102',
-    name: 'Naimur Rahman (CR)',
-    email: 'naimur.cr@student.mu.edu.bd',
-    role: 'CR',
-    batchId: 'batch_58',
-    batchName: '58th Batch',
-    currentSemester: 5,
-    status: 'ACTIVE',
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'usr_admin_1',
-    studentId: 'admin_001',
-    name: 'Department Admin',
-    email: 'admin.swe@mu.edu.bd',
-    role: 'ADMIN',
-    batchId: 'batch_58',
-    batchName: 'All Batches',
-    currentSemester: 8,
-    status: 'ACTIVE',
-    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
 ];
 
 class MockAuthService {

@@ -73,7 +73,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     setIsLoginLoading(false);
 
     if (res?.success || res === true) {
-      navigate('/dashboard');
+      const loggedUser = res?.user;
+      if (loggedUser?.role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (loggedUser?.role === 'CR') {
+        navigate('/cr/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } else {
       setLoginError(res?.error || 'Authentication failed. Please check your credentials.');
     }
@@ -125,10 +132,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       setIsRegLoading(false);
 
       if (res?.success) {
-        setRegSuccess('🎉 Account successfully registered! Redirecting to your dashboard...');
+        setRegSuccess('🎉 Account successfully registered! Redirecting...');
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 1000);
+          if (regRole === 'ADMIN') {
+            navigate('/admin/dashboard', { replace: true });
+          } else if (regRole === 'CR') {
+            navigate('/cr/dashboard', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
+        }, 800);
       } else {
         setRegError(res?.error || 'Registration failed. Please check your details.');
       }

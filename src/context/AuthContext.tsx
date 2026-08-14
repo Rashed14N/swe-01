@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             authService.updateUser(data.user);
             setSession(newSession);
             setCurrentUser(data.user);
-            return { success: true };
+            return { success: true, user: data.user };
           }
         } else {
           const errData = await apiRes.json().catch(() => ({}));
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.success && res.session) {
         setSession(res.session);
         setCurrentUser(res.session.user);
-        return { success: true };
+        return { success: true, user: res.session.user };
       }
       return { success: false, error: res.error || 'Invalid credentials. Please check your details or register.' };
     } catch (err: any) {
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             authService.updateUser(resData.user);
             setSession(newSession);
             setCurrentUser(resData.user);
-            return { success: true };
+            return { success: true, user: resData.user };
           }
         } else {
           const errData = await apiRes.json().catch(() => ({}));
@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.success && res.session) {
         setSession(res.session);
         setCurrentUser(res.session.user);
-        return { success: true };
+        return { success: true, user: res.session.user };
       }
       return { success: false, error: res.error || 'Sign up failed' };
     } catch (err: any) {

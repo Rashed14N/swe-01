@@ -48,15 +48,31 @@ class MockAuthService {
   private loadUsers(): User[] {
     if (typeof window === 'undefined') return MOCK_DEFAULT_USERS;
     const saved = localStorage.getItem(USERS_STORAGE_KEY);
+    let usersList: User[] = [];
     if (saved) {
       try {
-        return JSON.parse(saved);
+        usersList = JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved users, resetting to MOCK_DEFAULT_USERS', e);
+        usersList = [];
       }
     }
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(MOCK_DEFAULT_USERS));
-    return MOCK_DEFAULT_USERS;
+    
+    // Guarantee ADMIN user is always in the list with ADMIN role
+    for (const defaultUser of MOCK_DEFAULT_USERS) {
+      const existingIndex = usersList.findIndex(
+        u => u.id === defaultUser.id || 
+             u.studentId?.toLowerCase() === defaultUser.studentId.toLowerCase() ||
+             u.email?.toLowerCase() === defaultUser.email?.toLowerCase()
+      );
+      if (existingIndex === -1) {
+        usersList.unshift(defaultUser);
+      } else if (defaultUser.role === 'ADMIN' && usersList[existingIndex].role !== 'ADMIN') {
+        usersList[existingIndex].role = 'ADMIN';
+      }
+    }
+
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersList));
+    return usersList;
   }
 
   private saveUsers(): void {

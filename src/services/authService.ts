@@ -125,6 +125,9 @@ class MockAuthService {
   public login(identifier: string, _password?: string, preferredRole?: UserRole): { success: boolean; session?: AuthSession; error?: string } {
     const input = identifier.trim().toLowerCase();
     
+    // Always refresh users from localStorage in case a user registered in another tab/action
+    this.users = this.loadUsers();
+
     let user = this.users.find(
       u => u.email?.toLowerCase() === input || 
            u.studentId?.toLowerCase() === input ||
@@ -137,23 +140,10 @@ class MockAuthService {
         this.updateUser(user);
       }
     } else {
-      const isEmail = input.includes('@');
-      user = {
-        id: `usr_${Date.now()}`,
-        studentId: isEmail ? `211-35-${Math.floor(100 + Math.random() * 899)}` : identifier.trim(),
-        name: isEmail ? identifier.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') : `Student (${identifier.trim()})`,
-        email: isEmail ? input : `${identifier.trim().replace(/[^a-zA-Z0-9]/g, '')}@student.mu.edu.bd`,
-        role: preferredRole || 'STUDENT',
-        batchId: 'batch_58',
-        batchName: '58th Batch',
-        currentSemester: 5,
-        status: 'ACTIVE',
-        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      return { 
+        success: false, 
+        error: 'Account not found for this Student ID or Email. Please register or check your credentials.' 
       };
-      this.users.push(user);
-      this.saveUsers();
     }
 
     const session = this.setSession(user);
@@ -210,17 +200,24 @@ class MockAuthService {
   }
 
   public updateUser(updatedUser: User): void {
-    const index = this.users.findIndex(u => u.id === updatedUser.id);
+    this.users = this.loadUsers();
+    const index = this.users.findIndex(
+      u => u.id === updatedUser.id || 
+           (u.studentId && updatedUser.studentId && u.studentId.toLowerCase() === updatedUser.studentId.toLowerCase()) || 
+           (u.email && updatedUser.email && u.email.toLowerCase() === updatedUser.email.toLowerCase())
+    );
     if (index !== -1) {
-      this.users[index] = { ...updatedUser, updatedAt: new Date().toISOString() };
-      this.saveUsers();
-
-      const currentSession = this.getSession();
-      if (currentSession && currentSession.user.id === updatedUser.id) {
-        this.setSession(this.users[index]);
-      }
-      saveUserToSupabase(this.users[index]).catch(() => {});
+      this.users[index] = { ...this.users[index], ...updatedUser, updatedAt: new Date().toISOString() };
+    } else {
+      this.users.push({ ...updatedUser, updatedAt: new Date().toISOString() });
     }
+    this.saveUsers();
+
+    const currentSession = this.getSession();
+    if (currentSession && (currentSession.user.id === updatedUser.id || currentSession.user.studentId === updatedUser.studentId)) {
+      this.setSession(updatedUser);
+    }
+    saveUserToSupabase(updatedUser).catch(() => {});
   }
 
   public getAllUsers(): User[] {

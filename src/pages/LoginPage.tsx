@@ -27,7 +27,7 @@ interface LoginPageProps {
 export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, signup, isAuthenticated, user } = useAuth();
+  const { login, signup, logout, isAuthenticated, user } = useAuth();
 
   // Check if URL has ?mode=register or initialMode is REGISTER
   const searchParams = new URLSearchParams(location.search);
@@ -40,14 +40,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       setMode('REGISTER');
     }
   }, [location.search]);
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.role === 'ADMIN') navigate('/admin/dashboard', { replace: true });
-      else if (user.role === 'CR') navigate('/cr/dashboard', { replace: true });
-      else navigate('/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
 
   // LOGIN STATE
   const [studentIdOrEmail, setStudentIdOrEmail] = useState('');
@@ -229,6 +221,46 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
         <div className="md:w-[52%] p-6 md:p-10 bg-white flex flex-col justify-center">
           <div className="max-w-md w-full mx-auto">
             
+            {/* Active Session Info if already logged in */}
+            {isAuthenticated && user && (
+              <div className="mb-5 p-3.5 rounded-xl bg-blue-50/90 border border-blue-200 text-xs">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-bold text-blue-900">Current Login:</span>
+                    <span className="font-extrabold text-slate-900">{user.name}</span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-blue-700">
+                    ID: {user.studentId || user.email}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (user.role === 'ADMIN') navigate('/admin/dashboard');
+                      else if (user.role === 'CR') navigate('/cr/dashboard');
+                      else navigate('/dashboard');
+                    }}
+                    className="flex-1 py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-colors text-center"
+                  >
+                    Go to Dashboard →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setLoginError(null);
+                      setRegSuccess(null);
+                    }}
+                    className="py-1.5 px-3 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold rounded-lg text-xs transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Top Switcher: Sign In vs Register Now */}
             <div className="flex bg-slate-100 p-1.5 rounded-xl mb-6 border border-slate-200">
               <button

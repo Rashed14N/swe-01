@@ -45,32 +45,28 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
     req.user = decoded;
     return next();
   } catch (err) {
-    // If it's a client mock token or session token, look up user from database or provide active fallback user
+    // If token decoding fails, check if token includes a known user ID or lookup in database
     try {
       const { db } = require('./db');
-      const allUsers = db.getData().users || [];
-      const fallbackUser = allUsers[0] || {
-        id: 'usr_student_1',
-        studentId: '211-35-101',
-        name: 'Tanvir Hossain',
-        email: 'tanvir.swe@student.mu.edu.bd',
-        role: 'STUDENT',
-        batchId: 'batch_58',
-        batchName: '58th Batch',
-        currentSemester: 5,
-      };
+      const allUsers: User[] = db.getData().users || [];
+      
+      // Try to find if token matches a stored session user
+      const foundUser = allUsers.find(u => token.includes(u.id) || token.includes(u.studentId));
+      if (foundUser) {
+        req.user = {
+          id: foundUser.id,
+          studentId: foundUser.studentId,
+          name: foundUser.name,
+          email: foundUser.email,
+          role: foundUser.role,
+          batchId: foundUser.batchId || 'batch_58',
+          batchName: foundUser.batchName || '58th Batch',
+          currentSemester: foundUser.currentSemester || 5,
+        };
+        return next();
+      }
 
-      req.user = {
-        id: fallbackUser.id,
-        studentId: fallbackUser.studentId,
-        name: fallbackUser.name,
-        email: fallbackUser.email,
-        role: fallbackUser.role,
-        batchId: fallbackUser.batchId || 'batch_58',
-        batchName: fallbackUser.batchName || '58th Batch',
-        currentSemester: fallbackUser.currentSemester || 5,
-      };
-      return next();
+      return res.status(401).json({ error: 'Unauthorized: Invalid or expired session token' });
     } catch (fallbackErr) {
       return res.status(401).json({ error: 'Unauthorized: Token expired or invalid' });
     }

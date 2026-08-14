@@ -837,34 +837,17 @@ class JsonDB {
     const term = studentId.trim().toLowerCase();
     const termNoDash = term.replace(/[\s-]/g, '');
 
-    // 1. Direct match on studentId or email
+    // 1. Direct match on studentId or email or userId
     let user = this.data.users.find(
-      u => u.studentId.toLowerCase() === term ||
-           (u.email && u.email.toLowerCase() === term)
+      u => u.studentId?.toLowerCase() === term ||
+           (u.email && u.email.toLowerCase() === term) ||
+           u.id.toLowerCase() === term
     );
     if (user) return user;
 
     // 2. Match without dashes/spaces (e.g., 252134022 vs 252-134-022)
     user = this.data.users.find(
-      u => u.studentId.toLowerCase().replace(/[\s-]/g, '') === termNoDash
-    );
-    if (user) return user;
-
-    // 3. Match shortcuts like "student", "cr", "admin"
-    if (term === 'student' || term === 'student1' || term === 'rashedul') {
-      return this.data.users.find(u => u.studentId === '252-134-022');
-    }
-    if (term === 'cr' || term === 'cr1' || term === 'mahmudul') {
-      return this.data.users.find(u => u.studentId === '252-134-001');
-    }
-    if (term === 'admin' || term === 'head' || term === 'shahriar') {
-      return this.data.users.find(u => u.studentId === 'ADMIN-001');
-    }
-
-    // 4. Match email prefix or name substring
-    user = this.data.users.find(
-      u => (u.email && u.email.toLowerCase().includes(term)) ||
-           u.name.toLowerCase().includes(term)
+      u => u.studentId?.toLowerCase().replace(/[\s-]/g, '') === termNoDash
     );
     if (user) return user;
 

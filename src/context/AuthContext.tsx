@@ -38,13 +38,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (emailOrId: string, password?: string, role?: UserRole) => {
     try {
+      // First attempt backend API login
+      try {
+        const apiRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: emailOrId, studentId: emailOrId, email: emailOrId, password: password || 'password123' }),
+        });
+        if (apiRes.ok) {
+          const data = await apiRes.json();
+          if (data.token && data.user) {
+            const newSession = {
+              token: data.token,
+              user: data.user,
+              createdAt: new Date().toISOString(),
+            };
+            localStorage.setItem('swe_portal_auth_session', JSON.stringify(newSession));
+            authService.updateUser(data.user);
+            setSession(newSession);
+            setCurrentUser(data.user);
+            return { success: true };
+          }
+        } else {
+          const errData = await apiRes.json().catch(() => ({}));
+          if (errData.error) {
+            return { success: false, error: errData.error };
+          }
+        }
+      } catch (backendErr) {
+        // Fallback to local authService
+      }
+
+      // Fallback to local authService
       const res = authService.login(emailOrId, password, role);
       if (res.success && res.session) {
         setSession(res.session);
         setCurrentUser(res.session.user);
         return { success: true };
       }
-      return { success: false, error: res.error || 'Invalid credentials' };
+      return { success: false, error: res.error || 'Invalid credentials. Please check your details or register.' };
     } catch (err: any) {
       return { success: false, error: err.message || 'Login failed' };
     }
@@ -52,6 +84,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (data: SignupData) => {
     try {
+      // First attempt backend API registration
+      try {
+        const apiRes = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (apiRes.ok) {
+          const resData = await apiRes.json();
+          if (resData.token && resData.user) {
+            const newSession = {
+              token: resData.token,
+              user: resData.user,
+              createdAt: new Date().toISOString(),
+            };
+            localStorage.setItem('swe_portal_auth_session', JSON.stringify(newSession));
+            authService.updateUser(resData.user);
+            setSession(newSession);
+            setCurrentUser(resData.user);
+            return { success: true };
+          }
+        } else {
+          const errData = await apiRes.json().catch(() => ({}));
+          if (errData.error) {
+            return { success: false, error: errData.error };
+          }
+        }
+      } catch (backendErr) {
+        // Fallback to local authService
+      }
+
+      // Fallback to local authService
       const res = authService.signUp(data);
       if (res.success && res.session) {
         setSession(res.session);

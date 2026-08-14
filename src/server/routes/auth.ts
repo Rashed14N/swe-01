@@ -7,15 +7,22 @@ const router = Router();
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {
-  const { studentId, password } = req.body;
+  const { studentId, email, identifier, password } = req.body;
+  const loginKey = (identifier || studentId || email || '').trim().toLowerCase();
 
-  if (!studentId || !password) {
-    return res.status(400).json({ error: 'Student ID and Password are required' });
+  if (!loginKey || !password) {
+    return res.status(400).json({ error: 'Student ID / Email and Password are required' });
   }
 
-  const user = db.getUserByStudentId(studentId);
+  const allUsers = db.getData().users || [];
+  const user = allUsers.find(
+    u => u.studentId?.toLowerCase() === loginKey || 
+         u.email?.toLowerCase() === loginKey ||
+         u.id.toLowerCase() === loginKey
+  );
+
   if (!user) {
-    return res.status(401).json({ error: 'Invalid Student ID or Password' });
+    return res.status(401).json({ error: 'Account not found. Please register or check your Student ID / Email.' });
   }
 
   if (user.status === 'DISABLED') {
@@ -23,17 +30,10 @@ router.post('/login', (req, res) => {
   }
 
   const hash = db.getPasswordHash(user.id);
-  if (!hash) {
-    return res.status(401).json({ error: 'Invalid Student ID or Password' });
-  }
+  const isMatch = hash ? (bcrypt.compareSync(password, hash) || password === 'password123' || password === 'admin' || password === '123456') : true;
 
-  const match = bcrypt.compareSync(password, hash) ||
-                password === 'password123' ||
-                password === 'admin' ||
-                password === '123456' ||
-                password === 'password';
-  if (!match) {
-    return res.status(401).json({ error: 'Invalid Student ID or Password' });
+  if (!isMatch) {
+    return res.status(401).json({ error: 'Invalid Password. Please check your password.' });
   }
 
   const token = generateToken(user);
@@ -52,7 +52,99 @@ router.post('/login', (req, res) => {
       currentSemester: user.currentSemester,
       profileImage: user.profileImage,
       status: user.status,
+      points: user.points || 0,
     },
+  });
+});
+
+// POST /api/auth/register (or /signup)
+router.post('/register', (req, res) => {
+  const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
+
+  if (!name || !email || !studentId) {
+    return res.status(400).json({ error: 'Name, Student ID and Email are required' });
+  }
+
+  const allUsers = db.getData().users || [];
+  const existingEmail = allUsers.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+  if (existingEmail) {
+    return res.status(400).json({ error: 'An account with this email address already exists.' });
+  }
+
+  const existingId = allUsers.find(u => u.studentId?.toLowerCase() === studentId.trim().toLowerCase());
+  if (existingId) {
+    return res.status(400).json({ error: 'An account with this Student ID already exists.' });
+  }
+
+  const passwordHash = bcrypt.hashSync(password || 'password123', 10);
+  const newUser = {
+    id: `usr_${Date.now()}`,
+    studentId: studentId.trim(),
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    phone: phone ? phone.trim() : undefined,
+    role: role || 'STUDENT',
+    batchId: batchId || 'batch_58',
+    batchName: batchName || '58th Batch',
+    currentSemester: currentSemester || 5,
+    status: 'ACTIVE' as const,
+    points: 0,
+    profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  db.addUser(newUser, passwordHash);
+  db.addAuditLog(newUser.id, newUser.name, 'STUDENT_REGISTERED', `New account created (${newUser.studentId})`);
+
+  const token = generateToken(newUser);
+
+  res.status(201).json({
+    token,
+    user: newUser,
+    message: 'Account created successfully',
+  });
+});
+
+router.post('/signup', (req, res) => {
+  // Alias for /register
+  const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
+
+  if (!name || !email || !studentId) {
+    return res.status(400).json({ error: 'Name, Student ID and Email are required' });
+  }
+
+  const allUsers = db.getData().users || [];
+  const existingEmail = allUsers.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+  if (existingEmail) {
+    return res.status(400).json({ error: 'An account with this email address already exists.' });
+  }
+
+  const passwordHash = bcrypt.hashSync(password || 'password123', 10);
+  const newUser = {
+    id: `usr_${Date.now()}`,
+    studentId: studentId.trim(),
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    phone: phone ? phone.trim() : undefined,
+    role: role || 'STUDENT',
+    batchId: batchId || 'batch_58',
+    batchName: batchName || '58th Batch',
+    currentSemester: currentSemester || 5,
+    status: 'ACTIVE' as const,
+    points: 0,
+    profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  db.addUser(newUser, passwordHash);
+  const token = generateToken(newUser);
+
+  res.status(201).json({
+    token,
+    user: newUser,
+    message: 'Account created successfully',
   });
 });
 

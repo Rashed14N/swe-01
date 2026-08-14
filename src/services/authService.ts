@@ -1,4 +1,5 @@
 import { User, UserRole } from '../types';
+import { saveUserToSupabase } from './supabaseDataService';
 
 export interface SignupParams {
   name: string;
@@ -156,6 +157,8 @@ class MockAuthService {
     }
 
     const session = this.setSession(user);
+    // Asynchronously sync to Supabase
+    saveUserToSupabase(user).catch(() => {});
     return { success: true, session };
   }
 
@@ -186,6 +189,7 @@ class MockAuthService {
     this.saveUsers();
 
     const session = this.setSession(newUser);
+    saveUserToSupabase(newUser).catch(() => {});
     return { success: true, session };
   }
 
@@ -215,6 +219,7 @@ class MockAuthService {
       if (currentSession && currentSession.user.id === updatedUser.id) {
         this.setSession(this.users[index]);
       }
+      saveUserToSupabase(this.users[index]).catch(() => {});
     }
   }
 

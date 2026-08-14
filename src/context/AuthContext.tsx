@@ -32,13 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentSession) {
       setSession(currentSession);
       setCurrentUser(currentSession.user);
-    } else {
-      // Seed initial user for demo / quick preview
-      const result = authService.login('tanvir.swe@student.mu.edu.bd', 'demo123', 'STUDENT');
-      if (result.session) {
-        setSession(result.session);
-        setCurrentUser(result.session.user);
-      }
     }
     setLoading(false);
   }, []);

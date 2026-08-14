@@ -50,8 +50,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   }, [isAuthenticated, user, navigate]);
 
   // LOGIN STATE
-  const [studentIdOrEmail, setStudentIdOrEmail] = useState('252-134-022');
-  const [loginPassword, setLoginPassword] = useState('password123');
+  const [studentIdOrEmail, setStudentIdOrEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loginError, setLoginError] = useState<string | null>(null);

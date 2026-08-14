@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { DepartmentNotice } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -57,6 +58,19 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
   db.save();
   db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_PUBLISHED', title);
 
+  syncToSupabase('department_notices', {
+    id: newNotice.id,
+    title: newNotice.title,
+    content: newNotice.content,
+    category: newNotice.category,
+    publish_date: newNotice.publishDate,
+    is_important: newNotice.isImportant,
+    attachment_url: newNotice.attachmentUrl,
+    created_by: newNotice.createdBy,
+    created_by_name: newNotice.createdByName,
+    created_at: newNotice.createdAt,
+  }).catch(() => {});
+
   res.status(201).json({ notice: newNotice });
 });
 
@@ -70,6 +84,7 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authenticated
 
   data.departmentNotices.splice(idx, 1);
   db.save();
+  deleteFromSupabase('department_notices', noticeId).catch(() => {});
 
   db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_DELETED', `Notice #${noticeId}`);
 

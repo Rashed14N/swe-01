@@ -6,6 +6,8 @@ import {
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
 } from '../types';
 
+import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase } from './supabaseSync';
+
 export interface DBData {
   users: User[];
   passwords: Record<string, string>; // userId -> hash
@@ -808,6 +810,9 @@ class JsonDB {
     if (!this.data.routineRequests) this.data.routineRequests = [];
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
+
+    // Trigger Supabase initial data hydration in the background
+    hydrateFromSupabase(this.data).catch(() => {});
   }
 
   public save() {
@@ -879,6 +884,21 @@ class JsonDB {
     this.data.users.push(user);
     this.data.passwords[user.id] = passwordHash;
     this.save();
+    syncToSupabase('users', {
+      id: user.id,
+      student_id: user.studentId,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      batch_id: user.batchId,
+      batch_name: user.batchName,
+      current_semester: user.currentSemester,
+      profile_image: user.profileImage,
+      status: user.status,
+      points: user.points || 0,
+      updated_at: new Date().toISOString(),
+    }).catch(() => {});
   }
 
   public updateUser(user: User) {
@@ -886,6 +906,21 @@ class JsonDB {
     if (idx !== -1) {
       this.data.users[idx] = user;
       this.save();
+      syncToSupabase('users', {
+        id: user.id,
+        student_id: user.studentId,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        batch_id: user.batchId,
+        batch_name: user.batchName,
+        current_semester: user.currentSemester,
+        profile_image: user.profileImage,
+        status: user.status,
+        points: user.points || 0,
+        updated_at: new Date().toISOString(),
+      }).catch(() => {});
     }
   }
 

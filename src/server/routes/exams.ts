@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Exam } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -97,6 +98,23 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Authenticate
   db.save();
   db.addAuditLog(req.user.id, req.user.name, 'EXAM_CREATED', `${type}: ${title} (${targetBatchId})`);
 
+  syncToSupabase('exams', {
+    id: newExam.id,
+    batch_id: newExam.batchId,
+    course_id: newExam.courseId,
+    course_code: newExam.courseCode,
+    course_title: newExam.courseTitle,
+    type: newExam.type,
+    title: newExam.title,
+    date: newExam.date,
+    start_time: newExam.startTime,
+    room: newExam.room,
+    description: newExam.description,
+    created_by: newExam.createdBy,
+    created_by_name: newExam.createdByName,
+    created_at: newExam.createdAt,
+  }).catch(() => {});
+
   res.status(201).json({ exam: newExam });
 });
 
@@ -131,6 +149,20 @@ router.put('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Authentica
   data.exams[examIndex] = updated;
   db.save();
 
+  syncToSupabase('exams', {
+    id: updated.id,
+    batch_id: updated.batchId,
+    course_id: updated.courseId,
+    course_code: updated.courseCode,
+    course_title: updated.courseTitle,
+    type: updated.type,
+    title: updated.title,
+    date: updated.date,
+    start_time: updated.startTime,
+    room: updated.room,
+    description: updated.description,
+  }).catch(() => {});
+
   db.addAuditLog(req.user!.id, req.user!.name, 'EXAM_UPDATED', `Exam #${examId}`);
 
   res.json({ exam: updated });
@@ -152,6 +184,7 @@ router.delete('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Authent
 
   data.exams.splice(examIndex, 1);
   db.save();
+  deleteFromSupabase('exams', examId).catch(() => {});
 
   db.addAuditLog(req.user!.id, req.user!.name, 'EXAM_DELETED', `Exam #${examId}`);
 

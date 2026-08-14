@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { RoutineSlot, RoutineRequest } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -162,6 +163,19 @@ router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authenticate
   db.getData().routines.push(newSlot);
   db.save();
 
+  syncToSupabase('routine_slots', {
+    id: newSlot.id,
+    batch_id: newSlot.batchId,
+    day: newSlot.day,
+    start_time: newSlot.startTime,
+    end_time: newSlot.endTime,
+    course_id: newSlot.courseId,
+    course_code: newSlot.courseCode,
+    course_title: newSlot.courseTitle,
+    teacher_name: newSlot.teacherName,
+    room: newSlot.room,
+  }).catch(() => {});
+
   db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_ADDED', `Slot for ${batchId} on ${day}`);
 
   res.status(201).json({ routine: newSlot });
@@ -192,6 +206,20 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authentica
   if (room) slot.room = room;
 
   db.save();
+
+  syncToSupabase('routine_slots', {
+    id: slot.id,
+    batch_id: slot.batchId,
+    day: slot.day,
+    start_time: slot.startTime,
+    end_time: slot.endTime,
+    course_id: slot.courseId,
+    course_code: slot.courseCode,
+    course_title: slot.courseTitle,
+    teacher_name: slot.teacherName,
+    room: slot.room,
+  }).catch(() => {});
+
   db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_UPDATED', `Slot #${slotId} for batch ${slot.batchId}`);
 
   res.json({ message: 'Routine slot updated successfully', routine: slot });
@@ -212,6 +240,7 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authent
   const index = data.routines.findIndex(r => r.id === slotId);
   const [removed] = data.routines.splice(index, 1);
   db.save();
+  deleteFromSupabase('routine_slots', slotId).catch(() => {});
 
   db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_DELETED', `Slot #${slotId}`);
 

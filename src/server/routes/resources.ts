@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { Resource } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -177,6 +178,33 @@ router.post(['/', '/upload'], verifyAuthToken, (req: AuthenticatedRequest, res: 
 
   db.save();
 
+  syncToSupabase('resources', {
+    id: newResource.id,
+    title: newResource.title,
+    type: newResource.type,
+    course_id: newResource.courseId,
+    course_code: newResource.courseCode,
+    course_title: newResource.courseTitle,
+    semester: newResource.semester,
+    academic_year: newResource.academicYear,
+    exam_type: newResource.examType,
+    faculty_name: newResource.facultyName,
+    target_batch: newResource.targetBatch,
+    lab_category: newResource.labCategory,
+    description: newResource.description,
+    file_url: newResource.fileUrl,
+    file_name: newResource.fileName,
+    file_size: newResource.fileSize,
+    file_type: newResource.fileType,
+    uploader_id: newResource.uploaderId,
+    uploader_student_id: newResource.uploaderStudentId,
+    uploader_name: newResource.uploaderName,
+    uploader_batch_name: newResource.uploaderBatchName,
+    status: newResource.status,
+    download_count: newResource.downloadCount || 0,
+    created_at: newResource.createdAt,
+  }).catch(() => {});
+
   db.addAuditLog(req.user.id, req.user.name, 'RESOURCE_SUBMITTED', title, '+10 contribution points earned');
 
   res.status(201).json({
@@ -238,6 +266,14 @@ router.all(['/:id/verify', '/:id/review'], verifyAuthToken, (req: AuthenticatedR
   }
 
   db.save();
+
+  syncToSupabase('resources', {
+    id: resource.id,
+    status: resource.status,
+    rejection_reason: resource.rejectionReason || null,
+    verified_at: resource.verifiedAt || null,
+  }).catch(() => {});
+
   db.addAuditLog(req.user!.id, req.user!.name, `RESOURCE_${targetStatus}`, resource.title);
 
   res.json({ message: `Resource ${targetStatus.toLowerCase()} successfully`, resource });

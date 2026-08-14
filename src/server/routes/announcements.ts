@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { BatchAnnouncement } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -93,6 +94,19 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Authenticate
   db.save();
   db.addAuditLog(req.user.id, req.user.name, 'ANNOUNCEMENT_CREATED', `${title} (${targetBatchId})`);
 
+  syncToSupabase('announcements', {
+    id: newAnn.id,
+    batch_id: newAnn.batchId,
+    title: newAnn.title,
+    description: newAnn.description,
+    publish_date: newAnn.publishDate,
+    expiry_date: newAnn.expiryDate,
+    priority: newAnn.priority,
+    created_by: newAnn.createdBy,
+    created_by_name: newAnn.createdByName,
+    created_at: newAnn.createdAt,
+  }).catch(() => {});
+
   res.status(201).json({ announcement: newAnn });
 });
 
@@ -111,6 +125,7 @@ router.delete('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Authent
 
   data.announcements.splice(index, 1);
   db.save();
+  deleteFromSupabase('announcements', annId).catch(() => {});
 
   db.addAuditLog(req.user!.id, req.user!.name, 'ANNOUNCEMENT_DELETED', `Announcement #${annId}`);
 

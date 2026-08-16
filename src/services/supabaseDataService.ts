@@ -1,10 +1,11 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { getSupabase, checkIsSupabaseConfigured } from '../lib/supabase';
 import { User, RoutineSlot, Exam, BatchAnnouncement, DepartmentNotice, Resource } from '../types';
 
 export const saveUserToSupabase = async (user: User): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('users').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('users').upsert({
       id: user.id,
       student_id: user.studentId,
       name: user.name,
@@ -26,9 +27,10 @@ export const saveUserToSupabase = async (user: User): Promise<boolean> => {
 };
 
 export const fetchRoutinesFromSupabase = async (batchId?: string): Promise<RoutineSlot[]> => {
-  if (!isSupabaseConfigured) return [];
+  if (!checkIsSupabaseConfigured()) return [];
   try {
-    let query = supabase.from('routine_slots').select('*');
+    const client = getSupabase();
+    let query = client.from('routine_slots').select('*');
     if (batchId) {
       query = query.eq('batch_id', batchId);
     }
@@ -54,9 +56,10 @@ export const fetchRoutinesFromSupabase = async (batchId?: string): Promise<Routi
 };
 
 export const saveRoutineToSupabase = async (slot: RoutineSlot): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('routine_slots').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('routine_slots').upsert({
       id: slot.id,
       batch_id: slot.batchId,
       day: slot.day,
@@ -77,9 +80,10 @@ export const saveRoutineToSupabase = async (slot: RoutineSlot): Promise<boolean>
 };
 
 export const fetchExamsFromSupabase = async (batchId?: string): Promise<Exam[]> => {
-  if (!isSupabaseConfigured) return [];
+  if (!checkIsSupabaseConfigured()) return [];
   try {
-    let query = supabase.from('exams').select('*').order('date', { ascending: true });
+    const client = getSupabase();
+    let query = client.from('exams').select('*').order('date', { ascending: true });
     if (batchId) {
       query = query.eq('batch_id', batchId);
     }
@@ -107,9 +111,10 @@ export const fetchExamsFromSupabase = async (batchId?: string): Promise<Exam[]> 
 };
 
 export const saveExamToSupabase = async (exam: Exam): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('exams').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('exams').upsert({
       id: exam.id,
       batch_id: exam.batchId,
       course_id: exam.courseId,
@@ -131,9 +136,10 @@ export const saveExamToSupabase = async (exam: Exam): Promise<boolean> => {
 };
 
 export const fetchAnnouncementsFromSupabase = async (batchId?: string): Promise<BatchAnnouncement[]> => {
-  if (!isSupabaseConfigured) return [];
+  if (!checkIsSupabaseConfigured()) return [];
   try {
-    let query = supabase.from('announcements').select('*').order('created_at', { ascending: false });
+    const client = getSupabase();
+    let query = client.from('announcements').select('*').order('created_at', { ascending: false });
     if (batchId) {
       query = query.eq('batch_id', batchId);
     }
@@ -157,9 +163,10 @@ export const fetchAnnouncementsFromSupabase = async (batchId?: string): Promise<
 };
 
 export const saveAnnouncementToSupabase = async (announcement: BatchAnnouncement): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('announcements').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('announcements').upsert({
       id: announcement.id,
       batch_id: announcement.batchId,
       title: announcement.title,
@@ -177,9 +184,10 @@ export const saveAnnouncementToSupabase = async (announcement: BatchAnnouncement
 };
 
 export const fetchNoticesFromSupabase = async (): Promise<DepartmentNotice[]> => {
-  if (!isSupabaseConfigured) return [];
+  if (!checkIsSupabaseConfigured()) return [];
   try {
-    const { data, error } = await supabase
+    const client = getSupabase();
+    const { data, error } = await client
       .from('department_notices')
       .select('*')
       .order('publish_date', { ascending: false });
@@ -202,9 +210,10 @@ export const fetchNoticesFromSupabase = async (): Promise<DepartmentNotice[]> =>
 };
 
 export const saveNoticeToSupabase = async (notice: DepartmentNotice): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('department_notices').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('department_notices').upsert({
       id: notice.id,
       title: notice.title,
       content: notice.content,
@@ -222,9 +231,10 @@ export const saveNoticeToSupabase = async (notice: DepartmentNotice): Promise<bo
 };
 
 export const fetchResourcesFromSupabase = async (type?: 'QUESTION' | 'NOTE' | 'LAB'): Promise<Resource[]> => {
-  if (!isSupabaseConfigured) return [];
+  if (!checkIsSupabaseConfigured()) return [];
   try {
-    let query = supabase.from('resources').select('*').order('created_at', { ascending: false });
+    const client = getSupabase();
+    let query = client.from('resources').select('*').order('created_at', { ascending: false });
     if (type) {
       query = query.eq('type', type);
     }
@@ -264,9 +274,10 @@ export const fetchResourcesFromSupabase = async (type?: 'QUESTION' | 'NOTE' | 'L
 };
 
 export const saveResourceToSupabase = async (item: Resource): Promise<boolean> => {
-  if (!isSupabaseConfigured) return false;
+  if (!checkIsSupabaseConfigured()) return false;
   try {
-    const { error } = await supabase.from('resources').upsert({
+    const client = getSupabase();
+    const { error } = await client.from('resources').upsert({
       id: item.id,
       title: item.title,
       type: item.type,
@@ -281,9 +292,9 @@ export const saveResourceToSupabase = async (item: Resource): Promise<boolean> =
       lab_category: item.labCategory,
       description: item.description,
       file_url: item.fileUrl,
-      file_name: item.fileName,
-      file_size: item.fileSize,
-      file_type: item.fileType,
+      fileName: item.fileName,
+      fileSize: item.fileSize,
+      fileType: item.fileType,
       uploader_id: item.uploaderId,
       uploader_student_id: item.uploaderStudentId,
       uploader_name: item.uploaderName,

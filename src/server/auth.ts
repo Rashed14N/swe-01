@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { User, UserRole } from '../types';
+import { User, UserRole } from '../types/index';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'swe-portal-secret-key-2026';
 

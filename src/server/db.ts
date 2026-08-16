@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
-} from '../types';
+} from '../types/index';
 
 import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
 

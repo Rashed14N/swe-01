@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { authService, SignupParams } from '../services/authService';
+import { saveUserToSupabase } from '../services/supabaseDataService';
 
 export interface SignupData extends SignupParams {}
 

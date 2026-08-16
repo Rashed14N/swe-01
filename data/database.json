@@ -117,6 +117,22 @@
       "studentId": "252-135-099",
       "name": "Sabbir Hossain",
       "email": "sabbir@swe.edu",
+      "phone": null,
+      "role": "STUDENT",
+      "batchId": "batch_58",
+      "batchName": "58th Batch",
+      "currentSemester": 5,
+      "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-08-16T08:29:38.413+00:00",
+      "updatedAt": "2026-08-16T08:29:38.413+00:00"
+    },
+    {
+      "id": "usr_1786871683233",
+      "studentId": "252",
+      "name": "Rashedul",
+      "email": "test252@swe.edu",
       "role": "STUDENT",
       "batchId": "batch_58",
       "batchName": "58th Batch",
@@ -124,15 +140,16 @@
       "status": "ACTIVE",
       "points": 0,
       "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
-      "createdAt": "2026-08-16T08:29:38.413Z",
-      "updatedAt": "2026-08-16T08:29:38.413Z"
+      "createdAt": "2026-08-16T09:14:43.233Z",
+      "updatedAt": "2026-08-16T09:14:43.233Z"
     }
   ],
   "passwords": {
-    "user-admin-1": "$2b$10$fujXmiOdzg0FEZ09Szwrb.U9M4OCOOCQ0FoV4PbEasgRGaizlCwN.",
+    "user-admin-1": "$2b$10$7CwEoUhzPFWVFvGUYxeqkOUBSZgZ3fNw8CU/dpYhkFJ84nG8hCKjW",
     "usr_1786868051979": "$2b$10$Yy9kufNi/cPa6wS5C3JEmuIle9QoDwsI/spfxckKuqBTU8iorsQi2",
     "usr_1786868451950": "$2b$10$nphCNPyehQM5oHtGL5UyzurVilJTDKpL0sVPpmSogfw.nUU0IgIh.",
-    "usr_1786868978412": "$2b$10$mXs7X/mSL9JBRe.LxWr/DOUnUtJDuCd1DsiADIbnAgV3pUEm/p9TC"
+    "usr_1786868978412": "$2b$10$mXs7X/mSL9JBRe.LxWr/DOUnUtJDuCd1DsiADIbnAgV3pUEm/p9TC",
+    "usr_1786871683233": "$2b$10$jHmnR7ChEM8JvzVocjHrD.2f7P4K9yTcTfsVqjAV.tJvEWp6otlDy"
   },
   "batches": [
     {
@@ -782,6 +799,14 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1786871683421",
+      "actorId": "usr_1786871683233",
+      "actorName": "Rashedul",
+      "action": "STUDENT_REGISTERED",
+      "target": "New account created (252)",
+      "timestamp": "2026-08-16T09:14:43.421Z"
+    },
     {
       "id": "log-1786868978542",
       "actorId": "usr_1786868978412",

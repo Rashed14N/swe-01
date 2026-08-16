@@ -41,6 +41,36 @@ export let supabase: SupabaseClient = createClient(
   }
 );
 
+export function getSupabase(): SupabaseClient {
+  return supabase;
+}
+
+export function checkIsSupabaseConfigured(): boolean {
+  if (typeof window !== 'undefined') {
+    const storedUrl = localStorage.getItem('swe_supabase_url');
+    const storedKey = localStorage.getItem('swe_supabase_key');
+    if (
+      storedUrl &&
+      storedKey &&
+      storedUrl.startsWith('https://') &&
+      !storedUrl.includes('placeholder') &&
+      !storedKey.includes('placeholder') &&
+      storedUrl !== 'https://your-project.supabase.co'
+    ) {
+      return true;
+    }
+  }
+  return Boolean(
+    currentUrl &&
+    currentKey &&
+    currentUrl.startsWith('https://') &&
+    !currentUrl.includes('placeholder') &&
+    !currentKey.includes('placeholder') &&
+    currentUrl !== 'https://your-project.supabase.co' &&
+    currentKey !== 'your-publishable-or-anon-key'
+  );
+}
+
 export function reconfigureSupabaseClient(url: string, key: string): { success: boolean; message: string } {
   const cleanUrl = url.trim();
   const cleanKey = key.trim();

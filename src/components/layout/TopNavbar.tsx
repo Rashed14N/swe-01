@@ -24,17 +24,28 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isBellWiggling, setIsBellWiggling] = useState(false);
-  const [supabaseLive, setSupabaseLive] = useState(isSupabaseConfigured);
+  const [supabaseLive, setSupabaseLive] = useState(true);
 
   useEffect(() => {
-    fetch('/api/supabase/status')
-      .then(res => res.json())
-      .then(data => {
-        if (data && typeof data.isConfigured === 'boolean') {
-          setSupabaseLive(data.isConfigured);
-        }
-      })
-      .catch(() => {});
+    const checkStatus = () => {
+      fetch('/api/supabase/status')
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data.isConfigured === 'boolean') {
+            setSupabaseLive(data.isConfigured);
+          }
+        })
+        .catch(() => {});
+    };
+
+    checkStatus();
+    const handleConfigured = () => setSupabaseLive(true);
+    window.addEventListener('supabase-configured', handleConfigured);
+    const interval = setInterval(checkStatus, 10000);
+    return () => {
+      window.removeEventListener('supabase-configured', handleConfigured);
+      clearInterval(interval);
+    };
   }, [isSupabaseModalOpen]);
 
   const notifRef = useRef<HTMLDivElement>(null);

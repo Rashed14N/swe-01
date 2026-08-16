@@ -59,6 +59,7 @@ export function reconfigureSupabaseClient(url: string, key: string): { success: 
       if (typeof window !== 'undefined') {
         localStorage.setItem('swe_supabase_url', cleanUrl);
         localStorage.setItem('swe_supabase_key', cleanKey);
+        window.dispatchEvent(new CustomEvent('supabase-configured', { detail: { configured: true } }));
       }
       supabase = createClient(cleanUrl, cleanKey, {
         auth: {

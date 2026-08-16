@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { RoutineSlot, RoutineRequest } from '../../types';
 import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
@@ -119,19 +119,27 @@ router.patch('/requests/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authe
 });
 
 // GET /api/routines?batchId=... (With strict Batch Isolation)
-router.get('/', verifyAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
+  const data = db.getData();
+  const allRoutines = data.routines || [];
+  const requestedBatchId = req.query.batchId as string;
 
-  const requestedBatchId = (req.query.batchId as string) || req.user.batchId || 'batch-9';
+  if (!requestedBatchId) {
+    if (req.user?.role === 'ADMIN') {
+      return res.json({ routines: allRoutines });
+    }
+    const userBatch = req.user?.batchId || 'batch-9';
+    return res.json({ routines: allRoutines.filter(r => r.batchId === userBatch), batchId: userBatch });
+  }
 
   // Strict Batch Isolation Enforcement
-  if (req.user.role !== 'ADMIN' && req.user.batchId !== requestedBatchId) {
+  if (req.user && req.user.role !== 'ADMIN' && req.user.batchId && req.user.batchId !== requestedBatchId) {
     return res.status(403).json({
       error: '403 Forbidden: You do not have permission to access another batch\'s routine.',
     });
   }
 
-  const routines = db.getData().routines.filter(r => r.batchId === requestedBatchId);
+  const routines = allRoutines.filter(r => r.batchId === requestedBatchId);
   res.json({ routines, batchId: requestedBatchId });
 });
 

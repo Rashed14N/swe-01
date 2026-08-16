@@ -16,6 +16,7 @@ import adminRoutes from './src/server/routes/admin';
 import facultyRoutes from './src/server/routes/faculty';
 import notificationRoutes from './src/server/routes/notifications';
 import profileRoutes from './src/server/routes/profile';
+import supabaseRoutes from './src/server/routes/supabaseConfig';
 
 async function startServer() {
   const app = express();
@@ -38,6 +39,7 @@ async function startServer() {
   app.use('/api/faculty', facultyRoutes);
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/profile', profileRoutes);
+  app.use('/api/supabase', supabaseRoutes);
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {

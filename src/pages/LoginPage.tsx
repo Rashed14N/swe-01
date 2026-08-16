@@ -15,10 +15,12 @@ import {
   LogIn, 
   Layers, 
   IdCard,
-  Phone
+  Phone,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types';
+import { SupabaseSetupModal } from '../components/common/SupabaseSetupModal';
 
 interface LoginPageProps {
   initialMode?: 'LOGIN' | 'REGISTER';
@@ -34,6 +36,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   const urlMode = searchParams.get('mode') === 'register' ? 'REGISTER' : initialMode;
 
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>(urlMode);
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('mode') === 'register') {
@@ -324,7 +327,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                         id="input-login-id"
                         value={studentIdOrEmail}
                         onChange={e => setStudentIdOrEmail(e.target.value)}
-                        placeholder="e.g. 252-134-022 or name@student.mu.edu.bd"
+                        placeholder="e.g. admin101, Student ID or Email"
                         className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
                       />
                     </div>
@@ -337,10 +340,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       </label>
                       <button
                         type="button"
-                        onClick={() => alert('Demo Mode: You can use any password or click one of the Demo Accounts below!')}
+                        onClick={() => alert('For Admin: Username: admin101, Password: admin123. For registered students/CR, use your registered password.')}
                         className="text-xs text-blue-600 font-semibold hover:underline"
                       >
-                        Forgot?
+                        Help?
                       </button>
                     </div>
                     <div className="relative">
@@ -604,10 +607,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
               </div>
             )}
 
+            {/* Database & Cloud Persistence Setup Button */}
+            <div className="mt-6 pt-4 border-t border-slate-200 text-center">
+              <button
+                type="button"
+                onClick={() => setIsSupabaseModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 transition-colors border border-slate-200"
+              >
+                <Database className="w-3.5 h-3.5 text-blue-600" />
+                <span>Supabase Database Settings & Diagnostic</span>
+              </button>
+            </div>
+
           </div>
         </div>
 
       </div>
+
+      <SupabaseSetupModal
+        isOpen={isSupabaseModalOpen}
+        onClose={() => setIsSupabaseModalOpen(false)}
+      />
     </div>
   );
 };

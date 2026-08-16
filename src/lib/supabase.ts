@@ -1,22 +1,37 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+const getInitialUrl = () => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('swe_supabase_url');
+    if (stored) return stored.trim();
+  }
+  return (import.meta.env.VITE_SUPABASE_URL || '').trim();
+};
 
-export const isSupabaseConfigured: boolean = Boolean(
-  supabaseUrl &&
-  supabasePublishableKey &&
-  supabaseUrl !== 'https://your-project.supabase.co' &&
-  supabasePublishableKey !== 'your-publishable-or-anon-key'
+const getInitialKey = () => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('swe_supabase_key');
+    if (stored) return stored.trim();
+  }
+  return (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
+};
+
+let currentUrl = getInitialUrl();
+let currentKey = getInitialKey();
+
+export let isSupabaseConfigured: boolean = Boolean(
+  currentUrl &&
+  currentKey &&
+  currentUrl.startsWith('https://') &&
+  !currentUrl.includes('placeholder') &&
+  !currentKey.includes('placeholder') &&
+  currentUrl !== 'https://your-project.supabase.co' &&
+  currentKey !== 'your-publishable-or-anon-key'
 );
 
-/**
- * Shared Supabase Client instance.
- * Gracefully creates a client when configured, or a dummy client to prevent runtime crashes during initial setup.
- */
-export const supabase: SupabaseClient = createClient(
-  isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co',
-  isSupabaseConfigured ? supabasePublishableKey : 'placeholder-key',
+export let supabase: SupabaseClient = createClient(
+  isSupabaseConfigured ? currentUrl : 'https://placeholder.supabase.co',
+  isSupabaseConfigured ? currentKey : 'placeholder-key',
   {
     auth: {
       persistSession: true,
@@ -25,3 +40,44 @@ export const supabase: SupabaseClient = createClient(
     },
   }
 );
+
+export function reconfigureSupabaseClient(url: string, key: string): { success: boolean; message: string } {
+  const cleanUrl = url.trim();
+  const cleanKey = key.trim();
+
+  if (
+    cleanUrl &&
+    cleanKey &&
+    cleanUrl.startsWith('https://') &&
+    !cleanUrl.includes('placeholder') &&
+    !cleanKey.includes('placeholder')
+  ) {
+    try {
+      currentUrl = cleanUrl;
+      currentKey = cleanKey;
+      isSupabaseConfigured = true;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('swe_supabase_url', cleanUrl);
+        localStorage.setItem('swe_supabase_key', cleanKey);
+      }
+      supabase = createClient(cleanUrl, cleanKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      });
+      return { success: true, message: 'Supabase client connected successfully' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Failed to initialize' };
+    }
+  }
+
+  isSupabaseConfigured = false;
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('swe_supabase_url');
+    localStorage.removeItem('swe_supabase_key');
+  }
+  return { success: false, message: 'Invalid URL or Key provided' };
+}
+

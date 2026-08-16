@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Exam } from '../../types';
 import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
@@ -8,22 +8,26 @@ import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 const router = Router();
 
 // GET /api/exams (Batch isolated, auto-sorted by date, past exams optional filter)
-router.get('/', verifyAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
+  const data = db.getData();
+  const allExams = data.exams || [];
+  const requestedBatchId = (req.query.batchId as string);
 
-  const requestedBatchId = (req.query.batchId as string) || req.user.batchId || 'batch-9';
-
-  // Batch isolation check
-  if (req.user.role !== 'ADMIN' && req.user.batchId !== requestedBatchId) {
-    return res.status(403).json({
-      error: '403 Forbidden: You do not have permission to access another batch\'s exam schedule.',
-    });
+  let exams = allExams;
+  if (requestedBatchId) {
+    if (req.user && req.user.role !== 'ADMIN' && req.user.batchId && req.user.batchId !== requestedBatchId) {
+      return res.status(403).json({
+        error: '403 Forbidden: You do not have permission to access another batch\'s exam schedule.',
+      });
+    }
+    exams = allExams.filter(e => e.batchId === requestedBatchId);
+  } else if (req.user && req.user.role !== 'ADMIN') {
+    const userBatch = req.user.batchId || 'batch-9';
+    exams = allExams.filter(e => e.batchId === userBatch);
   }
 
   const includePast = req.query.includePast === 'true';
   const todayStr = new Date().toISOString().split('T')[0];
-
-  let exams = db.getData().exams.filter(e => e.batchId === requestedBatchId);
 
   if (!includePast) {
     exams = exams.filter(e => e.date >= todayStr);

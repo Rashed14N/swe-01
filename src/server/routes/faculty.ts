@@ -36,23 +36,30 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
 
   const newFaculty: Faculty = {
     id: `fac-${Date.now()}`,
-    name,
-    shortName: shortName || name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 4),
-    designation,
+    name: name.trim(),
+    shortName: (shortName || name.split(' ').map((w: string) => w[0]).join('')).toUpperCase().slice(0, 4),
+    designation: designation.trim(),
     department: department || 'Software Engineering',
-    email,
-    phone,
-    officeRoom: officeRoom || '',
+    email: email.trim(),
+    phone: phone ? phone.trim() : undefined,
+    officeRoom: officeRoom ? officeRoom.trim() : '',
     photoUrl: photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-    specialization,
-    assignedCourses: assignedCourses || [],
+    specialization: specialization ? specialization.trim() : '',
+    assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
   };
 
-  db.getData().faculty.push(newFaculty);
+  const data = db.getData();
+  if (!data.faculty) {
+    data.faculty = [];
+  }
+  data.faculty.push(newFaculty);
   db.save();
-  db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_ADDED', name);
 
-  res.status(201).json({ faculty: newFaculty });
+  if (req.user) {
+    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_ADDED', name);
+  }
+
+  res.status(201).json({ faculty: newFaculty, message: 'Faculty member added successfully' });
 });
 
 // PUT /api/faculty/:id (Admin Only)

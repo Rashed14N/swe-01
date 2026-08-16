@@ -24,8 +24,8 @@ const SESSION_STORAGE_KEY = 'swe_portal_auth_session';
 const MOCK_DEFAULT_USERS: User[] = [
   {
     id: 'user-admin-1',
-    studentId: 'ADMIN-001',
-    name: 'System Administrator',
+    studentId: 'admin101',
+    name: 'admin101',
     email: 'admin@swe.edu',
     role: 'ADMIN',
     batchId: 'batch_58',
@@ -94,7 +94,7 @@ class MockAuthService {
 
   private setSession(user: User): AuthSession {
     const session: AuthSession = {
-      token: `mock_jwt_token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      token: `session_${user.id}_${user.studentId || 'id'}_${user.role}_${Date.now()}`,
       user,
       createdAt: new Date().toISOString()
     };

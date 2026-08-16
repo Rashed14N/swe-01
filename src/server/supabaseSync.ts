@@ -1,20 +1,107 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { DBData } from './db';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+let currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+let currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
 
 let serverSupabase: SupabaseClient | null = null;
 
-if (supabaseUrl && supabaseKey && !supabaseUrl.includes('placeholder') && !supabaseKey.includes('placeholder')) {
-  try {
-    serverSupabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false },
-    });
-    console.log('[Supabase] Initialized server-side sync with Supabase at:', supabaseUrl);
-  } catch (err) {
-    console.error('[Supabase] Initialization failed:', err);
+export function initSupabase(url?: string, key?: string): { success: boolean; message: string } {
+  if (url) currentSupabaseUrl = url.trim();
+  if (key) currentSupabaseKey = key.trim();
+
+  if (
+    currentSupabaseUrl &&
+    currentSupabaseKey &&
+    !currentSupabaseUrl.includes('placeholder') &&
+    !currentSupabaseKey.includes('placeholder') &&
+    currentSupabaseUrl.startsWith('https://')
+  ) {
+    try {
+      serverSupabase = createClient(currentSupabaseUrl, currentSupabaseKey, {
+        auth: { persistSession: false },
+      });
+      console.log('[Supabase] Initialized server-side client at:', currentSupabaseUrl);
+      return { success: true, message: `Connected to ${currentSupabaseUrl}` };
+    } catch (err: any) {
+      console.error('[Supabase] Initialization failed:', err);
+      serverSupabase = null;
+      return { success: false, message: err?.message || 'Failed to initialize client' };
+    }
   }
+  serverSupabase = null;
+  return { success: false, message: 'Supabase URL or Key is missing or invalid' };
+}
+
+// Initialize on boot
+initSupabase();
+
+export function getSupabaseStatus() {
+  const isConfigured = Boolean(
+    serverSupabase &&
+    currentSupabaseUrl &&
+    currentSupabaseKey &&
+    !currentSupabaseUrl.includes('placeholder')
+  );
+
+  return {
+    isConfigured,
+    url: currentSupabaseUrl ? `${currentSupabaseUrl.substring(0, 20)}...` : '',
+    hasKey: Boolean(currentSupabaseKey),
+  };
+}
+
+/**
+ * Tests connection to each individual table in Supabase and returns detailed diagnostic report.
+ */
+export async function testSupabaseConnectionDetails() {
+  if (!serverSupabase) {
+    return {
+      connected: false,
+      message: 'Supabase client is not configured yet with valid URL & API Key.',
+      tables: {},
+    };
+  }
+
+  const tables = [
+    'users',
+    'batches',
+    'courses',
+    'routine_slots',
+    'exams',
+    'announcements',
+    'department_notices',
+    'resources',
+  ];
+
+  const tableResults: Record<string, { ok: boolean; count?: number; error?: string }> = {};
+  let anyError = false;
+
+  for (const t of tables) {
+    try {
+      const { count, error } = await serverSupabase
+        .from(t)
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        tableResults[t] = { ok: false, error: error.message || error.hint || 'Query failed' };
+        anyError = true;
+      } else {
+        tableResults[t] = { ok: true, count: count ?? 0 };
+      }
+    } catch (err: any) {
+      tableResults[t] = { ok: false, error: err.message || 'Exception occurred' };
+      anyError = true;
+    }
+  }
+
+  return {
+    connected: !anyError,
+    message: anyError
+      ? 'Supabase connection failed (e.g. Invalid API key, typo in credentials, or table not created yet in SQL editor).'
+      : 'All Supabase tables are accessible and connected successfully!',
+    tables: tableResults,
+  };
 }
 
 /**
@@ -47,6 +134,238 @@ export async function deleteFromSupabase(table: string, id: string): Promise<voi
   } catch (err: any) {
     console.error(`[Supabase Delete Failed]:`, err.message);
   }
+}
+
+/**
+ * Pushes all in-memory local data to Supabase in one go.
+ */
+export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
+  success: boolean;
+  synced: Record<string, number>;
+  errors: string[];
+}> {
+  if (!serverSupabase) {
+    return {
+      success: false,
+      synced: {},
+      errors: ['Supabase is not configured.'],
+    };
+  }
+
+  const synced: Record<string, number> = {};
+  const errors: string[] = [];
+
+  // 1. Sync Batches
+  try {
+    const batchRows = dbData.batches.map(b => ({
+      id: b.id,
+      name: b.name,
+      admission_year: b.admissionYear,
+      current_semester: b.currentSemester,
+      academic_session: b.academicSession,
+      cr_ids: b.crIds || [],
+      created_at: b.createdAt,
+    }));
+    if (batchRows.length > 0) {
+      const { error } = await serverSupabase.from('batches').upsert(batchRows);
+      if (error) errors.push(`Batches: ${error.message}`);
+      else synced.batches = batchRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Batches: ${e.message}`);
+  }
+
+  // 2. Sync Courses
+  try {
+    const courseRows = dbData.courses.map(c => ({
+      id: c.id,
+      code: c.code,
+      title: c.title,
+      short_name: c.shortName,
+      credits: c.credits,
+      type: c.type,
+      semester: c.semester,
+      assigned_faculty_name: c.assignedFacultyName,
+      batch_ids: c.batchIds || [],
+    }));
+    if (courseRows.length > 0) {
+      const { error } = await serverSupabase.from('courses').upsert(courseRows);
+      if (error) errors.push(`Courses: ${error.message}`);
+      else synced.courses = courseRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Courses: ${e.message}`);
+  }
+
+  // 3. Sync Users
+  try {
+    const userRows = dbData.users.map(u => ({
+      id: u.id,
+      student_id: u.studentId,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      role: u.role,
+      batch_id: u.batchId,
+      batch_name: u.batchName,
+      current_semester: u.currentSemester,
+      profile_image: u.profileImage,
+      status: u.status,
+      points: u.points || 0,
+      created_at: u.createdAt,
+      updated_at: u.updatedAt,
+    }));
+    if (userRows.length > 0) {
+      const { error } = await serverSupabase.from('users').upsert(userRows);
+      if (error) errors.push(`Users: ${error.message}`);
+      else synced.users = userRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Users: ${e.message}`);
+  }
+
+  // 4. Sync Routine Slots
+  try {
+    const routineRows = dbData.routines.map(rt => ({
+      id: rt.id,
+      batch_id: rt.batchId,
+      day: rt.day,
+      start_time: rt.startTime,
+      end_time: rt.endTime,
+      course_id: rt.courseId,
+      course_code: rt.courseCode,
+      course_short_name: rt.courseShortName,
+      course_title: rt.courseTitle,
+      teacher_name: rt.teacherName,
+      teacher_short_name: rt.teacherShortName,
+      room: rt.room,
+    }));
+    if (routineRows.length > 0) {
+      const { error } = await serverSupabase.from('routine_slots').upsert(routineRows);
+      if (error) errors.push(`Routines: ${error.message}`);
+      else synced.routines = routineRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Routines: ${e.message}`);
+  }
+
+  // 5. Sync Announcements
+  try {
+    const annRows = dbData.announcements.map(a => ({
+      id: a.id,
+      batch_id: a.batchId,
+      title: a.title,
+      description: a.description,
+      publish_date: a.publishDate,
+      expiry_date: a.expiryDate,
+      priority: a.priority,
+      created_by: a.createdBy,
+      created_by_name: a.createdByName,
+      created_at: a.createdAt,
+    }));
+    if (annRows.length > 0) {
+      const { error } = await serverSupabase.from('announcements').upsert(annRows);
+      if (error) errors.push(`Announcements: ${error.message}`);
+      else synced.announcements = annRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Announcements: ${e.message}`);
+  }
+
+  // 6. Sync Exams
+  try {
+    const examRows = dbData.exams.map(ex => ({
+      id: ex.id,
+      batch_id: ex.batchId,
+      course_id: ex.courseId,
+      course_code: ex.courseCode,
+      course_title: ex.courseTitle,
+      type: ex.type,
+      title: ex.title,
+      date: ex.date,
+      start_time: ex.startTime,
+      room: ex.room,
+      description: ex.description,
+      created_by: ex.createdBy,
+      created_by_name: ex.createdByName,
+      created_at: ex.createdAt,
+    }));
+    if (examRows.length > 0) {
+      const { error } = await serverSupabase.from('exams').upsert(examRows);
+      if (error) errors.push(`Exams: ${error.message}`);
+      else synced.exams = examRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Exams: ${e.message}`);
+  }
+
+  // 7. Sync Notices
+  try {
+    const noticeRows = dbData.departmentNotices.map(n => ({
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      category: n.category,
+      publish_date: n.publishDate,
+      is_important: n.isImportant,
+      attachment_url: n.attachmentUrl,
+      created_by: n.createdBy,
+      created_by_name: n.createdByName,
+      created_at: n.createdAt,
+    }));
+    if (noticeRows.length > 0) {
+      const { error } = await serverSupabase.from('department_notices').upsert(noticeRows);
+      if (error) errors.push(`Department Notices: ${error.message}`);
+      else synced.departmentNotices = noticeRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Department Notices: ${e.message}`);
+  }
+
+  // 8. Sync Resources
+  try {
+    const resourceRows = dbData.resources.map(r => ({
+      id: r.id,
+      title: r.title,
+      type: r.type,
+      course_id: r.courseId,
+      course_code: r.courseCode,
+      course_title: r.courseTitle,
+      semester: r.semester,
+      academic_year: r.academicYear,
+      exam_type: r.examType,
+      faculty_name: r.facultyName,
+      target_batch: r.targetBatch,
+      lab_category: r.labCategory,
+      description: r.description,
+      file_url: r.fileUrl,
+      file_name: r.fileName,
+      file_size: r.fileSize,
+      file_type: r.fileType,
+      uploader_id: r.uploaderId,
+      uploader_student_id: r.uploaderStudentId,
+      uploader_name: r.uploaderName,
+      uploader_batch_name: r.uploaderBatchName,
+      status: r.status,
+      rejection_reason: r.rejectionReason,
+      download_count: r.downloadCount || 0,
+      created_at: r.createdAt,
+      verified_at: r.verifiedAt,
+    }));
+    if (resourceRows.length > 0) {
+      const { error } = await serverSupabase.from('resources').upsert(resourceRows);
+      if (error) errors.push(`Resources: ${error.message}`);
+      else synced.resources = resourceRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Resources: ${e.message}`);
+  }
+
+  return {
+    success: errors.length === 0,
+    synced,
+    errors,
+  };
 }
 
 /**
@@ -236,3 +555,4 @@ export async function hydrateFromSupabase(dbData: DBData): Promise<void> {
     console.error('[Supabase Hydrate Error]:', err.message);
   }
 }
+

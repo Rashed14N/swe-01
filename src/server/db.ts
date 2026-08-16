@@ -34,7 +34,7 @@ if (!fs.existsSync(DATA_DIR)) {
 
 export function seedInitialData(): DBData {
   const salt = bcrypt.genSaltSync(10);
-  const defaultPasswordHash = bcrypt.hashSync('password123', salt);
+  const adminPasswordHash = bcrypt.hashSync('admin123', salt);
 
   const batches: Batch[] = [
     {
@@ -43,7 +43,7 @@ export function seedInitialData(): DBData {
       admissionYear: 2023,
       currentSemester: 5,
       academicSession: '2023-2024',
-      crIds: ['user-cr-1'],
+      crIds: [],
       createdAt: '2023-01-15T00:00:00Z',
     },
     {
@@ -52,7 +52,7 @@ export function seedInitialData(): DBData {
       admissionYear: 2022,
       currentSemester: 7,
       academicSession: '2022-2023',
-      crIds: ['user-cr-2'],
+      crIds: [],
       createdAt: '2022-01-15T00:00:00Z',
     },
     {
@@ -69,8 +69,8 @@ export function seedInitialData(): DBData {
   const users: User[] = [
     {
       id: 'user-admin-1',
-      studentId: 'ADMIN-001',
-      name: 'System Administrator (Dept Head)',
+      studentId: 'admin101',
+      name: 'admin101',
       email: 'admin@swe.edu',
       phone: '+8801700000000',
       role: 'ADMIN',
@@ -83,7 +83,7 @@ export function seedInitialData(): DBData {
   ];
 
   const passwords: Record<string, string> = {
-    'user-admin-1': defaultPasswordHash,
+    'user-admin-1': adminPasswordHash,
   };
 
   const faculty: Faculty[] = [
@@ -727,6 +727,44 @@ class JsonDB {
     if (!this.data.routineRequests) this.data.routineRequests = [];
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
+
+    // Remove legacy demo users (tanvir, student1, cr1, etc.) and keep/ensure admin101
+    this.data.users = this.data.users.filter(u => {
+      const sid = (u.studentId || '').toLowerCase();
+      const email = (u.email || '').toLowerCase();
+      const name = (u.name || '').toLowerCase();
+      if (sid === '2023-swe-001' || sid === '2022-swe-002' || sid === '2021-swe-003' || sid === 'admin-001') return false;
+      if (name.includes('tanvir hossain') || name.includes('samiul alam') || name.includes('dr. shahriar')) return false;
+      return true;
+    });
+
+    const adminSalt = bcrypt.genSaltSync(10);
+    const adminPassHash = bcrypt.hashSync('admin123', adminSalt);
+
+    let adminUser = this.data.users.find(u => u.role === 'ADMIN' || u.studentId?.toLowerCase() === 'admin101');
+    if (!adminUser) {
+      adminUser = {
+        id: 'user-admin-101',
+        studentId: 'admin101',
+        name: 'admin101',
+        email: 'admin@swe.edu',
+        phone: '+8801700000000',
+        role: 'ADMIN',
+        currentSemester: 0,
+        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+        status: 'ACTIVE',
+        createdAt: '2023-01-01T00:00:00Z',
+        updatedAt: new Date().toISOString(),
+      };
+      this.data.users.push(adminUser);
+    } else {
+      adminUser.studentId = 'admin101';
+      adminUser.name = 'admin101';
+      adminUser.role = 'ADMIN';
+      adminUser.status = 'ACTIVE';
+    }
+    this.data.passwords[adminUser.id] = adminPassHash;
+    this.save();
 
     // Trigger Supabase initial data hydration in the background
     hydrateFromSupabase(this.data).catch(() => {});

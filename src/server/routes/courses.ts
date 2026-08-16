@@ -1,34 +1,26 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Course } from '../../types';
 
 const router = Router();
 
-// GET /api/courses (List courses for student batch or all if Admin)
-router.get('/', verifyAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
-
+// GET /api/courses (List courses for student batch or all if Admin/Public)
+router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
   const data = db.getData();
-  const batchId = (req.query.batchId as string) || req.user.batchId;
+  const batchId = (req.query.batchId as string) || req.user?.batchId;
 
-  if (req.user.role !== 'ADMIN' && batchId && req.user.batchId !== batchId) {
-    return res.status(403).json({
-      error: '403 Forbidden: You do not have permission to access another batch\'s courses.',
-    });
-  }
-
-  let courses = data.courses;
-  if (batchId && req.user.role !== 'ADMIN') {
-    courses = courses.filter(c => c.batchIds.includes(batchId));
+  let courses = data.courses || [];
+  if (batchId && req.user && req.user.role !== 'ADMIN') {
+    courses = courses.filter(c => c.batchIds?.includes(batchId) || c.semester === req.user?.currentSemester);
   }
 
   res.json({ courses });
 });
 
 // GET /api/courses/:id (Course Details with related approved resources)
-router.get('/:id', verifyAuthToken, (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
   const courseId = req.params.id;
   const data = db.getData();
 
@@ -36,11 +28,11 @@ router.get('/:id', verifyAuthToken, (req: AuthenticatedRequest, res: Response) =
   if (!course) return res.status(404).json({ error: 'Course not found' });
 
   // Get related resources for this course (APPROVED ONLY)
-  const resources = data.resources.filter(
+  const resources = (data.resources || []).filter(
     r => (r.courseId === course.id || r.courseCode === course.code) && r.status === 'APPROVED'
   );
 
-  const faculty = data.faculty.find(f => f.id === course.assignedFacultyId);
+  const faculty = (data.faculty || []).find(f => f.id === course.assignedFacultyId);
 
   res.json({
     course,

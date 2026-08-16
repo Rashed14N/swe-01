@@ -1,15 +1,15 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Batch } from '../../types';
 
 const router = Router();
 
 // GET /api/batches (Admin gets all, Student/CR gets list or own batch)
-router.get('/', verifyAuthToken, (req: AuthenticatedRequest, res: Response) => {
+router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
   const data = db.getData();
-  res.json({ batches: data.batches });
+  res.json({ batches: data.batches || [] });
 });
 
 // GET /api/batches/:id (Enforce Batch Isolation for student/CR!)

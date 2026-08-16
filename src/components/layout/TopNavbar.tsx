@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu, Search, Bell, User, LogOut, Settings, CheckCheck,
-  ChevronDown, ShieldCheck, Moon
+  ChevronDown, ShieldCheck, Database
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { SupabaseSetupModal } from '../common/SupabaseSetupModal';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 interface TopNavbarProps {
   onOpenMobileMenu: () => void;
@@ -19,8 +21,21 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isBellWiggling, setIsBellWiggling] = useState(false);
+  const [supabaseLive, setSupabaseLive] = useState(isSupabaseConfigured);
+
+  useEffect(() => {
+    fetch('/api/supabase/status')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.isConfigured === 'boolean') {
+          setSupabaseLive(data.isConfigured);
+        }
+      })
+      .catch(() => {});
+  }, [isSupabaseModalOpen]);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -112,7 +127,24 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Supabase Status & Setup Trigger */}
+        <button
+          onClick={() => setIsSupabaseModalOpen(true)}
+          title="Supabase Database Connection & Diagnostics"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 border ${
+            supabaseLive
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+              : 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
+          }`}
+        >
+          <Database className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">
+            {supabaseLive ? 'Supabase Connected' : 'Connect Supabase'}
+          </span>
+          <span className={`w-2 h-2 rounded-full ${supabaseLive ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+        </button>
+
         {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button
@@ -277,6 +309,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
           )}
         </div>
       </div>
+
+      <SupabaseSetupModal
+        isOpen={isSupabaseModalOpen}
+        onClose={() => setIsSupabaseModalOpen(false)}
+      />
     </header>
   );
 };

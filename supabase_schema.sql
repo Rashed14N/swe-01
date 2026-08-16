@@ -203,9 +203,10 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 );
 
 -- ==============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
+-- ROW LEVEL SECURITY (RLS) POLICIES & PERMISSIONS
 -- ==============================================================================
 
+-- Enable RLS on all tables
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.batches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
@@ -219,52 +220,43 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.routine_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Allow public read & write operations with the anon API key
+-- Allow full SELECT, INSERT, UPDATE, DELETE access for anon / service roles
 DO $$
+DECLARE
+    tbl TEXT;
+    tbls TEXT[] := ARRAY[
+        'users', 'batches', 'courses', 'routine_slots', 'exams', 
+        'announcements', 'department_notices', 'resources', 
+        'faculty', 'notifications', 'routine_requests', 'audit_logs'
+    ];
 BEGIN
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.users FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public insert access" ON public.users FOR INSERT WITH CHECK (true)';
-    EXECUTE 'CREATE POLICY "Allow public update access" ON public.users FOR UPDATE USING (true)';
-
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.batches FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.courses FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.routine_slots FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.exams FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.announcements FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.department_notices FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.resources FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public insert access" ON public.resources FOR INSERT WITH CHECK (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.faculty FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.notifications FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.routine_requests FOR SELECT USING (true)';
-    EXECUTE 'CREATE POLICY "Allow public insert access" ON public.routine_requests FOR INSERT WITH CHECK (true)';
-    EXECUTE 'CREATE POLICY "Allow public read access" ON public.audit_logs FOR SELECT USING (true)';
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    FOREACH tbl IN ARRAY tbls LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Allow public full access on %I" ON public.%I', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Allow public full access on %I" ON public.%I FOR ALL USING (true) WITH CHECK (true)', tbl, tbl);
+    END LOOP;
 END $$;
 
 -- ==============================================================================
--- INITIAL SEED DATA (DEFAULT BATCHES, USERS & COURSES)
+-- INITIAL SEED DATA (ADMIN & BATCHES)
 -- ==============================================================================
 
 INSERT INTO public.batches (id, name, admission_year, current_semester, academic_session, cr_ids)
 VALUES
-    ('batch-9', 'SWE 9th Batch', 2023, 5, '2023-2024', '["user-cr-1"]'::jsonb),
-    ('batch-8', 'SWE 8th Batch', 2022, 7, '2022-2023', '["user-cr-2"]'::jsonb),
-    ('batch-10', 'SWE 10th Batch', 2024, 3, '2024-2025', '[]'::jsonb)
+    ('batch-58', '58th Batch', 2023, 5, '2023-2024', '[]'::jsonb),
+    ('batch-57', '57th Batch', 2022, 7, '2022-2023', '[]'::jsonb),
+    ('batch-59', '59th Batch', 2024, 3, '2024-2025', '[]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.users (id, student_id, name, email, phone, role, batch_id, batch_name, current_semester, profile_image, status, points)
 VALUES
-    ('user-admin-1', 'ADMIN-001', 'Dr. Shahriar Hossain (Dept Head & Admin)', 'admin@swe.edu', '+8801700000000', 'ADMIN', NULL, NULL, 0, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300', 'ACTIVE', 0),
-    ('user-cr-1', '252-134-001', 'Mahmudul Hasan (CR - 9th Batch)', 'cr9@swe.edu', '+8801711112222', 'CR', 'batch-9', 'SWE 9th Batch', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300', 'ACTIVE', 0),
-    ('user-student-1', '252-134-022', 'Rashedul Hasan', 'rashedul@swe.edu', '+8801812345678', 'STUDENT', 'batch-9', 'SWE 9th Batch', 5, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300', 'ACTIVE', 120)
+    ('user-admin-1', 'admin101', 'admin101', 'admin@swe.edu', '+8801700000000', 'ADMIN', NULL, NULL, 0, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300', 'ACTIVE', 0)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.courses (id, code, title, credits, type, semester, assigned_faculty_name, batch_ids)
 VALUES
-    ('course-305', 'SWE 305', 'Database Systems', 3.0, 'THEORY', 5, 'Dr. Tanvir Rahman', '["batch-9"]'::jsonb),
-    ('course-307', 'SWE 307', 'Software Engineering', 3.0, 'THEORY', 5, 'Mr. Imran Hossain', '["batch-9"]'::jsonb),
-    ('course-309', 'SWE 309', 'Algorithms', 3.0, 'THEORY', 5, 'Prof. Dr. Ahsan Habib', '["batch-9"]'::jsonb),
-    ('course-311', 'SWE 311', 'Computer Networks', 3.0, 'THEORY', 5, 'Ms. Nusrat Jahan', '["batch-9"]'::jsonb)
+    ('course-305', 'SWE 305', 'Database Systems', 3.0, 'THEORY', 5, 'Dr. Faculty Member', '["batch-58"]'::jsonb),
+    ('course-307', 'SWE 307', 'Software Engineering', 3.0, 'THEORY', 5, 'Mr. Faculty Member', '["batch-58"]'::jsonb),
+    ('course-309', 'SWE 309', 'Algorithms', 3.0, 'THEORY', 5, 'Prof. Dr. Faculty Member', '["batch-58"]'::jsonb),
+    ('course-311', 'SWE 311', 'Computer Networks', 3.0, 'THEORY', 5, 'Ms. Faculty Member', '["batch-58"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+

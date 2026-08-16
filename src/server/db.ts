@@ -820,33 +820,12 @@ class JsonDB {
     this.save();
   }
 
-  public addUser(user: User, passwordHash: string) {
+  public async addUser(user: User, passwordHash: string) {
     this.data.users.push(user);
     this.data.passwords[user.id] = passwordHash;
     this.save();
-    syncToSupabase('users', {
-      id: user.id,
-      student_id: user.studentId,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      batch_id: user.batchId,
-      batch_name: user.batchName,
-      current_semester: user.currentSemester,
-      profile_image: user.profileImage,
-      status: user.status,
-      points: user.points || 0,
-      updated_at: new Date().toISOString(),
-    }).catch(() => {});
-  }
-
-  public updateUser(user: User) {
-    const idx = this.data.users.findIndex(u => u.id === user.id);
-    if (idx !== -1) {
-      this.data.users[idx] = user;
-      this.save();
-      syncToSupabase('users', {
+    try {
+      await syncToSupabase('users', {
         id: user.id,
         student_id: user.studentId,
         name: user.name,
@@ -859,8 +838,38 @@ class JsonDB {
         profile_image: user.profileImage,
         status: user.status,
         points: user.points || 0,
+        created_at: user.createdAt || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }).catch(() => {});
+      });
+    } catch (e) {
+      console.error('[Supabase Direct User Insert Error]:', e);
+    }
+  }
+
+  public async updateUser(user: User) {
+    const idx = this.data.users.findIndex(u => u.id === user.id);
+    if (idx !== -1) {
+      this.data.users[idx] = user;
+      this.save();
+      try {
+        await syncToSupabase('users', {
+          id: user.id,
+          student_id: user.studentId,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          batch_id: user.batchId,
+          batch_name: user.batchName,
+          current_semester: user.currentSemester,
+          profile_image: user.profileImage,
+          status: user.status,
+          points: user.points || 0,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('[Supabase Direct User Update Error]:', e);
+      }
     }
   }
 

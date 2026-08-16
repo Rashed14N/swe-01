@@ -69,6 +69,22 @@
       "studentId": "252-134-888",
       "name": "Tanvir Ahmed",
       "email": "tanvir@swe.edu",
+      "phone": null,
+      "role": "STUDENT",
+      "batchId": "batch_58",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 5,
+      "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-08-16T08:14:12.061187+00:00",
+      "updatedAt": "2026-08-16T08:14:11.979+00:00"
+    },
+    {
+      "id": "usr_1786868451950",
+      "studentId": "252-134-777",
+      "name": "Mahir Faysal",
+      "email": "mahir@swe.edu",
       "role": "STUDENT",
       "batchId": "batch_58",
       "batchName": "SWE 9th Batch",
@@ -76,13 +92,14 @@
       "status": "ACTIVE",
       "points": 0,
       "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
-      "createdAt": "2026-08-16T08:14:11.979Z",
-      "updatedAt": "2026-08-16T08:14:11.979Z"
+      "createdAt": "2026-08-16T08:20:51.950Z",
+      "updatedAt": "2026-08-16T08:20:51.950Z"
     }
   ],
   "passwords": {
-    "user-admin-1": "$2b$10$HKDEqfT06l98SB37Y2icUuPNewHzgzVbuaFGrm4X0J/dCTsZAcJ8u",
-    "usr_1786868051979": "$2b$10$Yy9kufNi/cPa6wS5C3JEmuIle9QoDwsI/spfxckKuqBTU8iorsQi2"
+    "user-admin-1": "$2b$10$SxdR2vdnLpfIxyxd/wR/7.om9zwMCEAUMJl80uhQhWX5XASriyXw.",
+    "usr_1786868051979": "$2b$10$Yy9kufNi/cPa6wS5C3JEmuIle9QoDwsI/spfxckKuqBTU8iorsQi2",
+    "usr_1786868451950": "$2b$10$nphCNPyehQM5oHtGL5UyzurVilJTDKpL0sVPpmSogfw.nUU0IgIh."
   },
   "batches": [
     {
@@ -732,6 +749,14 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1786868451951",
+      "actorId": "usr_1786868451950",
+      "actorName": "Mahir Faysal",
+      "action": "STUDENT_REGISTERED",
+      "target": "New account created (252-134-777)",
+      "timestamp": "2026-08-16T08:20:51.951Z"
+    },
     {
       "id": "log-1786868051979",
       "actorId": "usr_1786868051979",

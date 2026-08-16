@@ -85,6 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (data: SignupData) => {
     try {
       // First attempt backend API registration
+      let registeredUser: any = null;
+      let registeredSession: any = null;
+
       try {
         const apiRes = await fetch('/api/auth/register', {
           method: 'POST',
@@ -94,16 +97,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (apiRes.ok) {
           const resData = await apiRes.json();
           if (resData.token && resData.user) {
-            const newSession = {
+            registeredSession = {
               token: resData.token,
               user: resData.user,
               createdAt: new Date().toISOString(),
             };
-            localStorage.setItem('swe_portal_auth_session', JSON.stringify(newSession));
-            authService.updateUser(resData.user);
-            setSession(newSession);
-            setCurrentUser(resData.user);
-            return { success: true, user: resData.user };
+            registeredUser = resData.user;
           }
         } else {
           const errData = await apiRes.json().catch(() => ({}));
@@ -112,7 +111,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (backendErr) {
-        // Fallback to local authService
+        // Fallback to local authService if server is temporarily unreachable
+      }
+
+      if (registeredSession && registeredUser) {
+        localStorage.setItem('swe_portal_auth_session', JSON.stringify(registeredSession));
+        authService.updateUser(registeredUser);
+        setSession(registeredSession);
+        setCurrentUser(registeredUser);
+        // Also save to Supabase from frontend client to ensure dual sync
+        try {
+          await saveUserToSupabase(registeredUser);
+        } catch {}
+        return { success: true, user: registeredUser };
       }
 
       // Fallback to local authService
@@ -120,6 +131,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.success && res.session) {
         setSession(res.session);
         setCurrentUser(res.session.user);
+        try {
+          await saveUserToSupabase(res.session.user);
+        } catch {}
         return { success: true, user: res.session.user };
       }
       return { success: false, error: res.error || 'Sign up failed' };

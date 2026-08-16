@@ -71,7 +71,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/register (or /signup)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
 
   if (!name || !email || !studentId) {
@@ -107,7 +107,7 @@ router.post('/register', (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  db.addUser(newUser, passwordHash);
+  await db.addUser(newUser, passwordHash);
   db.addAuditLog(newUser.id, newUser.name, 'STUDENT_REGISTERED', `New account created (${newUser.studentId})`);
 
   const token = generateToken(newUser);
@@ -119,7 +119,7 @@ router.post('/register', (req, res) => {
   });
 });
 
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   // Alias for /register
   const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
 
@@ -151,7 +151,7 @@ router.post('/signup', (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  db.addUser(newUser, passwordHash);
+  await db.addUser(newUser, passwordHash);
   const token = generateToken(newUser);
 
   res.status(201).json({

@@ -1,8 +1,32 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
 import { DBData } from './db';
 
-let currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-let currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+const CONFIG_FILE = path.join(process.cwd(), 'data', 'supabase-config.json');
+
+let currentSupabaseUrl = '';
+let currentSupabaseKey = '';
+
+// Try reading stored config file first
+if (fs.existsSync(CONFIG_FILE)) {
+  try {
+    const raw = fs.readFileSync(CONFIG_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (parsed.url) currentSupabaseUrl = parsed.url;
+    if (parsed.key) currentSupabaseKey = parsed.key;
+  } catch (err) {
+    console.error('[Supabase] Failed to read supabase-config.json:', err);
+  }
+}
+
+// Fallback to process.env
+if (!currentSupabaseUrl) {
+  currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+}
+if (!currentSupabaseKey) {
+  currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+}
 
 let serverSupabase: SupabaseClient | null = null;
 
@@ -22,6 +46,16 @@ export function initSupabase(url?: string, key?: string): { success: boolean; me
         auth: { persistSession: false },
       });
       console.log('[Supabase] Initialized server-side client at:', currentSupabaseUrl);
+
+      // Persist to file
+      try {
+        const dir = path.dirname(CONFIG_FILE);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify({ url: currentSupabaseUrl, key: currentSupabaseKey }, null, 2), 'utf-8');
+      } catch (err) {
+        console.error('[Supabase] Failed to write config file:', err);
+      }
+
       return { success: true, message: `Connected to ${currentSupabaseUrl}` };
     } catch (err: any) {
       console.error('[Supabase] Initialization failed:', err);
@@ -35,6 +69,10 @@ export function initSupabase(url?: string, key?: string): { success: boolean; me
 
 // Initialize on boot
 initSupabase();
+
+export function getServerSupabase(): SupabaseClient | null {
+  return serverSupabase;
+}
 
 export function getSupabaseStatus() {
   const isConfigured = Boolean(
@@ -555,4 +593,55 @@ export async function hydrateFromSupabase(dbData: DBData): Promise<void> {
     console.error('[Supabase Hydrate Error]:', err.message);
   }
 }
+
+/**
+ * Directly looks up a user in Supabase in real-time if not present in memory.
+ */
+export async function fetchUserFromSupabase(identifier: string): Promise<any | null> {
+  if (!serverSupabase) return null;
+  try {
+    const term = identifier.trim().toLowerCase();
+    const { data, error } = await serverSupabase
+      .from('users')
+      .select('*')
+      .or(`student_id.ilike.${term},email.ilike.${term},id.eq.${term}`)
+      .limit(1);
+
+    if (error || !data || data.length === 0) return null;
+    const u = data[0];
+    return {
+      id: u.id,
+      studentId: u.student_id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      role: u.role,
+      batchId: u.batch_id,
+      batchName: u.batch_name,
+      currentSemester: u.current_semester,
+      profileImage: u.profile_image,
+      status: u.status,
+      points: u.points || 0,
+      createdAt: u.created_at,
+      updatedAt: u.updated_at,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Starts continuous background 15-second sync between local DB and Supabase
+ */
+export function startAutoSync(getDbData: () => DBData, intervalMs = 15000) {
+  setInterval(async () => {
+    if (serverSupabase) {
+      try {
+        const dbData = getDbData();
+        await hydrateFromSupabase(dbData);
+      } catch {}
+    }
+  }, intervalMs);
+}
+
 

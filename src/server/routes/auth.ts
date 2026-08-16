@@ -2,11 +2,12 @@ import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
 import { generateToken, verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { fetchUserFromSupabase, syncToSupabase } from '../supabaseSync';
 
 const router = Router();
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { studentId, email, identifier, password } = req.body;
   const loginKey = (identifier || studentId || email || '').trim().toLowerCase();
 
@@ -15,11 +16,23 @@ router.post('/login', (req, res) => {
   }
 
   const allUsers = db.getData().users || [];
-  const user = allUsers.find(
+  let user = allUsers.find(
     u => u.studentId?.toLowerCase() === loginKey || 
          u.email?.toLowerCase() === loginKey ||
          u.id.toLowerCase() === loginKey
   );
+
+  // If not found locally, attempt real-time lookup from Supabase
+  if (!user) {
+    try {
+      const supabaseUser = await fetchUserFromSupabase(loginKey);
+      if (supabaseUser) {
+        user = supabaseUser;
+        db.getData().users.push(supabaseUser);
+        db.save();
+      }
+    } catch {}
+  }
 
   if (!user) {
     return res.status(401).json({ error: 'Account not found. Please register or check your Student ID / Email.' });

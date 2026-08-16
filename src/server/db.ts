@@ -6,7 +6,7 @@ import {
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
 } from '../types';
 
-import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase } from './supabaseSync';
+import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
 
 export interface DBData {
   users: User[];
@@ -768,6 +768,8 @@ class JsonDB {
 
     // Trigger Supabase initial data hydration in the background
     hydrateFromSupabase(this.data).catch(() => {});
+    // Continuous background sync
+    startAutoSync(() => this.data);
   }
 
   public save() {

@@ -81,3 +81,16 @@ export function reconfigureSupabaseClient(url: string, key: string): { success: 
   return { success: false, message: 'Invalid URL or Key provided' };
 }
 
+// Auto-sync server-configured Supabase credentials on client startup
+if (typeof window !== 'undefined') {
+  fetch('/api/supabase/config')
+    .then(res => res.json())
+    .then(data => {
+      if (data?.configured && data?.url && data?.key) {
+        reconfigureSupabaseClient(data.url, data.key);
+      }
+    })
+    .catch(() => {});
+}
+
+

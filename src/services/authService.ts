@@ -1,5 +1,5 @@
 import { User, UserRole } from '../types';
-import { getSupabase, checkIsSupabaseConfigured } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export interface SignupParams {
   name: string;
@@ -45,12 +45,12 @@ export function mapDbUserToAppUser(row: any): User {
 }
 
 /**
- * Robust Hybrid Supabase & Server Authentication Service
+ * Pure Supabase Authentication Service
+ * Directly interacts with Supabase Auth (auth.users) and Supabase database (public.users)
  */
 class SupabaseAuthService {
   /**
-   * Register a new user
-   * Integrates Supabase Auth and Server Database for 100% reliable cross-device registration
+   * Register a new user directly using Supabase Auth (supabase.auth.signUp)
    */
   public async signUp(params: SignupParams): Promise<{
     success: boolean;
@@ -74,111 +74,48 @@ class SupabaseAuthService {
       return { success: false, error: 'Password must be at least 6 characters long.' };
     }
 
-    let supabaseAuthUser: any = null;
-    let supabaseSession: any = null;
-
-    // 1. If Supabase is configured, try Supabase Auth signUp
-    if (checkIsSupabaseConfigured()) {
-      try {
-        const supabase = getSupabase();
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password: password,
-          options: {
-            data: {
-              name: cleanName,
-              student_id: cleanStudentId,
-              phone: params.phone?.trim() || null,
-              role: params.role || 'STUDENT',
-              batch_id: params.batchId || 'batch_58',
-              batch_name: params.batchName || '58th Batch',
-              current_semester: 1,
-              profile_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-            },
-          },
-        });
-
-        if (authData?.user) {
-          supabaseAuthUser = authData.user;
-          supabaseSession = authData.session;
-        } else if (authError) {
-          console.warn('[Supabase Auth SignUp Notice]:', authError.message);
-        }
-      } catch (err: any) {
-        console.warn('[Supabase Auth Network Notice]:', err?.message);
-      }
-    }
-
-    // 2. Register with Server API (guarantees immediate persistence across all devices)
     try {
-      const apiRes = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: cleanName,
-          studentId: cleanStudentId,
-          email: normalizedEmail,
-          phone: params.phone?.trim(),
-          role: params.role || 'STUDENT',
-          batchId: params.batchId || 'batch_58',
-          batchName: params.batchName || '58th Batch',
-          currentSemester: 1,
-          password: password,
-        }),
+      console.log('[Supabase Auth] Attempting direct signUp for:', normalizedEmail);
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password: password,
+        options: {
+          data: {
+            name: cleanName,
+            student_id: cleanStudentId,
+            phone: params.phone?.trim() || null,
+            role: params.role || 'STUDENT',
+            batch_id: params.batchId || 'batch_58',
+            batch_name: params.batchName || '58th Batch',
+            current_semester: 1,
+            profile_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          },
+        },
       });
 
-      if (apiRes.ok) {
-        const apiData = await apiRes.json();
-        const createdUser: User = apiData.user;
-
-        // 3. Upsert to Supabase public.users if client is active
-        if (checkIsSupabaseConfigured()) {
-          try {
-            const supabase = getSupabase();
-            await supabase.from('users').upsert({
-              id: createdUser.id,
-              auth_user_id: supabaseAuthUser?.id || null,
-              student_id: createdUser.studentId,
-              name: createdUser.name,
-              email: createdUser.email,
-              phone: createdUser.phone || null,
-              role: createdUser.role,
-              batch_id: createdUser.batchId,
-              batch_name: createdUser.batchName,
-              current_semester: createdUser.currentSemester,
-              profile_image: createdUser.profileImage,
-              status: createdUser.status,
-              points: 0,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'student_id' });
-          } catch (dbErr: any) {
-            console.warn('[Supabase DB Upsert]:', dbErr?.message);
-          }
-        }
-
+      if (authError) {
+        console.error('[Supabase Auth SignUp Error]:', authError);
         return {
-          success: true,
-          user: createdUser,
-          token: apiData.token,
-          session: supabaseSession || { access_token: apiData.token, user: createdUser },
-          message: 'Account registered successfully!',
+          success: false,
+          error: authError.message || 'Supabase registration failed',
         };
-      } else {
-        const errData = await apiRes.json().catch(() => ({}));
-        if (errData.error) {
-          return { success: false, error: errData.error };
-        }
       }
-    } catch (err: any) {
-      console.warn('[Server API Register error]:', err?.message);
-    }
 
-    // 4. Fallback if server had network issue but Supabase Auth succeeded
-    if (supabaseAuthUser) {
-      const generatedId = `usr_${supabaseAuthUser.id.replace(/-/g, '')}`;
-      const fallbackUser: User = {
-        id: generatedId,
-        studentId: cleanStudentId || `STD-${supabaseAuthUser.id.slice(0, 8)}`,
+      const authUser = authData?.user;
+      if (!authUser) {
+        return {
+          success: false,
+          error: 'No user data returned from Supabase Auth.',
+        };
+      }
+
+      console.log('[Supabase Auth] SignUp success, user id:', authUser.id);
+
+      // Construct app user from auth metadata and auth data
+      const user: User = {
+        id: `usr_${authUser.id.replace(/-/g, '')}`,
+        studentId: cleanStudentId,
         name: cleanName,
         email: normalizedEmail,
         phone: params.phone?.trim() || undefined,
@@ -189,27 +126,55 @@ class SupabaseAuthService {
         profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         status: 'ACTIVE',
         points: 0,
-        createdAt: new Date().toISOString(),
+        createdAt: authUser.created_at || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
+      // Try to create profile in public.users table if schema exists
+      try {
+        await supabase.from('users').upsert({
+          id: user.id,
+          auth_user_id: authUser.id,
+          student_id: cleanStudentId,
+          name: cleanName,
+          email: normalizedEmail,
+          phone: params.phone?.trim() || null,
+          role: params.role || 'STUDENT',
+          batch_id: params.batchId || 'batch_58',
+          batch_name: params.batchName || '58th Batch',
+          current_semester: 1,
+          profile_image: user.profileImage,
+          status: 'ACTIVE',
+          points: 0,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'student_id' });
+      } catch (dbErr: any) {
+        console.warn('[Supabase DB public.users upsert notice]:', dbErr?.message);
+      }
+
+      const hasSession = Boolean(authData.session);
       return {
         success: true,
-        user: fallbackUser,
-        session: supabaseSession,
-        token: supabaseSession?.access_token,
+        user,
+        session: authData.session,
+        token: authData.session?.access_token,
+        requiresEmailConfirmation: !hasSession,
+        message: hasSession
+          ? 'Account registered successfully!'
+          : 'Registration successful! Please check your email to confirm your account if required.',
+      };
+    } catch (err: any) {
+      console.error('[Supabase Auth Network Error]:', err);
+      return {
+        success: false,
+        error: err?.message || 'Network error connecting to Supabase Auth',
       };
     }
-
-    return {
-      success: false,
-      error: 'Registration failed. Please check your network connection and details.',
-    };
   }
 
   /**
-   * Log in user
-   * Supports Student ID or Email with both Supabase Auth and Server Auth fallback
+   * Log in user directly using Supabase Auth (supabase.auth.signInWithPassword)
+   * Supports Student ID or Email
    */
   public async login(
     identifier: string,
@@ -228,91 +193,88 @@ class SupabaseAuthService {
       return { success: false, error: 'Student ID / Email and Password are required.' };
     }
 
-    // 1. Try Supabase Auth if configured
-    if (checkIsSupabaseConfigured()) {
-      const supabase = getSupabase();
-      let targetEmail = input.toLowerCase();
+    let targetEmail = input.toLowerCase();
 
-      // If identifier is a Student ID, lookup email
-      if (!input.includes('@')) {
-        try {
-          const { data: studentRecord } = await supabase
-            .from('users')
-            .select('email, student_id')
-            .ilike('student_id', input)
-            .maybeSingle();
-
-          if (studentRecord?.email) {
-            targetEmail = studentRecord.email.toLowerCase();
-          }
-        } catch {}
-      }
-
+    // If identifier is a Student ID without '@', query public.users to find the associated email
+    if (!input.includes('@')) {
       try {
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email: targetEmail,
-          password: cleanPassword,
-        });
+        const { data: studentRecord } = await supabase
+          .from('users')
+          .select('email, student_id')
+          .ilike('student_id', input)
+          .maybeSingle();
 
-        if (authData?.user && authData?.session) {
-          const profile = await this.fetchUserProfile(authData.user.id, authData.user.email);
-          if (profile) {
-            return {
-              success: true,
-              user: profile,
-              session: authData.session,
-              token: authData.session.access_token,
-            };
-          }
+        if (studentRecord?.email) {
+          targetEmail = studentRecord.email.toLowerCase();
         }
-      } catch (authErr: any) {
-        console.warn('[Supabase Auth Login notice]:', authErr?.message);
+      } catch (lookupErr: any) {
+        console.warn('[Supabase Student ID lookup]:', lookupErr?.message);
       }
     }
 
-    // 2. Login with Server API
     try {
-      const apiRes = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: input,
-          password: cleanPassword,
-        }),
+      console.log('[Supabase Auth] Attempting direct signInWithPassword for:', targetEmail);
+
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: targetEmail,
+        password: cleanPassword,
       });
 
-      if (apiRes.ok) {
-        const data = await apiRes.json();
-        if (data.user && data.token) {
-          return {
-            success: true,
-            user: data.user,
-            token: data.token,
-            session: { access_token: data.token, user: data.user },
-          };
-        }
-      } else {
-        const errData = await apiRes.json().catch(() => ({}));
-        if (errData.error) {
-          return { success: false, error: errData.error };
-        }
+      if (authError) {
+        console.error('[Supabase Auth Login Error]:', authError);
+        return {
+          success: false,
+          error: authError.message || 'Invalid email or password',
+        };
       }
-    } catch (serverErr: any) {
-      console.warn('[Server Auth Login failed]:', serverErr?.message);
-    }
 
-    return {
-      success: false,
-      error: 'Invalid Student ID / Email or Password. Please check your credentials.',
-    };
+      if (!authData?.user || !authData?.session) {
+        return {
+          success: false,
+          error: 'No active session returned from Supabase Auth.',
+        };
+      }
+
+      console.log('[Supabase Auth] SignIn success for user id:', authData.user.id);
+
+      // Attempt to load existing full profile from public.users
+      const profile = await this.fetchUserProfile(authData.user.id, authData.user.email);
+      const finalUser: User = profile || {
+        id: `usr_${authData.user.id.replace(/-/g, '')}`,
+        studentId: authData.user.user_metadata?.student_id || '',
+        name: authData.user.user_metadata?.name || authData.user.user_metadata?.full_name || 'User',
+        email: authData.user.email || targetEmail,
+        phone: authData.user.user_metadata?.phone || undefined,
+        role: (authData.user.user_metadata?.role as UserRole) || 'STUDENT',
+        batchId: authData.user.user_metadata?.batch_id || 'batch_58',
+        batchName: authData.user.user_metadata?.batch_name || '58th Batch',
+        currentSemester: Number(authData.user.user_metadata?.current_semester || 1),
+        profileImage: authData.user.user_metadata?.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        status: 'ACTIVE',
+        points: 0,
+        createdAt: authData.user.created_at || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      return {
+        success: true,
+        user: finalUser,
+        session: authData.session,
+        token: authData.session.access_token,
+      };
+    } catch (err: any) {
+      console.error('[Supabase Auth Login Network Error]:', err);
+      return {
+        success: false,
+        error: err?.message || 'Network error connecting to Supabase Auth',
+      };
+    }
   }
 
   /**
    * Fetch profile from public.users by auth_user_id or email
    */
   public async fetchUserProfile(authUserId: string, email?: string): Promise<User | null> {
-    if (!checkIsSupabaseConfigured()) return null;
-    const supabase = getSupabase();
     try {
       if (authUserId) {
         const { data: byAuthId } = await supabase
@@ -349,13 +311,10 @@ class SupabaseAuthService {
    * Sign out of Supabase
    */
   public async signOut(): Promise<void> {
-    if (checkIsSupabaseConfigured()) {
-      const supabase = getSupabase();
-      try {
-        await supabase.auth.signOut();
-      } catch (err: any) {
-        console.warn('[SupabaseAuthService] signOut error:', err?.message);
-      }
+    try {
+      await supabase.auth.signOut();
+    } catch (err: any) {
+      console.warn('[SupabaseAuthService] signOut error:', err?.message);
     }
   }
 
@@ -363,27 +322,24 @@ class SupabaseAuthService {
    * Update user profile in public.users
    */
   public async updateUser(updatedUser: User): Promise<void> {
-    if (checkIsSupabaseConfigured()) {
-      const supabase = getSupabase();
-      try {
-        await supabase.from('users').upsert({
-          id: updatedUser.id,
-          student_id: updatedUser.studentId,
-          name: updatedUser.name,
-          email: updatedUser.email,
-          phone: updatedUser.phone || null,
-          role: updatedUser.role,
-          batch_id: updatedUser.batchId,
-          batch_name: updatedUser.batchName,
-          current_semester: updatedUser.currentSemester,
-          profile_image: updatedUser.profileImage,
-          status: updatedUser.status,
-          points: updatedUser.points || 0,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'student_id' });
-      } catch (err: any) {
-        console.warn('[SupabaseAuthService] updateUser error:', err?.message);
-      }
+    try {
+      await supabase.from('users').upsert({
+        id: updatedUser.id,
+        student_id: updatedUser.studentId,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone || null,
+        role: updatedUser.role,
+        batch_id: updatedUser.batchId,
+        batch_name: updatedUser.batchName,
+        current_semester: updatedUser.currentSemester,
+        profile_image: updatedUser.profileImage,
+        status: updatedUser.status,
+        points: updatedUser.points || 0,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'student_id' });
+    } catch (err: any) {
+      console.warn('[SupabaseAuthService] updateUser error:', err?.message);
     }
   }
 }

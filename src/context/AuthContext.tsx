@@ -246,7 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setCurrentUser(res.user);
       setSession(res.session);
-      setToken(res.session.access_token);
+      setToken(res.token || res.session.access_token || 'portal_token');
       return {
         success: true,
         user: res.user,

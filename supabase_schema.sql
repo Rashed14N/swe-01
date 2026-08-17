@@ -212,6 +212,7 @@ DECLARE
     extracted_profile_image TEXT;
     extracted_semester INTEGER;
     generated_id TEXT;
+    existing_user_id TEXT;
 BEGIN
     meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
 
@@ -225,53 +226,60 @@ BEGIN
     extracted_semester := coalesce((meta->>'current_semester')::integer, (meta->>'currentSemester')::integer, 1);
     generated_id := 'usr_' || replace(new.id::text, '-', '');
 
-    INSERT INTO public.users (
-        id,
-        auth_user_id,
-        student_id,
-        name,
-        email,
-        phone,
-        role,
-        batch_id,
-        batch_name,
-        current_semester,
-        profile_image,
-        status,
-        points,
-        created_at,
-        updated_at
-    ) VALUES (
-        generated_id,
-        new.id,
-        extracted_student_id,
-        extracted_name,
-        new.email,
-        extracted_phone,
-        extracted_role,
-        extracted_batch_id,
-        extracted_batch_name,
-        extracted_semester,
-        extracted_profile_image,
-        'ACTIVE',
-        0,
-        NOW(),
-        NOW()
-    )
-    ON CONFLICT (auth_user_id) DO UPDATE SET
-        name = EXCLUDED.name,
-        student_id = EXCLUDED.student_id,
-        email = EXCLUDED.email,
-        phone = coalesce(EXCLUDED.phone, public.users.phone),
-        role = EXCLUDED.role,
-        batch_id = coalesce(EXCLUDED.batch_id, public.users.batch_id),
-        batch_name = coalesce(EXCLUDED.batch_name, public.users.batch_name),
-        updated_at = NOW()
-    ON CONFLICT (student_id) DO UPDATE SET
-        auth_user_id = EXCLUDED.auth_user_id,
-        name = EXCLUDED.name,
-        email = EXCLUDED.email,
-        updated_at = NOW();
+    -- Check if record already exists by auth_user_id or student_id
+    SELECT id INTO existing_user_id 
+    FROM public.users 
+    WHERE auth_user_id = new.id OR student_id = extracted_student_id
+    LIMIT 1;
+
+    IF existing_user_id IS NOT NULL THEN
+        UPDATE public.users SET
+            auth_user_id = new.id,
+            name = extracted_name,
+            email = new.email,
+            phone = coalesce(extracted_phone, public.users.phone),
+            role = extracted_role,
+            batch_id = coalesce(extracted_batch_id, public.users.batch_id),
+            batch_name = coalesce(extracted_batch_name, public.users.batch_name),
+            current_semester = extracted_semester,
+            profile_image = coalesce(extracted_profile_image, public.users.profile_image),
+            updated_at = NOW()
+        WHERE id = existing_user_id;
+    ELSE
+        INSERT INTO public.users (
+            id,
+            auth_user_id,
+            student_id,
+            name,
+            email,
+            phone,
+            role,
+            batch_id,
+            batch_name,
+            current_semester,
+            profile_image,
+            status,
+            points,
+            created_at,
+            updated_at
+        ) VALUES (
+            generated_id,
+            new.id,
+            extracted_student_id,
+            extracted_name,
+            new.email,
+            extracted_phone,
+            extracted_role,
+            extracted_batch_id,
+            extracted_batch_name,
+            extracted_semester,
+            extracted_profile_image,
+            'ACTIVE',
+            0,
+            NOW(),
+            NOW()
+        );
+    END IF;
 
     RETURN new;
 END;

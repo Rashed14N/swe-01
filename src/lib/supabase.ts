@@ -1,19 +1,22 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+export const DEFAULT_SUPABASE_URL = 'https://qaolvrcclqsmxtlzfvoq.supabase.co';
+export const DEFAULT_SUPABASE_KEY = 'sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1';
+
 const getInitialUrl = () => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('swe_supabase_url');
-    if (stored) return stored.trim();
+    if (stored && stored.trim().startsWith('https://')) return stored.trim();
   }
-  return (import.meta.env.VITE_SUPABASE_URL || '').trim();
+  return (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
 };
 
 const getInitialKey = () => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('swe_supabase_key');
-    if (stored) return stored.trim();
+    if (stored && stored.trim().length > 10) return stored.trim();
   }
-  return (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
+  return (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_KEY).trim();
 };
 
 let currentUrl = getInitialUrl();
@@ -25,13 +28,12 @@ export let isSupabaseConfigured: boolean = Boolean(
   currentUrl.startsWith('https://') &&
   !currentUrl.includes('placeholder') &&
   !currentKey.includes('placeholder') &&
-  currentUrl !== 'https://your-project.supabase.co' &&
-  currentKey !== 'your-publishable-or-anon-key'
+  currentUrl !== 'https://your-project.supabase.co'
 );
 
 export let supabase: SupabaseClient = createClient(
-  isSupabaseConfigured ? currentUrl : 'https://placeholder.supabase.co',
-  isSupabaseConfigured ? currentKey : 'placeholder-key',
+  isSupabaseConfigured ? currentUrl : DEFAULT_SUPABASE_URL,
+  isSupabaseConfigured ? currentKey : DEFAULT_SUPABASE_KEY,
   {
     auth: {
       persistSession: true,
@@ -66,8 +68,7 @@ export function checkIsSupabaseConfigured(): boolean {
     currentUrl.startsWith('https://') &&
     !currentUrl.includes('placeholder') &&
     !currentKey.includes('placeholder') &&
-    currentUrl !== 'https://your-project.supabase.co' &&
-    currentKey !== 'your-publishable-or-anon-key'
+    currentUrl !== 'https://your-project.supabase.co'
   );
 }
 
@@ -123,5 +124,3 @@ if (typeof window !== 'undefined') {
     })
     .catch(() => {});
 }
-
-

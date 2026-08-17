@@ -142,14 +142,63 @@
       "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
       "createdAt": "2026-08-16T09:14:43.233Z",
       "updatedAt": "2026-08-16T09:14:43.233Z"
+    },
+    {
+      "id": "usr_cr_1",
+      "studentId": "211-35-102",
+      "name": "Naimur Rahman (CR)",
+      "email": "naimur.cr@student.mu.edu.bd",
+      "role": "CR",
+      "batchId": "batch_58",
+      "batchName": "58th Batch",
+      "currentSemester": 5,
+      "status": "ACTIVE",
+      "points": 0,
+      "profileImage": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "createdAt": "2026-08-14T07:25:04.676Z",
+      "updatedAt": "2026-08-17T06:08:33.746Z"
+    },
+    {
+      "id": "usr_admin_1",
+      "studentId": "admin_001",
+      "name": "Department Admin",
+      "email": "admin.swe@mu.edu.bd",
+      "role": "ADMIN",
+      "batchId": "batch_58",
+      "batchName": "All Batches",
+      "currentSemester": 8,
+      "status": "ACTIVE",
+      "points": 0,
+      "profileImage": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
+      "createdAt": "2026-08-14T07:25:04.676Z",
+      "updatedAt": "2026-08-17T06:08:33.895Z"
+    },
+    {
+      "id": "usr_1786954698184",
+      "studentId": "999-999-999",
+      "name": "Test User",
+      "email": "test999@test.com",
+      "role": "STUDENT",
+      "batchId": "batch_58",
+      "batchName": "58th Batch",
+      "currentSemester": 5,
+      "status": "ACTIVE",
+      "points": 0,
+      "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "createdAt": "2026-08-17T08:18:18.184Z",
+      "updatedAt": "2026-08-17T08:18:18.184Z"
     }
   ],
   "passwords": {
-    "user-admin-1": "$2b$10$7CwEoUhzPFWVFvGUYxeqkOUBSZgZ3fNw8CU/dpYhkFJ84nG8hCKjW",
+    "user-admin-1": "$2b$10$6sHrNJRZAwapa7SclIdbgOuMKKyGL8BDy5nOmzU8ZR6uXyfvUxuc2",
     "usr_1786868051979": "$2b$10$Yy9kufNi/cPa6wS5C3JEmuIle9QoDwsI/spfxckKuqBTU8iorsQi2",
     "usr_1786868451950": "$2b$10$nphCNPyehQM5oHtGL5UyzurVilJTDKpL0sVPpmSogfw.nUU0IgIh.",
     "usr_1786868978412": "$2b$10$mXs7X/mSL9JBRe.LxWr/DOUnUtJDuCd1DsiADIbnAgV3pUEm/p9TC",
-    "usr_1786871683233": "$2b$10$jHmnR7ChEM8JvzVocjHrD.2f7P4K9yTcTfsVqjAV.tJvEWp6otlDy"
+    "usr_1786871683233": "$2b$10$jHmnR7ChEM8JvzVocjHrD.2f7P4K9yTcTfsVqjAV.tJvEWp6otlDy",
+    "usr_student_1": "$2b$10$.faxDxYHaEClfsVxozmuZeBEHr4t1rWCURQg/CCy/Ez9Mvr.9r5nK",
+    "usr_cr_1": "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
+    "usr_admin_1": "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
+    "usr_1786954698184": "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG"
   },
   "batches": [
     {
@@ -799,6 +848,14 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1786954698232",
+      "actorId": "usr_1786954698184",
+      "actorName": "Test User",
+      "action": "STUDENT_REGISTERED",
+      "target": "New account created (999-999-999)",
+      "timestamp": "2026-08-17T08:18:18.232Z"
+    },
     {
       "id": "log-1786871683421",
       "actorId": "usr_1786871683233",

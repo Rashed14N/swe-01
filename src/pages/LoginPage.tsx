@@ -108,8 +108,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       setRegError('Please enter a valid email address.');
       return;
     }
-    if (regPassword.length < 4) {
-      setRegError('Password must be at least 4 characters long.');
+    if (regPassword.length < 6) {
+      setRegError('Password must be at least 6 characters long (Supabase requirement).');
       return;
     }
     if (regPassword !== regConfirmPassword) {
@@ -135,16 +135,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       setIsRegLoading(false);
 
       if (res?.success) {
-        setRegSuccess('🎉 Account successfully registered! Redirecting...');
-        setTimeout(() => {
-          if (regRole === 'ADMIN') {
-            navigate('/admin/dashboard', { replace: true });
-          } else if (regRole === 'CR') {
-            navigate('/cr/dashboard', { replace: true });
-          } else {
-            navigate('/dashboard', { replace: true });
-          }
-        }, 800);
+        if (res.requiresEmailConfirmation) {
+          setRegSuccess(res.message || '🎉 Registration successful! Please check your email inbox to confirm your account, then log in.');
+          setStudentIdOrEmail(regEmail.trim());
+          setTimeout(() => {
+            setMode('LOGIN');
+          }, 3000);
+        } else {
+          setRegSuccess('🎉 Account successfully registered in Supabase Auth! Redirecting...');
+          setTimeout(() => {
+            if (regRole === 'ADMIN') {
+              navigate('/admin/dashboard', { replace: true });
+            } else if (regRole === 'CR') {
+              navigate('/cr/dashboard', { replace: true });
+            } else {
+              navigate('/dashboard', { replace: true });
+            }
+          }, 800);
+        }
       } else {
         setRegError(res?.error || 'Registration failed. Please check your details.');
       }

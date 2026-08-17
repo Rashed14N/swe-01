@@ -11,6 +11,40 @@ import {
 
 const router = Router();
 
+// GET /api/supabase/config
+router.get('/config', (req, res) => {
+  try {
+    const status = getSupabaseStatus();
+    let url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    let key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+
+    const configPath = path.join(process.cwd(), 'data', 'supabase-config.json');
+    if (fs.existsSync(configPath)) {
+      try {
+        const raw = fs.readFileSync(configPath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed.url) url = parsed.url;
+        if (parsed.key) key = parsed.key;
+      } catch {}
+    }
+
+    const configured = Boolean(
+      url && key && 
+      url.startsWith('https://') && 
+      !url.includes('placeholder') && 
+      !key.includes('placeholder')
+    );
+
+    res.json({
+      configured,
+      url: configured ? url : '',
+      key: configured ? key : '',
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/supabase/status
 router.get('/status', async (req, res) => {
   try {

@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
-import { DBData } from './db';
+import type { DBData } from './db.ts';
 
 const CONFIG_FILE = path.join(process.cwd(), 'data', 'supabase-config.json');
 

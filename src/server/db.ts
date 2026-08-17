@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import {
+import type {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
-} from '../types/index';
+} from '../types.ts';
 
-import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
+import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync.ts';
 
 export interface DBData {
   users: User[];

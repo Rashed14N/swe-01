@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
 import { generateToken, verifyAuthToken, AuthenticatedRequest } from '../auth';
@@ -197,6 +197,70 @@ router.post('/change-password', verifyAuthToken, (req: AuthenticatedRequest, res
   db.addAuditLog(req.user.id, req.user.name, 'PASSWORD_CHANGED', `User #${req.user.id}`);
 
   res.json({ message: 'Password updated successfully' });
+});
+
+// POST /api/auth/sync-local-user (Auto-syncs user from frontend localStorage into server and Supabase)
+router.post('/sync-local-user', async (req: Request, res: Response) => {
+  try {
+    const { user, users, password } = req.body;
+    const userList = users && Array.isArray(users) ? users : user ? [user] : [];
+    
+    if (userList.length === 0) {
+      return res.status(400).json({ error: 'No user data provided to sync' });
+    }
+
+    const currentUsers = db.getData().users || [];
+    const synced: any[] = [];
+
+    for (const u of userList) {
+      if (!u || (!u.studentId && !u.email)) continue;
+      
+      const existing = currentUsers.find(
+        (ex: any) => 
+          (u.id && ex.id === u.id) ||
+          (u.studentId && ex.studentId?.toLowerCase() === u.studentId?.toLowerCase()) ||
+          (u.email && ex.email?.toLowerCase() === u.email?.toLowerCase())
+      );
+
+      if (!existing) {
+        const newUser = {
+          id: u.id || `usr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          studentId: u.studentId || `id_${Date.now()}`,
+          name: u.name || 'User',
+          email: u.email || `${u.studentId || Date.now()}@swe.edu`,
+          phone: u.phone,
+          role: u.role || 'STUDENT',
+          batchId: u.batchId || 'batch_58',
+          batchName: u.batchName || '58th Batch',
+          currentSemester: u.currentSemester || 5,
+          status: (u.status || 'ACTIVE') as 'ACTIVE' | 'DISABLED',
+          points: u.points || 0,
+          profileImage: u.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          createdAt: u.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        const passwordHash = bcrypt.hashSync(password || 'password123', 10);
+        await db.addUser(newUser, passwordHash);
+        synced.push(newUser);
+      } else {
+        // Update user if needed
+        const updatedUser = {
+          ...existing,
+          name: u.name || existing.name,
+          role: u.role || existing.role,
+          batchId: u.batchId || existing.batchId,
+          batchName: u.batchName || existing.batchName,
+          updatedAt: new Date().toISOString(),
+        };
+        await db.updateUser(updatedUser);
+        synced.push(updatedUser);
+      }
+    }
+
+    res.json({ success: true, count: synced.length, synced });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to sync local user' });
+  }
 });
 
 export default router;

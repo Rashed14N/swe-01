@@ -13,6 +13,9 @@ router.get('/summary', verifyAuthToken, (req: AuthenticatedRequest, res: Respons
   const data = db.getData();
 
   const userBatchId = user.batchId || 'batch-9';
+  const batch = data.batches.find(b => b.id === userBatchId);
+  const activeSemester = batch ? batch.currentSemester : (user.currentSemester || 5);
+  const batchName = batch ? batch.name : (user.batchName || 'SWE Department');
 
   // Determine current day of week (SUNDAY, MONDAY, etc.)
   const daysOfWeek = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
@@ -24,8 +27,10 @@ router.get('/summary', verifyAuthToken, (req: AuthenticatedRequest, res: Respons
     r => r.batchId === userBatchId && r.day === todayName
   );
 
-  // 2. Current Courses
-  const currentCourses = data.courses.filter(c => c.batchIds.includes(userBatchId));
+  // 2. Current Courses (match batch ID or active semester)
+  const currentCourses = data.courses.filter(c => 
+    c.batchIds?.includes(userBatchId) || c.semester === activeSemester
+  );
 
   // 3. Upcoming Exams sorted by date & calculated daysLeft
   const todayStr = new Date().toISOString().split('T')[0];
@@ -58,8 +63,8 @@ router.get('/summary', verifyAuthToken, (req: AuthenticatedRequest, res: Respons
     currentCourses,
     recentAnnouncements: activeAnnouncements,
     recentNotices,
-    batchName: user.batchName || 'SWE Department',
-    currentSemester: user.currentSemester || 5,
+    batchName,
+    currentSemester: activeSemester,
   });
 });
 

@@ -228,11 +228,11 @@ export const AdminDashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900">{b.name}</span>
                     <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded">
-                      {b.code}
+                      {b.academicSession || `Sem ${b.currentSemester}`}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-2">
-                    Current Semester: {b.currentSemester} • Enrolled: {b.studentCount || 0} Students
+                    Current Semester: {b.currentSemester} • Batch ID: {b.id}
                   </p>
                 </div>
               ))}
@@ -371,9 +371,21 @@ export const AdminDashboardPage: React.FC = () => {
           <h3 className="text-sm font-bold text-slate-900 mb-4">System Activity Audit Log</h3>
           <div className="space-y-2 font-mono text-[11px] text-slate-700">
             {auditLogs.map((log, idx) => (
-              <div key={idx} className="p-2.5 bg-slate-50 rounded border border-slate-100 flex justify-between">
-                <span>[{log.timestamp?.split('T')[1]?.slice(0, 8)}] <strong>{log.userName}</strong>: {log.action}</span>
-                <span className="text-slate-400">{log.details}</span>
+              <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                  <span className="font-bold text-slate-900 font-sans">{log.actorName || log.userName || 'Admin'}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      log.action === 'SEMESTER_PROGRESSION_ADVANCED'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {log.action}
+                  </span>
+                </div>
+                <span className="text-slate-600 font-sans text-xs">{log.details || log.target}</span>
               </div>
             ))}
           </div>

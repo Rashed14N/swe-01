@@ -1,26 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
-  GraduationCap, 
+  GraduationCap,
+  ShieldCheck,
   ArrowRight, 
   Eye, 
   EyeOff, 
-  ShieldCheck, 
   User as UserIcon, 
   KeyRound, 
-  Sparkles, 
   Mail, 
   CheckCircle2, 
   UserPlus, 
   LogIn, 
   Layers, 
   IdCard,
-  Phone,
-  Database
+  Phone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { UserRole } from '../types';
-import { SupabaseSetupModal } from '../components/common/SupabaseSetupModal';
+import { UserRole, Batch } from '../types';
+
+const FALLBACK_BATCHES: Batch[] = [
+  { id: 'batch-8', name: 'SWE 8th Batch', admissionYear: 2022, currentSemester: 5, academicSession: '2022-2023', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-9', name: 'SWE 9th Batch', admissionYear: 2023, currentSemester: 4, academicSession: '2023-2024', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-10', name: 'SWE 10th Batch', admissionYear: 2024, currentSemester: 3, academicSession: '2024-2025', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-11', name: 'SWE 11th Batch', admissionYear: 2025, currentSemester: 2, academicSession: '2025-2026', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-12', name: 'SWE 12th Batch', admissionYear: 2026, currentSemester: 1, academicSession: '2026-2027', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-7', name: 'SWE 7th Batch', admissionYear: 2021, currentSemester: 8, academicSession: '2021-2022', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
+  { id: 'batch-6', name: 'SWE 6th Batch', admissionYear: 2020, currentSemester: 8, academicSession: '2020-2021', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
+  { id: 'batch-5', name: 'SWE 5th Batch', admissionYear: 2019, currentSemester: 8, academicSession: '2019-2020', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
+];
 
 interface LoginPageProps {
   initialMode?: 'LOGIN' | 'REGISTER';
@@ -36,13 +45,47 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   const urlMode = searchParams.get('mode') === 'register' ? 'REGISTER' : initialMode;
 
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>(urlMode);
-  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
+
+  // Dynamic Batches from Database
+  const [batches, setBatches] = useState<Batch[]>(FALLBACK_BATCHES);
+  const [isLoadingBatches, setIsLoadingBatches] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('mode') === 'register') {
       setMode('REGISTER');
     }
   }, [location.search]);
+
+  // Fetch live batches for registration dropdown
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingBatches(true);
+    fetch('/api/batches')
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        if (Array.isArray(data?.batches) && data.batches.length > 0) {
+          // Keep all batches created by Admin, sort chronologically/by admission year
+          const sorted = [...data.batches].sort((a: Batch, b: Batch) => {
+            return (a.admissionYear || 0) - (b.admissionYear || 0) || a.name.localeCompare(b.name);
+          });
+          setBatches(sorted);
+          if (!sorted.some(b => b.id === selectedBatchId)) {
+            setSelectedBatchId(sorted[0].id);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Could not fetch live batches for register form, using defaults:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingBatches(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // LOGIN STATE
   const [studentIdOrEmail, setStudentIdOrEmail] = useState('');
@@ -52,13 +95,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
-  // REGISTER STATE
+  // REGISTER STATE (Strictly STUDENT for self-registration)
   const [regName, setRegName] = useState('');
   const [regStudentId, setRegStudentId] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('STUDENT');
-  const [regBatchName, setRegBatchName] = useState('58th Batch');
+  const [selectedBatchId, setSelectedBatchId] = useState('batch-9');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -75,7 +117,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     const res = await login(studentIdOrEmail.trim(), loginPassword);
     setIsLoginLoading(false);
 
-    if (res?.success || res === true) {
+    if (res?.success) {
       const loggedUser = res?.user;
       if (loggedUser?.role === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true });
@@ -95,7 +137,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     setRegError(null);
     setRegSuccess(null);
 
-    // Form Validations for Beginners
+    // Form Validations
     if (!regName.trim()) {
       setRegError('Please enter your Full Name.');
       return;
@@ -109,7 +151,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       return;
     }
     if (regPassword.length < 6) {
-      setRegError('Password must be at least 6 characters long (Supabase requirement).');
+      setRegError('Password must be at least 6 characters long.');
       return;
     }
     if (regPassword !== regConfirmPassword) {
@@ -120,15 +162,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     setIsRegLoading(true);
 
     try {
-      const batchId = regBatchName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const chosenBatch = batches.find(b => b.id === selectedBatchId) || batches[0] || {
+        id: 'batch-9',
+        name: 'SWE 9th Batch',
+        currentSemester: 4,
+      };
+
       const res = await signup({
         name: regName.trim(),
         studentId: regStudentId.trim(),
         email: regEmail.trim(),
         phone: regPhone.trim() || undefined,
-        role: regRole,
-        batchId: batchId || 'batch_58',
-        batchName: regBatchName.trim() || '58th Batch',
+        role: 'STUDENT', // Strictly forced to STUDENT for public registration
+        batchId: chosenBatch.id,
+        batchName: chosenBatch.name,
+        currentSemester: chosenBatch.currentSemester,
         password: regPassword,
       });
 
@@ -142,15 +190,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
             setMode('LOGIN');
           }, 3000);
         } else {
-          setRegSuccess('🎉 Account successfully registered in Supabase Auth! Redirecting...');
+          setRegSuccess('🎉 Account successfully registered! Redirecting to student dashboard...');
           setTimeout(() => {
-            if (regRole === 'ADMIN') {
-              navigate('/admin/dashboard', { replace: true });
-            } else if (regRole === 'CR') {
-              navigate('/cr/dashboard', { replace: true });
-            } else {
-              navigate('/dashboard', { replace: true });
-            }
+            navigate('/dashboard', { replace: true });
           }, 800);
         }
       } else {
@@ -163,46 +205,79 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] text-slate-900 flex items-center justify-center p-4 md:p-8 font-sans">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border border-[#E2E8F0] overflow-hidden flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-900/5 bg-gradient-to-br from-slate-100 via-[#EDF2F9] to-[#E2E8F4] text-slate-900 flex items-center justify-center p-4 md:p-8 font-sans relative overflow-hidden">
+      
+      {/* Refined Ambient Mesh Gradient Background Lighting */}
+      <div className="absolute -top-40 -left-40 w-[38rem] h-[38rem] rounded-full bg-gradient-to-br from-blue-300/25 to-indigo-300/15 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tl from-sky-300/20 via-blue-200/15 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-indigo-200/15 blur-3xl pointer-events-none" />
+      
+      {/* Subtle Precision Micro-Dot Matrix */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(71, 85, 105, 0.25) 1.2px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* Modern Abstract Architectural Accent Rings */}
+      <div className="absolute top-10 left-10 w-40 h-40 border border-slate-300/40 rounded-full pointer-events-none" />
+      <div className="absolute top-16 left-16 w-28 h-28 border border-dashed border-blue-400/30 rounded-full pointer-events-none" />
+      <div className="absolute bottom-12 right-12 w-52 h-52 border border-slate-300/35 rounded-3xl rotate-12 pointer-events-none" />
+      <div className="absolute bottom-20 right-20 w-36 h-36 border border-indigo-400/25 rounded-2xl -rotate-6 pointer-events-none" />
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-5xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl shadow-slate-300/60 border border-slate-200/90 overflow-hidden flex flex-col md:flex-row"
+      >
         
-        {/* Left Brand Panel */}
+        {/* Left Brand Panel (Desktop) */}
         <div
           style={{
             background: 'linear-gradient(180deg, #041E4A 0%, #062A63 55%, #073B82 100%)',
           }}
-          className="md:w-[48%] p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden"
+          className="hidden md:flex md:w-[48%] p-8 md:p-12 text-white flex-col justify-between relative overflow-hidden shrink-0"
         >
-          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-blue-400/10 blur-3xl pointer-events-none" />
+          <motion.div 
+            animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.22, 0.12] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-400 blur-3xl pointer-events-none" 
+          />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-blue-400 blur-3xl pointer-events-none" 
+          />
 
           <div>
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-900/30">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#05204F] to-[#0D4B9F] flex items-center justify-center text-white font-bold shadow-lg shadow-blue-950/40 border border-blue-400/20">
                 <GraduationCap className="w-7 h-7" />
               </div>
               <div>
                 <span className="text-xl font-bold tracking-tight text-white block">
-                  SWE Portal
+                  Student Portal
                 </span>
                 <span className="text-xs text-slate-300 block">
-                  Dept. of Software Engineering
+                  Department of Software Engineering
                 </span>
               </div>
             </div>
 
-            <div className="mt-10 md:mt-14 max-w-sm">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-blue-300" /> Academic & Student Hub
+            <div className="mt-10 md:mt-14 max-w-md">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3.5 uppercase tracking-wider">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-300" /> ACADEMIC & STUDENT HUB
               </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-tight tracking-tight">
-                {mode === 'LOGIN' 
-                  ? 'Access Academic Info, Routine & Resources.'
-                  : 'Create Your Student or Representative Account.'}
+              <h2 className="text-2xl lg:text-[28px] font-extrabold text-white leading-tight tracking-tight">
+                <span className="block">Your Central Gateway</span>
+                <span className="block">to Academic Excellence.</span>
               </h2>
               <p className="mt-4 text-xs md:text-sm text-slate-300 leading-relaxed">
-                Stay updated with live class routines, downloadable course materials, past question papers, and instant notices from class representatives & department authority.
+                Access class routines, course resources, exam updates, department notices, and important batch announcements from one organized portal.
               </p>
             </div>
           </div>
@@ -213,20 +288,48 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="text-xs">
-                <span className="font-bold text-white block">Verified Academic Access</span>
-                <span className="text-slate-300 text-[11px]">Separate role-tailored dashboards for Students, CRs & Admins</span>
+                <span className="font-bold text-white block uppercase tracking-wide text-[11px]">
+                  VERIFIED ACADEMIC ACCESS
+                </span>
+                <span className="text-slate-300 text-[11px] leading-tight block mt-0.5">
+                  Students & Class Representatives can sign in only.<br />
+                  CR and Admin access is assigned by the department.
+                </span>
               </div>
             </div>
 
             <div className="text-[11px] text-slate-400 pt-2">
-              © {new Date().getFullYear()} Department of Software Engineering • Metropolitan University
+              © 2026 Department of Software Engineering • Metropolitan University
             </div>
           </div>
         </div>
 
-        {/* Right Form Area */}
-        <div className="md:w-[52%] p-6 md:p-10 bg-white flex flex-col justify-center">
-          <div className="max-w-md w-full mx-auto">
+        {/* Right Form Area & Mobile Container */}
+        <div className="w-full md:w-[52%] flex flex-col justify-between">
+          
+          {/* Mobile Top Header (Only on mobile: Photo 2) */}
+          <div className="md:hidden bg-gradient-to-r from-[#041E4A] via-[#062A63] to-[#073B82] p-5 text-white flex items-center gap-3.5 border-b border-blue-900/30">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#05204F] to-[#0D4B9F] flex items-center justify-center text-white font-bold shadow-md shadow-blue-950/40 border border-blue-400/20 shrink-0">
+              <GraduationCap className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-lg font-bold tracking-tight text-white block">
+                Student Portal
+              </span>
+              <span className="text-xs text-slate-300 block">
+                Department of Software Engineering
+              </span>
+            </div>
+          </div>
+
+          {/* Form Content Area */}
+          <div className="p-6 md:p-10 bg-gradient-to-br from-[#FAFCFF] via-[#F4F7FC] to-[#EDF2FA] flex-1 flex flex-col justify-center relative overflow-hidden">
+            {/* Delicate Theme Tint Ambient Glows (low visibility, not dense) */}
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-blue-500/[0.05] blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-indigo-500/[0.04] blur-3xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-sky-400/[0.03] blur-3xl pointer-events-none" />
+            
+            <div className="max-w-md w-full mx-auto relative z-10">
             
             {/* Active Session Info if already logged in */}
             {isAuthenticated && user && (
@@ -268,8 +371,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
               </div>
             )}
 
-            {/* Top Switcher: Sign In vs Register Now */}
-            <div className="flex bg-slate-100 p-1.5 rounded-xl mb-6 border border-slate-200">
+            {/* Top Switcher: Modern Spring-Sliding Pill Tab */}
+            <div className="relative bg-slate-200/70 p-1.5 rounded-2xl mb-6 border border-slate-300/80 flex items-center shadow-inner">
               <button
                 type="button"
                 id="btn-switch-login"
@@ -277,13 +380,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   setMode('LOGIN');
                   setLoginError(null);
                 }}
-                className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  mode === 'LOGIN'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-800'
+                className={`relative z-10 flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2 rounded-xl select-none ${
+                  mode === 'LOGIN' ? 'text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <LogIn className="w-4 h-4" /> Sign In
+                <LogIn className="w-4 h-4" />
+                <span>Sign In</span>
+                {mode === 'LOGIN' && (
+                  <motion.div
+                    layoutId="activeAuthTabPill"
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    className="absolute inset-0 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] rounded-xl shadow-md shadow-blue-950/30 -z-10"
+                  />
+                )}
               </button>
               
               <button
@@ -293,349 +402,397 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   setMode('REGISTER');
                   setRegError(null);
                 }}
-                className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  mode === 'REGISTER'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                className={`relative z-10 flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2 rounded-xl select-none ${
+                  mode === 'REGISTER' ? 'text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <UserPlus className="w-4 h-4" /> Register Now
+                <UserPlus className="w-4 h-4" />
+                <span>Register Now</span>
+                {mode === 'REGISTER' && (
+                  <motion.div
+                    layoutId="activeAuthTabPill"
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                    className="absolute inset-0 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] rounded-xl shadow-md shadow-blue-950/30 -z-10"
+                  />
+                )}
               </button>
             </div>
 
-            {/* ===================== SIGN IN FORM ===================== */}
-            {mode === 'LOGIN' && (
-              <div>
-                <div className="mb-5">
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                    Welcome Back! 👋
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Enter your Student ID or Email to access your dashboard.
-                  </p>
-                </div>
-
-                {loginError && (
-                  <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                    {loginError}
-                  </div>
-                )}
-
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Student ID or Email Address
-                    </label>
-                    <div className="relative">
-                      <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        required
-                        id="input-login-id"
-                        value={studentIdOrEmail}
-                        onChange={e => setStudentIdOrEmail(e.target.value)}
-                        placeholder="e.g. admin101, Student ID or Email"
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-bold text-slate-700">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => alert('For Admin: Username: admin101, Password: admin123. For registered students/CR, use your registered password.')}
-                        className="text-xs text-blue-600 font-semibold hover:underline"
-                      >
-                        Help?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type={showLoginPassword ? 'text' : 'password'}
-                        required
-                        id="input-login-password"
-                        value={loginPassword}
-                        onChange={e => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-9 pr-10 py-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                      >
-                        {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-600">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={e => setRememberMe(e.target.checked)}
-                        className="rounded text-blue-600 border-slate-300 focus:ring-blue-500 w-4 h-4"
-                      />
-                      <span>Remember my login</span>
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    id="btn-submit-signin"
-                    disabled={isLoginLoading}
-                    className="w-full py-3 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] mt-2"
-                  >
-                    {isLoginLoading ? 'Signing In...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-
-                {/* Prompt to Register */}
-                <div className="mt-5 text-center p-3 bg-blue-50/70 border border-blue-100 rounded-xl">
-                  <p className="text-xs text-slate-600">
-                    Don't have an account yet?{' '}
-                    <button
-                      type="button"
-                      id="btn-goto-register"
-                      onClick={() => {
-                        setMode('REGISTER');
-                        setRegError(null);
-                      }}
-                      className="text-blue-700 font-bold hover:underline inline-flex items-center gap-1"
+            <AnimatePresence mode="wait">
+              {/* ===================== SIGN IN FORM ===================== */}
+              {mode === 'LOGIN' ? (
+                <motion.div
+                  key="login-view"
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 14 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  {loginError && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
                     >
-                      Register Now <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </p>
-                </div>
-              </div>
-            )}
+                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                      {loginError}
+                    </motion.div>
+                  )}
 
-            {/* ===================== REGISTER NOW FORM ===================== */}
-            {mode === 'REGISTER' && (
-              <div>
-                <div className="mb-4">
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    Create New Account <Sparkles className="w-4 h-4 text-blue-600" />
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Fill in your details below to register and access the portal.
-                  </p>
-                </div>
-
-                {regError && (
-                  <div className="mb-3 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                    {regError}
-                  </div>
-                )}
-
-                {regSuccess && (
-                  <div className="mb-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    {regSuccess}
-                  </div>
-                )}
-
-                <form onSubmit={handleRegister} className="space-y-3">
-                  {/* Full Name */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Full Name *
-                    </label>
-                    <div className="relative">
-                      <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        required
-                        id="input-reg-name"
-                        value={regName}
-                        onChange={e => setRegName(e.target.value)}
-                        placeholder="e.g. Rashedul Hasan"
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Student ID & Email Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Student / Univ. ID *
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Student ID or Email
                       </label>
                       <div className="relative">
-                        <IdCard className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
                           type="text"
                           required
-                          id="input-reg-studentid"
-                          value={regStudentId}
-                          onChange={e => setRegStudentId(e.target.value)}
-                          placeholder="e.g. 252-134-022"
-                          className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
+                          id="input-login-id"
+                          value={studentIdOrEmail}
+                          onChange={e => setStudentIdOrEmail(e.target.value)}
+                          placeholder="Enter your student ID or email"
+                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Email Address *
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="email"
-                          required
-                          id="input-reg-email"
-                          value={regEmail}
-                          onChange={e => setRegEmail(e.target.value)}
-                          placeholder="student@mu.edu.bd"
-                          className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
-                        />
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Password
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => alert('Please enter your registered password. If you forgot your password, contact your CR or Department Support.')}
+                          className="text-xs text-blue-600 font-semibold hover:underline"
+                        >
+                          Help?
+                        </button>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Role & Batch Selection */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Account Role *
-                      </label>
-                      <select
-                        id="select-reg-role"
-                        value={regRole}
-                        onChange={e => setRegRole(e.target.value as UserRole)}
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none font-medium"
-                      >
-                        <option value="STUDENT">Student</option>
-                        <option value="CR">Class Representative (CR)</option>
-                        <option value="ADMIN">Faculty / Administrator</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Batch Name *
-                      </label>
-                      <select
-                        id="select-reg-batch"
-                        value={regBatchName}
-                        onChange={e => setRegBatchName(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none font-medium"
-                      >
-                        <option value="58th Batch">58th Batch (Semester 5)</option>
-                        <option value="59th Batch">59th Batch (Semester 4)</option>
-                        <option value="60th Batch">60th Batch (Semester 3)</option>
-                        <option value="61st Batch">61st Batch (Semester 2)</option>
-                        <option value="62nd Batch">62nd Batch (Semester 1)</option>
-                        <option value="9th Batch">9th Batch (Evening / Master's)</option>
-                        <option value="General Batch">Other / General Batch</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Password & Confirm Password */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Password *
-                      </label>
                       <div className="relative">
-                        <KeyRound className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
-                          type={showRegPassword ? 'text' : 'password'}
+                          type={showLoginPassword ? 'text' : 'password'}
                           required
-                          id="input-reg-password"
-                          value={regPassword}
-                          onChange={e => setRegPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-8 pr-8 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
+                          id="input-login-password"
+                          value={loginPassword}
+                          onChange={e => setLoginPassword(e.target.value)}
+                          placeholder="Enter your password"
+                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                         <button
                           type="button"
-                          onClick={() => setShowRegPassword(!showRegPassword)}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                         >
-                          {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
 
+                    <div className="flex items-center justify-between text-xs pt-0.5">
+                      <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={e => setRememberMe(e.target.checked)}
+                          className="rounded text-blue-600 border-slate-300 focus:ring-blue-500 w-4 h-4"
+                        />
+                        <span>Remember my login</span>
+                      </label>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      id="btn-submit-signin"
+                      disabled={isLoginLoading}
+                      className="w-full py-3 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] hover:from-[#051C42] hover:via-[#07275C] hover:to-[#0A3777] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-950/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2 cursor-pointer"
+                    >
+                      {isLoginLoading ? 'Signing In...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4" />
+                    </motion.button>
+                  </form>
+
+                  {/* Prompt to Register */}
+                  <div className="mt-5 text-center p-3 bg-slate-50/80 border border-slate-200/90 rounded-xl">
+                    <p className="text-xs text-slate-600">
+                      Don't have an account yet?{' '}
+                      <button
+                        type="button"
+                        id="btn-goto-register"
+                        onClick={() => {
+                          setMode('REGISTER');
+                          setRegError(null);
+                        }}
+                        className="text-[#093273] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        Register Now <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                /* ===================== REGISTER NOW FORM ===================== */
+                <motion.div
+                  key="register-view"
+                  initial={{ opacity: 0, x: 14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -14 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  {regError && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="mb-3.5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                      {regError}
+                    </motion.div>
+                  )}
+
+                  {regSuccess && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="mb-3.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      {regSuccess}
+                    </motion.div>
+                  )}
+
+                  <form onSubmit={handleRegister} className="space-y-3.5">
+                    {/* Full Name */}
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Confirm Password *
+                        Full Name *
                       </label>
-                      <input
-                        type={showRegPassword ? 'text' : 'password'}
-                        required
-                        id="input-reg-confirmpassword"
-                        value={regConfirmPassword}
-                        onChange={e => setRegConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all font-medium"
-                      />
+                      <div className="relative">
+                        <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          required
+                          id="input-reg-name"
+                          value={regName}
+                          onChange={e => setRegName(e.target.value)}
+                          placeholder="Enter your name"
+                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Register Submit Button */}
-                  <button
-                    type="submit"
-                    id="btn-submit-register"
-                    disabled={isRegLoading}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] mt-3"
-                  >
-                    {isRegLoading ? 'Creating Your Account...' : 'Complete Registration & Enter Portal'} <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
+                    {/* Student ID & Email Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Student ID *
+                        </label>
+                        <div className="relative">
+                          <IdCard className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            required
+                            id="input-reg-studentid"
+                            value={regStudentId}
+                            onChange={e => setRegStudentId(e.target.value)}
+                            placeholder="Enter your student ID"
+                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          />
+                        </div>
+                      </div>
 
-                {/* Back to Sign In Link */}
-                <div className="mt-4 text-center">
-                  <p className="text-xs text-slate-500">
-                    Already have an account?{' '}
-                    <button
-                      type="button"
-                      id="btn-goto-signin"
-                      onClick={() => {
-                        setMode('LOGIN');
-                        setLoginError(null);
-                      }}
-                      className="text-blue-600 font-bold hover:underline inline-flex items-center gap-1"
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Email Address *
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="email"
+                            required
+                            id="input-reg-email"
+                            value={regEmail}
+                            onChange={e => setRegEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Batch Selection & Contact Phone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-bold text-slate-700">
+                            Batch *
+                          </label>
+                          {isLoadingBatches && (
+                            <span className="text-[10px] text-blue-600 font-semibold animate-pulse">Syncing...</span>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Layers className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <select
+                            id="select-reg-batch"
+                            value={selectedBatchId}
+                            onChange={e => setSelectedBatchId(e.target.value)}
+                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 focus:outline-none font-medium cursor-pointer shadow-2xs"
+                          >
+                            {batches.map(b => (
+                              <option key={b.id} value={b.id}>
+                                {b.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Phone Number (Optional)
+                        </label>
+                        <div className="relative">
+                          <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="tel"
+                            id="input-reg-phone"
+                            value={regPhone}
+                            onChange={e => setRegPhone(e.target.value)}
+                            placeholder="Enter your phone number"
+                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Password & Confirm Password */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Password *
+                        </label>
+                        <div className="relative">
+                          <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type={showRegPassword ? 'text' : 'password'}
+                            required
+                            id="input-reg-password"
+                            value={regPassword}
+                            onChange={e => setRegPassword(e.target.value)}
+                            placeholder="Enter your password"
+                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-9 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowRegPassword(!showRegPassword)}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                          >
+                            {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Confirm Password *
+                        </label>
+                        <input
+                          type={showRegPassword ? 'text' : 'password'}
+                          required
+                          id="input-reg-confirmpassword"
+                          value={regConfirmPassword}
+                          onChange={e => setRegConfirmPassword(e.target.value)}
+                          placeholder="Confirm your password"
+                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Register Submit Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      id="btn-submit-register"
+                      disabled={isRegLoading}
+                      className="w-full py-3 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] hover:from-[#051C42] hover:via-[#07275C] hover:to-[#0A3777] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-950/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-3 cursor-pointer"
                     >
-                      Sign In here
-                    </button>
-                  </p>
+                      {isRegLoading ? 'Creating Your Account...' : 'Complete Registration & Enter Portal'} <ArrowRight className="w-4 h-4" />
+                    </motion.button>
+                  </form>
+
+                  {/* Back to Sign In Link */}
+                  <div className="mt-4 text-center">
+                    <p className="text-xs text-slate-500">
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        id="btn-goto-signin"
+                        onClick={() => {
+                          setMode('LOGIN');
+                          setLoginError(null);
+                        }}
+                        className="text-[#093273] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        Sign In here
+                      </button>
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            </div>
+          </div>
+
+          {/* Mobile Bottom Info Section (Photo 3 & Remaining Left Panel Details on Mobile) */}
+          <div 
+            style={{
+              background: 'linear-gradient(180deg, #041E4A 0%, #062A63 55%, #073B82 100%)',
+            }}
+            className="md:hidden p-6 text-white border-t border-slate-200/80 relative overflow-hidden"
+          >
+            <div className="max-w-md mx-auto relative z-10">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3 uppercase tracking-wider">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-300" /> ACADEMIC & STUDENT HUB
+              </span>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight">
+                <span className="block">Your Central Gateway</span>
+                <span className="block">to Academic Excellence.</span>
+              </h2>
+              <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
+                Access class routines, course resources, exam updates, department notices, and important batch announcements from one organized portal.
+              </p>
+
+              <div className="mt-5 bg-white/10 backdrop-blur-md rounded-xl p-3.5 border border-white/10 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="text-xs">
+                  <span className="font-bold text-white block uppercase tracking-wide text-[10px]">
+                    VERIFIED ACADEMIC ACCESS
+                  </span>
+                  <span className="text-slate-300 text-[11px] leading-tight block mt-0.5">
+                    Students & Class Representatives can sign in only.<br />
+                    CR and Admin access is assigned by the department.
+                  </span>
                 </div>
               </div>
-            )}
 
-            {/* Database & Cloud Persistence Setup Button */}
-            <div className="mt-6 pt-4 border-t border-slate-200 text-center">
-              <button
-                type="button"
-                onClick={() => setIsSupabaseModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 transition-colors border border-slate-200"
-              >
-                <Database className="w-3.5 h-3.5 text-blue-600" />
-                <span>Supabase Database Settings & Diagnostic</span>
-              </button>
+              <div className="text-[11px] text-slate-400 pt-4 text-center">
+                © 2026 Department of Software Engineering • Metropolitan University
+              </div>
             </div>
-
           </div>
+
         </div>
 
-      </div>
-
-      <SupabaseSetupModal
-        isOpen={isSupabaseModalOpen}
-        onClose={() => setIsSupabaseModalOpen(false)}
-      />
+      </motion.div>
     </div>
   );
 };

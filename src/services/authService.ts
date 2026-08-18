@@ -5,10 +5,11 @@ export interface SignupParams {
   name: string;
   email: string;
   password?: string;
-  role: UserRole;
+  role?: UserRole;
   studentId?: string;
   batchId?: string;
   batchName?: string;
+  currentSemester?: number;
   phone?: string;
 }
 
@@ -16,6 +17,15 @@ export interface AuthSession {
   token: string;
   user: User;
   createdAt: string;
+}
+
+/**
+ * Normalizes a Student ID by removing hyphens, spaces, dots, and underscores.
+ * e.g., '252-134-022' -> '252134022', '252 134 022' -> '252134022'
+ */
+export function normalizeStudentId(rawId: string): string {
+  if (!rawId) return '';
+  return rawId.replace(/[-\s_.]/g, '').trim();
 }
 
 /**
@@ -33,9 +43,9 @@ export function mapDbUserToAppUser(row: any): User {
     email: row.email || '',
     phone: row.phone || undefined,
     role: (row.role as UserRole) || 'STUDENT',
-    batchId: row.batch_id || row.batchId || 'batch_58',
-    batchName: row.batch_name || row.batchName || '58th Batch',
-    currentSemester: Number(row.current_semester || row.currentSemester || 1),
+    batchId: row.batch_id || row.batchId || 'batch-9',
+    batchName: row.batch_name || row.batchName || 'SWE 9th Batch',
+    currentSemester: Number(row.current_semester || row.currentSemester || 4),
     profileImage: row.profile_image || row.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     status: (row.status as 'ACTIVE' | 'DISABLED') || 'ACTIVE',
     points: Number(row.points || 0),
@@ -62,9 +72,14 @@ class SupabaseAuthService {
     error?: string;
   }> {
     const normalizedEmail = params.email.trim().toLowerCase();
-    const cleanStudentId = (params.studentId || '').trim();
+    const rawStudentId = (params.studentId || '').trim();
+    // Normalize Student ID by removing hyphens/spaces for database storage (e.g. 252-134-022 -> 252134022)
+    const cleanStudentId = normalizeStudentId(rawStudentId);
     const cleanName = params.name.trim();
     const password = params.password || '';
+    const assignedSemester = params.currentSemester || 4;
+    const assignedBatchId = params.batchId || 'batch-9';
+    const assignedBatchName = params.batchName || 'SWE 9th Batch';
 
     if (!cleanName || !normalizedEmail || !cleanStudentId) {
       return { success: false, error: 'Full Name, Student ID and Email are required.' };
@@ -85,10 +100,10 @@ class SupabaseAuthService {
             name: cleanName,
             student_id: cleanStudentId,
             phone: params.phone?.trim() || null,
-            role: params.role || 'STUDENT',
-            batch_id: params.batchId || 'batch_58',
-            batch_name: params.batchName || '58th Batch',
-            current_semester: 1,
+            role: 'STUDENT', // Hardcoded: Public registration can ONLY be STUDENT
+            batch_id: assignedBatchId,
+            batch_name: assignedBatchName,
+            current_semester: assignedSemester,
             profile_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
           },
         },
@@ -112,17 +127,17 @@ class SupabaseAuthService {
 
       console.log('[Supabase Auth] SignUp success, user id:', authUser.id);
 
-      // Construct app user from auth metadata and auth data
+      // Construct app user from auth data with guaranteed STUDENT role
       const user: User = {
         id: `usr_${authUser.id.replace(/-/g, '')}`,
         studentId: cleanStudentId,
         name: cleanName,
         email: normalizedEmail,
         phone: params.phone?.trim() || undefined,
-        role: params.role || 'STUDENT',
-        batchId: params.batchId || 'batch_58',
-        batchName: params.batchName || '58th Batch',
-        currentSemester: 1,
+        role: 'STUDENT',
+        batchId: assignedBatchId,
+        batchName: assignedBatchName,
+        currentSemester: assignedSemester,
         profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         status: 'ACTIVE',
         points: 0,
@@ -130,7 +145,7 @@ class SupabaseAuthService {
         updatedAt: new Date().toISOString(),
       };
 
-      // Try to create profile in public.users table if schema exists
+      // Try to create profile in public.users table if schema exists (hardcoded to STUDENT)
       try {
         await supabase.from('users').upsert({
           id: user.id,
@@ -139,10 +154,10 @@ class SupabaseAuthService {
           name: cleanName,
           email: normalizedEmail,
           phone: params.phone?.trim() || null,
-          role: params.role || 'STUDENT',
-          batch_id: params.batchId || 'batch_58',
-          batch_name: params.batchName || '58th Batch',
-          current_semester: 1,
+          role: 'STUDENT',
+          batch_id: assignedBatchId,
+          batch_name: assignedBatchName,
+          current_semester: assignedSemester,
           profile_image: user.profileImage,
           status: 'ACTIVE',
           points: 0,
@@ -195,20 +210,57 @@ class SupabaseAuthService {
 
     let targetEmail = input.toLowerCase();
 
-    // If identifier is a Student ID without '@', query public.users to find the associated email
+    // If identifier is a Student ID or username without '@', query public.users to find the associated email
     if (!input.includes('@')) {
+      const rawId = input.trim();
+      const normalizedId = normalizeStudentId(rawId);
+
+      // Construct multiple search variations so either format matches seamlessly
+      const candidateIds = Array.from(
+        new Set([
+          normalizedId,
+          rawId,
+          normalizedId.replace(/^(\d{3})(\d{3})(\d+)$/, '$1-$2-$3'),
+          rawId.toUpperCase(),
+          normalizedId.toUpperCase(),
+        ])
+      ).filter(Boolean);
+
       try {
-        const { data: studentRecord } = await supabase
+        const { data: studentRecord, error: selectErr } = await supabase
           .from('users')
           .select('email, student_id')
-          .ilike('student_id', input)
+          .in('student_id', candidateIds)
+          .limit(1)
           .maybeSingle();
 
         if (studentRecord?.email) {
           targetEmail = studentRecord.email.toLowerCase();
+        } else {
+          // Fallback: search with wildcard in case database has partial or different formatting
+          const { data: fallbackRecord } = await supabase
+            .from('users')
+            .select('email, student_id')
+            .or(`student_id.ilike.%${normalizedId}%,student_id.ilike.%${rawId}%`)
+            .limit(1)
+            .maybeSingle();
+
+          if (fallbackRecord?.email) {
+            targetEmail = fallbackRecord.email.toLowerCase();
+          } else {
+            // No user found with this Student ID
+            return {
+              success: false,
+              error: `No account found with ID "${rawId}". Please enter your registered email address or click "Register Now" to create your account.`,
+            };
+          }
         }
       } catch (lookupErr: any) {
         console.warn('[Supabase Student ID lookup]:', lookupErr?.message);
+        return {
+          success: false,
+          error: `Unable to find ID "${rawId}". Please use your registered email address or click "Register Now" to create your account.`,
+        };
       }
     }
 
@@ -222,6 +274,13 @@ class SupabaseAuthService {
 
       if (authError) {
         console.error('[Supabase Auth Login Error]:', authError);
+        const msg = authError.message || '';
+        if (msg.toLowerCase().includes('invalid login credentials')) {
+          return {
+            success: false,
+            error: 'Invalid email or password. Please check your credentials or register a new account.',
+          };
+        }
         return {
           success: false,
           error: authError.message || 'Invalid email or password',
@@ -246,9 +305,9 @@ class SupabaseAuthService {
         email: authData.user.email || targetEmail,
         phone: authData.user.user_metadata?.phone || undefined,
         role: (authData.user.user_metadata?.role as UserRole) || 'STUDENT',
-        batchId: authData.user.user_metadata?.batch_id || 'batch_58',
-        batchName: authData.user.user_metadata?.batch_name || '58th Batch',
-        currentSemester: Number(authData.user.user_metadata?.current_semester || 1),
+        batchId: authData.user.user_metadata?.batch_id || 'batch-9',
+        batchName: authData.user.user_metadata?.batch_name || 'SWE 9th Batch',
+        currentSemester: Number(authData.user.user_metadata?.current_semester || 4),
         profileImage: authData.user.user_metadata?.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         status: 'ACTIVE',
         points: 0,
@@ -264,9 +323,16 @@ class SupabaseAuthService {
       };
     } catch (err: any) {
       console.error('[Supabase Auth Login Network Error]:', err);
+      const errMsg = err?.message || '';
+      if (errMsg.toLowerCase().includes('networkerror') || errMsg.toLowerCase().includes('failed to fetch')) {
+        return {
+          success: false,
+          error: 'Unable to connect to authentication server. Please check your internet connection or register a new account.',
+        };
+      }
       return {
         success: false,
-        error: err?.message || 'Network error connecting to Supabase Auth',
+        error: err?.message || 'Authentication failed. Please check your credentials.',
       };
     }
   }

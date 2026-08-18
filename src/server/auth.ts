@@ -64,9 +64,9 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
           name: foundUser.name,
           email: foundUser.email,
           role: foundUser.role,
-          batchId: foundUser.batchId || 'batch_58',
-          batchName: foundUser.batchName || '58th Batch',
-          currentSemester: foundUser.currentSemester || 5,
+          batchId: foundUser.batchId || 'batch-9',
+          batchName: foundUser.batchName || 'SWE 9th Batch',
+          currentSemester: foundUser.currentSemester || 4,
         };
         return next();
       }
@@ -81,7 +81,7 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
             name: adminUser.name,
             email: adminUser.email,
             role: 'ADMIN',
-            batchId: adminUser.batchId || 'batch_58',
+            batchId: adminUser.batchId || 'batch-all',
             batchName: adminUser.batchName || 'All Batches',
             currentSemester: adminUser.currentSemester || 0,
           };
@@ -98,9 +98,9 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
           name: defaultUser.name,
           email: defaultUser.email,
           role: defaultUser.role,
-          batchId: defaultUser.batchId || 'batch_58',
-          batchName: defaultUser.batchName || '58th Batch',
-          currentSemester: defaultUser.currentSemester || 5,
+          batchId: defaultUser.batchId || 'batch-9',
+          batchName: defaultUser.batchName || 'SWE 9th Batch',
+          currentSemester: defaultUser.currentSemester || 4,
         };
         return next();
       }

@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'CR' | 'STUDENT';
+export type UserRole = 'ADMIN' | 'FACULTY' | 'CR' | 'STUDENT';
 
 export interface User {
   id: string;
@@ -30,14 +30,45 @@ export interface Contributor {
   rank: number;
 }
 
+export type SemesterMode = 'SEQUENCE' | 'MANUAL';
+export type BatchStatus = 'ACTIVE' | 'GRADUATED' | 'INACTIVE';
+
 export interface Batch {
   id: string;
   name: string; // e.g., "SWE 9th Batch"
   admissionYear: number;
   currentSemester: number;
   academicSession: string; // e.g., "2023-2024"
+  semesterMode?: SemesterMode; // 'SEQUENCE' (automatic on Admin progression) or 'MANUAL' (e.g. 5th, 6th, 7th)
+  status?: BatchStatus; // 'ACTIVE', 'GRADUATED', 'INACTIVE'
+  lastProgressedAt?: string;
   crIds: string[]; // List of user IDs who are CRs
   createdAt: string;
+}
+
+export interface BatchProgressionItem {
+  id: string;
+  name: string;
+  admissionYear: number;
+  academicSession: string;
+  semesterMode: SemesterMode;
+  status: BatchStatus;
+  currentSemester: number;
+  nextSemester: number;
+  willGraduate: boolean;
+  affected: boolean;
+  reason?: string;
+  studentsCount: number;
+  lastProgressedAt?: string;
+}
+
+export interface SemesterProgressionPreview {
+  sequenceBatches: BatchProgressionItem[];
+  manualBatches: BatchProgressionItem[];
+  totalAffected: number;
+  lastProgressedAt: string | null;
+  isRecent: boolean;
+  lastProgressedDetails?: string;
 }
 
 export interface Course {

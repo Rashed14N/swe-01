@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
 
 // POST /api/auth/register (or /signup)
 router.post('/register', async (req, res) => {
-  const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
+  const { name, studentId, email, phone, batchId, batchName, currentSemester, password } = req.body;
 
   if (!name || !email || !studentId) {
     return res.status(400).json({ error: 'Name, Student ID and Email are required' });
@@ -96,10 +96,10 @@ router.post('/register', async (req, res) => {
     name: name.trim(),
     email: email.trim().toLowerCase(),
     phone: phone ? phone.trim() : undefined,
-    role: role || 'STUDENT',
-    batchId: batchId || 'batch_58',
-    batchName: batchName || '58th Batch',
-    currentSemester: currentSemester || 5,
+    role: 'STUDENT' as const, // Strict server-side: Public self-registration ALWAYS creates STUDENT
+    batchId: batchId || 'batch-9',
+    batchName: batchName || 'SWE 9th Batch',
+    currentSemester: currentSemester || 4,
     status: 'ACTIVE' as const,
     points: 0,
     profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
@@ -108,7 +108,7 @@ router.post('/register', async (req, res) => {
   };
 
   await db.addUser(newUser, passwordHash);
-  db.addAuditLog(newUser.id, newUser.name, 'STUDENT_REGISTERED', `New account created (${newUser.studentId})`);
+  db.addAuditLog(newUser.id, newUser.name, 'STUDENT_REGISTERED', `New student account created (${newUser.studentId})`);
 
   const token = generateToken(newUser);
 
@@ -121,7 +121,7 @@ router.post('/register', async (req, res) => {
 
 router.post('/signup', async (req, res) => {
   // Alias for /register
-  const { name, studentId, email, phone, role, batchId, batchName, currentSemester, password } = req.body;
+  const { name, studentId, email, phone, batchId, batchName, currentSemester, password } = req.body;
 
   if (!name || !email || !studentId) {
     return res.status(400).json({ error: 'Name, Student ID and Email are required' });
@@ -140,10 +140,10 @@ router.post('/signup', async (req, res) => {
     name: name.trim(),
     email: email.trim().toLowerCase(),
     phone: phone ? phone.trim() : undefined,
-    role: role || 'STUDENT',
-    batchId: batchId || 'batch_58',
-    batchName: batchName || '58th Batch',
-    currentSemester: currentSemester || 5,
+    role: 'STUDENT' as const, // Strict server-side: Public self-registration ALWAYS creates STUDENT
+    batchId: batchId || 'batch-9',
+    batchName: batchName || 'SWE 9th Batch',
+    currentSemester: currentSemester || 4,
     status: 'ACTIVE' as const,
     points: 0,
     profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
@@ -152,6 +152,8 @@ router.post('/signup', async (req, res) => {
   };
 
   await db.addUser(newUser, passwordHash);
+  db.addAuditLog(newUser.id, newUser.name, 'STUDENT_REGISTERED', `New student account created (${newUser.studentId})`);
+
   const token = generateToken(newUser);
 
   res.status(201).json({
@@ -230,9 +232,9 @@ router.post('/sync-local-user', async (req: Request, res: Response) => {
           email: u.email || `${u.studentId || Date.now()}@swe.edu`,
           phone: u.phone,
           role: u.role || 'STUDENT',
-          batchId: u.batchId || 'batch_58',
-          batchName: u.batchName || '58th Batch',
-          currentSemester: u.currentSemester || 5,
+          batchId: u.batchId || 'batch-9',
+          batchName: u.batchName || 'SWE 9th Batch',
+          currentSemester: u.currentSemester || 4,
           status: (u.status || 'ACTIVE') as 'ACTIVE' | 'DISABLED',
           points: u.points || 0,
           profileImage: u.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',

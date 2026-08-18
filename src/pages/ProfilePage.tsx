@@ -331,7 +331,7 @@ export const ProfilePage: React.FC = () => {
                     </div>
 
                     <div className="shrink-0">
-                      {getStatusBadge(res.verificationStatus)}
+                      {getStatusBadge(res.status)}
                     </div>
                   </div>
                 ))}

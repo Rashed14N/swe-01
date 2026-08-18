@@ -33,27 +33,61 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 export function seedInitialData(): DBData {
-  const salt = bcrypt.genSaltSync(10);
-  const adminPasswordHash = bcrypt.hashSync('admin123', salt);
-
   const batches: Batch[] = [
     {
-      id: 'batch-9',
-      name: 'SWE 9th Batch',
-      admissionYear: 2023,
-      currentSemester: 5,
-      academicSession: '2023-2024',
+      id: 'batch-5',
+      name: 'SWE 5th Batch',
+      admissionYear: 2019,
+      currentSemester: 8,
+      academicSession: '2019-2020',
+      semesterMode: 'MANUAL',
+      status: 'GRADUATED',
       crIds: [],
-      createdAt: '2023-01-15T00:00:00Z',
+      createdAt: '2019-01-15T00:00:00Z',
+    },
+    {
+      id: 'batch-6',
+      name: 'SWE 6th Batch',
+      admissionYear: 2020,
+      currentSemester: 8,
+      academicSession: '2020-2021',
+      semesterMode: 'MANUAL',
+      status: 'GRADUATED',
+      crIds: [],
+      createdAt: '2020-01-15T00:00:00Z',
+    },
+    {
+      id: 'batch-7',
+      name: 'SWE 7th Batch',
+      admissionYear: 2021,
+      currentSemester: 8,
+      academicSession: '2021-2022',
+      semesterMode: 'MANUAL',
+      status: 'GRADUATED',
+      crIds: [],
+      createdAt: '2021-01-15T00:00:00Z',
     },
     {
       id: 'batch-8',
       name: 'SWE 8th Batch',
       admissionYear: 2022,
-      currentSemester: 7,
+      currentSemester: 5,
       academicSession: '2022-2023',
+      semesterMode: 'SEQUENCE',
+      status: 'ACTIVE',
       crIds: [],
       createdAt: '2022-01-15T00:00:00Z',
+    },
+    {
+      id: 'batch-9',
+      name: 'SWE 9th Batch',
+      admissionYear: 2023,
+      currentSemester: 4,
+      academicSession: '2023-2024',
+      semesterMode: 'SEQUENCE',
+      status: 'ACTIVE',
+      crIds: [],
+      createdAt: '2023-01-15T00:00:00Z',
     },
     {
       id: 'batch-10',
@@ -61,30 +95,38 @@ export function seedInitialData(): DBData {
       admissionYear: 2024,
       currentSemester: 3,
       academicSession: '2024-2025',
+      semesterMode: 'SEQUENCE',
+      status: 'ACTIVE',
       crIds: [],
       createdAt: '2024-01-15T00:00:00Z',
     },
-  ];
-
-  const users: User[] = [
     {
-      id: 'user-admin-1',
-      studentId: 'admin101',
-      name: 'admin101',
-      email: 'admin@swe.edu',
-      phone: '+8801700000000',
-      role: 'ADMIN',
-      currentSemester: 0,
-      profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+      id: 'batch-11',
+      name: 'SWE 11th Batch',
+      admissionYear: 2025,
+      currentSemester: 2,
+      academicSession: '2025-2026',
+      semesterMode: 'SEQUENCE',
       status: 'ACTIVE',
-      createdAt: '2023-01-01T00:00:00Z',
-      updatedAt: '2023-01-01T00:00:00Z',
+      crIds: [],
+      createdAt: '2025-01-15T00:00:00Z',
+    },
+    {
+      id: 'batch-12',
+      name: 'SWE 12th Batch',
+      admissionYear: 2026,
+      currentSemester: 1,
+      academicSession: '2026-2027',
+      semesterMode: 'SEQUENCE',
+      status: 'ACTIVE',
+      crIds: [],
+      createdAt: '2026-01-15T00:00:00Z',
     },
   ];
 
-  const passwords: Record<string, string> = {
-    'user-admin-1': adminPasswordHash,
-  };
+  const users: User[] = [];
+
+  const passwords: Record<string, string> = {};
 
   const faculty: Faculty[] = [
     {
@@ -449,8 +491,8 @@ export function seedInitialData(): DBData {
       category: 'REGISTRATION',
       publishDate: '2026-08-08',
       isImportant: true,
-      createdBy: 'user-admin-1',
-      createdByName: 'Dr. Shahriar Hossain (Admin)',
+      createdBy: 'system-admin',
+      createdByName: 'Department Administration',
       createdAt: '2026-08-08T10:00:00Z',
     },
     {
@@ -460,8 +502,8 @@ export function seedInitialData(): DBData {
       category: 'HOLIDAY',
       publishDate: '2026-08-09',
       isImportant: true,
-      createdBy: 'user-admin-1',
-      createdByName: 'Dr. Shahriar Hossain (Admin)',
+      createdBy: 'system-admin',
+      createdByName: 'Department Administration',
       createdAt: '2026-08-09T11:00:00Z',
     },
     {
@@ -471,8 +513,8 @@ export function seedInitialData(): DBData {
       category: 'SEMINAR',
       publishDate: '2026-08-05',
       isImportant: false,
-      createdBy: 'user-admin-1',
-      createdByName: 'Dr. Shahriar Hossain (Admin)',
+      createdBy: 'system-admin',
+      createdByName: 'Department Administration',
       createdAt: '2026-08-05T08:00:00Z',
     },
   ];
@@ -660,8 +702,8 @@ export function seedInitialData(): DBData {
   const auditLogs: AuditLog[] = [
     {
       id: 'log-1',
-      actorId: 'user-admin-1',
-      actorName: 'Dr. Shahriar Hossain (Admin)',
+      actorId: 'system-admin',
+      actorName: 'Department Administration',
       action: 'RESOURCE_APPROVED',
       target: 'Resource #res-3',
       details: 'Approved Cisco Packet Tracer Lab Experiments submitted by Rashedul Hasan',
@@ -669,8 +711,8 @@ export function seedInitialData(): DBData {
     },
     {
       id: 'log-2',
-      actorId: 'user-admin-1',
-      actorName: 'Dr. Shahriar Hossain (Admin)',
+      actorId: 'system-admin',
+      actorName: 'Department Administration',
       action: 'NOTICE_PUBLISHED',
       target: 'Department Notice #notice-1',
       details: 'Published Fall 2026 Registration notice',
@@ -728,42 +770,47 @@ class JsonDB {
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
 
-    // Remove legacy demo users (tanvir, student1, cr1, etc.) and keep/ensure admin101
+    // Normalize and populate default batches with semesterMode and status
+    const initialBatches = seedInitialData().batches;
+    initialBatches.forEach(seedBatch => {
+      const existing = this.data.batches.find(b => b.id === seedBatch.id || b.name.toLowerCase() === seedBatch.name.toLowerCase());
+      if (!existing) {
+        this.data.batches.push(seedBatch);
+      }
+    });
+
+    this.data.batches.forEach(b => {
+      const lowerName = b.name.toLowerCase();
+      if (!b.semesterMode) {
+        if (lowerName.includes('5th') || lowerName.includes('6th') || lowerName.includes('7th')) {
+          b.semesterMode = 'MANUAL';
+        } else {
+          b.semesterMode = 'SEQUENCE';
+        }
+      }
+      if (!b.status) {
+        b.status = b.currentSemester > 8 ? 'GRADUATED' : 'ACTIVE';
+      }
+      if (!b.crIds) b.crIds = [];
+    });
+
+    // Remove legacy demo users and any old hardcoded admin101 accounts
     this.data.users = this.data.users.filter(u => {
       const sid = (u.studentId || '').toLowerCase();
       const email = (u.email || '').toLowerCase();
       const name = (u.name || '').toLowerCase();
-      if (sid === '2023-swe-001' || sid === '2022-swe-002' || sid === '2021-swe-003' || sid === 'admin-001') return false;
+      const id = (u.id || '').toLowerCase();
+      if (sid === '2023-swe-001' || sid === '2022-swe-002' || sid === '2021-swe-003' || sid === 'admin-001' || sid === 'admin101') return false;
+      if (email === 'admin@swe.edu') return false;
+      if (id === 'user-admin-1' || id === 'user-admin-101') return false;
       if (name.includes('tanvir hossain') || name.includes('samiul alam') || name.includes('dr. shahriar')) return false;
       return true;
     });
 
-    const adminSalt = bcrypt.genSaltSync(10);
-    const adminPassHash = bcrypt.hashSync('admin123', adminSalt);
+    // Clean up passwords for removed users
+    delete this.data.passwords['user-admin-1'];
+    delete this.data.passwords['user-admin-101'];
 
-    let adminUser = this.data.users.find(u => u.role === 'ADMIN' || u.studentId?.toLowerCase() === 'admin101');
-    if (!adminUser) {
-      adminUser = {
-        id: 'user-admin-101',
-        studentId: 'admin101',
-        name: 'admin101',
-        email: 'admin@swe.edu',
-        phone: '+8801700000000',
-        role: 'ADMIN',
-        currentSemester: 0,
-        profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-        status: 'ACTIVE',
-        createdAt: '2023-01-01T00:00:00Z',
-        updatedAt: new Date().toISOString(),
-      };
-      this.data.users.push(adminUser);
-    } else {
-      adminUser.studentId = 'admin101';
-      adminUser.name = 'admin101';
-      adminUser.role = 'ADMIN';
-      adminUser.status = 'ACTIVE';
-    }
-    this.data.passwords[adminUser.id] = adminPassHash;
     this.save();
 
     // Trigger Supabase initial data hydration in the background

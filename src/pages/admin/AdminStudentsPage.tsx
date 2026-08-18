@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { User, Batch } from '../../types';
+import { User, Batch, UserRole } from '../../types';
 
 export const AdminStudentsPage: React.FC = () => {
   const { token } = useAuth();
@@ -47,7 +47,7 @@ export const AdminStudentsPage: React.FC = () => {
     phone: '',
     batchId: '',
     currentSemester: 1,
-    role: 'STUDENT' as 'STUDENT' | 'CR' | 'ADMIN',
+    role: 'STUDENT' as UserRole,
     status: 'ACTIVE' as 'ACTIVE' | 'DISABLED',
   });
 

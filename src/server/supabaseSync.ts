@@ -201,6 +201,9 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       admission_year: b.admissionYear,
       current_semester: b.currentSemester,
       academic_session: b.academicSession,
+      semester_mode: b.semesterMode || 'SEQUENCE',
+      status: b.status || 'ACTIVE',
+      last_progressed_at: b.lastProgressedAt,
       cr_ids: b.crIds || [],
       created_at: b.createdAt,
     }));
@@ -414,6 +417,31 @@ export async function hydrateFromSupabase(dbData: DBData): Promise<void> {
   try {
     console.log('[Supabase] Hydrating database from Supabase tables...');
     
+    // Fetch batches
+    const { data: batches } = await serverSupabase.from('batches').select('*');
+    if (batches && batches.length > 0) {
+      batches.forEach(b => {
+        const mappedBatch = {
+          id: b.id,
+          name: b.name,
+          admissionYear: b.admission_year,
+          currentSemester: b.current_semester,
+          academicSession: b.academic_session,
+          semesterMode: (b.semester_mode === 'MANUAL' ? 'MANUAL' : 'SEQUENCE') as any,
+          status: (b.status || 'ACTIVE') as any,
+          lastProgressedAt: b.last_progressed_at,
+          crIds: Array.isArray(b.cr_ids) ? b.cr_ids : [],
+          createdAt: b.created_at,
+        };
+        const existingIdx = dbData.batches.findIndex(x => x.id === b.id);
+        if (existingIdx >= 0) {
+          dbData.batches[existingIdx] = mappedBatch;
+        } else {
+          dbData.batches.push(mappedBatch);
+        }
+      });
+    }
+
     // Fetch users
     const { data: users } = await serverSupabase.from('users').select('*');
     if (users && users.length > 0) {

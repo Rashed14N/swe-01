@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, UserRole } from '../types';
-import { authService, SignupParams, mapDbUserToAppUser } from '../services/authService';
+import { authService, SignupParams } from '../services/authService';
 import { getSupabase } from '../lib/supabase';
 
 export interface SignupData extends SignupParams {}
@@ -15,12 +15,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (emailOrId: string, password?: string, role?: UserRole) => Promise<{ success: boolean; user?: User; error?: string }>;
   signup: (data: SignupData) => Promise<{ success: boolean; user?: User; requiresEmailConfirmation?: boolean; message?: string; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
   updateUserInContext: (updated: Partial<User>) => void;
+  refreshProfile: () => Promise<void>;
 }
-
-const ADMIN_SESSION_STORAGE_KEY = 'swe_portal_admin_session';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -30,24 +29,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Initialize and listen to real Supabase Authentication state
+  const clearAuthState = useCallback(() => {
+    setCurrentUser(null);
+    setSession(null);
+    setToken(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('swe_portal_auth_session');
+      localStorage.removeItem('swe_portal_admin_session');
+      localStorage.removeItem('swe_portal_registered_users');
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.signOut();
+    } catch (e) {
+      console.warn('[AuthContext] Sign out warning:', e);
+    }
+    clearAuthState();
+  }, [clearAuthState]);
+
+  const refreshProfile = useCallback(async () => {
+    const supabase = getSupabase();
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        const authUser = data.session.user;
+        const profile = await authService.fetchUserProfile(authUser.id, authUser.email);
+        if (profile && profile.status !== 'DISABLED') {
+          setCurrentUser(profile);
+          setSession(data.session);
+          setToken(data.session.access_token);
+        } else {
+          await logout();
+        }
+      } else {
+        clearAuthState();
+      }
+    } catch (err) {
+      console.warn('[AuthContext] refreshProfile error:', err);
+    }
+  }, [logout, clearAuthState]);
+
+  // Initialize and verify real Supabase Authentication state
   useEffect(() => {
     let isMounted = true;
     const supabase = getSupabase();
 
     const initAuth = async () => {
       try {
-        // 1. Check active Supabase Auth Session
         const { data, error } = await supabase.auth.getSession();
         if (!error && data?.session?.user) {
           const authUser = data.session.user;
           const profile = await authService.fetchUserProfile(authUser.id, authUser.email);
+
           if (isMounted) {
-            if (profile) {
+            if (profile && profile.status !== 'DISABLED') {
+              // Valid authenticated user with verified public.users profile
               setCurrentUser(profile);
-            } else {
-              // Construct user from metadata if profile row isn't ready
-              const meta = authUser.user_metadata || {};
+              setSession(data.session);
+              setToken(data.session.access_token);
+            } else if (authUser.user_metadata && (authUser.user_metadata.name || authUser.user_metadata.full_name)) {
+              // Construct and persist profile from auth metadata if table record was newly registered
+              const meta = authUser.user_metadata;
               const fallback: User = {
                 id: `usr_${authUser.id.replace(/-/g, '')}`,
                 studentId: meta.student_id || meta.studentId || '',
@@ -55,42 +99,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: authUser.email || '',
                 phone: meta.phone || undefined,
                 role: (meta.role as UserRole) || 'STUDENT',
-                batchId: meta.batch_id || meta.batchId || 'batch_58',
-                batchName: meta.batch_name || meta.batchName || '58th Batch',
-                currentSemester: Number(meta.current_semester || 1),
+                batchId: meta.batch_id || meta.batchId || 'batch-9',
+                batchName: meta.batch_name || meta.batchName || 'SWE 9th Batch',
+                currentSemester: Number(meta.current_semester || 4),
                 profileImage: meta.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
                 status: 'ACTIVE',
                 points: 0,
-                createdAt: new Date().toISOString(),
+                createdAt: authUser.created_at || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               };
               setCurrentUser(fallback);
-            }
-            setSession(data.session);
-            setToken(data.session.access_token);
-            setLoading(false);
-            return;
-          }
-        }
+              setSession(data.session);
+              setToken(data.session.access_token);
 
-        // 2. Check Admin Session (preserved for existing admin login)
-        if (typeof window !== 'undefined') {
-          const storedAdmin = localStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-          if (storedAdmin) {
-            try {
-              const parsed = JSON.parse(storedAdmin);
-              if (parsed.user && parsed.token) {
-                if (isMounted) {
-                  setCurrentUser(parsed.user);
-                  setSession(parsed);
-                  setToken(parsed.token);
-                }
-              }
-            } catch {}
+              // Auto-sync missing row to public.users
+              authService.updateUser(fallback).catch(() => {});
+            } else {
+              // User deleted or invalid profile -> sign out and clear auth state
+              console.warn('[AuthContext] Deleted or orphaned Auth account detected; clearing session.');
+              await supabase.auth.signOut();
+              clearAuthState();
+            }
+          }
+        } else {
+          if (isMounted) {
+            clearAuthState();
           }
         }
       } catch (err) {
-        console.warn('Auth initialization error:', err);
+        console.warn('[AuthContext] Auth initialization error:', err);
+        if (isMounted) {
+          clearAuthState();
+        }
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -100,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initAuth();
 
-    // 3. Subscribe to real-time Supabase Auth state changes
+    // Subscribe to real-time Supabase Auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isMounted) return;
 
@@ -109,17 +149,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(newSession);
           setToken(newSession.access_token);
           const profile = await authService.fetchUserProfile(newSession.user.id, newSession.user.email);
-          if (isMounted && profile) {
-            setCurrentUser(profile);
+          if (isMounted) {
+            if (profile && profile.status !== 'DISABLED') {
+              setCurrentUser(profile);
+            } else if (newSession.user.user_metadata?.role) {
+              const meta = newSession.user.user_metadata;
+              const appUser: User = {
+                id: `usr_${newSession.user.id.replace(/-/g, '')}`,
+                studentId: meta.student_id || '',
+                name: meta.name || meta.full_name || 'User',
+                email: newSession.user.email || '',
+                phone: meta.phone || undefined,
+                role: (meta.role as UserRole) || 'STUDENT',
+                batchId: meta.batch_id || 'batch-9',
+                batchName: meta.batch_name || 'SWE 9th Batch',
+                currentSemester: Number(meta.current_semester || 4),
+                profileImage: meta.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+                status: 'ACTIVE',
+                points: 0,
+                createdAt: newSession.user.created_at || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+              setCurrentUser(appUser);
+            }
           }
         }
       } else if (event === 'SIGNED_OUT') {
-        // If not an admin session, clear everything
-        const storedAdmin = typeof window !== 'undefined' ? localStorage.getItem(ADMIN_SESSION_STORAGE_KEY) : null;
-        if (!storedAdmin) {
-          setCurrentUser(null);
-          setSession(null);
-          setToken(null);
+        if (isMounted) {
+          clearAuthState();
         }
       }
     });
@@ -128,12 +185,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isMounted = false;
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [clearAuthState]);
 
   /**
-   * Log in user
-   * - Preserves Admin login (admin101 / admin@swe.edu via server endpoint)
-   * - Normal users authenticate directly through real Supabase Auth (supabase.auth.signInWithPassword)
+   * Log in user directly through Supabase Auth (supabase.auth.signInWithPassword)
    */
   const login = async (
     emailOrId: string,
@@ -147,60 +202,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'Student ID / Email and Password are required.' };
     }
 
-    // A. Check if Admin Login
-    const isAdminIdentifier = cleanIdentifier.toLowerCase() === 'admin101' || cleanIdentifier.toLowerCase() === 'admin@swe.edu';
-    if (isAdminIdentifier) {
-      try {
-        const apiRes = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            identifier: cleanIdentifier,
-            password: cleanPassword,
-          }),
-        });
-
-        if (apiRes.ok) {
-          const resData = await apiRes.json();
-          if (resData.token && resData.user) {
-            const adminSession = {
-              token: resData.token,
-              user: resData.user,
-              createdAt: new Date().toISOString(),
-            };
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(ADMIN_SESSION_STORAGE_KEY, JSON.stringify(adminSession));
-            }
-            setCurrentUser(resData.user);
-            setSession(adminSession);
-            setToken(resData.token);
-            return { success: true, user: resData.user };
-          }
-        } else {
-          const errData = await apiRes.json().catch(() => ({}));
-          if (errData.error) {
-            return { success: false, error: errData.error };
-          }
-        }
-      } catch (err: any) {
-        console.warn('Admin backend login attempt failed, checking Supabase Auth:', err?.message);
-      }
-    }
-
-    // B. Normal User Login via real Supabase Auth
     const res = await authService.login(cleanIdentifier, cleanPassword);
     if (res.success && res.user && res.session) {
-      // Clear any previous admin session flag
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
-      }
       setCurrentUser(res.user);
       setSession(res.session);
       setToken(res.token || res.session.access_token);
       return { success: true, user: res.user };
     }
 
-    // Return the exact error from Supabase
     return {
       success: false,
       error: res.error || 'Authentication failed. Please check your credentials.',
@@ -209,7 +218,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /**
    * Register a new user using real Supabase Auth (supabase.auth.signUp)
-   * Automatically creates user in auth.users and creates profile in public.users with auth_user_id
    */
   const signup = async (
     data: SignupData
@@ -229,7 +237,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    // If email confirmation is required by Supabase
     if (res.requiresEmailConfirmation) {
       return {
         success: true,
@@ -239,11 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    // If an active session was created immediately
     if (res.session && res.user) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
-      }
       setCurrentUser(res.user);
       setSession(res.session);
       setToken(res.token || res.session.access_token || 'portal_token');
@@ -257,25 +260,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       success: true,
       user: res.user,
     };
-  };
-
-  /**
-   * Sign out of Supabase and clear local sessions
-   */
-  const logout = async () => {
-    try {
-      await authService.signOut();
-    } catch (e) {
-      console.warn('Sign out error:', e);
-    }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
-      localStorage.removeItem('swe_portal_auth_session');
-      localStorage.removeItem('swe_portal_registered_users');
-    }
-    setSession(null);
-    setToken(null);
-    setCurrentUser(null);
   };
 
   const switchRole = (role: UserRole) => {
@@ -302,12 +286,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading,
         isLoading: loading,
-        isAuthenticated: !!currentUser,
+        isAuthenticated: !!currentUser && !!session,
         login,
         signup,
         logout,
         switchRole,
         updateUserInContext,
+        refreshProfile,
       }}
     >
       {children}
@@ -322,3 +307,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

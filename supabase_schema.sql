@@ -38,9 +38,17 @@ CREATE TABLE IF NOT EXISTS public.batches (
     admission_year INTEGER NOT NULL,
     current_semester INTEGER NOT NULL DEFAULT 1,
     academic_session TEXT NOT NULL,
+    semester_mode TEXT NOT NULL DEFAULT 'SEQUENCE' CHECK (semester_mode IN ('SEQUENCE', 'MANUAL')),
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'GRADUATED', 'INACTIVE')),
+    last_progressed_at TIMESTAMPTZ,
     cr_ids JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE public.batches 
+ADD COLUMN IF NOT EXISTS semester_mode TEXT NOT NULL DEFAULT 'SEQUENCE',
+ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'ACTIVE',
+ADD COLUMN IF NOT EXISTS last_progressed_at TIMESTAMPTZ;
 
 -- 4. COURSES TABLE
 CREATE TABLE IF NOT EXISTS public.courses (
@@ -205,7 +213,6 @@ DECLARE
     meta JSONB;
     extracted_name TEXT;
     extracted_student_id TEXT;
-    extracted_role TEXT;
     extracted_batch_id TEXT;
     extracted_batch_name TEXT;
     extracted_phone TEXT;
@@ -213,32 +220,34 @@ DECLARE
     extracted_semester INTEGER;
     generated_id TEXT;
     existing_user_id TEXT;
+    existing_role TEXT;
 BEGIN
     meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
 
     extracted_name := coalesce(meta->>'name', meta->>'full_name', split_part(new.email, '@', 1), 'Student');
     extracted_student_id := coalesce(meta->>'student_id', meta->>'studentId', 'STD-' || substring(new.id::text from 1 for 8));
-    extracted_role := coalesce(meta->>'role', 'STUDENT');
-    extracted_batch_id := coalesce(meta->>'batch_id', meta->>'batchId', 'batch_58');
-    extracted_batch_name := coalesce(meta->>'batch_name', meta->>'batchName', '58th Batch');
+    -- STRICT SECURITY: Self-registration MUST ALWAYS be STUDENT. Ignore any role provided in client metadata!
+    extracted_batch_id := coalesce(meta->>'batch_id', meta->>'batchId', 'batch-9');
+    extracted_batch_name := coalesce(meta->>'batch_name', meta->>'batchName', 'SWE 9th Batch');
     extracted_phone := meta->>'phone';
     extracted_profile_image := coalesce(meta->>'profile_image', meta->>'profileImage', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
     extracted_semester := coalesce((meta->>'current_semester')::integer, (meta->>'currentSemester')::integer, 1);
     generated_id := 'usr_' || replace(new.id::text, '-', '');
 
     -- Check if record already exists by auth_user_id or student_id
-    SELECT id INTO existing_user_id 
+    SELECT id, role INTO existing_user_id, existing_role 
     FROM public.users 
     WHERE auth_user_id = new.id OR student_id = extracted_student_id
     LIMIT 1;
 
     IF existing_user_id IS NOT NULL THEN
+        -- When existing user syncs auth, preserve their established role (do not overwrite existing ADMIN / CR / FACULTY)
         UPDATE public.users SET
             auth_user_id = new.id,
             name = extracted_name,
             email = new.email,
             phone = coalesce(extracted_phone, public.users.phone),
-            role = extracted_role,
+            role = coalesce(existing_role, public.users.role, 'STUDENT'),
             batch_id = coalesce(extracted_batch_id, public.users.batch_id),
             batch_name = coalesce(extracted_batch_name, public.users.batch_name),
             current_semester = extracted_semester,
@@ -246,6 +255,7 @@ BEGIN
             updated_at = NOW()
         WHERE id = existing_user_id;
     ELSE
+        -- Brand new self-registered account: ALWAYS assign role 'STUDENT'
         INSERT INTO public.users (
             id,
             auth_user_id,
@@ -269,7 +279,7 @@ BEGIN
             extracted_name,
             new.email,
             extracted_phone,
-            extracted_role,
+            'STUDENT',
             extracted_batch_id,
             extracted_batch_name,
             extracted_semester,
@@ -360,20 +370,17 @@ CREATE POLICY "Allow users update own profile on users"
 
 INSERT INTO public.batches (id, name, admission_year, current_semester, academic_session, cr_ids)
 VALUES
-    ('batch-58', '58th Batch', 2023, 5, '2023-2024', '[]'::jsonb),
-    ('batch-57', '57th Batch', 2022, 7, '2022-2023', '[]'::jsonb),
-    ('batch-59', '59th Batch', 2024, 3, '2024-2025', '[]'::jsonb)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.users (id, student_id, name, email, phone, role, batch_id, batch_name, current_semester, profile_image, status, points)
-VALUES
-    ('user-admin-1', 'admin101', 'admin101', 'admin@swe.edu', '+8801700000000', 'ADMIN', NULL, NULL, 0, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300', 'ACTIVE', 0)
+    ('batch-8', 'SWE 8th Batch', 2022, 5, '2022-2023', '[]'::jsonb),
+    ('batch-9', 'SWE 9th Batch', 2023, 4, '2023-2024', '[]'::jsonb),
+    ('batch-10', 'SWE 10th Batch', 2024, 3, '2024-2025', '[]'::jsonb),
+    ('batch-11', 'SWE 11th Batch', 2025, 2, '2025-2026', '[]'::jsonb),
+    ('batch-12', 'SWE 12th Batch', 2026, 1, '2026-2027', '[]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.courses (id, code, title, credits, type, semester, assigned_faculty_name, batch_ids)
 VALUES
-    ('course-305', 'SWE 305', 'Database Systems', 3.0, 'THEORY', 5, 'Dr. Faculty Member', '["batch-58"]'::jsonb),
-    ('course-307', 'SWE 307', 'Software Engineering', 3.0, 'THEORY', 5, 'Mr. Faculty Member', '["batch-58"]'::jsonb),
-    ('course-309', 'SWE 309', 'Algorithms', 3.0, 'THEORY', 5, 'Prof. Dr. Faculty Member', '["batch-58"]'::jsonb),
-    ('course-311', 'SWE 311', 'Computer Networks', 3.0, 'THEORY', 5, 'Ms. Faculty Member', '["batch-58"]'::jsonb)
+    ('course-305', 'SWE 305', 'Database Systems', 3.0, 'THEORY', 4, 'Dr. Faculty Member', '["batch-9"]'::jsonb),
+    ('course-307', 'SWE 307', 'Software Engineering', 3.0, 'THEORY', 4, 'Mr. Faculty Member', '["batch-9"]'::jsonb),
+    ('course-309', 'SWE 309', 'Algorithms', 3.0, 'THEORY', 4, 'Prof. Dr. Faculty Member', '["batch-9"]'::jsonb),
+    ('course-311', 'SWE 311', 'Computer Networks', 3.0, 'THEORY', 4, 'Ms. Faculty Member', '["batch-9"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;

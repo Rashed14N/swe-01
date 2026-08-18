@@ -92,7 +92,17 @@ export const AdminActivityLogPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 font-bold text-slate-900 font-sans">{log.actorName}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-bold rounded text-[10px]">
+                      <span
+                        className={`px-2 py-0.5 font-bold rounded text-[10px] ${
+                          log.action === 'SEMESTER_PROGRESSION_ADVANCED'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : log.action.includes('CREATED')
+                            ? 'bg-blue-100 text-blue-800'
+                            : log.action.includes('DELETED')
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
                         {log.action}
                       </span>
                     </td>

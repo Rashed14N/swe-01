@@ -1,4 +1,5 @@
 import React from 'react';
+import appLogo from '../../assets/images/swe_app_icon_1787048700418.jpg';
 
 interface SweLogoProps {
   variant?: 'full' | 'icon' | 'badge';
@@ -9,7 +10,7 @@ interface SweLogoProps {
 }
 
 export const SweLogo: React.FC<SweLogoProps> = ({
-  variant = 'full',
+  variant = 'icon',
   size = 'md',
   showText = false,
   className = '',
@@ -17,11 +18,11 @@ export const SweLogo: React.FC<SweLogoProps> = ({
 }) => {
   // Dimension presets to ensure it's never weirdly stretched or excessively large
   const sizeMap = {
-    xs: { icon: 'h-6 w-6', full: 'h-6 max-w-[90px]', text: 'text-xs' },
-    sm: { icon: 'h-8 w-8', full: 'h-7.5 max-w-[120px]', text: 'text-sm' },
-    md: { icon: 'h-9.5 w-9.5', full: 'h-9 max-w-[150px]', text: 'text-base' },
-    lg: { icon: 'h-11 w-11', full: 'h-11 max-w-[180px]', text: 'text-lg' },
-    xl: { icon: 'h-14 w-14', full: 'h-14 max-w-[220px]', text: 'text-xl' }
+    xs: { icon: 'h-6 w-6', rounded: 'rounded-lg', full: 'h-6 max-w-[90px]', text: 'text-xs' },
+    sm: { icon: 'h-8 w-8', rounded: 'rounded-xl', full: 'h-8 max-w-[120px]', text: 'text-sm' },
+    md: { icon: 'h-10 w-10', rounded: 'rounded-xl', full: 'h-10 max-w-[150px]', text: 'text-base' },
+    lg: { icon: 'h-12 w-12', rounded: 'rounded-2xl', full: 'h-12 max-w-[180px]', text: 'text-lg' },
+    xl: { icon: 'h-16 w-16', rounded: 'rounded-3xl', full: 'h-16 max-w-[220px]', text: 'text-xl' }
   };
 
   const currentSize = sizeMap[size];
@@ -30,10 +31,10 @@ export const SweLogo: React.FC<SweLogoProps> = ({
     return (
       <div className={`inline-flex items-center justify-center shrink-0 ${className}`}>
         <img
-          src="/favicon.png"
-          alt="SWE Logo"
+          src={appLogo}
+          alt="SWE Portal Logo"
           referrerPolicy="no-referrer"
-          className={`${currentSize.icon} object-contain rounded-xl shadow-xs transition-transform duration-200 hover:scale-105`}
+          className={`${currentSize.icon} ${currentSize.rounded} object-cover shadow-sm transition-transform duration-200 hover:scale-105`}
         />
       </div>
     );
@@ -43,13 +44,13 @@ export const SweLogo: React.FC<SweLogoProps> = ({
     return (
       <div className={`inline-flex items-center gap-2.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-xs ${className}`}>
         <img
-          src="/swe-logo.png"
-          alt="SWE"
+          src={appLogo}
+          alt="SWE Portal"
           referrerPolicy="no-referrer"
-          className={`${currentSize.full} object-contain`}
+          className={`${currentSize.icon} ${currentSize.rounded} object-cover`}
         />
         {subText && (
-          <span className="text-[11px] font-bold text-slate-500 border-l border-slate-200 pl-2 uppercase tracking-wider whitespace-nowrap">
+          <span className="text-[11px] font-bold text-slate-600 border-l border-slate-200 pl-2 uppercase tracking-wider whitespace-nowrap">
             {subText}
           </span>
         )}
@@ -60,10 +61,10 @@ export const SweLogo: React.FC<SweLogoProps> = ({
   return (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
       <img
-        src="/swe-logo.png"
-        alt="SWE Department Logo"
+        src={appLogo}
+        alt="SWE Portal Logo"
         referrerPolicy="no-referrer"
-        className={`${currentSize.full} object-contain filter drop-shadow-xs transition-opacity duration-200`}
+        className={`${currentSize.icon} ${currentSize.rounded} object-cover shadow-sm transition-opacity duration-200`}
       />
       {showText && (
         <div className="flex flex-col leading-none">
@@ -80,3 +81,4 @@ export const SweLogo: React.FC<SweLogoProps> = ({
     </div>
   );
 };
+

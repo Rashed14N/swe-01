@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileQuestion, ArrowLeft, LayoutDashboard, LogIn, GraduationCap } from 'lucide-react';
+import { FileQuestion, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { SweLogo } from '../components/common/SweLogo';
 import { useAuth } from '../context/AuthContext';
 
 export const NotFoundPage: React.FC = () => {
@@ -26,11 +27,9 @@ export const NotFoundPage: React.FC = () => {
       {/* Top Brand Bar */}
       <header className="h-16 px-6 flex items-center border-b border-slate-200/80 bg-white">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#1769E8] flex items-center justify-center text-white font-bold shadow-xs">
-            <GraduationCap className="w-5 h-5" />
-          </div>
+          <SweLogo variant="icon" size="sm" className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-xs" />
           <div>
-            <span className="text-sm font-extrabold text-[#0A2147] tracking-tight block">SWE Portal</span>
+            <span className="text-sm font-extrabold text-[#0A2147] tracking-tight block leading-tight">SWE Portal</span>
             <span className="text-[10px] text-slate-500 font-medium block">Metropolitan University</span>
           </div>
         </div>

@@ -17,6 +17,7 @@ import {
   IdCard,
   Phone
 } from 'lucide-react';
+import { SweLogo } from '../components/common/SweLogo';
 import { useAuth } from '../context/AuthContext';
 import { UserRole, Batch } from '../types';
 
@@ -253,16 +254,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
           />
 
           <div>
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#05204F] to-[#0D4B9F] flex items-center justify-center text-white font-bold shadow-lg shadow-blue-950/40 border border-blue-400/20">
-                <GraduationCap className="w-7 h-7" />
-              </div>
+            {/* SWE Logo Header */}
+            <div className="flex items-center gap-3.5">
+              <SweLogo variant="icon" size="lg" className="bg-white/10 p-1.5 rounded-2xl border border-white/20 shadow-lg" />
               <div>
-                <span className="text-xl font-bold tracking-tight text-white block">
+                <span className="text-xl font-extrabold tracking-tight text-white block">
                   Student Portal
                 </span>
-                <span className="text-xs text-slate-300 block">
+                <span className="text-xs text-blue-200 block font-medium">
                   Department of Software Engineering
                 </span>
               </div>
@@ -307,16 +306,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
         {/* Right Form Area & Mobile Container */}
         <div className="w-full md:w-[52%] flex flex-col justify-between">
           
-          {/* Mobile Top Header (Only on mobile: Photo 2) */}
-          <div className="md:hidden bg-gradient-to-r from-[#041E4A] via-[#062A63] to-[#073B82] p-5 text-white flex items-center gap-3.5 border-b border-blue-900/30">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#05204F] to-[#0D4B9F] flex items-center justify-center text-white font-bold shadow-md shadow-blue-950/40 border border-blue-400/20 shrink-0">
-              <GraduationCap className="w-6 h-6" />
-            </div>
+          {/* Mobile Top Header */}
+          <div className="md:hidden bg-gradient-to-r from-[#041E4A] via-[#062A63] to-[#073B82] p-4 sm:p-5 text-white flex items-center gap-3.5 border-b border-blue-900/30">
+            <SweLogo variant="icon" size="md" className="bg-white/10 p-1 rounded-xl border border-white/20 shadow-sm shrink-0" />
             <div>
-              <span className="text-lg font-bold tracking-tight text-white block">
+              <span className="text-lg font-bold tracking-tight text-white block leading-tight">
                 Student Portal
               </span>
-              <span className="text-xs text-slate-300 block">
+              <span className="text-xs text-blue-200 block font-medium">
                 Department of Software Engineering
               </span>
             </div>
@@ -371,8 +368,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
               </div>
             )}
 
-            {/* Top Switcher: Modern Spring-Sliding Pill Tab */}
-            <div className="relative bg-slate-200/70 p-1.5 rounded-2xl mb-6 border border-slate-300/80 flex items-center shadow-inner">
+            {/* Top Switcher: Clean Sleek Segmented Control */}
+            <div className="relative bg-slate-100 p-1 rounded-xl mb-6 border border-slate-200/90 flex items-center shadow-xs">
               <button
                 type="button"
                 id="btn-switch-login"
@@ -380,17 +377,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   setMode('LOGIN');
                   setLoginError(null);
                 }}
-                className={`relative z-10 flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2 rounded-xl select-none ${
+                className={`relative z-10 flex-1 py-2.5 px-3 text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 rounded-lg select-none whitespace-nowrap cursor-pointer ${
                   mode === 'LOGIN' ? 'text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <LogIn className="w-4 h-4" />
-                <span>Sign In</span>
+                <LogIn className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Sign In</span>
                 {mode === 'LOGIN' && (
                   <motion.div
                     layoutId="activeAuthTabPill"
-                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                    className="absolute inset-0 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] rounded-xl shadow-md shadow-blue-950/30 -z-10"
+                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    className="absolute inset-0 bg-[#0B4491] rounded-lg shadow-md shadow-blue-950/20 -z-10"
                   />
                 )}
               </button>
@@ -402,17 +399,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   setMode('REGISTER');
                   setRegError(null);
                 }}
-                className={`relative z-10 flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold transition-colors duration-200 flex items-center justify-center gap-2 rounded-xl select-none ${
+                className={`relative z-10 flex-1 py-2.5 px-3 text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 rounded-lg select-none whitespace-nowrap cursor-pointer ${
                   mode === 'REGISTER' ? 'text-white' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Register Now</span>
+                <UserPlus className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Register</span>
                 {mode === 'REGISTER' && (
                   <motion.div
                     layoutId="activeAuthTabPill"
-                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                    className="absolute inset-0 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] rounded-xl shadow-md shadow-blue-950/30 -z-10"
+                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    className="absolute inset-0 bg-[#0B4491] rounded-lg shadow-md shadow-blue-950/20 -z-10"
                   />
                 )}
               </button>
@@ -432,7 +429,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     <motion.div 
                       initial={{ opacity: 0, y: -6, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
+                      className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-2.5 shadow-2xs"
                     >
                       <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                       {loginError}
@@ -441,7 +438,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
 
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <label className="block text-sm font-bold text-slate-800 mb-1.5">
                         Student ID or Email
                       </label>
                       <div className="relative">
@@ -453,20 +450,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           value={studentIdOrEmail}
                           onChange={e => setStudentIdOrEmail(e.target.value)}
                           placeholder="Enter your student ID or email"
-                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-4 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                       </div>
                     </div>
 
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-bold text-slate-700">
+                        <label className="block text-sm font-bold text-slate-800">
                           Password
                         </label>
                         <button
                           type="button"
                           onClick={() => alert('Please enter your registered password. If you forgot your password, contact your CR or Department Support.')}
-                          className="text-xs text-blue-600 font-semibold hover:underline"
+                          className="text-xs sm:text-sm text-[#0B4491] font-bold hover:underline"
                         >
                           Help?
                         </button>
@@ -480,7 +477,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           value={loginPassword}
                           onChange={e => setLoginPassword(e.target.value)}
                           placeholder="Enter your password"
-                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-10 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                         <button
                           type="button"
@@ -492,13 +489,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-0.5">
-                      <label className="flex items-center gap-2 cursor-pointer text-slate-600 font-medium select-none">
+                    <div className="flex items-center justify-between text-xs sm:text-sm pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer text-slate-700 font-medium select-none">
                         <input
                           type="checkbox"
                           checked={rememberMe}
                           onChange={e => setRememberMe(e.target.checked)}
-                          className="rounded text-blue-600 border-slate-300 focus:ring-blue-500 w-4 h-4"
+                          className="rounded text-[#0B4491] border-slate-300 focus:ring-[#0B4491] w-4 h-4 cursor-pointer"
                         />
                         <span>Remember my login</span>
                       </label>
@@ -510,15 +507,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       type="submit"
                       id="btn-submit-signin"
                       disabled={isLoginLoading}
-                      className="w-full py-3 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] hover:from-[#051C42] hover:via-[#07275C] hover:to-[#0A3777] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-950/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2 cursor-pointer"
+                      className="w-full py-3.5 bg-[#0B4491] hover:bg-[#08336E] text-white text-sm sm:text-base font-bold rounded-xl shadow-lg shadow-blue-900/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2 cursor-pointer"
                     >
-                      {isLoginLoading ? 'Signing In...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4" />
+                      {isLoginLoading ? 'Signing In...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </motion.button>
                   </form>
 
                   {/* Prompt to Register */}
-                  <div className="mt-5 text-center p-3 bg-slate-50/80 border border-slate-200/90 rounded-xl">
-                    <p className="text-xs text-slate-600">
+                  <div className="mt-5 text-center p-3.5 bg-slate-50/90 border border-slate-200 rounded-xl">
+                    <p className="text-xs sm:text-sm text-slate-600">
                       Don't have an account yet?{' '}
                       <button
                         type="button"
@@ -527,9 +524,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           setMode('REGISTER');
                           setRegError(null);
                         }}
-                        className="text-[#093273] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                        className="text-[#0B4491] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
                       >
-                        Register Now <ArrowRight className="w-3 h-3" />
+                        Register Now <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </p>
                   </div>
@@ -547,7 +544,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     <motion.div 
                       initial={{ opacity: 0, y: -6, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="mb-3.5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
+                      className="mb-3.5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-2.5 shadow-2xs"
                     >
                       <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                       {regError}
@@ -558,7 +555,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     <motion.div 
                       initial={{ opacity: 0, y: -6, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      className="mb-3.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2.5 shadow-2xs"
+                      className="mb-3.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold flex items-center gap-2.5 shadow-2xs"
                     >
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       {regSuccess}
@@ -568,7 +565,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   <form onSubmit={handleRegister} className="space-y-3.5">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-sm font-bold text-slate-800 mb-1">
                         Full Name *
                       </label>
                       <div className="relative">
@@ -580,7 +577,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           value={regName}
                           onChange={e => setRegName(e.target.value)}
                           placeholder="Enter your name"
-                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-3.5 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                       </div>
                     </div>
@@ -588,7 +585,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     {/* Student ID & Email Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">
                           Student ID *
                         </label>
                         <div className="relative">
@@ -600,13 +597,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                             value={regStudentId}
                             onChange={e => setRegStudentId(e.target.value)}
                             placeholder="Enter your student ID"
-                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                            className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-3.5 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">
                           Email Address *
                         </label>
                         <div className="relative">
@@ -618,7 +615,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                             value={regEmail}
                             onChange={e => setRegEmail(e.target.value)}
                             placeholder="Enter your email"
-                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                            className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-3.5 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                           />
                         </div>
                       </div>
@@ -628,11 +625,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <label className="block text-xs font-bold text-slate-700">
+                          <label className="block text-sm font-bold text-slate-800">
                             Batch *
                           </label>
                           {isLoadingBatches && (
-                            <span className="text-[10px] text-blue-600 font-semibold animate-pulse">Syncing...</span>
+                            <span className="text-xs text-[#0B4491] font-semibold animate-pulse">Syncing...</span>
                           )}
                         </div>
                         <div className="relative">
@@ -641,7 +638,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                             id="select-reg-batch"
                             value={selectedBatchId}
                             onChange={e => setSelectedBatchId(e.target.value)}
-                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 focus:outline-none font-medium cursor-pointer shadow-2xs"
+                            className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-3.5 py-3 text-sm sm:text-base text-slate-900 focus:outline-none font-medium cursor-pointer shadow-2xs"
                           >
                             {batches.map(b => (
                               <option key={b.id} value={b.id}>
@@ -653,7 +650,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">
                           Phone Number (Optional)
                         </label>
                         <div className="relative">
@@ -664,7 +661,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                             value={regPhone}
                             onChange={e => setRegPhone(e.target.value)}
                             placeholder="Enter your phone number"
-                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                            className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-3.5 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                           />
                         </div>
                       </div>
@@ -673,7 +670,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     {/* Password & Confirm Password */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">
                           Password *
                         </label>
                         <div className="relative">
@@ -685,20 +682,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                             value={regPassword}
                             onChange={e => setRegPassword(e.target.value)}
                             placeholder="Enter your password"
-                            className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl pl-10 pr-9 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                            className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl pl-10 pr-9 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                           />
                           <button
                             type="button"
                             onClick={() => setShowRegPassword(!showRegPassword)}
                             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                           >
-                            {showRegPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-800 mb-1">
                           Confirm Password *
                         </label>
                         <input
@@ -708,7 +705,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           value={regConfirmPassword}
                           onChange={e => setRegConfirmPassword(e.target.value)}
                           placeholder="Confirm your password"
-                          className="w-full bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
+                          className="w-full bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-[#0B4491] focus:ring-4 focus:ring-blue-500/15 rounded-xl px-3.5 py-3 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-2xs"
                         />
                       </div>
                     </div>
@@ -720,15 +717,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                       type="submit"
                       id="btn-submit-register"
                       disabled={isRegLoading}
-                      className="w-full py-3 bg-gradient-to-r from-[#072454] via-[#093273] to-[#0D4494] hover:from-[#051C42] hover:via-[#07275C] hover:to-[#0A3777] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-950/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-3 cursor-pointer"
+                      className="w-full py-3.5 bg-[#0B4491] hover:bg-[#08336E] text-white text-sm sm:text-base font-bold rounded-xl shadow-lg shadow-blue-900/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-3 cursor-pointer"
                     >
-                      {isRegLoading ? 'Creating Your Account...' : 'Complete Registration & Enter Portal'} <ArrowRight className="w-4 h-4" />
+                      {isRegLoading ? 'Creating Your Account...' : 'Complete Registration & Enter Portal'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </motion.button>
                   </form>
 
                   {/* Back to Sign In Link */}
                   <div className="mt-4 text-center">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs sm:text-sm text-slate-600">
                       Already have an account?{' '}
                       <button
                         type="button"
@@ -737,7 +734,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                           setMode('LOGIN');
                           setLoginError(null);
                         }}
-                        className="text-[#093273] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                        className="text-[#0B4491] font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer"
                       >
                         Sign In here
                       </button>
@@ -758,33 +755,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
             className="md:hidden p-6 text-white border-t border-slate-200/80 relative overflow-hidden"
           >
             <div className="max-w-md mx-auto relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3 uppercase tracking-wider">
-                <GraduationCap className="w-3.5 h-3.5 text-blue-300" /> ACADEMIC & STUDENT HUB
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-200 border border-blue-400/20 mb-3 uppercase tracking-wider">
+                <GraduationCap className="w-4 h-4 text-blue-300" /> ACADEMIC & STUDENT HUB
               </span>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight">
+              <h2 className="text-2xl font-extrabold text-white leading-tight tracking-tight">
                 <span className="block">Your Central Gateway</span>
                 <span className="block">to Academic Excellence.</span>
               </h2>
-              <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
+              <p className="mt-3 text-sm text-slate-300 leading-relaxed">
                 Access class routines, course resources, exam updates, department notices, and important batch announcements from one organized portal.
               </p>
 
-              <div className="mt-5 bg-white/10 backdrop-blur-md rounded-xl p-3.5 border border-white/10 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
+              <div className="mt-5 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <div className="text-xs">
-                  <span className="font-bold text-white block uppercase tracking-wide text-[10px]">
+                <div className="text-xs sm:text-sm">
+                  <span className="font-bold text-white block uppercase tracking-wide text-xs">
                     VERIFIED ACADEMIC ACCESS
                   </span>
-                  <span className="text-slate-300 text-[11px] leading-tight block mt-0.5">
+                  <span className="text-slate-300 text-xs sm:text-sm leading-tight block mt-1">
                     Students & Class Representatives can sign in only.<br />
                     CR and Admin access is assigned by the department.
                   </span>
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-400 pt-4 text-center">
+              <div className="text-xs text-slate-400 pt-5 text-center">
                 © 2026 Department of Software Engineering • Metropolitan University
               </div>
             </div>

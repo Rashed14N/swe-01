@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { GraduationCap, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { SweLogo } from '../common/SweLogo';
 
 interface PublicAuthRouteProps {
   children: React.ReactNode;
@@ -15,8 +16,8 @@ export const PublicAuthRoute: React.FC<PublicAuthRouteProps> = ({ children }) =>
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F4F7FB] flex flex-col items-center justify-center p-4">
-        <div className="w-12 h-12 rounded-2xl bg-[#1769E8] flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 mb-4 animate-bounce">
-          <GraduationCap className="w-6 h-6" />
+        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/80 p-2 flex items-center justify-center shadow-lg shadow-blue-500/10 mb-4 animate-bounce">
+          <SweLogo variant="icon" size="sm" />
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-[#0A2147]">
           <Loader2 className="w-4 h-4 animate-spin text-[#1769E8]" />

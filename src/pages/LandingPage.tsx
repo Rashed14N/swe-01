@@ -4,6 +4,7 @@ import {
   GraduationCap, ArrowRight, ShieldCheck, Clock,
   HelpCircle, Award, ChevronRight
 } from 'lucide-react';
+import { SweLogo } from '../components/common/SweLogo';
 import { DepartmentNotice, Faculty } from '../types';
 
 export const LandingPage: React.FC = () => {
@@ -29,9 +30,7 @@ export const LandingPage: React.FC = () => {
       <header className="bg-white border-b border-[#E2E8F0] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#041E4A] flex items-center justify-center text-white font-bold shadow-sm">
-              <GraduationCap className="w-5 h-5" />
-            </div>
+            <SweLogo variant="icon" size="sm" className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-xs" />
             <div>
               <span className="text-base font-bold tracking-tight text-slate-900 block leading-tight">
                 SWE Portal

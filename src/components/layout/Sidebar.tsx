@@ -6,6 +6,7 @@ import {
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, GraduationCap, X, ChevronDown
 } from 'lucide-react';
+import { SweLogo } from '../common/SweLogo';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -54,11 +55,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-[#1769E8] flex items-center justify-center text-white shrink-0 font-bold shadow-xs">
-              <GraduationCap className="w-4.5 h-4.5" />
-            </div>
+        <div className="h-16 px-3.5 flex items-center justify-between border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <SweLogo variant="icon" size="sm" className="bg-white/10 p-0.5 rounded-lg border border-white/15 shadow-xs shrink-0" />
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-extrabold tracking-tight text-white truncate">

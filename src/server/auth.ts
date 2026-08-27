@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import type { User, UserRole } from '../types.ts';
+import { db } from './db.ts';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'swe-portal-secret-key-2026';
 
@@ -43,7 +44,6 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     // If no Bearer token provided but x-user-role or admin context exists
     if (roleHeader === 'ADMIN' || !authHeader) {
-      const { db } = require('./db');
       const allUsers: User[] = db.getData().users || [];
       const adminUser = allUsers.find(u => u.role === 'ADMIN') || allUsers[0];
       req.user = {
@@ -72,7 +72,6 @@ export function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: 
   } catch (err) {
     // If JWT verification fails with internal secret, decode external/Supabase JWT or check session
     try {
-      const { db } = require('./db');
       const allUsers: User[] = db.getData().users || [];
       
       // 1. Try decoding the token as a Supabase / standard JWT payload
@@ -196,7 +195,6 @@ export function optionalAuthToken(req: AuthenticatedRequest, res: Response, next
       try {
         const unverified = jwt.decode(token) as any;
         if (unverified && typeof unverified === 'object') {
-          const { db } = require('./db');
           const allUsers: User[] = db.getData().users || [];
           const decodedEmail = unverified.email || unverified.user_metadata?.email;
           const decodedSub = unverified.sub || unverified.id;

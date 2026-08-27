@@ -106,7 +106,9 @@ export const AdminCoursesPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.code || !form.title) {
+    if (isSubmitting) return;
+
+    if (!form.code.trim() || !form.title.trim()) {
       addToast('error', 'Course code and title are required');
       return;
     }
@@ -125,16 +127,18 @@ export const AdminCoursesPage: React.FC = () => {
         body: JSON.stringify(form),
       });
 
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
         addToast('success', editingCourse ? 'Course updated successfully!' : 'New course added successfully!');
         setIsModalOpen(false);
         fetchData();
       } else {
-        const err = await res.json();
-        addToast('error', err.error || 'Failed to save course');
+        addToast('error', data?.error || `Failed to save course (HTTP ${res.status})`);
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      console.error('[AdminCoursesPage] Submit error:', e);
+      addToast('error', e?.message || 'Server error');
     } finally {
       setIsSubmitting(false);
     }
@@ -149,15 +153,17 @@ export const AdminCoursesPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      const data = await res.json().catch(() => null);
+
       if (res.ok) {
         addToast('success', `Course ${courseCode} deleted.`);
         fetchData();
       } else {
-        const err = await res.json();
-        addToast('error', err.error || 'Failed to delete course');
+        addToast('error', data?.error || 'Failed to delete course');
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      console.error('[AdminCoursesPage] Delete error:', e);
+      addToast('error', e?.message || 'Server error');
     }
   };
 

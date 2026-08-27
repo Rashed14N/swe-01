@@ -171,6 +171,38 @@
       "profileImage": "/avatars/pangolin-cream-2.svg",
       "createdAt": "2026-08-17T08:18:18.184Z",
       "updatedAt": "2026-08-17T08:18:18.184Z"
+    },
+    {
+      "id": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "studentId": "252134022",
+      "name": "Rashedul Hasan Mojumdar",
+      "email": "rashedulhasanhst@gmail.com",
+      "phone": "01765481645",
+      "role": "ADMIN",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 4,
+      "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-08-18T10:01:34.07871+00:00",
+      "updatedAt": "2026-08-18T10:01:34.527+00:00"
+    },
+    {
+      "id": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "studentId": "252143048",
+      "name": "Anbb",
+      "email": "hshdhdj@gmail.com",
+      "phone": "0134457869",
+      "role": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 4,
+      "profileImage": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-08-21T17:17:58.684031+00:00",
+      "updatedAt": "2026-08-21T17:17:59.419+00:00"
     }
   ],
   "passwords": {
@@ -190,10 +222,10 @@
       "admissionYear": 2023,
       "currentSemester": 5,
       "academicSession": "2023-2024",
-      "crIds": [],
-      "createdAt": "2023-01-15T00:00:00Z",
       "semesterMode": "SEQUENCE",
-      "status": "ACTIVE"
+      "status": "ACTIVE",
+      "crIds": [],
+      "createdAt": "2023-01-15T00:00:00+00:00"
     },
     {
       "id": "batch-8",
@@ -201,10 +233,10 @@
       "admissionYear": 2022,
       "currentSemester": 7,
       "academicSession": "2022-2023",
-      "crIds": [],
-      "createdAt": "2022-01-15T00:00:00Z",
       "semesterMode": "SEQUENCE",
-      "status": "ACTIVE"
+      "status": "ACTIVE",
+      "crIds": [],
+      "createdAt": "2022-01-15T00:00:00+00:00"
     },
     {
       "id": "batch-10",
@@ -212,10 +244,10 @@
       "admissionYear": 2024,
       "currentSemester": 3,
       "academicSession": "2024-2025",
-      "crIds": [],
-      "createdAt": "2024-01-15T00:00:00Z",
       "semesterMode": "SEQUENCE",
-      "status": "ACTIVE"
+      "status": "ACTIVE",
+      "crIds": [],
+      "createdAt": "2024-01-15T00:00:00+00:00"
     },
     {
       "id": "batch-5",
@@ -271,6 +303,17 @@
       "status": "ACTIVE",
       "crIds": [],
       "createdAt": "2026-01-15T00:00:00Z"
+    },
+    {
+      "id": "batch-1787825295369",
+      "name": "SWE 12th Batch",
+      "admissionYear": 2026,
+      "currentSemester": 1,
+      "academicSession": "Fall 2026",
+      "semesterMode": "SEQUENCE",
+      "status": "ACTIVE",
+      "crIds": [],
+      "createdAt": "2026-08-27T10:08:15.369Z"
     }
   ],
   "courses": [
@@ -278,78 +321,108 @@
       "id": "course-305",
       "code": "SWE 305",
       "title": "Database Systems",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": "fac-1",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Dr. Tanvir Rahman",
       "batchIds": [
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-14T08:47:45.875334+00:00"
     },
     {
       "id": "course-307",
       "code": "SWE 307",
       "title": "Software Engineering",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": "fac-2",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Mr. Imran Hossain",
       "batchIds": [
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-14T08:47:45.875334+00:00"
     },
     {
       "id": "course-309",
       "code": "SWE 309",
       "title": "Algorithms",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": "fac-4",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Prof. Dr. Ahsan Habib",
       "batchIds": [
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-14T08:47:45.875334+00:00"
     },
     {
       "id": "course-311",
       "code": "SWE 311",
       "title": "Computer Networks",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": "fac-3",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Ms. Nusrat Jahan",
       "batchIds": [
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-14T08:47:45.875334+00:00"
     },
     {
       "id": "course-313",
       "code": "SWE 313",
       "title": "Web Engineering",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": "fac-2",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Mr. Imran Hossain",
       "batchIds": [
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-16T08:05:58.305172+00:00"
     },
     {
       "id": "course-401",
       "code": "SWE 401",
       "title": "Distributed Databases",
+      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 7,
-      "assignedFacultyId": "fac-1",
+      "assignedFacultyId": null,
       "assignedFacultyName": "Dr. Tanvir Rahman",
       "batchIds": [
         "batch-8"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-16T08:05:58.305172+00:00"
+    },
+    {
+      "id": "course-1787825205604",
+      "code": "SWE 999",
+      "title": "Automated Testing Course",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 5,
+      "assignedFacultyId": "",
+      "batchIds": [
+        "batch-9"
       ]
     }
   ],
@@ -493,6 +566,18 @@
       "teacherName": "Dr. Tanvir Rahman",
       "teacherShortName": null,
       "room": "602 Lab"
+    },
+    {
+      "id": "rout-1787825309063",
+      "batchId": "batch-9",
+      "day": "Sunday",
+      "startTime": "09:00 AM",
+      "endTime": "10:30 AM",
+      "courseId": "course-305",
+      "courseCode": "SWE 305",
+      "courseTitle": "Database Systems",
+      "teacherName": "Dr. Tanvir Rahman",
+      "room": "Room 501"
     }
   ],
   "exams": [
@@ -559,9 +644,37 @@
       "createdBy": "user-cr-2",
       "createdByName": "Saima Akter (CR)",
       "createdAt": "2026-08-02T10:00:00+00:00"
+    },
+    {
+      "id": "exam-1787825309077",
+      "batchId": "batch-9",
+      "courseId": "course-305",
+      "courseCode": "SWE 305",
+      "courseTitle": "Database Systems",
+      "type": "CT",
+      "title": "Class Test 1 on Normalization",
+      "date": "2026-09-10",
+      "startTime": "10:00 AM",
+      "room": "Room 501",
+      "description": "Chapters 1 to 3",
+      "createdBy": "usr_admin_1",
+      "createdByName": "Department Admin",
+      "createdAt": "2026-08-27T10:08:29.077Z"
     }
   ],
   "announcements": [
+    {
+      "id": "ann-1787825309094",
+      "batchId": "batch-9",
+      "title": "Midterm Routine Published",
+      "description": "Check the exams section for details.",
+      "publishDate": "2026-08-27",
+      "expiryDate": "2026-10-01",
+      "priority": "NORMAL",
+      "createdBy": "usr_admin_1",
+      "createdByName": "Department Admin",
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
     {
       "id": "ann-1",
       "batchId": "batch-9",
@@ -608,8 +721,8 @@
       "publishDate": "2026-08-08",
       "isImportant": true,
       "attachmentUrl": null,
-      "createdBy": "system-admin",
-      "createdByName": "Department Administration",
+      "createdBy": "user-admin-1",
+      "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-08T10:00:00+00:00"
     },
     {
@@ -620,8 +733,8 @@
       "publishDate": "2026-08-09",
       "isImportant": true,
       "attachmentUrl": null,
-      "createdBy": "system-admin",
-      "createdByName": "Department Administration",
+      "createdBy": "user-admin-1",
+      "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-09T11:00:00+00:00"
     },
     {
@@ -632,8 +745,8 @@
       "publishDate": "2026-08-05",
       "isImportant": false,
       "attachmentUrl": null,
-      "createdBy": "system-admin",
-      "createdByName": "Department Administration",
+      "createdBy": "user-admin-1",
+      "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-05T08:00:00+00:00"
     }
   ],
@@ -867,9 +980,242 @@
         "SWE 309 Algorithms",
         "SWE 101 Discrete Mathematics"
       ]
+    },
+    {
+      "id": "fac-1787825295354",
+      "name": "Dr. Test Faculty",
+      "shortName": "DTF",
+      "designation": "Assistant Professor",
+      "department": "Software Engineering",
+      "email": "test.faculty@swe.edu.bd",
+      "phone": "+8801700000000",
+      "officeRoom": "",
+      "photoUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
+      "specialization": "",
+      "assignedCourses": []
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1787825309094-0.048579904200644286",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.10538926771286783",
+      "userId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.8259502010479525",
+      "userId": "usr_1786954698184",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.5336468150626608",
+      "userId": "usr_cr_1",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.1766993373490391",
+      "userId": "usr_1786871683233",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.3301777168479876",
+      "userId": "usr_1786868978412",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.0006607160975251603",
+      "userId": "usr_rashed_58",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.23218762786382796",
+      "userId": "usr_1786868451950",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.27478255269479734",
+      "userId": "usr_1786868051979",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.5125104113574717",
+      "userId": "user-student-1",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309094-0.8584151807994087",
+      "userId": "user-cr-1",
+      "title": "📢 Batch Announcement",
+      "message": "Midterm Routine Published",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.094Z"
+    },
+    {
+      "id": "notif-1787825309077-0.7153803078820191",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.12140397430432825",
+      "userId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.3181225549898701",
+      "userId": "usr_1786954698184",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.09367208273738759",
+      "userId": "usr_cr_1",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.18133669049641843",
+      "userId": "usr_1786871683233",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.3452937268631653",
+      "userId": "usr_1786868978412",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.12339026499241834",
+      "userId": "usr_rashed_58",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.999051032073976",
+      "userId": "usr_1786868451950",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.4382903139360137",
+      "userId": "usr_1786868051979",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.9573859337266017",
+      "userId": "user-student-1",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "notif-1787825309077-0.15389264007729264",
+      "userId": "user-cr-1",
+      "title": "New Exam Scheduled 📅",
+      "message": "CT - \"Class Test 1 on Normalization\" scheduled for 2026-09-10 in SWE 305.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T10:08:29.077Z"
+    },
     {
       "id": "notif-1",
       "userId": "user-student-1",
@@ -892,6 +1238,78 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1787825309095",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "ANNOUNCEMENT_CREATED",
+      "target": "Midterm Routine Published (batch-9)",
+      "timestamp": "2026-08-27T10:08:29.095Z"
+    },
+    {
+      "id": "log-1787825309078",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "EXAM_CREATED",
+      "target": "CT: Class Test 1 on Normalization (batch-9)",
+      "timestamp": "2026-08-27T10:08:29.078Z"
+    },
+    {
+      "id": "log-1787825309063",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "ROUTINE_ADDED",
+      "target": "Slot for batch-9 on Sunday",
+      "timestamp": "2026-08-27T10:08:29.063Z"
+    },
+    {
+      "id": "log-1787825295370",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "BATCH_CREATED",
+      "target": "SWE 12th Batch (SEQUENCE)",
+      "timestamp": "2026-08-27T10:08:15.370Z"
+    },
+    {
+      "id": "log-1787825295355",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "FACULTY_ADDED",
+      "target": "Dr. Test Faculty",
+      "timestamp": "2026-08-27T10:08:15.355Z"
+    },
+    {
+      "id": "log-1787825287184",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "COURSE_DELETED",
+      "target": "SWE 499",
+      "timestamp": "2026-08-27T10:08:07.184Z"
+    },
+    {
+      "id": "log-1787825287167",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "COURSE_UPDATED",
+      "target": "SWE 499 - Advanced Compiler Design",
+      "timestamp": "2026-08-27T10:08:07.167Z"
+    },
+    {
+      "id": "log-1787825287131",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "COURSE_CREATED",
+      "target": "SWE 499 - Compiler Design & Optimization",
+      "timestamp": "2026-08-27T10:08:07.131Z"
+    },
+    {
+      "id": "log-1787825205604",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "COURSE_CREATED",
+      "target": "SWE 999 - Automated Testing Course",
+      "timestamp": "2026-08-27T10:06:45.604Z"
+    },
     {
       "id": "log-1786954698232",
       "actorId": "usr_1786954698184",

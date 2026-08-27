@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-globe" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECFEFF" />
+      <stop offset="100%" stop-color="#67E8F9" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-globe)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Globe Stand -->
+      <path d="M100 145 L100 165 M75 165 L125 165" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+      <path d="M55 105 C55 145 145 145 145 105" stroke="#64748B" stroke-width="5" stroke-linecap="round" fill="none" />
+      <!-- Ocean Blue Planet -->
+      <circle cx="100" cy="98" r="38" fill="#0284C7" />
+      <!-- Green Continents -->
+      <path d="M80 85 C85 75 98 75 95 90 C90 98 80 95 80 85 Z" fill="#10B981" />
+      <path d="M105 85 C115 80 130 88 125 100 C115 105 108 95 105 85 Z" fill="#10B981" />
+      <path d="M88 110 C95 105 110 112 105 125 C95 130 85 122 88 110 Z" fill="#10B981" />
+      <!-- Atmosphere Sheen -->
+      <ellipse cx="88" cy="80" rx="10" ry="18" fill="#FFFFFF" opacity="0.4" transform="rotate(-30 88 80)" />
+    
+  </g>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-koala-3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-koala-3)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Koala Ears -->
+      <circle cx="66" cy="80" r="20" fill="#94A3B8" />
+      <circle cx="66" cy="80" r="12" fill="#F8FAFC" />
+      <circle cx="134" cy="80" r="20" fill="#94A3B8" />
+      <circle cx="134" cy="80" r="12" fill="#F8FAFC" />
+      <!-- Head -->
+      <circle cx="100" cy="105" r="34" fill="#94A3B8" />
+      <!-- Sleepy Closed Eyes -->
+      <path d="M80 100 Q86 106 92 100" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <path d="M108 100 Q114 106 120 100" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <!-- Big Black Oval Nose -->
+      <ellipse cx="100" cy="108" rx="10" ry="14" fill="#1E293B" />
+      <!-- Zzz floating -->
+      <text x="135" y="65" font-family="sans-serif" font-weight="bold" font-size="14" fill="#3B82F6">Z</text>
+      <text x="145" y="52" font-family="sans-serif" font-weight="bold" font-size="11" fill="#60A5FA">z</text>
+    
+  </g>
+</svg>

@@ -260,7 +260,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 305',
       courseTitle: 'Database Systems',
       teacherName: 'Dr. Tanvir Rahman',
-      room: '502 Lab',
+      room: 'Room 502',
     },
     {
       id: 'rout-2',
@@ -272,7 +272,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 307',
       courseTitle: 'Software Engineering',
       teacherName: 'Mr. Imran Hossain',
-      room: '401 Class Room',
+      room: 'Room 401',
     },
     {
       id: 'rout-3',
@@ -284,7 +284,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 311',
       courseTitle: 'Computer Networks',
       teacherName: 'Ms. Nusrat Jahan',
-      room: '503 Network Lab',
+      room: 'Room 503',
     },
     // Monday - Batch 9
     {
@@ -297,7 +297,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 309',
       courseTitle: 'Algorithms',
       teacherName: 'Prof. Dr. Ahsan Habib',
-      room: '402 Class Room',
+      room: 'Room 402',
     },
     {
       id: 'rout-5',
@@ -309,7 +309,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 313',
       courseTitle: 'Web Engineering',
       teacherName: 'Mr. Imran Hossain',
-      room: '504 Software Lab',
+      room: 'Room 504',
     },
     // Tuesday - Batch 9
     {
@@ -322,7 +322,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 305',
       courseTitle: 'Database Systems',
       teacherName: 'Dr. Tanvir Rahman',
-      room: '502 Lab',
+      room: 'Exten-1',
     },
     {
       id: 'rout-7',
@@ -334,7 +334,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 307',
       courseTitle: 'Software Engineering',
       teacherName: 'Mr. Imran Hossain',
-      room: '401 Class Room',
+      room: 'XL 1',
     },
     // Wednesday - Batch 9
     {
@@ -347,7 +347,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 311',
       courseTitle: 'Computer Networks',
       teacherName: 'Ms. Nusrat Jahan',
-      room: '503 Network Lab',
+      room: 'Room 504',
     },
     // Thursday - Batch 9
     {
@@ -360,7 +360,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 309',
       courseTitle: 'Algorithms',
       teacherName: 'Prof. Dr. Ahsan Habib',
-      room: '402 Class Room',
+      room: 'Room 305',
     },
     // Batch 8 Routine
     {
@@ -373,7 +373,7 @@ export function seedInitialData(): DBData {
       courseCode: 'SWE 401',
       courseTitle: 'Distributed Databases',
       teacherName: 'Dr. Tanvir Rahman',
-      room: '602 Lab',
+      room: 'Room 403',
     },
   ];
 
@@ -405,7 +405,7 @@ export function seedInitialData(): DBData {
       title: 'Algorithms Quiz 2 (Dynamic Programming)',
       date: '2026-08-20', // 8 days from now
       startTime: '11:30 AM',
-      room: '402 Class Room',
+      room: 'Room 402',
       description: 'Topics: Knapsack, LCS, Matrix Chain Multiplication.',
       createdBy: 'user-cr-1',
       createdByName: 'Mahmudul Hasan (CR)',
@@ -421,7 +421,7 @@ export function seedInitialData(): DBData {
       title: 'SRS Document Project Presentation',
       date: '2026-09-02', // 21 days from now
       startTime: '01:00 PM',
-      room: '504 Lab',
+      room: 'Room 504',
       description: '10 minutes team presentation on SRS, UML Use Cases, Sequence Diagrams.',
       createdBy: 'user-cr-1',
       createdByName: 'Mahmudul Hasan (CR)',

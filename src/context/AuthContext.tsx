@@ -17,7 +17,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<{ success: boolean; user?: User; requiresEmailConfirmation?: boolean; message?: string; error?: string }>;
   logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
-  updateUserInContext: (updated: Partial<User>) => void;
+  updateUserInContext: (updated: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('swe_portal_auth_session');
       localStorage.removeItem('swe_portal_admin_session');
       localStorage.removeItem('swe_portal_registered_users');
+      localStorage.removeItem('swe_portal_demo_session');
     }
   }, []);
 
@@ -78,6 +79,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
+        // Check for local demo session first (for fast testing mode)
+        if (typeof window !== 'undefined') {
+          const storedDemo = localStorage.getItem('swe_portal_demo_session');
+          if (storedDemo) {
+            try {
+              const parsed = JSON.parse(storedDemo);
+              if (parsed && parsed.user) {
+                if (isMounted) {
+                  setCurrentUser(parsed.user);
+                  setSession(parsed.session || { user: { id: parsed.user.id } });
+                  setToken(parsed.token || 'demo_token');
+                  setLoading(false);
+                  return;
+                }
+              }
+            } catch (e) {
+              console.warn('Invalid stored demo session');
+            }
+          }
+        }
+
         const { data, error } = await supabase.auth.getSession();
         if (!error && data?.session?.user) {
           const authUser = data.session.user;
@@ -102,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 batchId: meta.batch_id || meta.batchId || 'batch-9',
                 batchName: meta.batch_name || meta.batchName || 'SWE 9th Batch',
                 currentSemester: Number(meta.current_semester || 4),
-                profileImage: meta.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+                profileImage: meta.profile_image || '/avatars/pangolin-cream-2.svg',
                 status: 'ACTIVE',
                 points: 0,
                 createdAt: authUser.created_at || new Date().toISOString(),
@@ -164,7 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 batchId: meta.batch_id || 'batch-9',
                 batchName: meta.batch_name || 'SWE 9th Batch',
                 currentSemester: Number(meta.current_semester || 4),
-                profileImage: meta.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+                profileImage: meta.profile_image || '/avatars/pangolin-cream-2.svg',
                 status: 'ACTIVE',
                 points: 0,
                 createdAt: newSession.user.created_at || new Date().toISOString(),
@@ -207,6 +229,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUser(res.user);
       setSession(res.session);
       setToken(res.token || res.session.access_token);
+      if (typeof window !== 'undefined' && (res.user.studentId === '111111111' || res.token?.startsWith('demo_'))) {
+        localStorage.setItem('swe_portal_demo_session', JSON.stringify({
+          user: res.user,
+          session: res.session,
+          token: res.token || res.session.access_token
+        }));
+      }
       return { success: true, user: res.user };
     }
 
@@ -269,12 +298,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authService.updateUser(updated);
   };
 
-  const updateUserInContext = (updated: Partial<User>) => {
+  const updateUserInContext = async (updated: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     if (currentUser) {
       const newObj = { ...currentUser, ...updated, updatedAt: new Date().toISOString() };
       setCurrentUser(newObj);
-      authService.updateUser(newObj);
+      
+      // Update demo session storage if applicable
+      if (typeof window !== 'undefined') {
+        const storedDemo = localStorage.getItem('swe_portal_demo_session');
+        if (storedDemo) {
+          try {
+            const parsed = JSON.parse(storedDemo);
+            localStorage.setItem('swe_portal_demo_session', JSON.stringify({
+              ...parsed,
+              user: newObj,
+            }));
+          } catch (e) {
+            console.warn('Failed to update local demo session');
+          }
+        }
+      }
+
+      const res = await authService.updateUser(newObj);
+      return res;
     }
+    return { success: false, error: 'No authenticated user found' };
   };
 
   return (

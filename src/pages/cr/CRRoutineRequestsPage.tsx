@@ -17,8 +17,8 @@ export const CRRoutineRequestsPage: React.FC = () => {
     courseTitle: 'Software Engineering',
     currentSchedule: 'Sunday 12:00 PM - 01:30 PM (Room 401)',
     requestedSchedule: 'Tuesday 02:00 PM - 03:30 PM (Room 504)',
-    requestedRoom: 'Room 504 Lab',
-    reason: 'Lab maintenance conflict on Sunday.',
+    requestedRoom: 'Room 504',
+    reason: 'Schedule conflict on Sunday.',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);

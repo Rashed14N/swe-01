@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-pocket-watch-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FCD34D" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-pocket-watch-2)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Top Crown & Loop -->
+      <circle cx="100" cy="48" r="12" fill="none" stroke="#D97706" stroke-width="4" />
+      <rect x="95" y="55" width="10" height="8" rx="2" fill="#B45309" />
+      <!-- Outer Golden Casing -->
+      <circle cx="100" cy="112" r="46" fill="#D97706" />
+      <circle cx="100" cy="112" r="40" fill="#F59E0B" />
+      <!-- Porcelain White Dial -->
+      <circle cx="100" cy="112" r="34" fill="#FFFFFF" />
+      <!-- Hour Marks -->
+      <circle cx="100" cy="84" r="2" fill="#1E293B" />
+      <circle cx="128" cy="112" r="2" fill="#1E293B" />
+      <circle cx="100" cy="140" r="2" fill="#1E293B" />
+      <circle cx="72" cy="112" r="2" fill="#1E293B" />
+      <!-- Watch Hands at 10:10 -->
+      <line x1="100" y1="112" x2="88" y2="98" stroke="#1E293B" stroke-width="3" stroke-linecap="round" />
+      <line x1="100" y1="112" x2="116" y2="100" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" />
+      <circle cx="100" cy="112" r="3" fill="#DC2626" />
+    
+  </g>
+</svg>

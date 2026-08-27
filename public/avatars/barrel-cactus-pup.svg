@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-barrel-cactus-pup" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECFDF5" />
+      <stop offset="100%" stop-color="#A7F3D0" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-barrel-cactus-pup)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Terracotta Pot -->
+      <polygon points="75,135 125,135 118,165 82,165" fill="#EA580C" />
+      <rect x="72" y="130" width="56" height="8" rx="3" fill="#C2410C" />
+      <!-- Round Ribbed Barrel Cactus -->
+      <circle cx="100" cy="95" r="32" fill="#059669" />
+      <!-- Rib Curves -->
+      <ellipse cx="100" cy="95" rx="20" ry="32" fill="#10B981" />
+      <ellipse cx="100" cy="95" rx="8" ry="32" fill="#34D399" />
+      <!-- Golden Spines / Star clusters -->
+      <path d="M100 72 L100 76 M98 74 L102 74" stroke="#FDE047" stroke-width="2" stroke-linecap="round" />
+      <path d="M100 95 L100 99 M98 97 L102 97" stroke="#FDE047" stroke-width="2" stroke-linecap="round" />
+      <path d="M100 118 L100 122 M98 120 L102 120" stroke="#FDE047" stroke-width="2" stroke-linecap="round" />
+      <path d="M84 90 L84 94 M82 92 L86 92" stroke="#FDE047" stroke-width="2" stroke-linecap="round" />
+      <path d="M116 90 L116 94 M114 92 L118 92" stroke="#FDE047" stroke-width="2" stroke-linecap="round" />
+      <!-- Pink Flower Bloom on Top -->
+      <circle cx="100" cy="62" r="7" fill="#F43F5E" />
+      <circle cx="94" cy="62" r="5" fill="#FB7185" />
+      <circle cx="106" cy="62" r="5" fill="#FB7185" />
+      <circle cx="100" cy="58" r="4" fill="#FDE047" />
+    
+  </g>
+</svg>

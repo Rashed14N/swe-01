@@ -73,7 +73,7 @@ export const NotesPage: React.FC = () => {
       />
 
       {/* Structured Resource List */}
-      <div className="bg-white rounded-xl border border-[#CBD8E8] shadow-md p-4 divide-y divide-[#E0E8F2]">
+      <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] p-4 divide-y divide-[#E5EBF3] dark:divide-slate-800">
         {isLoading ? (
           <div className="py-12 text-center text-xs text-slate-400">Loading notes repository...</div>
         ) : notes.length === 0 ? (
@@ -84,17 +84,17 @@ export const NotesPage: React.FC = () => {
           notes.map((n) => (
             <div
               key={n.id}
-              className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#F8FBFF] px-2 rounded-lg transition-colors"
+              className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#F6FAFF] dark:hover:bg-slate-800/50 px-2 rounded-lg transition-colors"
             >
               <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center shrink-0 border border-blue-200 mt-0.5">
+                <div className="w-10 h-10 bg-[#EFF5FF] text-[#2563EB] rounded-lg flex items-center justify-center shrink-0 border border-[#DBEAFE] mt-0.5">
                   <FileText className="w-5 h-5" />
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-bold text-slate-900">{n.title}</h3>
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-mono text-[10px] font-bold rounded border border-blue-200">
+                    <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">{n.title}</h3>
+                    <span className="px-2 py-0.5 bg-[#EFF5FF] text-[#2563EB] font-mono text-[10px] font-bold rounded border border-[#DBEAFE]">
                       {n.courseCode}
                     </span>
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -102,12 +102,12 @@ export const NotesPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 font-medium">
+                  <p className="text-xs text-[#475569] dark:text-slate-400 font-medium">
                     {n.courseTitle} • Semester {n.semester}
                   </p>
 
                   <div className="flex items-center gap-4 text-[11px] text-slate-400 pt-0.5">
-                    <span>Uploaded by <strong className="text-slate-700">{n.uploaderName}</strong></span>
+                    <span>Uploaded by <strong className="text-[#0F172A] dark:text-slate-200">{n.uploaderName}</strong></span>
                     <span>•</span>
                     <span>{n.fileSize || 'PDF'}</span>
                     <span>•</span>
@@ -119,7 +119,7 @@ export const NotesPage: React.FC = () => {
               <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                 <button
                   onClick={() => setSelectedPreview(n)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 bg-[#F1F5FA] hover:bg-[#E2EDFE] text-[#1E293B] text-xs font-bold rounded-lg border border-[#DCE5F0] transition-colors flex items-center gap-1.5"
                 >
                   <Eye className="w-3.5 h-3.5" /> Preview
                 </button>

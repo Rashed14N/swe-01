@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-gentle-fox" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF7ED" />
+      <stop offset="100%" stop-color="#FED7AA" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-gentle-fox)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Curled Cozy Fox -->
+      <circle cx="100" cy="115" r="40" fill="#EA580C" />
+      <ellipse cx="100" cy="125" rx="26" ry="20" fill="#FFFFFF" />
+      <!-- Sleeping Happy Eyes -->
+      <path d="M84 105 Q90 112 96 105" stroke="#7C2D12" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <path d="M104 105 Q110 112 116 105" stroke="#7C2D12" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <!-- Cute Snout -->
+      <circle cx="100" cy="114" r="3" fill="#1E293B" />
+      <!-- Soft Ears -->
+      <polygon points="72,85 64,52 90,75" fill="#C2410C" />
+      <polygon points="76,82 70,62 86,76" fill="#FED7AA" />
+      <polygon points="128,85 136,52 110,75" fill="#C2410C" />
+      <polygon points="124,82 130,62 114,76" fill="#FED7AA" />
+      <!-- Tail wrapped around -->
+      <path d="M135 125 C145 145 110 155 90 150 C80 148 70 140 70 140" stroke="#EA580C" stroke-width="12" stroke-linecap="round" fill="none" />
+      <circle cx="70" cy="140" r="6" fill="#FFFFFF" />
+    
+  </g>
+</svg>

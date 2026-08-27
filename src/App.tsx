@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { PublicAuthRoute } from './components/auth/PublicAuthRoute';
@@ -70,9 +71,10 @@ const RootRedirect: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <NotificationProvider>
-          <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <BrowserRouter>
             <Routes>
               {/* ========================================================= */}
               {/* 1. PUBLIC & AUTH ROUTES                                   */}
@@ -340,7 +342,8 @@ export const App: React.FC = () => {
           </BrowserRouter>
         </NotificationProvider>
       </AuthProvider>
-    </ErrorBoundary>
+    </ThemeProvider>
+  </ErrorBoundary>
   );
 };
 

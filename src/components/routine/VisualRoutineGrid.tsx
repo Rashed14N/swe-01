@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, List, LayoutGrid } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, List, LayoutGrid, Table, Download } from 'lucide-react';
 import { RoutineSlot } from '../../types';
+import { RoutineClassCard } from './RoutineClassCard';
+import { cleanRoomNumber } from '../../constants/rooms';
+import { RoutineExportModal } from './RoutineExportModal';
 
 interface VisualRoutineGridProps {
   routines: RoutineSlot[];
@@ -34,7 +37,9 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
   onDeleteSlot,
 }) => {
   const [viewMode, setViewMode] = useState<'SCHEDULE' | 'WEEKLY_GRID'>('SCHEDULE');
+  const [scheduleSubView, setScheduleSubView] = useState<'CARDS' | 'TABLE'>('CARDS');
   const [selectedDay, setSelectedDay] = useState<string>('SUNDAY');
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   const selectedDaySlots = routines
     .filter((r) => r.day === selectedDay)
@@ -67,14 +72,24 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
           </button>
         </div>
 
-        {canEdit && onAddSlot && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => onAddSlot(selectedDay)}
-            className="px-3 py-1.5 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs rounded-lg active:scale-[0.98] transition-all duration-150 flex items-center gap-1.5 shadow-2xs"
+            onClick={() => setIsExportModalOpen(true)}
+            className="px-3 py-1.5 bg-white hover:bg-slate-50 text-blue-600 border border-blue-200 font-bold text-xs rounded-lg active:scale-[0.98] transition-all duration-150 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Download full weekly routine as PNG image"
           >
-            <Plus className="w-3.5 h-3.5" /> Add Class Slot
+            <Download className="w-3.5 h-3.5" /> Download PNG
           </button>
-        )}
+
+          {canEdit && onAddSlot && (
+            <button
+              onClick={() => onAddSlot(selectedDay)}
+              className="px-3 py-1.5 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs rounded-lg active:scale-[0.98] transition-all duration-150 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Class Slot
+            </button>
+          )}
+        </div>
       </div>
 
       {/* SCHEDULE DAY VIEW (Default) */}
@@ -119,9 +134,9 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
             })}
           </div>
 
-          {/* Schedule Container (Desktop Table + Mobile Cards) */}
+          {/* Schedule Container (Cards Grid + Table View) */}
           <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
-            <div className="p-4 bg-[#F5F8FF] border-b border-[#DCE6F2] flex items-center justify-between">
+            <div className="p-4 bg-[#F5F8FF] border-b border-[#DCE6F2] flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
                   {DAY_CONFIG[selectedDay].label} Timetable
@@ -130,170 +145,155 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
                   {selectedDaySlots.length} Classes Scheduled
                 </span>
               </div>
-              {canEdit && onAddSlot && (
-                <button
-                  onClick={() => onAddSlot(selectedDay)}
-                  className="px-3 py-1 bg-blue-50 text-[#2563EB] hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-md transition-colors"
-                >
-                  + Add
-                </button>
-              )}
-            </div>
 
-            {/* Mobile Card List View (block md:hidden) */}
-            <div className="block md:hidden divide-y divide-[#E5EBF3] p-3 space-y-3">
-              {selectedDaySlots.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 italic text-xs">
-                  No classes scheduled for {DAY_CONFIG[selectedDay].label}.
+              <div className="flex items-center gap-2">
+                {/* Switch between Cards and Table layout */}
+                <div className="flex items-center bg-white p-1 rounded-lg border border-[#D8E2EE]">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleSubView('CARDS')}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      scheduleSubView === 'CARDS'
+                        ? 'bg-blue-50 text-[#2563EB] border border-blue-200/80 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" /> Cards
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScheduleSubView('TABLE')}
+                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      scheduleSubView === 'TABLE'
+                        ? 'bg-blue-50 text-[#2563EB] border border-blue-200/80 shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Table className="w-3.5 h-3.5" /> Table
+                  </button>
                 </div>
-              ) : (
-                selectedDaySlots.map((slot) => (
-                  <div key={slot.id} className="pt-3 first:pt-0 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="px-2 py-0.5 bg-blue-50 text-[#2563EB] font-bold border border-blue-200 text-[11px] rounded font-mono">
-                        {slot.courseCode}
-                      </span>
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A2147] bg-[#F6F9FD] px-2.5 py-1 rounded-md border border-[#D8E2EE]">
-                        <Clock className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-                        <span>{slot.startTime} – {slot.endTime}</span>
-                      </div>
-                    </div>
 
-                    <div>
-                      <h4 className="text-sm font-bold text-[#10213B]">
-                        {slot.courseTitle}
-                        {slot.courseShortName && (
-                          <span className="ml-2 px-1.5 py-0.5 bg-slate-900 text-amber-300 font-extrabold text-[10px] rounded">
-                            {slot.courseShortName}
-                          </span>
-                        )}
-                      </h4>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs pt-1 border-t border-[#E5EBF3]">
-                      <div className="flex items-center gap-1 text-slate-700">
-                        <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="font-semibold">{slot.teacherName}</span>
-                      </div>
-
-                      <span className="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-[11px]">
-                        <MapPin className="w-3 h-3 text-amber-600" />
-                        {slot.room}
-                      </span>
-                    </div>
-
-                    {canEdit && (
-                      <div className="flex items-center justify-end gap-2 pt-2">
-                        {onEditSlot && (
-                          <button
-                            onClick={() => onEditSlot(slot)}
-                            className="px-2.5 py-1 text-xs font-semibold bg-blue-50 text-blue-700 rounded border border-blue-200"
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {onDeleteSlot && (
-                          <button
-                            onClick={() => onDeleteSlot(slot.id)}
-                            className="px-2.5 py-1 text-xs font-semibold bg-rose-50 text-rose-700 rounded border border-rose-200"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
+                {canEdit && onAddSlot && (
+                  <button
+                    onClick={() => onAddSlot(selectedDay)}
+                    className="px-3 py-1 bg-blue-50 text-[#2563EB] hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-md transition-colors"
+                  >
+                    + Add Slot
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Desktop Table View (hidden md:block) */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#F2F6FB] border-b border-[#DCE6F2] text-[11px] font-bold text-[#0A2147] uppercase tracking-wider">
-                    <th className="px-5 py-3.5 w-36">TIME</th>
-                    <th className="px-5 py-3.5">COURSE</th>
-                    <th className="px-5 py-3.5 w-28">CODE</th>
-                    <th className="px-5 py-3.5">TEACHER</th>
-                    <th className="px-5 py-3.5 w-28">ROOM</th>
-                    {canEdit && <th className="px-5 py-3.5 text-right w-24">ACTIONS</th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E5EBF3] text-xs font-medium text-slate-800">
-                  {selectedDaySlots.length === 0 ? (
-                    <tr>
-                      <td colSpan={canEdit ? 6 : 5} className="px-5 py-12 text-center text-slate-400 italic">
-                        No classes scheduled for {DAY_CONFIG[selectedDay].label}.
-                      </td>
+            {/* CARDS GRID VIEW (Default - Full-width Long Cards) */}
+            {scheduleSubView === 'CARDS' ? (
+              <div className="p-4 sm:p-6 bg-[#F8FAFC]/50 min-h-[200px]">
+                {selectedDaySlots.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 italic text-sm">
+                    No classes scheduled for {DAY_CONFIG[selectedDay].label}.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {selectedDaySlots.map((slot) => (
+                      <RoutineClassCard
+                        key={slot.id}
+                        slot={slot}
+                        canEdit={canEdit}
+                        onEdit={onEditSlot ? () => onEditSlot(slot) : undefined}
+                        onDelete={onDeleteSlot ? () => onDeleteSlot(slot.id) : undefined}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Desktop Table View */
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#F2F6FB] border-b border-[#DCE6F2] text-[11px] font-bold text-[#0A2147] uppercase tracking-wider">
+                      <th className="px-5 py-3.5 w-36">TIME</th>
+                      <th className="px-5 py-3.5">COURSE</th>
+                      <th className="px-5 py-3.5 w-28">CODE</th>
+                      <th className="px-5 py-3.5">TEACHER</th>
+                      <th className="px-5 py-3.5 w-32">ROOM</th>
+                      {canEdit && <th className="px-5 py-3.5 text-right w-24">ACTIONS</th>}
                     </tr>
-                  ) : (
-                    selectedDaySlots.map((slot) => (
-                      <tr key={slot.id} className="bg-white hover:bg-[#F6FAFF] transition-colors h-14">
-                        <td className="px-5 py-3.5 font-bold text-[#0A2147] whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-                            <span>{slot.startTime} – {slot.endTime}</span>
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5EBF3] text-xs font-medium text-slate-800">
+                    {selectedDaySlots.length === 0 ? (
+                      <tr>
+                        <td colSpan={canEdit ? 6 : 5} className="px-5 py-12 text-center text-slate-400 italic">
+                          No classes scheduled for {DAY_CONFIG[selectedDay].label}.
                         </td>
-                        <td className="px-5 py-3.5 font-bold text-[#10213B]">
-                          {slot.courseTitle}
-                          {slot.courseShortName && (
-                            <span className="ml-2 px-1.5 py-0.5 bg-slate-900 text-amber-300 font-extrabold text-[10px] rounded">
-                              {slot.courseShortName}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="px-2 py-0.5 bg-blue-50 text-[#2563EB] font-bold border border-blue-200 text-xs rounded">
-                            {slot.courseCode}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5 text-slate-700">
-                            <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="font-semibold">{slot.teacherName}</span>
-                            {slot.teacherShortName && (
-                              <span className="text-[10px] text-slate-400 font-bold">({slot.teacherShortName})</span>
+                      </tr>
+                    ) : (
+                      selectedDaySlots.map((slot) => (
+                        <tr key={slot.id} className="bg-white hover:bg-[#F6FAFF] transition-colors h-14">
+                          <td className="px-5 py-3.5 font-bold text-[#0A2147] whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                              <span>{slot.startTime} – {slot.endTime}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-[#10213B]">
+                            {slot.courseTitle}
+                            {slot.courseShortName && (
+                              <span className="ml-2 px-1.5 py-0.5 bg-slate-900 text-amber-300 font-extrabold text-[10px] rounded">
+                                {slot.courseShortName}
+                              </span>
                             )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-[11px]">
-                            <MapPin className="w-3 h-3 text-amber-600" />
-                            {slot.room}
-                          </span>
-                        </td>
-                        {canEdit && (
-                          <td className="px-5 py-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {onEditSlot && (
-                                <button
-                                  onClick={() => onEditSlot(slot)}
-                                  className="p-1 hover:bg-blue-50 text-blue-600 rounded border border-slate-200 transition-colors"
-                                  title="Edit slot"
-                                >
-                                  <Edit className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {onDeleteSlot && (
-                                <button
-                                  onClick={() => onDeleteSlot(slot.id)}
-                                  className="p-1 hover:bg-rose-50 text-rose-600 rounded border border-slate-200 transition-colors"
-                                  title="Delete slot"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="px-2 py-0.5 bg-blue-50 text-[#2563EB] font-bold border border-blue-200 text-xs rounded">
+                              {slot.courseCode}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-1.5 text-slate-700">
+                              <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="font-semibold">{slot.teacherName}</span>
+                              {slot.teacherShortName && (
+                                <span className="text-[10px] text-slate-400 font-bold">({slot.teacherShortName})</span>
                               )}
                             </div>
                           </td>
-                        )}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-[11px] whitespace-nowrap">
+                              <MapPin className="w-3 h-3 text-amber-600 shrink-0" />
+                              <span>{cleanRoomNumber(slot.room)}</span>
+                            </span>
+                          </td>
+                          {canEdit && (
+                            <td className="px-5 py-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {onEditSlot && (
+                                  <button
+                                    onClick={() => onEditSlot(slot)}
+                                    className="p-1 hover:bg-blue-50 text-blue-600 rounded border border-slate-200 transition-colors"
+                                    title="Edit slot"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {onDeleteSlot && (
+                                  <button
+                                    onClick={() => onDeleteSlot(slot.id)}
+                                    className="p-1 hover:bg-rose-50 text-rose-600 rounded border border-slate-200 transition-colors"
+                                    title="Delete slot"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -342,9 +342,11 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
                         <h4 className="text-xs font-bold text-[#10213B] leading-tight">
                           {slot.courseTitle}
                         </h4>
-                        <div className="flex items-center justify-between text-[10px] text-slate-600">
-                          <span className="truncate">{slot.teacherName}</span>
-                          <span className="font-bold text-amber-800 shrink-0">{slot.room}</span>
+                        <div className="flex items-center justify-between text-[10px] text-slate-600 gap-1 pt-0.5 border-t border-slate-100">
+                          <span className="truncate flex-1 font-medium">{slot.teacherName}</span>
+                          <span className="font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/80 shrink-0 whitespace-nowrap">
+                            {cleanRoomNumber(slot.room)}
+                          </span>
                         </div>
                         {canEdit && (
                           <div className="pt-1 border-t border-slate-100 flex items-center justify-end gap-1">
@@ -375,6 +377,13 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
           })}
         </div>
       )}
+
+      {/* Routine PNG Export Modal */}
+      <RoutineExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        routines={routines}
+      />
     </div>
   );
 };

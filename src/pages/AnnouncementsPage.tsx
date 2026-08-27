@@ -140,11 +140,11 @@ export const AnnouncementsPage: React.FC = () => {
             : undefined
         }
       >
-        <div className="flex bg-[#F8FAFC] p-1 rounded-lg border border-[#E2E8F0]">
+        <div className="flex bg-[#F1F5FA] dark:bg-slate-800 p-1 rounded-lg border border-[#DCE5F0] dark:border-slate-700">
           <button
             onClick={() => setShowArchive(false)}
             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-              !showArchive ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600'
+              !showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
             }`}
           >
             Active ({counts.activeCount})
@@ -152,7 +152,7 @@ export const AnnouncementsPage: React.FC = () => {
           <button
             onClick={() => setShowArchive(true)}
             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${
-              showArchive ? 'bg-white text-blue-700 shadow-2xs' : 'text-slate-600'
+              showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
             }`}
           >
             <Archive className="w-3.5 h-3.5" /> Archive ({counts.archivedCount})
@@ -162,7 +162,7 @@ export const AnnouncementsPage: React.FC = () => {
 
       {/* STUDENT VIEW: Clean Vertical Feed */}
       {!canManage ? (
-        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-2xs p-4 md:p-6 divide-y divide-[#EDF2F7]">
+        <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] p-4 md:p-6 divide-y divide-[#E5EBF3] dark:divide-slate-800">
           {isLoading ? (
             <div className="py-10 text-center text-xs text-slate-400">Loading notices...</div>
           ) : announcements.length === 0 ? (
@@ -175,19 +175,19 @@ export const AnnouncementsPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     {getPriorityBadge(ann.priority)}
-                    <h3 className="text-sm font-bold text-slate-900">{ann.title}</h3>
+                    <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">{ann.title}</h3>
                   </div>
                   <span className="text-[11px] font-medium text-slate-400">
                     Published: {ann.publishDate}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                <p className="text-xs text-[#334155] dark:text-slate-300 leading-relaxed whitespace-pre-line">
                   {ann.description}
                 </p>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-50">
-                  <span>By: <strong className="text-slate-700">{ann.createdByName}</strong></span>
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-[#E5EBF3] dark:border-slate-800">
+                  <span>By: <strong className="text-[#0F172A] dark:text-slate-200">{ann.createdByName}</strong></span>
                   <span>Expires: {ann.expiryDate}</span>
                 </div>
               </div>
@@ -196,9 +196,9 @@ export const AnnouncementsPage: React.FC = () => {
         </div>
       ) : (
         /* ADMIN/CR VIEW: Data Table & Mobile Cards */
-        <div className="bg-white rounded-xl border border-[#CBD8E8] shadow-md overflow-hidden">
+        <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
           {/* Mobile Card List (block md:hidden) */}
-          <div className="block md:hidden divide-y divide-[#E0E8F2] p-3 space-y-3">
+          <div className="block md:hidden divide-y divide-[#E5EBF3] dark:divide-slate-800 p-3 space-y-3">
             {isLoading ? (
               <div className="py-8 text-center text-slate-400 text-xs">Loading announcements...</div>
             ) : announcements.length === 0 ? (
@@ -214,11 +214,11 @@ export const AnnouncementsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">{ann.title}</h4>
-                    <p className="text-xs text-slate-600 line-clamp-2 mt-0.5">{ann.description}</p>
+                    <h4 className="text-sm font-bold text-[#0F172A] dark:text-white">{ann.title}</h4>
+                    <p className="text-xs text-[#475569] dark:text-slate-400 line-clamp-2 mt-0.5">{ann.description}</p>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-[11px] text-[#475569] dark:text-slate-400 pt-1 border-t border-[#E5EBF3] dark:border-slate-800">
                     <span>By: {ann.createdByName}</span>
                     <div className="flex items-center gap-3">
                       <span>Exp: {ann.expiryDate}</span>
@@ -239,7 +239,7 @@ export const AnnouncementsPage: React.FC = () => {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#F1F5FA] border-b border-[#CBD8E8] text-[11px] font-extrabold text-[#3B4C63] uppercase tracking-wider">
+                <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
                   <th className="px-5 py-3.5">TITLE</th>
                   <th className="px-5 py-3.5 w-28">PRIORITY</th>
                   <th className="px-5 py-3.5 w-32">PUBLISHED</th>
@@ -248,7 +248,7 @@ export const AnnouncementsPage: React.FC = () => {
                   <th className="px-5 py-3.5 text-right w-20">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E0E8F2] text-xs">
+              <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
@@ -263,17 +263,17 @@ export const AnnouncementsPage: React.FC = () => {
                   </tr>
                 ) : (
                   announcements.map((ann) => (
-                    <tr key={ann.id} className="hover:bg-[#F8FBFF] transition-colors h-14">
-                      <td className="px-5 py-3 font-bold text-slate-900">
+                    <tr key={ann.id} className="bg-white dark:bg-[#0F172A] hover:bg-[#F6FAFF] dark:hover:bg-slate-800/50 transition-colors h-14">
+                      <td className="px-5 py-3 font-bold text-[#0F172A] dark:text-white">
                         <div>{ann.title}</div>
-                        <div className="text-[11px] font-normal text-slate-500 line-clamp-1">
+                        <div className="text-[11px] font-normal text-[#64748B] dark:text-slate-400 line-clamp-1">
                           {ann.description}
                         </div>
                       </td>
                       <td className="px-5 py-3">{getPriorityBadge(ann.priority)}</td>
-                      <td className="px-5 py-3 text-slate-600 font-medium">{ann.publishDate}</td>
-                      <td className="px-5 py-3 text-slate-600 font-medium">{ann.expiryDate}</td>
-                      <td className="px-5 py-3 font-semibold text-slate-800">{ann.createdByName}</td>
+                      <td className="px-5 py-3 text-[#475569] dark:text-slate-400 font-medium">{ann.publishDate}</td>
+                      <td className="px-5 py-3 text-[#475569] dark:text-slate-400 font-medium">{ann.expiryDate}</td>
+                      <td className="px-5 py-3 font-semibold text-[#0F172A] dark:text-slate-200">{ann.createdByName}</td>
                       <td className="px-5 py-3 text-right">
                         <button
                           onClick={() => setDeletingId(ann.id)}

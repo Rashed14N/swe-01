@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-crab" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEE2E2" />
+      <stop offset="100%" stop-color="#FCA5A5" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-crab)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Crab Shell Body -->
+      <ellipse cx="100" cy="120" rx="36" ry="26" fill="#EF4444" />
+      <ellipse cx="100" cy="115" rx="30" ry="18" fill="#F87171" />
+      <!-- Big Claws -->
+      <!-- Left Claw -->
+      <path d="M70 110 Q50 90 45 75 Q60 65 72 82 Q55 95 70 110 Z" fill="#DC2626" />
+      <circle cx="48" cy="72" r="10" fill="#EF4444" />
+      <!-- Right Claw -->
+      <path d="M130 110 Q150 90 155 75 Q140 65 128 82 Q145 95 130 110 Z" fill="#DC2626" />
+      <circle cx="152" cy="72" r="10" fill="#EF4444" />
+      <!-- Eye Stalks -->
+      <rect x="85" y="80" width="6" height="18" rx="3" fill="#DC2626" />
+      <circle cx="88" cy="78" r="7" fill="#FFFFFF" />
+      <circle cx="88" cy="78" r="3.5" fill="#0F172A" />
+      <rect x="109" y="80" width="6" height="18" rx="3" fill="#DC2626" />
+      <circle cx="112" cy="78" r="7" fill="#FFFFFF" />
+      <circle cx="112" cy="78" r="3.5" fill="#0F172A" />
+      <!-- Smile -->
+      <path d="M92 125 Q100 132 108 125" stroke="#7F1D1D" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <!-- Walking Legs -->
+      <path d="M68 132 Q50 145 45 158" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round" fill="none" />
+      <path d="M132 132 Q150 145 155 158" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round" fill="none" />
+    
+  </g>
+</svg>

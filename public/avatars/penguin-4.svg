@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-penguin-4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="100%" stop-color="#93C5FD" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-penguin-4)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Penguin Body -->
+      <ellipse cx="100" cy="115" rx="38" ry="46" fill="#0F172A" />
+      <!-- White Belly -->
+      <ellipse cx="100" cy="122" rx="26" ry="34" fill="#FFFFFF" />
+      <!-- Wings -->
+      <ellipse cx="62" cy="118" rx="8" ry="22" fill="#1E293B" transform="rotate(20 62 118)" />
+      <ellipse cx="138" cy="118" rx="8" ry="22" fill="#1E293B" transform="rotate(-20 138 118)" />
+      <!-- Eyes -->
+      <circle cx="88" cy="90" r="4.5" fill="#0F172A" />
+      <circle cx="86" cy="88" r="1.5" fill="#FFFFFF" />
+      <circle cx="112" cy="90" r="4.5" fill="#0F172A" />
+      <circle cx="110" cy="88" r="1.5" fill="#FFFFFF" />
+      <!-- Beak -->
+      <polygon points="94,96 106,96 100,108" fill="#F59E0B" />
+      <!-- Yellow Crest Cheek Highlights -->
+      <path d="M78 82 Q85 85 80 92" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" fill="none" />
+      <path d="M122 82 Q115 85 120 92" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" fill="none" />
+      <!-- Orange Feet -->
+      <ellipse cx="85" cy="160" rx="10" ry="6" fill="#F59E0B" />
+      <ellipse cx="115" cy="160" rx="10" ry="6" fill="#F59E0B" />
+    
+  </g>
+</svg>

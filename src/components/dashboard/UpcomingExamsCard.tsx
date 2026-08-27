@@ -1,110 +1,229 @@
 import React from 'react';
-import { Calendar, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronRight, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Exam } from '../../types';
+import { Exam, Course } from '../../types';
 
 interface UpcomingExamsCardProps {
-  exams: (Exam & { daysLeft: number })[];
+  exams: (Exam & { daysLeft?: number; courseShortName?: string })[];
+  courses?: Course[];
+  className?: string;
 }
 
-export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({ exams }) => {
+const COURSE_SHORT_NAMES: Record<string, string> = {
+  'SWE 305': 'SADP',
+  'SWE 307': 'DBMS',
+  'SWE 309': 'WET',
+  'SWE 301': 'SE',
+  'SWE 201': 'DSA',
+  'SWE 203': 'OOP',
+  'SWE 101': 'SPL',
+  'SWE 401': 'SQA',
+  'SWE 403': 'CN',
+  'SWE 205': 'DAA',
+  'SWE 303': 'OS',
+};
+
+export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({
+  exams,
+  courses = [],
+  className = '',
+}) => {
   const navigate = useNavigate();
 
-  const getExamBadge = (type: string) => {
-    switch (type) {
-      case 'MIDTERM': return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'FINAL': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'QUIZ': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'LAB_EXAM': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      default: return 'bg-blue-50 text-blue-700 border-blue-200';
+  const getCourseShortName = (exam: Exam & { courseShortName?: string }) => {
+    if (exam.courseShortName) return exam.courseShortName;
+
+    const matchedCourse = courses.find(
+      c =>
+        (c.id && c.id === exam.courseId) ||
+        (c.code && c.code.trim().toUpperCase() === exam.courseCode?.trim().toUpperCase())
+    );
+    if (matchedCourse?.shortName) return matchedCourse.shortName;
+
+    const code = exam.courseCode?.trim().toUpperCase() || '';
+    const title = exam.courseTitle?.trim().toUpperCase() || '';
+
+    for (const [key, value] of Object.entries(COURSE_SHORT_NAMES)) {
+      if (code.includes(key.replace('SWE ', '')) || code === key) {
+        return value;
+      }
     }
+
+    if (title.includes('ARCHITECTURE') || title.includes('DESIGN PATTERNS')) return 'SADP';
+    if (title.includes('DATABASE') || title.includes('DBMS')) return 'DBMS';
+    if (title.includes('WEB ENGINEERING') || title.includes('TECHNOLOGY')) return 'WET';
+    if (title.includes('SOFTWARE ENGINEERING')) return 'SE';
+    if (title.includes('DATA STRUCTURE')) return 'DSA';
+    if (title.includes('OBJECT ORIENTED') || title.includes('OOP')) return 'OOP';
+    if (title.includes('STRUCTURED PROGRAMMING') || title.includes('SPL')) return 'SPL';
+    if (title.includes('QUALITY ASSURANCE') || title.includes('SQA')) return 'SQA';
+    if (title.includes('NETWORKING') || title.includes('NETWORK')) return 'CN';
+    if (title.includes('ALGORITHM')) return 'DAA';
+    if (title.includes('OPERATING')) return 'OS';
+
+    return undefined;
   };
 
   return (
-    <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] flex flex-col h-full overflow-hidden">
-      <div className="bg-[#F5F8FF] px-4 py-3 sm:px-5 sm:py-3.5 border-b border-[#DCE6F2] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 sm:p-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-100 shrink-0">
-            <Calendar className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-xs sm:text-sm font-bold text-[#0A2147]">Upcoming Assessments</h3>
-            <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium block">Nearest exams</span>
-          </div>
+    <div
+      className={`bg-white dark:bg-[#0F172A] border border-[#D8E2EE] dark:border-slate-800 rounded-xl shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all font-['Geist',sans-serif] ${className}`}
+      style={{ fontFamily: '"Geist", sans-serif' }}
+    >
+      {/* Header Area with Ambient Gradient Background */}
+      <div
+        className="relative overflow-hidden px-4 py-3 sm:px-4.5 sm:py-3 border-b border-[#D8E2EE] dark:border-blue-900/30 flex items-center justify-between"
+        style={{
+          background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+          boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+        }}
+      >
+        {/* Soft Radial Ambient Glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+            }}
+          />
+          <div
+            className="absolute top-0 right-10 w-36 h-full pointer-events-none opacity-40"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(101, 120, 255, 0.2) 1px, transparent 1px)',
+              backgroundSize: '10px 10px',
+            }}
+          />
         </div>
-        <span className="px-2.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] sm:text-xs font-bold rounded-full">
-          {exams.length} Upcoming
-        </span>
+
+        <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
+          <GraduationCap className="w-5 h-5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.4} />
+          <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
+            Upcoming Exams
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/exams')}
+          className="relative z-10 text-xs font-semibold text-[#2563EB] hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 hover:underline transition-colors shrink-0"
+        >
+          View All <ChevronRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      <div className="flex-1 p-3.5 sm:p-4 space-y-2.5">
-        {exams.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-500 bg-[#F6F9FD] rounded-lg border border-dashed border-[#D8E2EE]">
-            🎉 No upcoming exams or tests right now!
-          </div>
-        ) : (
-          exams.slice(0, 3).map(exam => {
-            const dateObj = new Date(exam.date);
-            const monthStr = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-            const dayNum = dateObj.getDate();
+      {/* Exam Rows with thin dividers */}
+      {exams.length === 0 ? (
+        <div className="py-10 px-4 text-center text-xs text-[#64748B] dark:text-slate-400 font-medium">
+          No upcoming exams scheduled.
+        </div>
+      ) : (
+        <div className="divide-y divide-[#EEF2F7] dark:divide-slate-800/80">
+          {exams.map(exam => {
+            const examDate = new Date(exam.date);
+            const weekday = isNaN(examDate.getTime())
+              ? ''
+              : examDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            const month = isNaN(examDate.getTime())
+              ? 'EXAM'
+              : examDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+            const day = isNaN(examDate.getTime())
+              ? '—'
+              : examDate.toLocaleDateString('en-US', { day: 'numeric' });
+
+            // Accurate Days Left Calculation
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const target = new Date(exam.date);
+            target.setHours(0, 0, 0, 0);
+            const calculatedDiff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            const diffDays = isNaN(target.getTime()) ? (exam.daysLeft ?? 0) : calculatedDiff;
+            const isUrgent = diffDays <= 2;
+
+            let daysLeftText = `${diffDays} Days Left`;
+            if (diffDays <= 0) {
+              daysLeftText = 'Today';
+            } else if (diffDays === 1) {
+              daysLeftText = '1 Day Left';
+            }
+
+            const typeLabel = (exam.type || 'EXAM').replace(/_/g, ' ');
+            const shortName = getCourseShortName(exam);
 
             return (
               <div
                 key={exam.id}
-                className="p-2.5 sm:p-3 bg-white hover:bg-[#F7FAFF] rounded-lg border border-[#E5EBF3] flex items-center gap-2.5 transition-all"
+                onClick={() => navigate('/exams')}
+                className="group px-4 py-3 sm:px-4.5 sm:py-3 bg-white dark:bg-[#0F172A] hover:bg-[#FAFCFF] dark:hover:bg-slate-800/40 transition-colors duration-150 cursor-pointer min-h-[72px] grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-3.5"
               >
-                {/* Date Block */}
-                <div className="w-10 h-10 sm:w-11 sm:h-11 bg-[#F6F9FD] rounded-lg border border-[#D8E2EE] flex flex-col items-center justify-center shrink-0">
-                  <span className="text-[8px] sm:text-[9px] font-bold text-slate-500 tracking-wider uppercase leading-none">
-                    {monthStr}
-                  </span>
-                  <span className="text-sm sm:text-base font-black text-[#0A2147] leading-none mt-0.5">
-                    {dayNum}
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs font-bold text-[#10213B] truncate">{exam.title}</span>
-                    <span className={`px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded border ${getExamBadge(exam.type)}`}>
-                      {exam.type}
+                {/* 1. Date Text (No large card box) */}
+                <div className="flex items-center gap-2 select-none shrink-0">
+                  <div className="flex flex-col items-center justify-center text-center w-[46px] shrink-0">
+                    {weekday && (
+                      <span className="text-[9px] font-semibold text-[#64748B] dark:text-slate-400 uppercase leading-none mb-0.5">
+                        {weekday}
+                      </span>
+                    )}
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wider leading-none"
+                      style={{ color: isUrgent ? '#EF4444' : '#2563EB' }}
+                    >
+                      {month}
+                    </span>
+                    <span
+                      className="text-[24px] font-extrabold leading-none mt-0.5"
+                      style={{ color: isUrgent ? '#EF4444' : '#2563EB' }}
+                    >
+                      {day}
                     </span>
                   </div>
-                  <p className="text-[10px] sm:text-[11px] text-slate-600 truncate mt-0.5">
-                    {exam.courseCode} • {exam.courseTitle}
-                  </p>
-                  {exam.room && (
-                    <span className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" /> {exam.room}
-                    </span>
-                  )}
+                  {/* Subtle vertical separator bar */}
+                  <div
+                    className="w-[2px] h-[34px] rounded-full shrink-0"
+                    style={{ backgroundColor: isUrgent ? '#FCA5A5' : '#DBEAFE' }}
+                  />
                 </div>
 
-                {/* Days left badge */}
-                <div className="shrink-0 text-right">
-                  <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-lg border inline-block ${
-                    exam.daysLeft <= 3
-                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                      : 'bg-amber-50 text-amber-700 border-amber-200'
-                  }`}>
-                    {exam.daysLeft === 0 ? 'Today!' : exam.daysLeft === 1 ? 'Tomorrow' : `${exam.daysLeft}d left`}
+                {/* 2. Middle Exam Info Area */}
+                <div className="min-w-0 pr-1 flex flex-col justify-center">
+                  {/* Top Metadata Row: Type and Course Short Name */}
+                  <div className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis leading-none">
+                    {/* Exam Type */}
+                    <span className="text-[10px] font-bold uppercase text-[#5C6B82] dark:text-slate-300 shrink-0">
+                      {typeLabel}
+                    </span>
+
+                    {/* Course Short Name (or fallback to course code if short name not present) */}
+                    {(shortName || exam.courseCode) && (
+                      <>
+                        <span className="text-[#94A3B8] dark:text-slate-600 text-[10px] select-none shrink-0">·</span>
+                        <span className="text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
+                          {shortName || exam.courseCode}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Bottom: Exam Title (Shown in full without truncation) */}
+                  <h3 className="text-[13.5px] sm:text-[14px] font-[650] text-[#14213D] dark:text-white leading-snug group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors mt-1 break-words">
+                    {exam.title}
+                  </h3>
+                </div>
+
+                {/* 3. Compact Days Left Status Pill */}
+                <div className="shrink-0 justify-self-end">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-[650] border whitespace-nowrap select-none transition-colors ${
+                      isUrgent
+                        ? 'bg-[#FFF5F5] text-[#EF4444] border-[#F8CECE] dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/60'
+                        : 'bg-[#F3F7FF] text-[#2563EB] border-[#D9E5FB] dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/60'
+                    }`}
+                  >
+                    {daysLeftText}
                   </span>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
-
-      <div className="p-3.5 pt-0 bg-white flex justify-end">
-        <button
-          onClick={() => navigate('/exams')}
-          className="text-[11px] sm:text-xs font-bold text-[#2563EB] hover:text-blue-800 flex items-center gap-1 hover:underline"
-        >
-          View All Exams & Deadlines <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 };
-

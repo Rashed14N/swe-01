@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, User, LayoutGrid, ListFilter, Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { RoutineSlot } from '../types';
 import { VisualRoutineGrid } from '../components/routine/VisualRoutineGrid';
+import { PageHeader } from '../components/common/PageHeader';
+import { ALL_ROOMS, CATEGORIZED_ROOMS } from '../constants/rooms';
+import { RoutineExportModal } from '../components/routine/RoutineExportModal';
 
 export const RoutinePage: React.FC = () => {
   const { token, user } = useAuth();
@@ -14,6 +17,7 @@ export const RoutinePage: React.FC = () => {
 
   // Modal for CR/Admin editing routine class slots
   const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<RoutineSlot | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,7 +31,7 @@ export const RoutinePage: React.FC = () => {
     courseShortName: 'DBMS',
     teacherName: 'Dr. Tanvir Rahman',
     teacherShortName: 'TR',
-    room: '502 Lab',
+    room: 'Room 502',
   });
 
   const canEdit = user?.role === 'ADMIN' || user?.role === 'CR';
@@ -62,7 +66,7 @@ export const RoutinePage: React.FC = () => {
       courseShortName: 'DBMS',
       teacherName: 'Dr. Tanvir Rahman',
       teacherShortName: 'TR',
-      room: '502 Lab',
+      room: 'Room 502',
     });
     setIsSlotModalOpen(true);
   };
@@ -137,31 +141,29 @@ export const RoutinePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-              {user?.batchName || 'SWE Batch'}
-            </span>
-            <span className="text-xs text-slate-500">• Semester {user?.currentSemester} Timetable</span>
-          </div>
-          <h1 className="text-xl font-bold text-slate-900 mt-1">Class Timetable & Visual Routine</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Interactive visual timetable and schedule slots. {canEdit && 'You have class edit access for this batch.'}
-          </p>
-        </div>
-
-        {canEdit && (
-          <button
-            onClick={() => handleOpenAddModal()}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 shrink-0"
-          >
-            <Plus className="w-4 h-4" /> Add Class Slot
-          </button>
-        )}
-      </div>
+    <div className="space-y-6 max-w-[1400px]">
+      <PageHeader
+        title="Class Timetable & Visual Routine"
+        description={`Interactive visual timetable and schedule slots. ${canEdit ? 'You have class edit access for this batch.' : ''}`}
+        breadcrumb={`${user?.batchName || 'SWE Batch'} • Semester ${user?.currentSemester} Timetable`}
+        primaryAction={
+          canEdit
+            ? {
+                label: 'Add Class Slot',
+                icon: Plus,
+                onClick: () => handleOpenAddModal(),
+              }
+            : undefined
+        }
+      >
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-slate-700/50 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+        >
+          <Download className="w-4 h-4" />
+          Download PNG Routine
+        </button>
+      </PageHeader>
 
       {isLoading ? (
         <div className="py-12 text-center text-xs text-slate-400">Loading routine grid...</div>
@@ -241,11 +243,17 @@ export const RoutinePage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="502 Lab"
+                    list="routine-rooms-list"
+                    placeholder="e.g. Room 502, XL 1, Exten-2"
                     value={slotForm.room}
                     onChange={e => setSlotForm({ ...slotForm, room: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold"
                   />
+                  <datalist id="routine-rooms-list">
+                    {ALL_ROOMS.map(r => (
+                      <option key={r} value={r} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
@@ -317,6 +325,15 @@ export const RoutinePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ROUTINE PNG EXPORT MODAL */}
+      <RoutineExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        routines={routines}
+        batchName={user?.batchName || 'SWE Batch'}
+        semester={user?.currentSemester || 5}
+      />
     </div>
   );
 };

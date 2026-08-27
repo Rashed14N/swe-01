@@ -27,7 +27,7 @@ export const NotFoundPage: React.FC = () => {
       {/* Top Brand Bar */}
       <header className="h-16 px-6 flex items-center border-b border-slate-200/80 bg-white">
         <div className="flex items-center gap-2.5">
-          <SweLogo variant="icon" size="sm" className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-xs" />
+          <SweLogo variant="icon" size="sm" />
           <div>
             <span className="text-sm font-extrabold text-[#0A2147] tracking-tight block leading-tight">SWE Portal</span>
             <span className="text-[10px] text-slate-500 font-medium block">Metropolitan University</span>

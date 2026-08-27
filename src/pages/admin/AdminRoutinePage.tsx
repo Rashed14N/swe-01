@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { RoutineSlot, RoutineRequest, Batch } from '../../types';
 import { VisualRoutineGrid } from '../../components/routine/VisualRoutineGrid';
+import { ALL_ROOMS } from '../../constants/rooms';
 
 export const AdminRoutinePage: React.FC = () => {
   const { token } = useAuth();
@@ -29,7 +30,7 @@ export const AdminRoutinePage: React.FC = () => {
     courseCode: 'SWE 305',
     courseTitle: 'Database Systems',
     teacherName: 'Dr. Tanvir Rahman',
-    room: '502 Lab',
+    room: 'Room 502',
   });
 
   // Reject modal
@@ -81,7 +82,7 @@ export const AdminRoutinePage: React.FC = () => {
       courseCode: 'SWE 305',
       courseTitle: 'Database Systems',
       teacherName: 'Dr. Tanvir Rahman',
-      room: '502 Lab',
+      room: 'Room 502',
     });
     setIsSlotModalOpen(true);
   };
@@ -390,11 +391,17 @@ export const AdminRoutinePage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="502 Lab"
+                    list="admin-rooms-list"
+                    placeholder="e.g. Room 502, XL 1, Exten-2"
                     value={slotForm.room}
                     onChange={e => setSlotForm({ ...slotForm, room: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold"
                   />
+                  <datalist id="admin-rooms-list">
+                    {ALL_ROOMS.map(r => (
+                      <option key={r} value={r} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 

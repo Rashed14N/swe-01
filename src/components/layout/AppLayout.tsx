@@ -12,7 +12,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#EEF3F9] text-[#10213B] flex font-sans antialiased relative">
+    <div className="min-h-screen bg-[#EEF3F9] dark:bg-[#090F1E] text-[#0F172A] dark:text-[#F8FAFC] flex font-sans antialiased relative transition-colors duration-200">
       {/* Sidebar */}
       <Sidebar
         isCollapsed={isCollapsed}

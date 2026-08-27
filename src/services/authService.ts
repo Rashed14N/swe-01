@@ -19,6 +19,23 @@ export interface AuthSession {
   createdAt: string;
 }
 
+export const DEMO_STUDENT_USER: User = {
+  id: 'usr_demo_student_111111111',
+  studentId: '111111111',
+  name: 'Demo Student (Testing)',
+  email: 'student@swe.demo',
+  phone: '01711111111',
+  role: 'STUDENT',
+  batchId: 'batch-9',
+  batchName: 'SWE 9th Batch',
+  currentSemester: 4,
+  profileImage: '/avatars/pangolin-cream-2.svg',
+  status: 'ACTIVE',
+  points: 150,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 /**
  * Normalizes a Student ID by removing hyphens, spaces, dots, and underscores.
  * e.g., '252-134-022' -> '252134022', '252 134 022' -> '252134022'
@@ -46,7 +63,7 @@ export function mapDbUserToAppUser(row: any): User {
     batchId: row.batch_id || row.batchId || 'batch-9',
     batchName: row.batch_name || row.batchName || 'SWE 9th Batch',
     currentSemester: Number(row.current_semester || row.currentSemester || 4),
-    profileImage: row.profile_image || row.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    profileImage: row.profile_image || row.profileImage || '/avatars/pangolin-cream-2.svg',
     status: (row.status as 'ACTIVE' | 'DISABLED') || 'ACTIVE',
     points: Number(row.points || 0),
     createdAt: row.created_at || row.createdAt || new Date().toISOString(),
@@ -138,7 +155,7 @@ class SupabaseAuthService {
         batchId: assignedBatchId,
         batchName: assignedBatchName,
         currentSemester: assignedSemester,
-        profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        profileImage: '/avatars/pangolin-cream-2.svg',
         status: 'ACTIVE',
         points: 0,
         createdAt: authUser.created_at || new Date().toISOString(),
@@ -206,6 +223,33 @@ class SupabaseAuthService {
 
     if (!input || !cleanPassword) {
       return { success: false, error: 'Student ID / Email and Password are required.' };
+    }
+
+    // Demo student account bypass for quick testing
+    const normalizedInputId = normalizeStudentId(input);
+    if (
+      (normalizedInputId === '111111111' || input.toLowerCase() === 'student@swe.demo' || input.toLowerCase() === 'demo.student@metrouni.edu.bd') &&
+      (cleanPassword === 'password' || cleanPassword === '111111111' || cleanPassword === '123456')
+    ) {
+      console.log('[AuthService] Demo student account test login triggered for 111111111');
+      return {
+        success: true,
+        user: DEMO_STUDENT_USER,
+        session: {
+          access_token: 'demo_session_token_111111111',
+          token_type: 'bearer',
+          user: {
+            id: 'demo-student-auth-id',
+            email: 'student@swe.demo',
+            user_metadata: {
+              name: 'Demo Student',
+              student_id: '111111111',
+              role: 'STUDENT',
+            }
+          }
+        },
+        token: 'demo_session_token_111111111'
+      };
     }
 
     let targetEmail = input.toLowerCase();
@@ -308,7 +352,7 @@ class SupabaseAuthService {
         batchId: authData.user.user_metadata?.batch_id || 'batch-9',
         batchName: authData.user.user_metadata?.batch_name || 'SWE 9th Batch',
         currentSemester: Number(authData.user.user_metadata?.current_semester || 4),
-        profileImage: authData.user.user_metadata?.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        profileImage: authData.user.user_metadata?.profile_image || '/avatars/pangolin-cream-2.svg',
         status: 'ACTIVE',
         points: 0,
         createdAt: authData.user.created_at || new Date().toISOString(),
@@ -385,11 +429,12 @@ class SupabaseAuthService {
   }
 
   /**
-   * Update user profile in public.users
+   * Update user profile in public.users and Supabase auth user_metadata
    */
-  public async updateUser(updatedUser: User): Promise<void> {
+  public async updateUser(updatedUser: User): Promise<{ success: boolean; error?: string }> {
     try {
-      await supabase.from('users').upsert({
+      // 1. Update Supabase public.users table
+      const { error: dbError } = await supabase.from('users').upsert({
         id: updatedUser.id,
         student_id: updatedUser.studentId,
         name: updatedUser.name,
@@ -404,8 +449,30 @@ class SupabaseAuthService {
         points: updatedUser.points || 0,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'student_id' });
+
+      if (dbError) {
+        console.warn('[SupabaseAuthService] updateUser db error:', dbError.message);
+      }
+
+      // 2. Update Supabase Auth user_metadata
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            name: updatedUser.name,
+            phone: updatedUser.phone || null,
+            profile_image: updatedUser.profileImage,
+            current_semester: updatedUser.currentSemester,
+            batch_name: updatedUser.batchName,
+          }
+        });
+      } catch (authMetaErr) {
+        console.warn('[SupabaseAuthService] auth metadata update error:', authMetaErr);
+      }
+
+      return { success: true };
     } catch (err: any) {
       console.warn('[SupabaseAuthService] updateUser error:', err?.message);
+      return { success: false, error: err?.message || 'Failed to update profile' };
     }
   }
 }

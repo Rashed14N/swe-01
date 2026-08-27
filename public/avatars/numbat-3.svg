@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-numbat-3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEDD5" />
+      <stop offset="100%" stop-color="#FDBA74" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-numbat-3)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Numbat Body -->
+      <ellipse cx="100" cy="120" rx="42" ry="26" fill="#EA580C" />
+      <!-- Characteristic White Stripes -->
+      <path d="M85 100 L85 140" stroke="#FFF7ED" stroke-width="4" stroke-linecap="round" />
+      <path d="M95 96 L95 144" stroke="#FFF7ED" stroke-width="4" stroke-linecap="round" />
+      <path d="M105 96 L105 144" stroke="#FFF7ED" stroke-width="4" stroke-linecap="round" />
+      <path d="M115 100 L115 140" stroke="#FFF7ED" stroke-width="4" stroke-linecap="round" />
+      <path d="M125 105 L125 135" stroke="#FFF7ED" stroke-width="4" stroke-linecap="round" />
+      <!-- Bushy Tail -->
+      <path d="M58 120 C35 110 30 70 50 65 C55 80 50 110 58 120 Z" fill="#9A3412" />
+      <!-- Long Snout Head -->
+      <path d="M130 110 L165 118 L130 128 Z" fill="#C2410C" />
+      <!-- Eye stripe -->
+      <path d="M128 112 L150 117" stroke="#1E293B" stroke-width="3" stroke-linecap="round" />
+      <circle cx="138" cy="113" r="2.5" fill="#FFFFFF" />
+      <!-- Pointy Ears -->
+      <polygon points="126,108 122,88 134,104" fill="#9A3412" />
+    
+  </g>
+</svg>

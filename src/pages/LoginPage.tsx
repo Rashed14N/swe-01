@@ -206,33 +206,61 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
   };
 
   return (
-    <div className="min-h-screen bg-slate-900/5 bg-gradient-to-br from-slate-100 via-[#EDF2F9] to-[#E2E8F4] text-slate-900 flex items-center justify-center p-4 md:p-8 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-3 sm:p-5 md:p-8 font-sans relative overflow-hidden">
       
-      {/* Refined Ambient Mesh Gradient Background Lighting */}
-      <div className="absolute -top-40 -left-40 w-[38rem] h-[38rem] rounded-full bg-gradient-to-br from-blue-300/25 to-indigo-300/15 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-[42rem] h-[42rem] rounded-full bg-gradient-to-tl from-sky-300/20 via-blue-200/15 to-transparent blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full bg-indigo-200/15 blur-3xl pointer-events-none" />
+      {/* 3 Dynamic Theme-Color Light Rays (Blue, Cyan, Indigo) */}
       
-      {/* Subtle Precision Micro-Dot Matrix */}
+      {/* Ray 1: Top-Left to Center-Right Wide Royal Blue Ray */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-30"
+        className="absolute -top-32 -left-20 w-[120vw] h-[35rem] pointer-events-none origin-top-left -rotate-[22deg] opacity-75"
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(71, 85, 105, 0.25) 1.2px, transparent 0)',
+          background: 'linear-gradient(90deg, rgba(37,99,235,0.18) 0%, rgba(56,189,248,0.12) 35%, rgba(255,255,255,0) 80%)',
+          filter: 'blur(35px)',
+        }}
+      />
+
+      {/* Ray 2: Bottom-Right to Center-Left Sweeping Cyan/Sky Ray */}
+      <div 
+        className="absolute -bottom-40 -right-20 w-[110vw] h-[30rem] pointer-events-none origin-bottom-right rotate-[28deg] opacity-70"
+        style={{
+          background: 'linear-gradient(270deg, rgba(6,182,212,0.18) 0%, rgba(59,130,246,0.12) 40%, rgba(255,255,255,0) 85%)',
+          filter: 'blur(40px)',
+        }}
+      />
+
+      {/* Ray 3: Top-Right Diagonal Indigo/Cobalt Beam */}
+      <div 
+        className="absolute -top-20 -right-10 w-[80vw] h-[22rem] pointer-events-none origin-top-right -rotate-[35deg] opacity-60"
+        style={{
+          background: 'linear-gradient(270deg, rgba(99,102,241,0.15) 0%, rgba(37,99,235,0.08) 50%, rgba(255,255,255,0) 90%)',
+          filter: 'blur(30px)',
+        }}
+      />
+
+      {/* Soft Ambient Depth Glows */}
+      <div className="absolute top-1/4 left-1/5 w-96 h-96 rounded-full bg-blue-400/10 blur-[90px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-cyan-400/10 blur-[90px] pointer-events-none" />
+      
+      {/* Subtle Precision Light Micro-Dot Matrix */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-40"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(100, 116, 139, 0.22) 1.2px, transparent 0)',
           backgroundSize: '24px 24px',
         }}
       />
 
-      {/* Modern Abstract Architectural Accent Rings */}
-      <div className="absolute top-10 left-10 w-40 h-40 border border-slate-300/40 rounded-full pointer-events-none" />
-      <div className="absolute top-16 left-16 w-28 h-28 border border-dashed border-blue-400/30 rounded-full pointer-events-none" />
-      <div className="absolute bottom-12 right-12 w-52 h-52 border border-slate-300/35 rounded-3xl rotate-12 pointer-events-none" />
-      <div className="absolute bottom-20 right-20 w-36 h-36 border border-indigo-400/25 rounded-2xl -rotate-6 pointer-events-none" />
+      {/* Modern Architectural Geometric Rings */}
+      <div className="absolute top-10 left-10 w-44 h-44 border border-slate-300/50 rounded-full pointer-events-none" />
+      <div className="absolute top-16 left-16 w-32 h-32 border border-dashed border-blue-400/40 rounded-full pointer-events-none" />
+      <div className="absolute bottom-12 right-12 w-56 h-56 border border-slate-300/45 rounded-3xl rotate-12 pointer-events-none" />
+      <div className="absolute bottom-20 right-20 w-40 h-40 border border-cyan-400/35 rounded-2xl -rotate-6 pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-5xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl shadow-slate-300/60 border border-slate-200/90 overflow-hidden flex flex-col md:flex-row"
+        className="relative z-10 w-full max-w-5xl bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl shadow-slate-300/70 border border-slate-200/90 overflow-hidden flex flex-col md:flex-row"
       >
         
         {/* Left Brand Panel (Desktop) */}
@@ -256,12 +284,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
           <div>
             {/* SWE Logo Header */}
             <div className="flex items-center gap-3.5">
-              <SweLogo variant="icon" size="lg" className="bg-white/10 p-1.5 rounded-2xl border border-white/20 shadow-lg" />
+              <SweLogo variant="icon" size="lg" />
               <div>
-                <span className="text-xl font-extrabold tracking-tight text-white block">
+                <span className="text-xl lg:text-[22px] font-extrabold tracking-tight text-white block leading-tight">
                   Student Portal
                 </span>
-                <span className="text-xs text-blue-200 block font-medium">
+                <span className="text-xs text-blue-200 block font-medium mt-0.5">
                   Department of Software Engineering
                 </span>
               </div>
@@ -307,13 +335,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
         <div className="w-full md:w-[52%] flex flex-col justify-between">
           
           {/* Mobile Top Header */}
-          <div className="md:hidden bg-gradient-to-r from-[#041E4A] via-[#062A63] to-[#073B82] p-4 sm:p-5 text-white flex items-center gap-3.5 border-b border-blue-900/30">
-            <SweLogo variant="icon" size="md" className="bg-white/10 p-1 rounded-xl border border-white/20 shadow-sm shrink-0" />
+          <div className="md:hidden bg-gradient-to-r from-[#041E4A] via-[#062A63] to-[#073B82] p-4 sm:p-5 text-white flex items-center gap-3 border-b border-blue-900/30">
+            <SweLogo variant="icon" size="sm" />
             <div>
               <span className="text-lg font-bold tracking-tight text-white block leading-tight">
                 Student Portal
               </span>
-              <span className="text-xs text-blue-200 block font-medium">
+              <span className="text-xs text-blue-200 block font-medium mt-0.5">
                 Department of Software Engineering
               </span>
             </div>
@@ -513,8 +541,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     </motion.button>
                   </form>
 
+                  {/* Quick Demo Student Account for Testing */}
+                  <div className="mt-3.5 p-2.5 sm:p-3 rounded-xl bg-blue-50/80 border border-blue-100/90 flex items-center justify-between gap-2.5 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="px-2 py-0.5 rounded-md bg-[#0B4491] text-white font-bold text-[10px] tracking-wider uppercase shrink-0">
+                        Demo
+                      </span>
+                      <span className="truncate text-slate-600 text-[11px] sm:text-xs">
+                        ID: <strong className="text-slate-900 font-mono">111111111</strong> • Pass: <strong className="text-slate-900 font-mono">password</strong>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStudentIdOrEmail('111111111');
+                        setLoginPassword('password');
+                        setLoginError(null);
+                      }}
+                      className="text-[11px] font-bold text-[#0B4491] hover:text-[#08336E] bg-white hover:bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-200/80 shadow-2xs transition-colors shrink-0 cursor-pointer"
+                    >
+                      Auto-fill
+                    </button>
+                  </div>
+
                   {/* Prompt to Register */}
-                  <div className="mt-5 text-center p-3.5 bg-slate-50/90 border border-slate-200 rounded-xl">
+                  <div className="mt-4 text-center p-3.5 bg-slate-50/90 border border-slate-200 rounded-xl">
                     <p className="text-xs sm:text-sm text-slate-600">
                       Don't have an account yet?{' '}
                       <button

@@ -45,11 +45,11 @@ export const CoursesPage: React.FC = () => {
             <div
               key={course.id}
               onClick={() => navigate(`/courses/${course.id}`)}
-              className="bg-white p-5 rounded-xl border border-[#CBD8E8] hover:border-blue-400 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+              className="bg-white dark:bg-[#0F172A] p-5 rounded-xl border border-[#D8E2EE] dark:border-slate-800 hover:border-blue-400 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] hover:shadow-[0_6px_18px_rgba(15,35,70,0.12)] transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 font-bold text-xs rounded border border-blue-200 font-mono">
+                  <span className="px-2.5 py-0.5 bg-[#EFF5FF] text-[#2563EB] font-bold text-xs rounded-md border border-[#DBEAFE] font-mono">
                     {course.code}
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -58,33 +58,33 @@ export const CoursesPage: React.FC = () => {
                         {course.shortName}
                       </span>
                     )}
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded uppercase">
+                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded uppercase">
                       {course.type}
                     </span>
                   </div>
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h3 className="text-base font-bold text-[#0F172A] dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors line-clamp-2">
                   {course.title}
                 </h3>
 
-                <div className="mt-4 space-y-2 text-xs text-slate-600">
+                <div className="mt-4 space-y-2 text-xs text-[#475569] dark:text-slate-400">
                   <div className="flex items-center gap-2">
                     <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="font-medium text-slate-800">
+                    <span className="font-medium text-[#0F172A] dark:text-slate-200">
                       {course.assignedFacultyName || 'Department Faculty'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span className="font-semibold text-slate-700">
+                    <span className="font-semibold text-[#475569] dark:text-slate-300">
                       {course.credits} Academic Credits
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-3.5 border-t border-[#CBD8E8] flex items-center justify-between text-xs font-bold text-blue-600 group-hover:underline">
+              <div className="mt-5 pt-3.5 border-t border-[#E5EBF3] dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#2563EB] group-hover:underline">
                 <span>View Course Materials</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>

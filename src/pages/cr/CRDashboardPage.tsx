@@ -7,18 +7,28 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { BatchAnnouncement, Exam, RoutineSlot, RoutineRequest } from '../../types';
+import { RoutineClassCard } from '../../components/routine/RoutineClassCard';
+
+// In-memory cache for instant CR dashboard transitions
+let crDashboardCache: {
+  announcements: BatchAnnouncement[];
+  exams: (Exam & { daysLeft: number })[];
+  routines: RoutineSlot[];
+  routineRequests: RoutineRequest[];
+  coursesCount: number;
+} | null = null;
 
 export const CRDashboardPage: React.FC = () => {
   const { user, token } = useAuth();
   const { addToast } = useNotifications();
   const navigate = useNavigate();
 
-  const [announcements, setAnnouncements] = useState<BatchAnnouncement[]>([]);
-  const [exams, setExams] = useState<(Exam & { daysLeft: number })[]>([]);
-  const [routines, setRoutines] = useState<RoutineSlot[]>([]);
-  const [routineRequests, setRoutineRequests] = useState<RoutineRequest[]>([]);
-  const [coursesCount, setCoursesCount] = useState<number>(5);
-  const [isLoading, setIsLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState<BatchAnnouncement[]>(() => crDashboardCache?.announcements || []);
+  const [exams, setExams] = useState<(Exam & { daysLeft: number })[]>(() => crDashboardCache?.exams || []);
+  const [routines, setRoutines] = useState<RoutineSlot[]>(() => crDashboardCache?.routines || []);
+  const [routineRequests, setRoutineRequests] = useState<RoutineRequest[]>(() => crDashboardCache?.routineRequests || []);
+  const [coursesCount, setCoursesCount] = useState<number>(() => crDashboardCache?.coursesCount || 5);
+  const [isLoading, setIsLoading] = useState(!crDashboardCache);
 
   // Quick Action Modal states
   const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
@@ -49,63 +59,56 @@ export const CRDashboardPage: React.FC = () => {
     courseTitle: 'Software Engineering',
     currentSchedule: 'Sunday 12:00 PM - 01:30 PM (Room 401)',
     requestedSchedule: 'Tuesday 02:00 PM - 03:30 PM (Room 504)',
-    requestedRoom: 'Room 504 Lab',
-    reason: 'Lab maintenance conflict on Sunday.',
+    requestedRoom: 'Room 504',
+    reason: 'Schedule conflict on Sunday.',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchDashboardData = async () => {
     if (!token) return;
-    setIsLoading(true);
+    if (!crDashboardCache) {
+      setIsLoading(true);
+    }
 
     try {
       const batchId = user?.batchId || 'batch-9';
 
-      // 1. Fetch announcements
-      const annRes = await fetch(`/api/announcements?batchId=${batchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (annRes.ok) {
-        const data = await annRes.json();
-        setAnnouncements(data.announcements || []);
-      }
+      const [annRes, examRes, routRes, reqRes, courseRes] = await Promise.all([
+        fetch(`/api/announcements?batchId=${batchId}`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/exams?batchId=${batchId}`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/routines?batchId=${batchId}`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/routines/requests', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/courses?batchId=${batchId}`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
 
-      // 2. Fetch upcoming exams
-      const examRes = await fetch(`/api/exams?batchId=${batchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (examRes.ok) {
-        const data = await examRes.json();
-        setExams(data.exams || []);
-      }
+      const [annData, examData, routData, reqData, courseData] = await Promise.all([
+        annRes.ok ? annRes.json() : Promise.resolve({ announcements: [] }),
+        examRes.ok ? examRes.json() : Promise.resolve({ exams: [] }),
+        routRes.ok ? routRes.json() : Promise.resolve({ routines: [] }),
+        reqRes.ok ? reqRes.json() : Promise.resolve({ requests: [] }),
+        courseRes.ok ? courseRes.json() : Promise.resolve({ courses: [] }),
+      ]);
 
-      // 3. Fetch routine
-      const routRes = await fetch(`/api/routines?batchId=${batchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (routRes.ok) {
-        const data = await routRes.json();
-        setRoutines(data.routines || []);
-      }
+      const fetchedAnnouncements = annData.announcements || [];
+      const fetchedExams = examData.exams || [];
+      const fetchedRoutines = routData.routines || [];
+      const fetchedRequests = reqData.requests || [];
+      const fetchedCoursesCount = courseData.courses?.length || 5;
 
-      // 4. Fetch routine requests
-      const reqRes = await fetch('/api/routines/requests', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (reqRes.ok) {
-        const data = await reqRes.json();
-        setRoutineRequests(data.requests || []);
-      }
+      setAnnouncements(fetchedAnnouncements);
+      setExams(fetchedExams);
+      setRoutines(fetchedRoutines);
+      setRoutineRequests(fetchedRequests);
+      setCoursesCount(fetchedCoursesCount);
 
-      // 5. Fetch courses count
-      const courseRes = await fetch(`/api/courses?batchId=${batchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (courseRes.ok) {
-        const data = await courseRes.json();
-        setCoursesCount(data.courses?.length || 5);
-      }
+      crDashboardCache = {
+        announcements: fetchedAnnouncements,
+        exams: fetchedExams,
+        routines: fetchedRoutines,
+        routineRequests: fetchedRequests,
+        coursesCount: fetchedCoursesCount,
+      };
     } catch (err) {
       console.error('Failed to load CR dashboard data:', err);
     } finally {
@@ -320,22 +323,40 @@ export const CRDashboardPage: React.FC = () => {
         {/* Left 2 Columns */}
         <div className="lg:col-span-2 space-y-6">
           {/* Upcoming Exams Panel */}
-          <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
+            <div
+              className="relative overflow-hidden px-5 py-4 border-b border-[#D8E2EE] flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+                  }}
+                />
+              </div>
+
+              <div className="relative z-10 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/90 text-blue-600 flex items-center justify-center border border-[rgba(120,145,255,0.25)] shadow-2xs">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight">
                   Upcoming Exams & Deadlines
                 </h3>
               </div>
               <button
                 onClick={() => navigate('/cr/exams')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                className="relative z-10 text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 Manage Exams <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
+            <div className="p-5">
             {isLoading ? (
               <div className="py-6 text-center text-xs text-slate-400">Loading exam schedule...</div>
             ) : exams.length === 0 ? (
@@ -371,25 +392,44 @@ export const CRDashboardPage: React.FC = () => {
                 ))}
               </div>
             )}
+            </div>
           </div>
 
           {/* Recent Batch Announcements */}
-          <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-blue-600" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
+            <div
+              className="relative overflow-hidden px-5 py-4 border-b border-[#D8E2EE] flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+                  }}
+                />
+              </div>
+
+              <div className="relative z-10 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/90 text-blue-600 flex items-center justify-center border border-[rgba(120,145,255,0.25)] shadow-2xs">
+                  <Megaphone className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight">
                   Active Batch Announcements
                 </h3>
               </div>
               <button
                 onClick={() => navigate('/cr/announcements')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                className="relative z-10 text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 Manage All <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
+            <div className="p-5">
             {isLoading ? (
               <div className="py-6 text-center text-xs text-slate-400">Loading announcements...</div>
             ) : announcements.length === 0 ? (
@@ -420,56 +460,88 @@ export const CRDashboardPage: React.FC = () => {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </div>
 
         {/* Right 1 Column */}
         <div className="space-y-6">
           {/* Today's Routine Card */}
-          <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-600" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
+            <div
+              className="relative overflow-hidden px-5 py-4 border-b border-[#D8E2EE] flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+                  }}
+                />
+              </div>
+
+              <div className="relative z-10 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/90 text-blue-600 flex items-center justify-center border border-[rgba(120,145,255,0.25)] shadow-2xs">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight">
                   Today's Classes ({todayDayName})
                 </h3>
               </div>
             </div>
 
+            <div className="p-4 sm:p-5">
             {todaysClasses.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
                 No classes scheduled for today! 🎉
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {todaysClasses.map(slot => (
-                  <div key={slot.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200/80 text-xs">
-                    <div className="flex items-center justify-between font-bold text-slate-900">
-                      <span>{slot.courseCode} - {slot.courseTitle}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      {slot.startTime} - {slot.endTime} • {slot.room}
-                    </p>
-                    <span className="text-[10px] text-slate-400 block mt-1">Instructor: {slot.teacherName}</span>
-                  </div>
+                  <RoutineClassCard key={slot.id} slot={slot} />
                 ))}
               </div>
             )}
+            </div>
           </div>
 
           {/* Routine Change Requests Status Panel */}
-          <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-amber-600" /> Routine Requests
+          <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
+            <div
+              className="relative overflow-hidden px-5 py-4 border-b border-[#D8E2EE] flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+                  }}
+                />
+              </div>
+
+              <h3 className="relative z-10 text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/90 text-amber-600 flex items-center justify-center border border-[rgba(120,145,255,0.25)] shadow-2xs">
+                  <RefreshCw className="w-4 h-4" />
+                </div>
+                Routine Requests
               </h3>
               <button
                 onClick={() => setIsRoutineReqModalOpen(true)}
-                className="text-[11px] font-bold text-blue-600 hover:underline"
+                className="relative z-10 text-[11px] font-bold text-blue-600 hover:underline"
               >
                 + New
               </button>
             </div>
+
+            <div className="p-5">
 
             {routineRequests.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
@@ -501,6 +573,7 @@ export const CRDashboardPage: React.FC = () => {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

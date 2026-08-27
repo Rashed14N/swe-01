@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Trophy, Star, FileText, CheckCircle, TrendingUp, ShieldCheck } from 'lucide-react';
 import { Contributor } from '../../types';
+import { getUserAvatarUrl } from '../../data/avatars';
 
 export const ContributorLeaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<Contributor[]>([]);
@@ -88,9 +89,10 @@ export const ContributorLeaderboard: React.FC = () => {
 
                 <div className="flex items-center gap-3 mb-3">
                   <img
-                    src={contributor.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'}
+                    src={getUserAvatarUrl({ name: contributor.name, studentId: contributor.studentId, profileImage: contributor.profileImage })}
                     alt={contributor.name}
                     className="w-12 h-12 rounded-full object-cover border-2 border-amber-500/60 shrink-0"
+                    referrerPolicy="no-referrer"
                   />
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">{contributor.name}</h3>

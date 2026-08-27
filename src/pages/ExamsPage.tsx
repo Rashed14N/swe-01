@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 import { Exam, ExamType } from '../types';
+import { ALL_ROOMS } from '../constants/rooms';
 
 export const ExamsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -203,9 +204,9 @@ export const ExamsPage: React.FC = () => {
       </FilterBar>
 
       {/* Structured Exam View (Mobile Cards + Desktop Table) */}
-      <div className="bg-white rounded-xl border border-[#CBD8E8] shadow-md overflow-hidden">
+      <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
         {/* Mobile Card View (block md:hidden) */}
-        <div className="block md:hidden divide-y divide-[#E0E8F2] p-3 space-y-3">
+        <div className="block md:hidden divide-y divide-[#E5EBF3] dark:divide-slate-800 p-3 space-y-3">
           {isLoading ? (
             <div className="py-8 text-center text-slate-400 text-xs">Loading exam schedule...</div>
           ) : filteredExams.length === 0 ? (
@@ -238,7 +239,7 @@ export const ExamsPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 font-mono text-[10px] font-extrabold rounded border border-blue-200">
+                    <span className="px-1.5 py-0.5 bg-[#EFF5FF] text-[#2563EB] font-mono text-[10px] font-extrabold rounded border border-[#DBEAFE]">
                       {exam.courseCode}
                     </span>
                     <span className="px-1.5 py-0.5 bg-rose-50 text-rose-700 font-extrabold text-[10px] rounded border border-rose-200 uppercase">
@@ -247,11 +248,11 @@ export const ExamsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">{exam.title}</h4>
-                    <p className="text-[11px] text-slate-500">{exam.courseTitle}</p>
+                    <h4 className="text-xs font-bold text-[#0F172A] dark:text-white">{exam.title}</h4>
+                    <p className="text-[11px] text-[#475569] dark:text-slate-400">{exam.courseTitle}</p>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-[11px] text-[#475569] dark:text-slate-400 pt-1 border-t border-[#E5EBF3] dark:border-slate-800">
                     <span className="flex items-center gap-1 font-bold">
                       <MapPin className="w-3 h-3 text-slate-400" /> {exam.room || 'TBD'}
                     </span>
@@ -288,7 +289,7 @@ export const ExamsPage: React.FC = () => {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#F1F5FA] border-b border-[#CBD8E8] text-[11px] font-extrabold text-[#3B4C63] uppercase tracking-wider">
+              <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
                 <th className="px-5 py-3.5 w-32">DATE</th>
                 <th className="px-5 py-3.5">COURSE</th>
                 <th className="px-5 py-3.5 w-28">TYPE</th>
@@ -298,7 +299,7 @@ export const ExamsPage: React.FC = () => {
                 {canManage && <th className="px-5 py-3.5 text-right w-24">ACTIONS</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E0E8F2] text-xs">
+            <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
               {isLoading ? (
                 <tr>
                   <td colSpan={canManage ? 7 : 6} className="px-5 py-10 text-center text-slate-400">
@@ -318,7 +319,7 @@ export const ExamsPage: React.FC = () => {
                   const dayNum = dateObj.getDate();
 
                   return (
-                    <tr key={exam.id} className="hover:bg-[#F8FBFF] transition-colors h-16">
+                    <tr key={exam.id} className="bg-white dark:bg-[#0F172A] hover:bg-[#F6FAFF] dark:hover:bg-slate-800/50 transition-colors h-16">
                       {/* Prominent Date */}
                       <td className="px-5 py-3">
                         <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-900 text-white rounded-lg">
@@ -330,9 +331,9 @@ export const ExamsPage: React.FC = () => {
                       </td>
 
                       {/* Course */}
-                      <td className="px-5 py-3 font-semibold text-slate-900">
+                      <td className="px-5 py-3 font-semibold text-[#0F172A] dark:text-white">
                         <div className="flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 font-mono text-[10px] font-extrabold rounded border border-blue-200">
+                          <span className="px-1.5 py-0.5 bg-[#EFF5FF] text-[#2563EB] font-mono text-[10px] font-extrabold rounded border border-[#DBEAFE]">
                             {exam.courseCode}
                           </span>
                           <span className="truncate">{exam.courseTitle}</span>
@@ -347,17 +348,17 @@ export const ExamsPage: React.FC = () => {
                       </td>
 
                       {/* Title */}
-                      <td className="px-5 py-3 font-bold text-slate-900">
+                      <td className="px-5 py-3 font-bold text-[#0F172A] dark:text-white">
                         {exam.title}
                         {exam.description && (
-                          <span className="block text-[11px] text-slate-500 font-normal truncate max-w-xs">
+                          <span className="block text-[11px] text-[#64748B] dark:text-slate-400 font-normal truncate max-w-xs">
                             {exam.description}
                           </span>
                         )}
                       </td>
 
                       {/* Room & Time */}
-                      <td className="px-5 py-3 text-slate-700">
+                      <td className="px-5 py-3 text-[#475569] dark:text-slate-300">
                         <div className="flex flex-col text-[11px] font-medium">
                           <span className="flex items-center gap-1 font-bold text-slate-900">
                             <MapPin className="w-3 h-3 text-slate-400" /> {exam.room || 'TBD'}
@@ -478,7 +479,7 @@ export const ExamsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Date</label>
               <input
@@ -503,11 +504,17 @@ export const ExamsPage: React.FC = () => {
               <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Room / Venue</label>
               <input
                 type="text"
+                list="exam-rooms-list"
                 value={room}
                 onChange={(e) => setRoom(e.target.value)}
-                placeholder="Exam Hall 3"
+                placeholder="e.g. Room 401, XL 1, EEE Lab"
                 className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs"
               />
+              <datalist id="exam-rooms-list">
+                {ALL_ROOMS.map(r => (
+                  <option key={r} value={r} />
+                ))}
+              </datalist>
             </div>
           </div>
 

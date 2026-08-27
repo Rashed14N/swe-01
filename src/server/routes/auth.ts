@@ -102,7 +102,7 @@ router.post('/register', async (req, res) => {
     currentSemester: currentSemester || 4,
     status: 'ACTIVE' as const,
     points: 0,
-    profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    profileImage: '/avatars/pangolin-cream-2.svg',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -146,7 +146,7 @@ router.post('/signup', async (req, res) => {
     currentSemester: currentSemester || 4,
     status: 'ACTIVE' as const,
     points: 0,
-    profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    profileImage: '/avatars/pangolin-cream-2.svg',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -237,7 +237,7 @@ router.post('/sync-local-user', async (req: Request, res: Response) => {
           currentSemester: u.currentSemester || 4,
           status: (u.status || 'ACTIVE') as 'ACTIVE' | 'DISABLED',
           points: u.points || 0,
-          profileImage: u.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          profileImage: u.profileImage || '/avatars/pangolin-cream-2.svg',
           createdAt: u.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

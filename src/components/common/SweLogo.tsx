@@ -1,84 +1,56 @@
-import React from 'react';
-import appLogo from '../../assets/images/swe_app_icon_1787048700418.jpg';
+import React, { useState } from 'react';
+import sweLogoImg from '../../assets/images/swe_emblem_logo_1787573363177.jpg';
 
 interface SweLogoProps {
-  variant?: 'full' | 'icon' | 'badge';
+  variant?: string;
+  theme?: 'white' | 'navy';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  showText?: boolean;
   className?: string;
   subText?: string;
 }
 
 export const SweLogo: React.FC<SweLogoProps> = ({
-  variant = 'icon',
+  theme = 'navy',
   size = 'md',
-  showText = false,
   className = '',
-  subText
 }) => {
-  // Dimension presets to ensure it's never weirdly stretched or excessively large
+  const [hasError, setHasError] = useState(false);
+
   const sizeMap = {
-    xs: { icon: 'h-6 w-6', rounded: 'rounded-lg', full: 'h-6 max-w-[90px]', text: 'text-xs' },
-    sm: { icon: 'h-8 w-8', rounded: 'rounded-xl', full: 'h-8 max-w-[120px]', text: 'text-sm' },
-    md: { icon: 'h-10 w-10', rounded: 'rounded-xl', full: 'h-10 max-w-[150px]', text: 'text-base' },
-    lg: { icon: 'h-12 w-12', rounded: 'rounded-2xl', full: 'h-12 max-w-[180px]', text: 'text-lg' },
-    xl: { icon: 'h-16 w-16', rounded: 'rounded-3xl', full: 'h-16 max-w-[220px]', text: 'text-xl' }
+    xs: 'w-7 h-7 text-[10px]',
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-10 h-10 text-sm',
+    lg: 'w-12 h-12 text-base',
+    xl: 'w-16 h-16 text-xl'
   };
 
-  const currentSize = sizeMap[size];
+  const currentSize = sizeMap[size] || sizeMap.md;
 
-  if (variant === 'icon') {
+  if (hasError) {
     return (
-      <div className={`inline-flex items-center justify-center shrink-0 ${className}`}>
-        <img
-          src={appLogo}
-          alt="SWE Portal Logo"
-          referrerPolicy="no-referrer"
-          className={`${currentSize.icon} ${currentSize.rounded} object-cover shadow-sm transition-transform duration-200 hover:scale-105`}
-        />
-      </div>
-    );
-  }
-
-  if (variant === 'badge') {
-    return (
-      <div className={`inline-flex items-center gap-2.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-xs ${className}`}>
-        <img
-          src={appLogo}
-          alt="SWE Portal"
-          referrerPolicy="no-referrer"
-          className={`${currentSize.icon} ${currentSize.rounded} object-cover`}
-        />
-        {subText && (
-          <span className="text-[11px] font-bold text-slate-600 border-l border-slate-200 pl-2 uppercase tracking-wider whitespace-nowrap">
-            {subText}
-          </span>
-        )}
+      <div
+        className={`${currentSize} rounded-xl bg-gradient-to-br from-[#2563EB] to-[#0A2147] text-white flex items-center justify-center font-black tracking-tight shadow-sm shrink-0 select-none border border-blue-400/20 ${className}`}
+      >
+        <span>SWE</span>
       </div>
     );
   }
 
   return (
-    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
+    <div className={`relative ${currentSize} shrink-0 rounded-xl overflow-hidden shadow-xs border border-[#DCE5F0] dark:border-slate-800 bg-[#0A2147] flex items-center justify-center ${className}`}>
       <img
-        src={appLogo}
-        alt="SWE Portal Logo"
+        src={sweLogoImg}
+        alt="SWE Department Logo"
+        onError={() => setHasError(true)}
         referrerPolicy="no-referrer"
-        className={`${currentSize.icon} ${currentSize.rounded} object-cover shadow-sm transition-opacity duration-200`}
+        className="w-full h-full object-cover select-none transform hover:scale-105 transition-transform"
       />
-      {showText && (
-        <div className="flex flex-col leading-none">
-          <span className={`font-black tracking-tight text-slate-900 ${currentSize.text}`}>
-            SWE Portal
-          </span>
-          {subText && (
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">
-              {subText}
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 };
+
+
+
+
+
 

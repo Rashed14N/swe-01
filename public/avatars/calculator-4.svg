@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-calculator-4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-calculator-4)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Calculator Body -->
+      <rect x="60" y="45" width="80" height="110" rx="16" fill="#334155" />
+      <rect x="63" y="48" width="74" height="104" rx="13" fill="#1E293B" />
+      <!-- Screen -->
+      <rect x="70" y="58" width="60" height="24" rx="6" fill="#0284C7" />
+      <text x="122" y="75" fill="#F0F9FF" font-size="13" font-family="monospace" font-weight="bold" text-anchor="end">42.00</text>
+      <!-- Keypad Grid -->
+      <rect x="72" y="90" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="93" y="90" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="114" y="90" width="14" height="12" rx="3" fill="#F59E0B" />
+      <rect x="72" y="108" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="93" y="108" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="114" y="108" width="14" height="12" rx="3" fill="#0EA5E9" />
+      <rect x="72" y="126" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="93" y="126" width="14" height="12" rx="3" fill="#475569" />
+      <rect x="114" y="126" width="14" height="12" rx="3" fill="#10B981" />
+    
+  </g>
+</svg>

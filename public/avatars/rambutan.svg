@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-rambutan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEE2E2" />
+      <stop offset="100%" stop-color="#FECDD3" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-rambutan)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Round Red Fruit Body -->
+      <circle cx="100" cy="115" r="36" fill="#E11D48" />
+      <!-- Soft Yellow-Green Spines around periphery -->
+      <path d="M100 75 Q105 60 100 50 M125 85 Q140 75 145 65 M135 115 Q155 115 160 110 M125 145 Q145 155 140 165 M100 152 Q100 168 95 175 M75 145 Q55 155 50 165 M65 115 Q45 115 40 110 M75 85 Q60 75 55 65" stroke="#84CC16" stroke-width="3.5" stroke-linecap="round" fill="none" />
+      <!-- Cute Face on the fruit -->
+      <circle cx="88" cy="112" r="3.5" fill="#4C0519" />
+      <circle cx="112" cy="112" r="3.5" fill="#4C0519" />
+      <path d="M94 122 Q100 128 106 122" stroke="#4C0519" stroke-width="2" stroke-linecap="round" fill="none" />
+    
+  </g>
+</svg>

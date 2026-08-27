@@ -3,6 +3,7 @@ import { Calendar, Plus, Trash2, Edit3, Clock, Search, Bell, AlertCircle, CheckC
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Exam } from '../../types';
+import { ALL_ROOMS } from '../../constants/rooms';
 
 export const CRExamsPage: React.FC = () => {
   const { user, token } = useAuth();
@@ -300,7 +301,7 @@ export const CRExamsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Date *</label>
                   <input
@@ -325,11 +326,17 @@ export const CRExamsPage: React.FC = () => {
                   <label className="block font-bold text-slate-700 mb-1">Room</label>
                   <input
                     type="text"
+                    list="cr-exam-rooms-list"
                     value={form.room}
                     onChange={e => setForm({ ...form, room: e.target.value })}
-                    placeholder="Room 502"
+                    placeholder="e.g. Room 502, XL 1, Exten-2"
                     className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
                   />
+                  <datalist id="cr-exam-rooms-list">
+                    {ALL_ROOMS.map(r => (
+                      <option key={r} value={r} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 

@@ -1,9 +1,14 @@
 import { Router, Response } from 'express';
-import { db } from '../db';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
-import { requireRole } from '../middleware';
-import { RoutineSlot, RoutineRequest } from '../../types';
-import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
+import { db } from '../db.ts';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
+import { requireRole } from '../middleware.ts';
+import { RoutineSlot, RoutineRequest } from '../../types.ts';
+import {
+  fetchAllRoutineSlots,
+  createRoutineSlotInDB,
+  updateRoutineSlotInDB,
+  deleteRoutineSlotFromDB,
+} from '../supabaseData.ts';
 
 const router = Router();
 
@@ -36,7 +41,7 @@ router.post('/requests', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Auth
   const data = db.getData();
   if (!data.routineRequests) data.routineRequests = [];
 
-  const batch = data.batches.find(b => b.id === req.user!.batchId);
+  const batch = (data.batches || []).find(b => b.id === req.user!.batchId);
 
   const newReq: RoutineRequest = {
     id: `req-${Date.now()}`,
@@ -56,8 +61,9 @@ router.post('/requests', verifyAuthToken, requireRole('CR', 'ADMIN'), (req: Auth
   data.routineRequests.unshift(newReq);
 
   // Notify Admin
-  const adminUsers = data.users.filter(u => u.role === 'ADMIN');
+  const adminUsers = (data.users || []).filter(u => u.role === 'ADMIN');
   adminUsers.forEach(a => {
+    if (!data.notifications) data.notifications = [];
     data.notifications.unshift({
       id: `notif-${Date.now()}-${Math.random()}`,
       userId: a.id,
@@ -96,8 +102,9 @@ router.patch('/requests/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authe
   if (rejectionReason) request.rejectionReason = rejectionReason;
 
   // Notify CR and batch students
-  const targetUsers = data.users.filter(u => u.batchId === request.batchId || u.id === request.crId);
+  const targetUsers = (data.users || []).filter(u => u.batchId === request.batchId || u.id === request.crId);
   targetUsers.forEach(u => {
+    if (!data.notifications) data.notifications = [];
     data.notifications.unshift({
       id: `notif-${Date.now()}-${Math.random()}`,
       userId: u.id,
@@ -119,32 +126,37 @@ router.patch('/requests/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authe
 });
 
 // GET /api/routines?batchId=... (With strict Batch Isolation)
-router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  const data = db.getData();
-  const allRoutines = data.routines || [];
-  const requestedBatchId = req.query.batchId as string;
+router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const requestedBatchId = req.query.batchId as string;
 
-  if (!requestedBatchId) {
-    if (req.user?.role === 'ADMIN') {
-      return res.json({ routines: allRoutines });
+    if (!requestedBatchId) {
+      if (req.user?.role === 'ADMIN') {
+        const allRoutines = await fetchAllRoutineSlots();
+        return res.json({ routines: allRoutines });
+      }
+      const userBatch = req.user?.batchId || 'batch-9';
+      const userRoutines = await fetchAllRoutineSlots(userBatch);
+      return res.json({ routines: userRoutines, batchId: userBatch });
     }
-    const userBatch = req.user?.batchId || 'batch-9';
-    return res.json({ routines: allRoutines.filter(r => r.batchId === userBatch), batchId: userBatch });
-  }
 
-  // Strict Batch Isolation Enforcement
-  if (req.user && req.user.role !== 'ADMIN' && req.user.batchId && req.user.batchId !== requestedBatchId) {
-    return res.status(403).json({
-      error: '403 Forbidden: You do not have permission to access another batch\'s routine.',
-    });
-  }
+    // Strict Batch Isolation Enforcement
+    if (req.user && req.user.role !== 'ADMIN' && req.user.batchId && req.user.batchId !== requestedBatchId) {
+      return res.status(403).json({
+        error: '403 Forbidden: You do not have permission to access another batch\'s routine.',
+      });
+    }
 
-  const routines = allRoutines.filter(r => r.batchId === requestedBatchId);
-  res.json({ routines, batchId: requestedBatchId });
+    const routines = await fetchAllRoutineSlots(requestedBatchId);
+    res.json({ routines, batchId: requestedBatchId });
+  } catch (err: any) {
+    console.error('[Routines API GET / Error]:', err);
+    res.status(500).json({ error: 'Failed to fetch routines' });
+  }
 });
 
 // POST /api/routines/bulk or /api/routines/import (Admin or CR for own batch)
-router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
+router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
   const { batchId, slots, mode = 'REPLACE' } = req.body;
   const inputSlots = Array.isArray(slots) ? slots : (Array.isArray(req.body) ? req.body : []);
   const targetBatchId = batchId || (Array.isArray(req.body) ? req.body[0]?.batchId : undefined) || req.user?.batchId;
@@ -173,7 +185,7 @@ router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authenti
     }
 
     if (!slot.startTime || !slot.endTime) {
-      errors.push(`Slot #${idx + 1} (${rawDay}): Both startTime and endTime are required (e.g. "10:00 AM" - "11:30 AM").`);
+      errors.push(`Slot #${idx + 1} (${rawDay}): Both startTime and endTime are required.`);
       return;
     }
 
@@ -204,104 +216,39 @@ router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authenti
     return res.status(400).json({ error: 'No valid routine slots found in JSON.', details: errors });
   }
 
-  const data = db.getData();
-  if (!data.routines) data.routines = [];
+  try {
+    if (mode === 'REPLACE') {
+      const existing = await fetchAllRoutineSlots(targetBatchId);
+      for (const slot of existing) {
+        await deleteRoutineSlotFromDB(slot.id);
+      }
+    }
 
-  if (mode === 'REPLACE') {
-    // Remove existing slots for this batch
-    data.routines = data.routines.filter(r => r.batchId !== targetBatchId);
+    for (const slot of processedSlots) {
+      await createRoutineSlotInDB(slot);
+    }
+
+    const actorId = req.user?.id || 'admin';
+    const actorName = req.user?.name || 'Admin';
+    db.addAuditLog(actorId, actorName, 'ROUTINE_BULK_IMPORTED', `${processedSlots.length} slots imported for ${targetBatchId} (${mode})`);
+
+    const updatedBatchRoutines = await fetchAllRoutineSlots(targetBatchId);
+
+    res.status(201).json({
+      message: `Successfully imported ${processedSlots.length} class slots.`,
+      count: processedSlots.length,
+      routines: updatedBatchRoutines,
+      warnings: errors.length > 0 ? errors : undefined,
+    });
+  } catch (err: any) {
+    console.error('[Routines API POST /bulk Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to bulk import routine slots' });
   }
-
-  // Push new slots
-  data.routines.push(...processedSlots);
-  db.save();
-
-  // Supabase sync
-  processedSlots.forEach(s => {
-    syncToSupabase('routine_slots', {
-      id: s.id,
-      batch_id: s.batchId,
-      day: s.day,
-      start_time: s.startTime,
-      end_time: s.endTime,
-      course_id: s.courseId,
-      course_code: s.courseCode,
-      course_title: s.courseTitle,
-      teacher_name: s.teacherName,
-      room: s.room,
-    }).catch(() => {});
-  });
-
-  const actorId = req.user?.id || 'admin';
-  const actorName = req.user?.name || 'Admin';
-  db.addAuditLog(actorId, actorName, 'ROUTINE_BULK_IMPORTED', `${processedSlots.length} slots imported for ${targetBatchId} (${mode})`);
-
-  const updatedBatchRoutines = data.routines.filter(r => r.batchId === targetBatchId);
-
-  res.status(201).json({
-    message: `Successfully imported ${processedSlots.length} class slots (${mode === 'REPLACE' ? 'replaced previous schedule' : 'appended to schedule'}).`,
-    count: processedSlots.length,
-    routines: updatedBatchRoutines,
-    warnings: errors.length > 0 ? errors : undefined,
-  });
 });
 
 // POST /api/routines (Admin or CR for own batch)
-router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
-  // Support if user posted an array directly to /api/routines
-  if (Array.isArray(req.body) || (req.body.slots && Array.isArray(req.body.slots))) {
-    const { batchId, slots, mode = 'REPLACE' } = req.body;
-    const inputSlots = Array.isArray(slots) ? slots : (Array.isArray(req.body) ? req.body : []);
-    const targetBatchId = batchId || (Array.isArray(req.body) ? req.body[0]?.batchId : undefined) || req.user?.batchId;
-
-    if (!targetBatchId) {
-      return res.status(400).json({ error: 'Target batchId is required for importing routine.' });
-    }
-
-    const validDays = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    const processedSlots: RoutineSlot[] = [];
-
-    inputSlots.forEach((slot: any, idx: number) => {
-      const rawDay = String(slot.day || '').trim().toUpperCase();
-      if (!validDays.includes(rawDay)) return;
-      if (!slot.startTime || !slot.endTime) return;
-
-      const newSlot: RoutineSlot = {
-        id: `rout-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
-        batchId: targetBatchId,
-        day: rawDay as any,
-        startTime: String(slot.startTime).trim(),
-        endTime: String(slot.endTime).trim(),
-        courseId: slot.courseId || `course-${Date.now()}-${idx}`,
-        courseCode: slot.courseCode ? String(slot.courseCode).trim() : 'SWE 101',
-        courseTitle: slot.courseTitle ? String(slot.courseTitle).trim() : (slot.courseCode || 'Class Session'),
-        courseShortName: slot.courseShortName ? String(slot.courseShortName).trim() : undefined,
-        teacherName: slot.teacherName ? String(slot.teacherName).trim() : 'Faculty Instructor',
-        teacherShortName: slot.teacherShortName ? String(slot.teacherShortName).trim() : undefined,
-        room: slot.room ? String(slot.room).trim() : 'Room 502',
-      };
-      processedSlots.push(newSlot);
-    });
-
-    if (processedSlots.length === 0) {
-      return res.status(400).json({ error: 'No valid routine slots found in the JSON payload.' });
-    }
-
-    const data = db.getData();
-    if (!data.routines) data.routines = [];
-    if (mode === 'REPLACE') {
-      data.routines = data.routines.filter(r => r.batchId !== targetBatchId);
-    }
-    data.routines.push(...processedSlots);
-    db.save();
-
-    return res.status(201).json({
-      message: `Successfully imported ${processedSlots.length} routine slots.`,
-      routines: data.routines.filter(r => r.batchId === targetBatchId),
-    });
-  }
-
-  const { batchId, day, startTime, endTime, courseId, courseCode, courseTitle, teacherName, room } = req.body;
+router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
+  const { batchId, day, startTime, endTime, courseId, courseCode, courseTitle, courseShortName, teacherName, teacherShortName, room } = req.body;
 
   if (!batchId || !day || !startTime || !endTime || !courseTitle || !teacherName || !room) {
     return res.status(400).json({ error: 'All routine slot fields are required' });
@@ -311,106 +258,95 @@ router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authenticate
     return res.status(403).json({ error: '403 Forbidden: CRs can only create routine slots for their assigned batch.' });
   }
 
-  const newSlot: RoutineSlot = {
-    id: `rout-${Date.now()}`,
-    batchId,
-    day,
-    startTime,
-    endTime,
-    courseId: courseId || 'course-gen',
-    courseCode: courseCode || 'SWE 101',
-    courseTitle,
-    teacherName,
-    room,
-  };
+  try {
+    const newSlot: RoutineSlot = {
+      id: `rout-${Date.now()}`,
+      batchId,
+      day: day.toUpperCase(),
+      startTime: String(startTime).trim(),
+      endTime: String(endTime).trim(),
+      courseId: courseId || 'course-gen',
+      courseCode: courseCode || 'SWE 101',
+      courseTitle: String(courseTitle).trim(),
+      courseShortName: courseShortName ? String(courseShortName).trim() : undefined,
+      teacherName: String(teacherName).trim(),
+      teacherShortName: teacherShortName ? String(teacherShortName).trim() : undefined,
+      room: String(room).trim(),
+    };
 
-  db.getData().routines.push(newSlot);
-  db.save();
+    const created = await createRoutineSlotInDB(newSlot);
 
-  syncToSupabase('routine_slots', {
-    id: newSlot.id,
-    batch_id: newSlot.batchId,
-    day: newSlot.day,
-    start_time: newSlot.startTime,
-    end_time: newSlot.endTime,
-    course_id: newSlot.courseId,
-    course_code: newSlot.courseCode,
-    course_title: newSlot.courseTitle,
-    teacher_name: newSlot.teacherName,
-    room: newSlot.room,
-  }).catch(() => {});
+    const actorId = req.user?.id || 'admin';
+    const actorName = req.user?.name || 'Admin';
+    db.addAuditLog(actorId, actorName, 'ROUTINE_ADDED', `Slot for ${batchId} on ${day}`);
 
-  const actorId = req.user?.id || 'admin';
-  const actorName = req.user?.name || 'Admin';
-  db.addAuditLog(actorId, actorName, 'ROUTINE_ADDED', `Slot for ${batchId} on ${day}`);
-
-  res.status(201).json({ routine: newSlot });
+    res.status(201).json({ routine: created });
+  } catch (err: any) {
+    console.error('[Routines API POST / Error]:', err);
+    res.status(500).json({ error: err?.message || 'Server error creating routine slot' });
+  }
 });
 
 // PUT /api/routines/:id (Admin or CR for own batch)
-router.put('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
   const slotId = req.params.id;
-  const { day, startTime, endTime, courseCode, courseTitle, teacherName, room } = req.body;
+  const { day, startTime, endTime, courseCode, courseTitle, courseShortName, teacherName, teacherShortName, room } = req.body;
 
-  const data = db.getData();
-  const slot = data.routines.find(r => r.id === slotId);
+  try {
+    const allSlots = await fetchAllRoutineSlots();
+    const slot = allSlots.find(s => s.id === slotId);
 
-  if (!slot) {
-    return res.status(404).json({ error: 'Routine slot not found' });
+    if (!slot) {
+      return res.status(404).json({ error: 'Routine slot not found' });
+    }
+
+    if (req.user!.role === 'CR' && req.user!.batchId !== slot.batchId) {
+      return res.status(403).json({ error: '403 Forbidden: CRs can only edit routine slots for their assigned batch.' });
+    }
+
+    const updates: Partial<RoutineSlot> = {};
+    if (day) updates.day = day.toUpperCase();
+    if (startTime) updates.startTime = String(startTime).trim();
+    if (endTime) updates.endTime = String(endTime).trim();
+    if (courseCode) updates.courseCode = String(courseCode).trim();
+    if (courseTitle) updates.courseTitle = String(courseTitle).trim();
+    if (courseShortName !== undefined) updates.courseShortName = courseShortName ? String(courseShortName).trim() : undefined;
+    if (teacherName) updates.teacherName = String(teacherName).trim();
+    if (teacherShortName !== undefined) updates.teacherShortName = teacherShortName ? String(teacherShortName).trim() : undefined;
+    if (room) updates.room = String(room).trim();
+
+    const updated = await updateRoutineSlotInDB(slotId, updates);
+    db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_UPDATED', `Slot #${slotId} for batch ${slot.batchId}`);
+
+    res.json({ message: 'Routine slot updated successfully', routine: updated });
+  } catch (err: any) {
+    console.error('[Routines API PUT /:id Error]:', err);
+    res.status(500).json({ error: err?.message || 'Server error updating routine slot' });
   }
-
-  if (req.user!.role === 'CR' && req.user!.batchId !== slot.batchId) {
-    return res.status(403).json({ error: '403 Forbidden: CRs can only edit routine slots for their assigned batch.' });
-  }
-
-  if (day) slot.day = day;
-  if (startTime) slot.startTime = startTime;
-  if (endTime) slot.endTime = endTime;
-  if (courseCode) slot.courseCode = courseCode;
-  if (courseTitle) slot.courseTitle = courseTitle;
-  if (teacherName) slot.teacherName = teacherName;
-  if (room) slot.room = room;
-
-  db.save();
-
-  syncToSupabase('routine_slots', {
-    id: slot.id,
-    batch_id: slot.batchId,
-    day: slot.day,
-    start_time: slot.startTime,
-    end_time: slot.endTime,
-    course_id: slot.courseId,
-    course_code: slot.courseCode,
-    course_title: slot.courseTitle,
-    teacher_name: slot.teacherName,
-    room: slot.room,
-  }).catch(() => {});
-
-  db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_UPDATED', `Slot #${slotId} for batch ${slot.batchId}`);
-
-  res.json({ message: 'Routine slot updated successfully', routine: slot });
 });
 
 // DELETE /api/routines/:id (Admin or CR for own batch)
-router.delete('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
   const slotId = req.params.id;
-  const data = db.getData();
-  const slot = data.routines.find(r => r.id === slotId);
 
-  if (!slot) return res.status(404).json({ error: 'Routine slot not found' });
+  try {
+    const allSlots = await fetchAllRoutineSlots();
+    const slot = allSlots.find(s => s.id === slotId);
 
-  if (req.user!.role === 'CR' && req.user!.batchId !== slot.batchId) {
-    return res.status(403).json({ error: '403 Forbidden: CRs can only delete routine slots for their assigned batch.' });
+    if (!slot) return res.status(404).json({ error: 'Routine slot not found' });
+
+    if (req.user!.role === 'CR' && req.user!.batchId !== slot.batchId) {
+      return res.status(403).json({ error: '403 Forbidden: CRs can only delete routine slots for their assigned batch.' });
+    }
+
+    await deleteRoutineSlotFromDB(slotId);
+    db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_DELETED', `Slot #${slotId}`);
+
+    res.json({ message: 'Routine slot deleted', removed: slot });
+  } catch (err: any) {
+    console.error('[Routines API DELETE /:id Error]:', err);
+    res.status(500).json({ error: err?.message || 'Server error deleting routine slot' });
   }
-
-  const index = data.routines.findIndex(r => r.id === slotId);
-  const [removed] = data.routines.splice(index, 1);
-  db.save();
-  deleteFromSupabase('routine_slots', slotId).catch(() => {});
-
-  db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_DELETED', `Slot #${slotId}`);
-
-  res.json({ message: 'Routine slot deleted', removed });
 });
 
 export default router;

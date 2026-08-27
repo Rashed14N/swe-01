@@ -8,7 +8,14 @@ const CONFIG_FILE = path.join(process.cwd(), 'data', 'supabase-config.json');
 let currentSupabaseUrl = '';
 let currentSupabaseKey = '';
 
-// Try reading stored config file first
+// Priority: 1. Service Role Key in ENV (bypasses RLS for secure backend API calls)
+//           2. Stored config file
+//           3. Publishable/Anon keys
+const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+const envUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const envPubKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+
+// Try reading stored config file
 if (fs.existsSync(CONFIG_FILE)) {
   try {
     const raw = fs.readFileSync(CONFIG_FILE, 'utf-8');
@@ -20,12 +27,17 @@ if (fs.existsSync(CONFIG_FILE)) {
   }
 }
 
-// Fallback to process.env
-if (!currentSupabaseUrl) {
-  currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://aasktchpxsxxanfkkrxx.supabase.co';
+// If service key is provided in ENV, ALWAYS prioritize it for server-side operations
+if (envServiceKey) {
+  currentSupabaseKey = envServiceKey;
+} else if (!currentSupabaseKey && envPubKey) {
+  currentSupabaseKey = envPubKey;
 }
-if (!currentSupabaseKey) {
-  currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || 'sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1';
+
+if (!currentSupabaseUrl || currentSupabaseUrl.includes('qaolvrcclqsmxtlzfvoq')) {
+  currentSupabaseUrl = (envUrl && !envUrl.includes('qaolvrcclqsmxtlzfvoq')) 
+    ? envUrl 
+    : 'https://aasktchpxsxxanfkkrxx.supabase.co';
 }
 
 let serverSupabase: SupabaseClient | null = null;

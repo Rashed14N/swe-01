@@ -1,178 +1,6 @@
 {
   "users": [
     {
-      "id": "user-cr-1",
-      "studentId": "252-134-001",
-      "name": "Mahmudul Hasan (CR - 9th Batch)",
-      "email": "cr9@swe.edu",
-      "phone": "+8801711112222",
-      "role": "CR",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 5,
-      "profileImage": "/avatars/fox-terracotta.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-14T08:47:45.875334+00:00",
-      "updatedAt": "2026-08-14T08:47:45.875334+00:00"
-    },
-    {
-      "id": "user-student-1",
-      "studentId": "252-134-022",
-      "name": "Rashedul Hasan",
-      "email": "rashedul@swe.edu",
-      "phone": "+8801812345678",
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 5,
-      "profileImage": "/avatars/pangolin-cream-2.svg",
-      "status": "ACTIVE",
-      "points": 120,
-      "createdAt": "2026-08-14T08:47:45.875334+00:00",
-      "updatedAt": "2026-08-14T08:47:45.875334+00:00"
-    },
-    {
-      "id": "test-user-olid",
-      "studentId": "252-134-999",
-      "name": "Olid Test",
-      "email": "olid@swe.edu",
-      "phone": null,
-      "role": "STUDENT",
-      "batchId": null,
-      "batchName": null,
-      "currentSemester": 1,
-      "profileImage": "/avatars/gentle-squirrel.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-16T08:11:59.129232+00:00",
-      "updatedAt": "2026-08-16T08:11:58.999+00:00"
-    },
-    {
-      "id": "usr_1786868051979",
-      "studentId": "252-134-888",
-      "name": "Tanvir Ahmed",
-      "email": "tanvir@swe.edu",
-      "phone": null,
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "profileImage": "/avatars/goat-3.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-16T08:14:12.061187+00:00",
-      "updatedAt": "2026-08-16T08:14:11.979+00:00"
-    },
-    {
-      "id": "usr_1786868451950",
-      "studentId": "252-134-777",
-      "name": "Mahir Faysal",
-      "email": "mahir@swe.edu",
-      "phone": null,
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "profileImage": "/avatars/compact-chick.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-16T08:20:52.048791+00:00",
-      "updatedAt": "2026-08-16T08:20:51.951+00:00"
-    },
-    {
-      "id": "usr_rashed_58",
-      "studentId": "252-135-022",
-      "name": "Rashed",
-      "email": "rashed@swe.edu",
-      "phone": "+8801700000000",
-      "role": "CR",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "profileImage": "/avatars/pangolin-cream-2.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-16T08:27:06.559+00:00",
-      "updatedAt": "2026-08-16T08:27:06.56+00:00"
-    },
-    {
-      "id": "usr_1786868978412",
-      "studentId": "252-135-099",
-      "name": "Sabbir Hossain",
-      "email": "sabbir@swe.edu",
-      "phone": null,
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "profileImage": "/avatars/numbat-3.svg",
-      "status": "ACTIVE",
-      "points": 0,
-      "createdAt": "2026-08-16T08:29:38.413+00:00",
-      "updatedAt": "2026-08-16T08:29:38.413+00:00"
-    },
-    {
-      "id": "usr_1786871683233",
-      "studentId": "252",
-      "name": "Rashedul",
-      "email": "test252@swe.edu",
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "status": "ACTIVE",
-      "points": 0,
-      "profileImage": "/avatars/pangolin-cream-2.svg",
-      "createdAt": "2026-08-16T09:14:43.233Z",
-      "updatedAt": "2026-08-16T09:14:43.233Z"
-    },
-    {
-      "id": "usr_cr_1",
-      "studentId": "211-35-102",
-      "name": "Naimur Rahman (CR)",
-      "email": "naimur.cr@student.mu.edu.bd",
-      "role": "CR",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "status": "ACTIVE",
-      "points": 0,
-      "profileImage": "/avatars/fox-terracotta.svg",
-      "createdAt": "2026-08-14T07:25:04.676Z",
-      "updatedAt": "2026-08-17T06:08:33.746Z"
-    },
-    {
-      "id": "usr_admin_1",
-      "studentId": "admin_001",
-      "name": "Department Admin",
-      "email": "admin.swe@mu.edu.bd",
-      "role": "ADMIN",
-      "batchId": "batch-all",
-      "batchName": "All Batches",
-      "currentSemester": 0,
-      "status": "ACTIVE",
-      "points": 0,
-      "profileImage": "/avatars/public-fountain.svg",
-      "createdAt": "2026-08-14T07:25:04.676Z",
-      "updatedAt": "2026-08-17T06:08:33.895Z"
-    },
-    {
-      "id": "usr_1786954698184",
-      "studentId": "999-999-999",
-      "name": "Test User",
-      "email": "test999@test.com",
-      "role": "STUDENT",
-      "batchId": "batch-9",
-      "batchName": "SWE 9th Batch",
-      "currentSemester": 4,
-      "status": "ACTIVE",
-      "points": 0,
-      "profileImage": "/avatars/pangolin-cream-2.svg",
-      "createdAt": "2026-08-17T08:18:18.184Z",
-      "updatedAt": "2026-08-17T08:18:18.184Z"
-    },
-    {
       "id": "usr_68bf253ad3a242e79a883bb46ce99787",
       "studentId": "252134022",
       "name": "Rashedul Hasan Mojumdar",
@@ -321,106 +149,81 @@
       "id": "course-305",
       "code": "SWE 305",
       "title": "Database Systems",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Dr. Tanvir Rahman",
       "batchIds": [
         "batch-9"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-14T08:47:45.875334+00:00"
+      ]
     },
     {
       "id": "course-307",
       "code": "SWE 307",
       "title": "Software Engineering",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Mr. Imran Hossain",
       "batchIds": [
         "batch-9"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-14T08:47:45.875334+00:00"
+      ]
     },
     {
       "id": "course-309",
       "code": "SWE 309",
       "title": "Algorithms",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Prof. Dr. Ahsan Habib",
       "batchIds": [
         "batch-9"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-14T08:47:45.875334+00:00"
+      ]
     },
     {
       "id": "course-311",
       "code": "SWE 311",
       "title": "Computer Networks",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Ms. Nusrat Jahan",
       "batchIds": [
         "batch-9"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-14T08:47:45.875334+00:00"
+      ]
     },
     {
       "id": "course-313",
       "code": "SWE 313",
       "title": "Web Engineering",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Mr. Imran Hossain",
       "batchIds": [
         "batch-9"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-16T08:05:58.305172+00:00"
+      ]
     },
     {
       "id": "course-401",
       "code": "SWE 401",
       "title": "Distributed Databases",
-      "shortName": null,
       "credits": 3,
       "type": "THEORY",
       "semester": 7,
-      "assignedFacultyId": null,
       "assignedFacultyName": "Dr. Tanvir Rahman",
       "batchIds": [
         "batch-8"
-      ],
-      "syllabus": [],
-      "createdAt": "2026-08-16T08:05:58.305172+00:00"
+      ]
     },
     {
-      "id": "course-1787825205604",
-      "code": "SWE 999",
-      "title": "Automated Testing Course",
+      "id": "course-1787839559737",
+      "code": "SWE 450",
+      "title": "Distributed Systems & Cloud Computing",
       "credits": 3,
       "type": "THEORY",
-      "semester": 5,
-      "assignedFacultyId": "",
+      "semester": 7,
       "batchIds": [
         "batch-9"
       ]
@@ -660,6 +463,21 @@
       "createdBy": "usr_admin_1",
       "createdByName": "Department Admin",
       "createdAt": "2026-08-27T10:08:29.077Z"
+    },
+    {
+      "id": "exam-1787839564918",
+      "batchId": "batch-9",
+      "courseId": "course-gen",
+      "courseCode": "SWE 301",
+      "courseTitle": "Database Systems",
+      "type": "MIDTERM",
+      "title": "Midterm Exam - DB",
+      "date": "2026-09-15",
+      "startTime": "10:00 AM",
+      "room": "Lab 402",
+      "createdBy": "usr_admin_1",
+      "createdByName": "Department Admin",
+      "createdAt": "2026-08-27T14:06:04.918+00:00"
     }
   ],
   "announcements": [
@@ -997,6 +815,26 @@
   ],
   "notifications": [
     {
+      "id": "notif-1787839565183-0.851220553001448",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "New Exam Scheduled 📅",
+      "message": "MIDTERM - \"Midterm Exam - DB\" scheduled for 2026-09-15 in SWE 301.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T14:06:05.183Z"
+    },
+    {
+      "id": "notif-1787839565183-0.6257293576433447",
+      "userId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "title": "New Exam Scheduled 📅",
+      "message": "MIDTERM - \"Midterm Exam - DB\" scheduled for 2026-09-15 in SWE 301.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-27T14:06:05.183Z"
+    },
+    {
       "id": "notif-1787825309094-0.048579904200644286",
       "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
       "title": "📢 Batch Announcement",
@@ -1238,6 +1076,22 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1787839565184",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "EXAM_CREATED",
+      "target": "MIDTERM: Midterm Exam - DB (batch-9)",
+      "timestamp": "2026-08-27T14:06:05.184Z"
+    },
+    {
+      "id": "log-1787839559844",
+      "actorId": "usr_admin_1",
+      "actorName": "Department Admin",
+      "action": "COURSE_CREATED",
+      "target": "SWE 450 - Distributed Systems & Cloud Computing",
+      "timestamp": "2026-08-27T14:05:59.844Z"
+    },
     {
       "id": "log-1787825309095",
       "actorId": "usr_admin_1",

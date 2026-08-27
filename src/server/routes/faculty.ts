@@ -1,34 +1,44 @@
 import { Router, Response } from 'express';
-import { db } from '../db';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
-import { requireRole } from '../middleware';
-import { Faculty } from '../../types';
-import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
+import { db } from '../db.ts';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
+import { requireRole } from '../middleware.ts';
+import { Faculty } from '../../types.ts';
+import {
+  fetchAllFaculty,
+  createFacultyInDB,
+  updateFacultyInDB,
+  deleteFacultyFromDB,
+} from '../supabaseData.ts';
 
 const router = Router();
 
 // GET /api/faculty (Public / All Users)
-router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  const { search } = req.query;
-  let list = db.getData().faculty;
+router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { search } = req.query;
+    let list = await fetchAllFaculty();
 
-  if (search) {
-    const q = (search as string).toLowerCase().trim();
-    list = list.filter(
-      f =>
-        f.name.toLowerCase().includes(q) ||
-        (f.shortName && f.shortName.toLowerCase().includes(q)) ||
-        f.designation.toLowerCase().includes(q) ||
-        (f.specialization && f.specialization.toLowerCase().includes(q)) ||
-        f.email.toLowerCase().includes(q)
-    );
+    if (search) {
+      const q = (search as string).toLowerCase().trim();
+      list = list.filter(
+        f =>
+          f.name.toLowerCase().includes(q) ||
+          (f.shortName && f.shortName.toLowerCase().includes(q)) ||
+          f.designation.toLowerCase().includes(q) ||
+          (f.specialization && f.specialization.toLowerCase().includes(q)) ||
+          f.email.toLowerCase().includes(q)
+      );
+    }
+
+    res.json({ faculty: list });
+  } catch (err: any) {
+    console.error('[Faculty API GET / Error]:', err);
+    res.status(500).json({ error: 'Failed to fetch faculty' });
   }
-
-  res.json({ faculty: list });
 });
 
 // POST /api/faculty (Admin Only)
-router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
+router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
 
@@ -54,32 +64,13 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
       assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
     };
 
-    const data = db.getData();
-    if (!data.faculty) {
-      data.faculty = [];
-    }
-    data.faculty.push(newFaculty);
-    db.save();
-
-    syncToSupabase('faculty', {
-      id: newFaculty.id,
-      name: newFaculty.name,
-      short_name: newFaculty.shortName || null,
-      designation: newFaculty.designation,
-      department: newFaculty.department,
-      email: newFaculty.email,
-      phone: newFaculty.phone || null,
-      office_room: newFaculty.officeRoom,
-      photo_url: newFaculty.photoUrl || null,
-      specialization: newFaculty.specialization || null,
-      assigned_courses: newFaculty.assignedCourses || [],
-    }).catch(err => console.error('[Supabase Faculty Sync Error]:', err));
+    const created = await createFacultyInDB(newFaculty);
 
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
-    db.addAuditLog(actorId, actorName, 'FACULTY_ADDED', newFaculty.name);
+    db.addAuditLog(actorId, actorName, 'FACULTY_ADDED', created.name);
 
-    return res.status(201).json({ faculty: newFaculty, message: 'Faculty member added successfully' });
+    return res.status(201).json({ faculty: created, message: 'Faculty member added successfully' });
   } catch (err: any) {
     console.error('Error adding faculty:', err);
     return res.status(500).json({ error: err?.message || 'Server error adding faculty member' });
@@ -87,49 +78,29 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
 });
 
 // PUT /api/faculty/:id (Admin Only)
-router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const facultyList = db.getData().faculty;
-    const fac = facultyList.find(f => f.id === req.params.id);
-
-    if (!fac) {
-      return res.status(404).json({ error: 'Faculty member not found' });
-    }
-
     const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
 
-    if (name !== undefined) fac.name = String(name).trim();
-    if (shortName !== undefined) fac.shortName = String(shortName).trim().toUpperCase();
-    if (designation !== undefined) fac.designation = String(designation).trim();
-    if (department !== undefined) fac.department = String(department).trim();
-    if (email !== undefined) fac.email = String(email).trim().toLowerCase();
-    if (phone !== undefined) fac.phone = phone ? String(phone).trim() : undefined;
-    if (officeRoom !== undefined) fac.officeRoom = String(officeRoom).trim();
-    if (photoUrl !== undefined) fac.photoUrl = String(photoUrl).trim();
-    if (specialization !== undefined) fac.specialization = String(specialization).trim();
-    if (Array.isArray(assignedCourses)) fac.assignedCourses = assignedCourses;
+    const updates: Partial<Faculty> = {};
+    if (name !== undefined) updates.name = String(name).trim();
+    if (shortName !== undefined) updates.shortName = String(shortName).trim().toUpperCase();
+    if (designation !== undefined) updates.designation = String(designation).trim();
+    if (department !== undefined) updates.department = String(department).trim();
+    if (email !== undefined) updates.email = String(email).trim().toLowerCase();
+    if (phone !== undefined) updates.phone = phone ? String(phone).trim() : undefined;
+    if (officeRoom !== undefined) updates.officeRoom = String(officeRoom).trim();
+    if (photoUrl !== undefined) updates.photoUrl = String(photoUrl).trim();
+    if (specialization !== undefined) updates.specialization = String(specialization).trim();
+    if (Array.isArray(assignedCourses)) updates.assignedCourses = assignedCourses;
 
-    db.save();
-
-    syncToSupabase('faculty', {
-      id: fac.id,
-      name: fac.name,
-      short_name: fac.shortName || null,
-      designation: fac.designation,
-      department: fac.department,
-      email: fac.email,
-      phone: fac.phone || null,
-      office_room: fac.officeRoom,
-      photo_url: fac.photoUrl || null,
-      specialization: fac.specialization || null,
-      assigned_courses: fac.assignedCourses || [],
-    }).catch(err => console.error('[Supabase Faculty Sync Error]:', err));
+    const updated = await updateFacultyInDB(req.params.id, updates);
 
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
-    db.addAuditLog(actorId, actorName, 'FACULTY_UPDATED', fac.name);
+    db.addAuditLog(actorId, actorName, 'FACULTY_UPDATED', updated.name);
 
-    return res.json({ faculty: fac, message: 'Faculty updated successfully' });
+    return res.json({ faculty: updated, message: 'Faculty updated successfully' });
   } catch (err: any) {
     console.error('Error updating faculty:', err);
     return res.status(500).json({ error: err?.message || 'Server error updating faculty member' });
@@ -137,23 +108,14 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReq
 });
 
 // DELETE /api/faculty/:id (Admin Only)
-router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const data = db.getData();
-    const idx = data.faculty.findIndex(f => f.id === req.params.id);
-
-    if (idx === -1) {
-      return res.status(404).json({ error: 'Faculty member not found' });
-    }
-
-    const removed = data.faculty.splice(idx, 1)[0];
-    db.save();
-
-    deleteFromSupabase('faculty', removed.id).catch(err => console.error('[Supabase Faculty Delete Error]:', err));
+    const facId = req.params.id;
+    await deleteFacultyFromDB(facId);
 
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
-    db.addAuditLog(actorId, actorName, 'FACULTY_DELETED', removed.name);
+    db.addAuditLog(actorId, actorName, 'FACULTY_DELETED', facId);
 
     return res.json({ message: 'Faculty deleted successfully' });
   } catch (err: any) {

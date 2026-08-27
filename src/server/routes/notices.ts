@@ -1,22 +1,31 @@
 import { Router, Response } from 'express';
-import { db } from '../db';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
-import { requireRole } from '../middleware';
-import { DepartmentNotice } from '../../types';
-import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
+import { db } from '../db.ts';
+import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
+import { requireRole } from '../middleware.ts';
+import { DepartmentNotice } from '../../types.ts';
+import {
+  fetchAllNotices,
+  createNoticeInDB,
+  deleteNoticeFromDB,
+  fetchAllUsers,
+} from '../supabaseData.ts';
 
 const router = Router();
 
 // GET /api/notices (Public / All students)
-router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) => {
-  const notices = db.getData().departmentNotices;
-  // Sort by publishDate DESC
-  notices.sort((a, b) => b.publishDate.localeCompare(a.publishDate));
-  res.json({ notices });
+router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const notices = await fetchAllNotices();
+    notices.sort((a, b) => b.publishDate.localeCompare(a.publishDate));
+    res.json({ notices });
+  } catch (err: any) {
+    console.error('[Notices API GET / Error]:', err);
+    res.status(500).json({ error: 'Failed to fetch notices' });
+  }
 });
 
 // POST /api/notices (CENTRAL ADMIN ONLY)
-router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
+router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   const { title, content, category, isImportant, attachmentUrl } = req.body;
 
   if (!title || !content || !category) {
@@ -25,70 +34,67 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
 
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const newNotice: DepartmentNotice = {
-    id: `notice-${Date.now()}`,
-    title,
-    content,
-    category,
-    publishDate: todayStr,
-    isImportant: Boolean(isImportant),
-    attachmentUrl,
-    createdBy: req.user!.id,
-    createdByName: req.user!.name,
-    createdAt: new Date().toISOString(),
-  };
-
-  db.getData().departmentNotices.unshift(newNotice);
-
-  // Notify ALL students and CRs in department
-  const allUsers = db.getData().users.filter(u => u.role !== 'ADMIN');
-  allUsers.forEach(u => {
-    db.getData().notifications.unshift({
-      id: `notif-${Date.now()}-${Math.random()}`,
-      userId: u.id,
-      title: '🏛️ New Department Notice',
-      message: title,
-      type: 'NOTICE',
-      linkUrl: '/notices',
-      read: false,
+  try {
+    const newNotice: DepartmentNotice = {
+      id: `notice-${Date.now()}`,
+      title: String(title).trim(),
+      content: String(content).trim(),
+      category,
+      publishDate: todayStr,
+      isImportant: Boolean(isImportant),
+      attachmentUrl,
+      createdBy: req.user!.id,
+      createdByName: req.user!.name,
       createdAt: new Date().toISOString(),
+    };
+
+    const created = await createNoticeInDB(newNotice);
+
+    // Notify ALL students and CRs in department
+    const allUsers = await fetchAllUsers().catch(() => []);
+    const local = db.getData();
+    if (!local.notifications) local.notifications = [];
+    allUsers.filter(u => u.role !== 'ADMIN').forEach(u => {
+      local.notifications.unshift({
+        id: `notif-${Date.now()}-${Math.random()}`,
+        userId: u.id,
+        title: '🏛️ New Department Notice',
+        message: title,
+        type: 'NOTICE',
+        linkUrl: '/notices',
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
     });
-  });
+    db.save();
 
-  db.save();
-  db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_PUBLISHED', title);
+    db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_PUBLISHED', title);
 
-  syncToSupabase('department_notices', {
-    id: newNotice.id,
-    title: newNotice.title,
-    content: newNotice.content,
-    category: newNotice.category,
-    publish_date: newNotice.publishDate,
-    is_important: newNotice.isImportant,
-    attachment_url: newNotice.attachmentUrl,
-    created_by: newNotice.createdBy,
-    created_by_name: newNotice.createdByName,
-    created_at: newNotice.createdAt,
-  }).catch(() => {});
-
-  res.status(201).json({ notice: newNotice });
+    res.status(201).json({ notice: created });
+  } catch (err: any) {
+    console.error('[Notices API POST / Error]:', err);
+    res.status(500).json({ error: err?.message || 'Server error creating notice' });
+  }
 });
 
 // DELETE /api/notices/:id (CENTRAL ADMIN ONLY)
-router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   const noticeId = req.params.id;
-  const data = db.getData();
-  const idx = data.departmentNotices.findIndex(n => n.id === noticeId);
 
-  if (idx === -1) return res.status(404).json({ error: 'Department notice not found' });
+  try {
+    const allNotices = await fetchAllNotices();
+    const existing = allNotices.find(n => n.id === noticeId);
 
-  data.departmentNotices.splice(idx, 1);
-  db.save();
-  deleteFromSupabase('department_notices', noticeId).catch(() => {});
+    if (!existing) return res.status(404).json({ error: 'Department notice not found' });
 
-  db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_DELETED', `Notice #${noticeId}`);
+    await deleteNoticeFromDB(noticeId);
+    db.addAuditLog(req.user!.id, req.user!.name, 'DEPARTMENT_NOTICE_DELETED', `Notice #${noticeId}`);
 
-  res.json({ message: 'Notice deleted' });
+    res.json({ message: 'Notice deleted' });
+  } catch (err: any) {
+    console.error('[Notices API DELETE /:id Error]:', err);
+    res.status(500).json({ error: err?.message || 'Server error deleting notice' });
+  }
 });
 
 export default router;

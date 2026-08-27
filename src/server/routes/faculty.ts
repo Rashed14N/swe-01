@@ -28,92 +28,107 @@ router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) =>
 
 // POST /api/faculty (Admin Only)
 router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
-  const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
+  try {
+    const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
 
-  if (!name || !designation || !email) {
-    return res.status(400).json({ error: 'Name, designation, and email are required' });
+    if (!name || !designation || !email) {
+      return res.status(400).json({ error: 'Name, designation, and email are required' });
+    }
+
+    const calculatedShortName = (shortName && String(shortName).trim()) 
+      ? String(shortName).trim().toUpperCase() 
+      : name.split(' ').filter(Boolean).map((w: string) => w[0]).join('').toUpperCase().slice(0, 4);
+
+    const newFaculty: Faculty = {
+      id: `fac-${Date.now()}`,
+      name: String(name).trim(),
+      shortName: calculatedShortName || 'FAC',
+      designation: String(designation).trim(),
+      department: department ? String(department).trim() : 'Software Engineering',
+      email: String(email).trim().toLowerCase(),
+      phone: phone ? String(phone).trim() : undefined,
+      officeRoom: officeRoom ? String(officeRoom).trim() : '',
+      photoUrl: photoUrl ? String(photoUrl).trim() : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+      specialization: specialization ? String(specialization).trim() : '',
+      assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
+    };
+
+    const data = db.getData();
+    if (!data.faculty) {
+      data.faculty = [];
+    }
+    data.faculty.push(newFaculty);
+    db.save();
+
+    const actorId = req.user?.id || 'admin';
+    const actorName = req.user?.name || 'Admin';
+    db.addAuditLog(actorId, actorName, 'FACULTY_ADDED', newFaculty.name);
+
+    return res.status(201).json({ faculty: newFaculty, message: 'Faculty member added successfully' });
+  } catch (err: any) {
+    console.error('Error adding faculty:', err);
+    return res.status(500).json({ error: err?.message || 'Server error adding faculty member' });
   }
-
-  const newFaculty: Faculty = {
-    id: `fac-${Date.now()}`,
-    name: name.trim(),
-    shortName: (shortName || name.split(' ').map((w: string) => w[0]).join('')).toUpperCase().slice(0, 4),
-    designation: designation.trim(),
-    department: department || 'Software Engineering',
-    email: email.trim(),
-    phone: phone ? phone.trim() : undefined,
-    officeRoom: officeRoom ? officeRoom.trim() : '',
-    photoUrl: photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-    specialization: specialization ? specialization.trim() : '',
-    assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
-  };
-
-  const data = db.getData();
-  if (!data.faculty) {
-    data.faculty = [];
-  }
-  data.faculty.push(newFaculty);
-  db.save();
-
-  if (req.user) {
-    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_ADDED', name);
-  } else {
-    db.addAuditLog('admin', 'Admin', 'FACULTY_ADDED', name);
-  }
-
-  res.status(201).json({ faculty: newFaculty, message: 'Faculty member added successfully' });
 });
 
 // PUT /api/faculty/:id (Admin Only)
 router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
-  const facultyList = db.getData().faculty;
-  const fac = facultyList.find(f => f.id === req.params.id);
+  try {
+    const facultyList = db.getData().faculty;
+    const fac = facultyList.find(f => f.id === req.params.id);
 
-  if (!fac) {
-    return res.status(404).json({ error: 'Faculty member not found' });
+    if (!fac) {
+      return res.status(404).json({ error: 'Faculty member not found' });
+    }
+
+    const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
+
+    if (name !== undefined) fac.name = String(name).trim();
+    if (shortName !== undefined) fac.shortName = String(shortName).trim().toUpperCase();
+    if (designation !== undefined) fac.designation = String(designation).trim();
+    if (department !== undefined) fac.department = String(department).trim();
+    if (email !== undefined) fac.email = String(email).trim().toLowerCase();
+    if (phone !== undefined) fac.phone = phone ? String(phone).trim() : undefined;
+    if (officeRoom !== undefined) fac.officeRoom = String(officeRoom).trim();
+    if (photoUrl !== undefined) fac.photoUrl = String(photoUrl).trim();
+    if (specialization !== undefined) fac.specialization = String(specialization).trim();
+    if (Array.isArray(assignedCourses)) fac.assignedCourses = assignedCourses;
+
+    db.save();
+
+    const actorId = req.user?.id || 'admin';
+    const actorName = req.user?.name || 'Admin';
+    db.addAuditLog(actorId, actorName, 'FACULTY_UPDATED', fac.name);
+
+    return res.json({ faculty: fac, message: 'Faculty updated successfully' });
+  } catch (err: any) {
+    console.error('Error updating faculty:', err);
+    return res.status(500).json({ error: err?.message || 'Server error updating faculty member' });
   }
-
-  const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
-
-  fac.name = name ?? fac.name;
-  fac.shortName = shortName ?? fac.shortName;
-  fac.designation = designation ?? fac.designation;
-  fac.department = department ?? fac.department;
-  fac.email = email ?? fac.email;
-  fac.phone = phone ?? fac.phone;
-  fac.officeRoom = officeRoom ?? fac.officeRoom;
-  fac.photoUrl = photoUrl ?? fac.photoUrl;
-  fac.specialization = specialization ?? fac.specialization;
-  if (Array.isArray(assignedCourses)) fac.assignedCourses = assignedCourses;
-
-  db.save();
-  if (req.user) {
-    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_UPDATED', fac.name);
-  } else {
-    db.addAuditLog('admin', 'Admin', 'FACULTY_UPDATED', fac.name);
-  }
-
-  res.json({ faculty: fac, message: 'Faculty updated successfully' });
 });
 
 // DELETE /api/faculty/:id (Admin Only)
 router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedRequest, res: Response) => {
-  const data = db.getData();
-  const idx = data.faculty.findIndex(f => f.id === req.params.id);
+  try {
+    const data = db.getData();
+    const idx = data.faculty.findIndex(f => f.id === req.params.id);
 
-  if (idx === -1) {
-    return res.status(404).json({ error: 'Faculty member not found' });
+    if (idx === -1) {
+      return res.status(404).json({ error: 'Faculty member not found' });
+    }
+
+    const removed = data.faculty.splice(idx, 1)[0];
+    db.save();
+
+    const actorId = req.user?.id || 'admin';
+    const actorName = req.user?.name || 'Admin';
+    db.addAuditLog(actorId, actorName, 'FACULTY_DELETED', removed.name);
+
+    return res.json({ message: 'Faculty deleted successfully' });
+  } catch (err: any) {
+    console.error('Error deleting faculty:', err);
+    return res.status(500).json({ error: err?.message || 'Server error deleting faculty member' });
   }
-
-  const removed = data.faculty.splice(idx, 1)[0];
-  db.save();
-  if (req.user) {
-    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_DELETED', removed.name);
-  } else {
-    db.addAuditLog('admin', 'Admin', 'FACULTY_DELETED', removed.name);
-  }
-
-  res.json({ message: 'Faculty deleted successfully' });
 });
 
 export default router;

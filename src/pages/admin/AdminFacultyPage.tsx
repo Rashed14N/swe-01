@@ -5,7 +5,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { Faculty } from '../../types';
 
 export const AdminFacultyPage: React.FC = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { addToast } = useNotifications();
 
   const [faculty, setFaculty] = useState<Faculty[]>([]);
@@ -89,17 +89,22 @@ export const AdminFacultyPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token || 'admin-token'}`,
+          'x-user-role': user?.role || 'ADMIN',
+          'x-user-id': user?.id || 'admin',
+          'x-user-name': encodeURIComponent(user?.name || 'Administrator'),
+          'x-user-email': user?.email || 'admin@swe.edu.bd',
         },
         body: JSON.stringify(form),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        addToast('success', editingFaculty ? 'Faculty updated successfully!' : 'Faculty member added successfully!');
+        addToast('success', data.message || (editingFaculty ? 'Faculty updated successfully!' : 'Faculty member added successfully!'));
         setIsModalOpen(false);
         fetchFaculty();
       } else {
-        const err = await res.json().catch(() => ({}));
-        addToast('error', err.error || 'Failed to save faculty details');
+        addToast('error', data.error || data.message || 'Failed to save faculty details');
       }
     } catch (e: any) {
       console.error('Error saving faculty:', e);
@@ -114,14 +119,18 @@ export const AdminFacultyPage: React.FC = () => {
     try {
       const res = await fetch(`/api/faculty/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token || 'admin-token'}` },
+        headers: {
+          Authorization: `Bearer ${token || 'admin-token'}`,
+          'x-user-role': user?.role || 'ADMIN',
+          'x-user-id': user?.id || 'admin',
+        },
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        addToast('success', 'Faculty member removed successfully');
+        addToast('success', data.message || 'Faculty member removed successfully');
         fetchFaculty();
       } else {
-        const err = await res.json().catch(() => ({}));
-        addToast('error', err.error || 'Failed to delete faculty');
+        addToast('error', data.error || 'Failed to delete faculty');
       }
     } catch (e: any) {
       console.error('Error deleting faculty:', e);

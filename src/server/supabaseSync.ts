@@ -22,10 +22,10 @@ if (fs.existsSync(CONFIG_FILE)) {
 
 // Fallback to process.env
 if (!currentSupabaseUrl) {
-  currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  currentSupabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://aasktchpxsxxanfkkrxx.supabase.co';
 }
 if (!currentSupabaseKey) {
-  currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+  currentSupabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || 'sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1';
 }
 
 let serverSupabase: SupabaseClient | null = null;
@@ -110,6 +110,10 @@ export async function testSupabaseConnectionDetails() {
     'announcements',
     'department_notices',
     'resources',
+    'faculty',
+    'notifications',
+    'routine_requests',
+    'audit_logs',
   ];
 
   const tableResults: Record<string, { ok: boolean; count?: number; error?: string }> = {};
@@ -136,7 +140,7 @@ export async function testSupabaseConnectionDetails() {
   return {
     connected: !anyError,
     message: anyError
-      ? 'Supabase connection failed (e.g. Invalid API key, typo in credentials, or table not created yet in SQL editor).'
+      ? 'Supabase connection warning: some tables might not exist or encountered issues.'
       : 'All Supabase tables are accessible and connected successfully!',
     tables: tableResults,
   };
@@ -155,7 +159,7 @@ export async function syncToSupabase(table: string, data: any): Promise<void> {
       console.log(`[Supabase Sync Success]: Synced to ${table}`);
     }
   } catch (err: any) {
-    console.error(`[Supabase Sync Failed]:`, err.message);
+    console.error(`[Supabase Sync Failed in ${table}]:`, err.message);
   }
 }
 
@@ -168,9 +172,11 @@ export async function deleteFromSupabase(table: string, id: string): Promise<voi
     const { error } = await serverSupabase.from(table).delete().eq('id', id);
     if (error) {
       console.error(`[Supabase Delete Error in ${table}]:`, error.message);
+    } else {
+      console.log(`[Supabase Delete Success]: Deleted from ${table} id=${id}`);
     }
   } catch (err: any) {
-    console.error(`[Supabase Delete Failed]:`, err.message);
+    console.error(`[Supabase Delete Failed in ${table}]:`, err.message);
   }
 }
 
@@ -195,7 +201,7 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
 
   // 1. Sync Batches
   try {
-    const batchRows = dbData.batches.map(b => ({
+    const batchRows = (dbData.batches || []).map(b => ({
       id: b.id,
       name: b.name,
       admission_year: b.admissionYear,
@@ -203,9 +209,9 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       academic_session: b.academicSession,
       semester_mode: b.semesterMode || 'SEQUENCE',
       status: b.status || 'ACTIVE',
-      last_progressed_at: b.lastProgressedAt,
+      last_progressed_at: b.lastProgressedAt || null,
       cr_ids: b.crIds || [],
-      created_at: b.createdAt,
+      created_at: b.createdAt || new Date().toISOString(),
     }));
     if (batchRows.length > 0) {
       const { error } = await serverSupabase.from('batches').upsert(batchRows);
@@ -218,15 +224,16 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
 
   // 2. Sync Courses
   try {
-    const courseRows = dbData.courses.map(c => ({
+    const courseRows = (dbData.courses || []).map(c => ({
       id: c.id,
       code: c.code,
       title: c.title,
-      short_name: c.shortName,
+      short_name: c.shortName || null,
       credits: c.credits,
-      type: c.type,
+      type: c.type || 'THEORY',
       semester: c.semester,
-      assigned_faculty_name: c.assignedFacultyName,
+      assigned_faculty_id: c.assignedFacultyId || null,
+      assigned_faculty_name: c.assignedFacultyName || null,
       batch_ids: c.batchIds || [],
     }));
     if (courseRows.length > 0) {
@@ -238,23 +245,47 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Courses: ${e.message}`);
   }
 
-  // 3. Sync Users
+  // 3. Sync Faculty
   try {
-    const userRows = dbData.users.map(u => ({
+    const facultyRows = (dbData.faculty || []).map(f => ({
+      id: f.id,
+      name: f.name,
+      short_name: f.shortName || null,
+      designation: f.designation,
+      department: f.department || 'Software Engineering',
+      email: f.email,
+      phone: f.phone || null,
+      office_room: f.officeRoom || '',
+      photo_url: f.photoUrl || null,
+      specialization: f.specialization || null,
+      assigned_courses: f.assignedCourses || [],
+    }));
+    if (facultyRows.length > 0) {
+      const { error } = await serverSupabase.from('faculty').upsert(facultyRows);
+      if (error) errors.push(`Faculty: ${error.message}`);
+      else synced.faculty = facultyRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Faculty: ${e.message}`);
+  }
+
+  // 4. Sync Users
+  try {
+    const userRows = (dbData.users || []).map(u => ({
       id: u.id,
       student_id: u.studentId,
       name: u.name,
-      email: u.email,
-      phone: u.phone,
+      email: u.email || null,
+      phone: u.phone || null,
       role: u.role,
-      batch_id: u.batchId,
-      batch_name: u.batchName,
-      current_semester: u.currentSemester,
-      profile_image: u.profileImage,
-      status: u.status,
+      batch_id: u.batchId || null,
+      batch_name: u.batchName || null,
+      current_semester: u.currentSemester || 1,
+      profile_image: u.profileImage || null,
+      status: u.status || 'ACTIVE',
       points: u.points || 0,
-      created_at: u.createdAt,
-      updated_at: u.updatedAt,
+      created_at: u.createdAt || new Date().toISOString(),
+      updated_at: u.updatedAt || new Date().toISOString(),
     }));
     if (userRows.length > 0) {
       const { error } = await serverSupabase.from('users').upsert(userRows);
@@ -265,9 +296,9 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Users: ${e.message}`);
   }
 
-  // 4. Sync Routine Slots
+  // 5. Sync Routine Slots
   try {
-    const routineRows = dbData.routines.map(rt => ({
+    const routineRows = (dbData.routines || []).map(rt => ({
       id: rt.id,
       batch_id: rt.batchId,
       day: rt.day,
@@ -275,10 +306,10 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       end_time: rt.endTime,
       course_id: rt.courseId,
       course_code: rt.courseCode,
-      course_short_name: rt.courseShortName,
+      course_short_name: rt.courseShortName || rt.courseCode,
       course_title: rt.courseTitle,
       teacher_name: rt.teacherName,
-      teacher_short_name: rt.teacherShortName,
+      teacher_short_name: rt.teacherShortName || rt.teacherName,
       room: rt.room,
     }));
     if (routineRows.length > 0) {
@@ -290,19 +321,19 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Routines: ${e.message}`);
   }
 
-  // 5. Sync Announcements
+  // 6. Sync Announcements
   try {
-    const annRows = dbData.announcements.map(a => ({
+    const annRows = (dbData.announcements || []).map(a => ({
       id: a.id,
       batch_id: a.batchId,
       title: a.title,
       description: a.description,
-      publish_date: a.publishDate,
+      publish_date: a.publishDate || new Date().toISOString().split('T')[0],
       expiry_date: a.expiryDate,
-      priority: a.priority,
+      priority: a.priority || 'NORMAL',
       created_by: a.createdBy,
       created_by_name: a.createdByName,
-      created_at: a.createdAt,
+      created_at: a.createdAt || new Date().toISOString(),
     }));
     if (annRows.length > 0) {
       const { error } = await serverSupabase.from('announcements').upsert(annRows);
@@ -313,9 +344,9 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Announcements: ${e.message}`);
   }
 
-  // 6. Sync Exams
+  // 7. Sync Exams
   try {
-    const examRows = dbData.exams.map(ex => ({
+    const examRows = (dbData.exams || []).map(ex => ({
       id: ex.id,
       batch_id: ex.batchId,
       course_id: ex.courseId,
@@ -324,12 +355,12 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       type: ex.type,
       title: ex.title,
       date: ex.date,
-      start_time: ex.startTime,
-      room: ex.room,
-      description: ex.description,
+      start_time: ex.startTime || '',
+      room: ex.room || '',
+      description: ex.description || '',
       created_by: ex.createdBy,
       created_by_name: ex.createdByName,
-      created_at: ex.createdAt,
+      created_at: ex.createdAt || new Date().toISOString(),
     }));
     if (examRows.length > 0) {
       const { error } = await serverSupabase.from('exams').upsert(examRows);
@@ -340,19 +371,19 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Exams: ${e.message}`);
   }
 
-  // 7. Sync Notices
+  // 8. Sync Notices
   try {
-    const noticeRows = dbData.departmentNotices.map(n => ({
+    const noticeRows = (dbData.departmentNotices || []).map(n => ({
       id: n.id,
       title: n.title,
       content: n.content,
-      category: n.category,
-      publish_date: n.publishDate,
-      is_important: n.isImportant,
-      attachment_url: n.attachmentUrl,
+      category: n.category || 'GENERAL',
+      publish_date: n.publishDate || new Date().toISOString().split('T')[0],
+      is_important: Boolean(n.isImportant),
+      attachment_url: n.attachmentUrl || null,
       created_by: n.createdBy,
       created_by_name: n.createdByName,
-      created_at: n.createdAt,
+      created_at: n.createdAt || new Date().toISOString(),
     }));
     if (noticeRows.length > 0) {
       const { error } = await serverSupabase.from('department_notices').upsert(noticeRows);
@@ -363,9 +394,9 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     errors.push(`Department Notices: ${e.message}`);
   }
 
-  // 8. Sync Resources
+  // 9. Sync Resources
   try {
-    const resourceRows = dbData.resources.map(r => ({
+    const resourceRows = (dbData.resources || []).map(r => ({
       id: r.id,
       title: r.title,
       type: r.type,
@@ -374,24 +405,24 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       course_title: r.courseTitle,
       semester: r.semester,
       academic_year: r.academicYear,
-      exam_type: r.examType,
-      faculty_name: r.facultyName,
-      target_batch: r.targetBatch,
-      lab_category: r.labCategory,
-      description: r.description,
-      file_url: r.fileUrl,
-      file_name: r.fileName,
-      file_size: r.fileSize,
-      file_type: r.fileType,
+      exam_type: r.examType || null,
+      faculty_name: r.facultyName || null,
+      target_batch: r.targetBatch || null,
+      lab_category: r.labCategory || null,
+      description: r.description || null,
+      file_url: r.fileUrl || '',
+      file_name: r.fileName || '',
+      file_size: r.fileSize || '',
+      file_type: r.fileType || '',
       uploader_id: r.uploaderId,
       uploader_student_id: r.uploaderStudentId,
       uploader_name: r.uploaderName,
-      uploader_batch_name: r.uploaderBatchName,
-      status: r.status,
-      rejection_reason: r.rejectionReason,
+      uploader_batch_name: r.uploaderBatchName || null,
+      status: r.status || 'PENDING',
+      rejection_reason: r.rejectionReason || null,
       download_count: r.downloadCount || 0,
-      created_at: r.createdAt,
-      verified_at: r.verifiedAt,
+      created_at: r.createdAt || new Date().toISOString(),
+      verified_at: r.verifiedAt || null,
     }));
     if (resourceRows.length > 0) {
       const { error } = await serverSupabase.from('resources').upsert(resourceRows);
@@ -400,6 +431,47 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
     }
   } catch (e: any) {
     errors.push(`Resources: ${e.message}`);
+  }
+
+  // 10. Sync Notifications
+  try {
+    const notifRows = (dbData.notifications || []).slice(0, 50).map(n => ({
+      id: n.id,
+      user_id: n.userId,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      link_url: n.linkUrl || null,
+      read: Boolean(n.read),
+      created_at: n.createdAt || new Date().toISOString(),
+    }));
+    if (notifRows.length > 0) {
+      const { error } = await serverSupabase.from('notifications').upsert(notifRows);
+      if (error) errors.push(`Notifications: ${error.message}`);
+      else synced.notifications = notifRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Notifications: ${e.message}`);
+  }
+
+  // 11. Sync Audit Logs
+  try {
+    const auditRows = (dbData.auditLogs || []).slice(0, 50).map(l => ({
+      id: l.id,
+      actor_id: l.actorId,
+      actor_name: l.actorName,
+      action: l.action,
+      target: l.target,
+      details: l.details || null,
+      timestamp: l.timestamp || new Date().toISOString(),
+    }));
+    if (auditRows.length > 0) {
+      const { error } = await serverSupabase.from('audit_logs').upsert(auditRows);
+      if (error) errors.push(`Audit Logs: ${error.message}`);
+      else synced.auditLogs = auditRows.length;
+    }
+  } catch (e: any) {
+    errors.push(`Audit Logs: ${e.message}`);
   }
 
   return {
@@ -438,6 +510,62 @@ export async function hydrateFromSupabase(dbData: DBData): Promise<void> {
           dbData.batches[existingIdx] = mappedBatch;
         } else {
           dbData.batches.push(mappedBatch);
+        }
+      });
+    }
+
+    // Fetch faculty
+    const { data: faculty } = await serverSupabase.from('faculty').select('*');
+    if (faculty && faculty.length > 0) {
+      faculty.forEach(f => {
+        const mappedFac = {
+          id: f.id,
+          name: f.name,
+          shortName: f.short_name,
+          designation: f.designation,
+          department: f.department,
+          email: f.email,
+          phone: f.phone,
+          officeRoom: f.office_room,
+          photoUrl: f.photo_url,
+          specialization: f.specialization,
+          assignedCourses: Array.isArray(f.assigned_courses) ? f.assigned_courses : [],
+          createdAt: f.created_at,
+        };
+        const existingIdx = dbData.faculty.findIndex(x => x.id === f.id || x.email === f.email);
+        if (existingIdx >= 0) {
+          dbData.faculty[existingIdx] = mappedFac;
+        } else {
+          dbData.faculty.push(mappedFac);
+        }
+      });
+    }
+
+    // Fetch courses
+    const { data: courses } = await serverSupabase.from('courses').select('*');
+    if (courses && courses.length > 0) {
+      courses.forEach(c => {
+        const mappedCourse = {
+          id: c.id,
+          code: c.code,
+          title: c.title,
+          shortName: c.short_name,
+          credits: Number(c.credits) || 3.0,
+          type: c.type || 'THEORY',
+          semester: Number(c.semester) || 1,
+          assignedFacultyId: c.assigned_faculty_id,
+          assignedFacultyName: c.assigned_faculty_name,
+          assignedFacultyShortName: c.assigned_faculty_short_name,
+          batchIds: Array.isArray(c.batch_ids) ? c.batch_ids : [],
+          syllabus: Array.isArray(c.syllabus) ? c.syllabus : [],
+          color: c.color,
+          createdAt: c.created_at,
+        };
+        const existingIdx = dbData.courses.findIndex(x => x.id === c.id || x.code === c.code);
+        if (existingIdx >= 0) {
+          dbData.courses[existingIdx] = mappedCourse;
+        } else {
+          dbData.courses.push(mappedCourse);
         }
       });
     }
@@ -671,5 +799,3 @@ export function startAutoSync(getDbData: () => DBData, intervalMs = 15000) {
     }
   }, intervalMs);
 }
-
-

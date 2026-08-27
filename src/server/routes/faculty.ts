@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Faculty } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -60,6 +61,20 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
     data.faculty.push(newFaculty);
     db.save();
 
+    syncToSupabase('faculty', {
+      id: newFaculty.id,
+      name: newFaculty.name,
+      short_name: newFaculty.shortName || null,
+      designation: newFaculty.designation,
+      department: newFaculty.department,
+      email: newFaculty.email,
+      phone: newFaculty.phone || null,
+      office_room: newFaculty.officeRoom,
+      photo_url: newFaculty.photoUrl || null,
+      specialization: newFaculty.specialization || null,
+      assigned_courses: newFaculty.assignedCourses || [],
+    }).catch(err => console.error('[Supabase Faculty Sync Error]:', err));
+
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
     db.addAuditLog(actorId, actorName, 'FACULTY_ADDED', newFaculty.name);
@@ -96,6 +111,20 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReq
 
     db.save();
 
+    syncToSupabase('faculty', {
+      id: fac.id,
+      name: fac.name,
+      short_name: fac.shortName || null,
+      designation: fac.designation,
+      department: fac.department,
+      email: fac.email,
+      phone: fac.phone || null,
+      office_room: fac.officeRoom,
+      photo_url: fac.photoUrl || null,
+      specialization: fac.specialization || null,
+      assigned_courses: fac.assignedCourses || [],
+    }).catch(err => console.error('[Supabase Faculty Sync Error]:', err));
+
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
     db.addAuditLog(actorId, actorName, 'FACULTY_UPDATED', fac.name);
@@ -119,6 +148,8 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authenticated
 
     const removed = data.faculty.splice(idx, 1)[0];
     db.save();
+
+    deleteFromSupabase('faculty', removed.id).catch(err => console.error('[Supabase Faculty Delete Error]:', err));
 
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';

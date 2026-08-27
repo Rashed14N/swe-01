@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Course } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -71,6 +72,19 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
   data.courses.push(newCourse);
   db.save();
 
+  syncToSupabase('courses', {
+    id: newCourse.id,
+    code: newCourse.code,
+    title: newCourse.title,
+    short_name: newCourse.shortName || null,
+    credits: newCourse.credits,
+    type: newCourse.type,
+    semester: newCourse.semester,
+    assigned_faculty_id: newCourse.assignedFacultyId || null,
+    assigned_faculty_name: newCourse.assignedFacultyName || null,
+    batch_ids: newCourse.batchIds || [],
+  }).catch(err => console.error('[Supabase Course Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_CREATED', `${code} - ${title}`);
 
   res.status(201).json({ course: newCourse });
@@ -105,6 +119,20 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReq
   }
 
   db.save();
+
+  syncToSupabase('courses', {
+    id: course.id,
+    code: course.code,
+    title: course.title,
+    short_name: course.shortName || null,
+    credits: course.credits,
+    type: course.type,
+    semester: course.semester,
+    assigned_faculty_id: course.assignedFacultyId || null,
+    assigned_faculty_name: course.assignedFacultyName || null,
+    batch_ids: course.batchIds || [],
+  }).catch(err => console.error('[Supabase Course Update Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_UPDATED', `${course.code} - ${course.title}`);
 
   res.json({ message: 'Course updated successfully', course });
@@ -122,6 +150,9 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authenticated
 
   const [removed] = data.courses.splice(index, 1);
   db.save();
+
+  deleteFromSupabase('courses', courseId).catch(err => console.error('[Supabase Course Delete Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_DELETED', `${removed.code}`);
 
   res.json({ message: 'Course deleted successfully', course: removed });

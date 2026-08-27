@@ -283,6 +283,18 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
   db.getData().batches.push(newBatch);
   db.save();
 
+  syncToSupabase('batches', {
+    id: newBatch.id,
+    name: newBatch.name,
+    admission_year: newBatch.admissionYear,
+    current_semester: newBatch.currentSemester,
+    academic_session: newBatch.academicSession,
+    semester_mode: newBatch.semesterMode,
+    status: newBatch.status,
+    cr_ids: newBatch.crIds || [],
+    created_at: newBatch.createdAt,
+  }).catch(err => console.error('[Supabase Batch Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'BATCH_CREATED', `${newBatch.name} (${newBatch.semesterMode})`);
 
   res.status(201).json({ batch: newBatch });
@@ -323,6 +335,17 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReq
   }
 
   db.save();
+
+  syncToSupabase('batches', {
+    id: updated.id,
+    name: updated.name,
+    admission_year: updated.admissionYear,
+    current_semester: updated.currentSemester,
+    academic_session: updated.academicSession,
+    semester_mode: updated.semesterMode,
+    status: updated.status,
+    cr_ids: updated.crIds || [],
+  }).catch(err => console.error('[Supabase Batch Update Sync Error]:', err));
 
   db.addAuditLog(req.user!.id, req.user!.name, 'BATCH_UPDATED', `${updated.name} (${updated.semesterMode}, Sem ${updated.currentSemester})`);
 

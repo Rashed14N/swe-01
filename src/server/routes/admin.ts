@@ -4,6 +4,7 @@ import { db } from '../db';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { User, Faculty, UserRole } from '../../types';
+import { syncToSupabase, deleteFromSupabase } from '../supabaseSync';
 
 const router = Router();
 
@@ -124,6 +125,21 @@ router.post('/users', (req: AuthenticatedRequest, res: Response) => {
     }
   }
 
+  syncToSupabase('users', {
+    id: newUser.id,
+    student_id: newUser.studentId,
+    name: newUser.name,
+    email: newUser.email || null,
+    phone: newUser.phone || null,
+    role: newUser.role,
+    batch_id: newUser.batchId,
+    batch_name: newUser.batchName,
+    current_semester: newUser.currentSemester,
+    status: newUser.status,
+    created_at: newUser.createdAt,
+    updated_at: newUser.updatedAt,
+  }).catch(err => console.error('[Supabase Admin User Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'USER_CREATED', `${newUser.name} (${studentId})`);
 
   res.status(201).json({ user: newUser });
@@ -175,9 +191,43 @@ router.put('/users/:id', (req: AuthenticatedRequest, res: Response) => {
   };
 
   db.updateUser(updatedUser);
+
+  syncToSupabase('users', {
+    id: updatedUser.id,
+    student_id: updatedUser.studentId,
+    name: updatedUser.name,
+    email: updatedUser.email || null,
+    phone: updatedUser.phone || null,
+    role: updatedUser.role,
+    batch_id: updatedUser.batchId,
+    batch_name: updatedUser.batchName,
+    current_semester: updatedUser.currentSemester,
+    status: updatedUser.status,
+    updated_at: updatedUser.updatedAt,
+  }).catch(err => console.error('[Supabase Admin User Update Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'USER_UPDATED', `${updatedUser.name} (${updatedUser.studentId})`);
 
   res.json({ user: updatedUser });
+});
+
+// DELETE /api/admin/users/:id
+router.delete('/users/:id', (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.params.id;
+  const user = db.getUserById(userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const data = db.getData();
+  const idx = data.users.findIndex(u => u.id === userId);
+  if (idx !== -1) {
+    data.users.splice(idx, 1);
+    db.save();
+    deleteFromSupabase('users', userId).catch(err => console.error('[Supabase Delete User Error]:', err));
+  }
+
+  db.addAuditLog(req.user!.id, req.user!.name, 'USER_DELETED', `${user.name} (${user.studentId})`);
+
+  res.json({ message: 'User deleted successfully' });
 });
 
 // POST /api/admin/users/:id/reset-password
@@ -320,6 +370,14 @@ router.post('/resources/:id/review', (req: AuthenticatedRequest, res: Response) 
   }
 
   db.save();
+
+  syncToSupabase('resources', {
+    id: resource.id,
+    status: resource.status,
+    rejection_reason: resource.rejectionReason || null,
+    verified_at: resource.verifiedAt || null,
+  }).catch(err => console.error('[Supabase Resource Review Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, `RESOURCE_${action}D`, resource.title);
 
   res.json({ message: `Resource ${action.toLowerCase()}d successfully`, resource });
@@ -351,6 +409,23 @@ router.put('/resources/:id', (req: AuthenticatedRequest, res: Response) => {
   if (status) resource.status = status;
 
   db.save();
+
+  syncToSupabase('resources', {
+    id: resource.id,
+    title: resource.title,
+    type: resource.type,
+    course_code: resource.courseCode,
+    course_title: resource.courseTitle,
+    semester: resource.semester,
+    academic_year: resource.academicYear,
+    exam_type: resource.examType || null,
+    lab_category: resource.labCategory || null,
+    description: resource.description || null,
+    file_url: resource.fileUrl,
+    uploader_name: resource.uploaderName,
+    status: resource.status,
+  }).catch(err => console.error('[Supabase Resource Update Sync Error]:', err));
+
   db.addAuditLog(req.user!.id, req.user!.name, 'RESOURCE_DETAILS_UPDATED', resource.title);
 
   res.json({ message: 'Resource details updated successfully', resource });
@@ -379,6 +454,19 @@ router.post('/faculty', (req: AuthenticatedRequest, res: Response) => {
 
   db.getData().faculty.push(newFaculty);
   db.save();
+
+  syncToSupabase('faculty', {
+    id: newFaculty.id,
+    name: newFaculty.name,
+    designation: newFaculty.designation,
+    department: newFaculty.department,
+    email: newFaculty.email,
+    phone: newFaculty.phone || null,
+    office_room: newFaculty.officeRoom,
+    photo_url: newFaculty.photoUrl,
+    specialization: newFaculty.specialization || null,
+    assigned_courses: newFaculty.assignedCourses || [],
+  }).catch(err => console.error('[Supabase Faculty Add Sync Error]:', err));
 
   db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_ADDED', name);
 

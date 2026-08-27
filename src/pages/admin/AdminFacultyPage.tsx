@@ -29,7 +29,6 @@ export const AdminFacultyPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchFaculty = async () => {
-    if (!token) return;
     setIsLoading(true);
     try {
       const res = await fetch('/api/faculty');

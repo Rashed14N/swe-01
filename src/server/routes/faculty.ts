@@ -57,6 +57,8 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReque
 
   if (req.user) {
     db.addAuditLog(req.user.id, req.user.name, 'FACULTY_ADDED', name);
+  } else {
+    db.addAuditLog('admin', 'Admin', 'FACULTY_ADDED', name);
   }
 
   res.status(201).json({ faculty: newFaculty, message: 'Faculty member added successfully' });
@@ -85,7 +87,11 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), (req: AuthenticatedReq
   if (Array.isArray(assignedCourses)) fac.assignedCourses = assignedCourses;
 
   db.save();
-  db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_UPDATED', fac.name);
+  if (req.user) {
+    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_UPDATED', fac.name);
+  } else {
+    db.addAuditLog('admin', 'Admin', 'FACULTY_UPDATED', fac.name);
+  }
 
   res.json({ faculty: fac, message: 'Faculty updated successfully' });
 });
@@ -101,7 +107,11 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), (req: Authenticated
 
   const removed = data.faculty.splice(idx, 1)[0];
   db.save();
-  db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_DELETED', removed.name);
+  if (req.user) {
+    db.addAuditLog(req.user.id, req.user.name, 'FACULTY_DELETED', removed.name);
+  } else {
+    db.addAuditLog('admin', 'Admin', 'FACULTY_DELETED', removed.name);
+  }
 
   res.json({ message: 'Faculty deleted successfully' });
 });

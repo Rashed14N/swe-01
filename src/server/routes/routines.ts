@@ -143,8 +143,164 @@ router.get('/', optionalAuthToken, (req: AuthenticatedRequest, res: Response) =>
   res.json({ routines, batchId: requestedBatchId });
 });
 
+// POST /api/routines/bulk or /api/routines/import (Admin or CR for own batch)
+router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
+  const { batchId, slots, mode = 'REPLACE' } = req.body;
+  const inputSlots = Array.isArray(slots) ? slots : (Array.isArray(req.body) ? req.body : []);
+  const targetBatchId = batchId || (Array.isArray(req.body) ? req.body[0]?.batchId : undefined) || req.user?.batchId;
+
+  if (!targetBatchId) {
+    return res.status(400).json({ error: 'Target batchId is required for importing routine.' });
+  }
+
+  if (req.user!.role === 'CR' && req.user!.batchId !== targetBatchId) {
+    return res.status(403).json({ error: '403 Forbidden: CRs can only import routine for their own batch.' });
+  }
+
+  if (!Array.isArray(inputSlots) || inputSlots.length === 0) {
+    return res.status(400).json({ error: 'No routine slots provided in the JSON array.' });
+  }
+
+  const validDays = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const processedSlots: RoutineSlot[] = [];
+  const errors: string[] = [];
+
+  inputSlots.forEach((slot: any, idx: number) => {
+    const rawDay = String(slot.day || '').trim().toUpperCase();
+    if (!validDays.includes(rawDay)) {
+      errors.push(`Slot #${idx + 1}: Invalid or missing day "${slot.day}". Allowed: ${validDays.join(', ')}`);
+      return;
+    }
+
+    if (!slot.startTime || !slot.endTime) {
+      errors.push(`Slot #${idx + 1} (${rawDay}): Both startTime and endTime are required (e.g. "10:00 AM" - "11:30 AM").`);
+      return;
+    }
+
+    if (!slot.courseTitle && !slot.courseCode) {
+      errors.push(`Slot #${idx + 1} (${rawDay}): Course Title or Course Code is required.`);
+      return;
+    }
+
+    const newSlot: RoutineSlot = {
+      id: slot.id && typeof slot.id === 'string' && slot.id.startsWith('rout-') ? slot.id : `rout-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+      batchId: targetBatchId,
+      day: rawDay as any,
+      startTime: String(slot.startTime).trim(),
+      endTime: String(slot.endTime).trim(),
+      courseId: slot.courseId || `course-${Date.now()}-${idx}`,
+      courseCode: slot.courseCode ? String(slot.courseCode).trim() : 'SWE 101',
+      courseTitle: slot.courseTitle ? String(slot.courseTitle).trim() : (slot.courseCode || 'Class Session'),
+      courseShortName: slot.courseShortName ? String(slot.courseShortName).trim() : undefined,
+      teacherName: slot.teacherName ? String(slot.teacherName).trim() : 'Faculty Instructor',
+      teacherShortName: slot.teacherShortName ? String(slot.teacherShortName).trim() : undefined,
+      room: slot.room ? String(slot.room).trim() : 'Room 502',
+    };
+
+    processedSlots.push(newSlot);
+  });
+
+  if (processedSlots.length === 0) {
+    return res.status(400).json({ error: 'No valid routine slots found in JSON.', details: errors });
+  }
+
+  const data = db.getData();
+  if (!data.routines) data.routines = [];
+
+  if (mode === 'REPLACE') {
+    // Remove existing slots for this batch
+    data.routines = data.routines.filter(r => r.batchId !== targetBatchId);
+  }
+
+  // Push new slots
+  data.routines.push(...processedSlots);
+  db.save();
+
+  // Supabase sync
+  processedSlots.forEach(s => {
+    syncToSupabase('routine_slots', {
+      id: s.id,
+      batch_id: s.batchId,
+      day: s.day,
+      start_time: s.startTime,
+      end_time: s.endTime,
+      course_id: s.courseId,
+      course_code: s.courseCode,
+      course_title: s.courseTitle,
+      teacher_name: s.teacherName,
+      room: s.room,
+    }).catch(() => {});
+  });
+
+  const actorId = req.user?.id || 'admin';
+  const actorName = req.user?.name || 'Admin';
+  db.addAuditLog(actorId, actorName, 'ROUTINE_BULK_IMPORTED', `${processedSlots.length} slots imported for ${targetBatchId} (${mode})`);
+
+  const updatedBatchRoutines = data.routines.filter(r => r.batchId === targetBatchId);
+
+  res.status(201).json({
+    message: `Successfully imported ${processedSlots.length} class slots (${mode === 'REPLACE' ? 'replaced previous schedule' : 'appended to schedule'}).`,
+    count: processedSlots.length,
+    routines: updatedBatchRoutines,
+    warnings: errors.length > 0 ? errors : undefined,
+  });
+});
+
 // POST /api/routines (Admin or CR for own batch)
 router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: AuthenticatedRequest, res: Response) => {
+  // Support if user posted an array directly to /api/routines
+  if (Array.isArray(req.body) || (req.body.slots && Array.isArray(req.body.slots))) {
+    const { batchId, slots, mode = 'REPLACE' } = req.body;
+    const inputSlots = Array.isArray(slots) ? slots : (Array.isArray(req.body) ? req.body : []);
+    const targetBatchId = batchId || (Array.isArray(req.body) ? req.body[0]?.batchId : undefined) || req.user?.batchId;
+
+    if (!targetBatchId) {
+      return res.status(400).json({ error: 'Target batchId is required for importing routine.' });
+    }
+
+    const validDays = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const processedSlots: RoutineSlot[] = [];
+
+    inputSlots.forEach((slot: any, idx: number) => {
+      const rawDay = String(slot.day || '').trim().toUpperCase();
+      if (!validDays.includes(rawDay)) return;
+      if (!slot.startTime || !slot.endTime) return;
+
+      const newSlot: RoutineSlot = {
+        id: `rout-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+        batchId: targetBatchId,
+        day: rawDay as any,
+        startTime: String(slot.startTime).trim(),
+        endTime: String(slot.endTime).trim(),
+        courseId: slot.courseId || `course-${Date.now()}-${idx}`,
+        courseCode: slot.courseCode ? String(slot.courseCode).trim() : 'SWE 101',
+        courseTitle: slot.courseTitle ? String(slot.courseTitle).trim() : (slot.courseCode || 'Class Session'),
+        courseShortName: slot.courseShortName ? String(slot.courseShortName).trim() : undefined,
+        teacherName: slot.teacherName ? String(slot.teacherName).trim() : 'Faculty Instructor',
+        teacherShortName: slot.teacherShortName ? String(slot.teacherShortName).trim() : undefined,
+        room: slot.room ? String(slot.room).trim() : 'Room 502',
+      };
+      processedSlots.push(newSlot);
+    });
+
+    if (processedSlots.length === 0) {
+      return res.status(400).json({ error: 'No valid routine slots found in the JSON payload.' });
+    }
+
+    const data = db.getData();
+    if (!data.routines) data.routines = [];
+    if (mode === 'REPLACE') {
+      data.routines = data.routines.filter(r => r.batchId !== targetBatchId);
+    }
+    data.routines.push(...processedSlots);
+    db.save();
+
+    return res.status(201).json({
+      message: `Successfully imported ${processedSlots.length} routine slots.`,
+      routines: data.routines.filter(r => r.batchId === targetBatchId),
+    });
+  }
+
   const { batchId, day, startTime, endTime, courseId, courseCode, courseTitle, teacherName, room } = req.body;
 
   if (!batchId || !day || !startTime || !endTime || !courseTitle || !teacherName || !room) {
@@ -184,7 +340,9 @@ router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), (req: Authenticate
     room: newSlot.room,
   }).catch(() => {});
 
-  db.addAuditLog(req.user!.id, req.user!.name, 'ROUTINE_ADDED', `Slot for ${batchId} on ${day}`);
+  const actorId = req.user?.id || 'admin';
+  const actorName = req.user?.name || 'Admin';
+  db.addAuditLog(actorId, actorName, 'ROUTINE_ADDED', `Slot for ${batchId} on ${day}`);
 
   res.status(201).json({ routine: newSlot });
 });

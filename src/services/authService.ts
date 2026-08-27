@@ -121,7 +121,7 @@ class SupabaseAuthService {
             batch_id: assignedBatchId,
             batch_name: assignedBatchName,
             current_semester: assignedSemester,
-            profile_image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+            profile_image: '/avatars/pangolin-cream-2.svg',
           },
         },
       });

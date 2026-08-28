@@ -773,6 +773,9 @@ export function mapAnnouncementFromSupabase(row: any): BatchAnnouncement {
 }
 
 export function mapAnnouncementToSupabase(ann: BatchAnnouncement): any {
+  const rawPriority = (ann.priority || 'NORMAL').toUpperCase();
+  const priority = (rawPriority === 'URGENT' || rawPriority === 'HIGH') ? 'URGENT' : 'NORMAL';
+
   return {
     id: ann.id,
     batch_id: ann.batchId,
@@ -780,7 +783,7 @@ export function mapAnnouncementToSupabase(ann: BatchAnnouncement): any {
     description: ann.description,
     publish_date: ann.publishDate,
     expiry_date: ann.expiryDate,
-    priority: ann.priority,
+    priority,
     created_by: ann.createdBy,
     created_by_name: ann.createdByName,
     created_at: ann.createdAt || new Date().toISOString(),
@@ -857,11 +860,17 @@ export function mapNoticeFromSupabase(row: any): DepartmentNotice {
 }
 
 export function mapNoticeToSupabase(notice: DepartmentNotice): any {
+  const rawCat = (notice.category || 'GENERAL').toUpperCase();
+  let category = 'GENERAL';
+  if (['EXAM', 'HOLIDAY', 'URGENT', 'GENERAL'].includes(rawCat)) {
+    category = rawCat;
+  }
+
   return {
     id: notice.id,
     title: notice.title,
     content: notice.content,
-    category: notice.category,
+    category,
     publish_date: notice.publishDate,
     is_important: notice.isImportant,
     attachment_url: notice.attachmentUrl || null,

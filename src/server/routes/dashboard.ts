@@ -18,7 +18,7 @@ router.get('/summary', verifyAuthToken, async (req: AuthenticatedRequest, res: R
   const user = req.user;
 
   try {
-    const userBatchId = user.batchId || 'batch-9';
+    const userBatchId = (req.query.batchId as string) || user.batchId || 'batch-9';
 
     const [allBatches, allCourses, allRoutines, allExams, allAnnouncements, allNotices] = await Promise.all([
       fetchAllBatches(),

@@ -381,6 +381,18 @@
       "courseTitle": "Database Systems",
       "teacherName": "Dr. Tanvir Rahman",
       "room": "Room 501"
+    },
+    {
+      "id": "rout-1787903481673",
+      "batchId": "batch-9",
+      "day": "MONDAY",
+      "startTime": "10:00 AM",
+      "endTime": "11:30 AM",
+      "courseId": "course-gen",
+      "courseCode": "SWE 301",
+      "courseTitle": "Database Systems",
+      "teacherName": "Faculty Instructor",
+      "room": "Room 304"
     }
   ],
   "exams": [
@@ -475,9 +487,25 @@
       "date": "2026-09-15",
       "startTime": "10:00 AM",
       "room": "Lab 402",
+      "description": null,
       "createdBy": "usr_admin_1",
       "createdByName": "Department Admin",
       "createdAt": "2026-08-27T14:06:04.918+00:00"
+    },
+    {
+      "id": "exam-1787903480961",
+      "batchId": "batch-9",
+      "courseId": "course-gen",
+      "courseCode": "SWE 301",
+      "courseTitle": "Database Systems",
+      "type": "MIDTERM",
+      "title": "Midterm Exam - DB",
+      "date": "2026-09-15",
+      "startTime": "10:00 AM",
+      "room": "Lab 402",
+      "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "createdByName": "Rashedul Hasan Mojumdar",
+      "createdAt": "2026-08-28T07:51:20.961+00:00"
     }
   ],
   "announcements": [
@@ -528,6 +556,18 @@
       "createdBy": "user-cr-1",
       "createdByName": "Mahmudul Hasan (CR)",
       "createdAt": "2026-08-01T09:00:00+00:00"
+    },
+    {
+      "id": "ann-1787903481246",
+      "batchId": "batch-9",
+      "title": "Class Rescheduled for Sunday",
+      "description": "SWE 301 class will take place at 10:00 AM in Room 402.",
+      "publishDate": "2026-08-28",
+      "expiryDate": "2026-09-05",
+      "priority": "URGENT",
+      "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "createdByName": "Rashedul Hasan Mojumdar",
+      "createdAt": "2026-08-28T07:51:21.246+00:00"
     }
   ],
   "departmentNotices": [
@@ -566,6 +606,17 @@
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-05T08:00:00+00:00"
+    },
+    {
+      "id": "notice-1787903481439",
+      "title": "Semester Final Registration Notice",
+      "content": "All students are requested to complete semester final exam registration by next week.",
+      "category": "EXAM",
+      "publishDate": "2026-08-28",
+      "isImportant": true,
+      "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "createdByName": "Rashedul Hasan Mojumdar",
+      "createdAt": "2026-08-28T07:51:21.439+00:00"
     }
   ],
   "resources": [
@@ -814,6 +865,36 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1787903481669-0.4182047741732302",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "🏛️ New Department Notice",
+      "message": "Semester Final Registration Notice",
+      "type": "NOTICE",
+      "linkUrl": "/notices",
+      "read": false,
+      "createdAt": "2026-08-28T07:51:21.669Z"
+    },
+    {
+      "id": "notif-1787903481435-0.5882311329106276",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "📢 Batch Announcement",
+      "message": "Class Rescheduled for Sunday",
+      "type": "ANNOUNCEMENT",
+      "linkUrl": "/announcements",
+      "read": false,
+      "createdAt": "2026-08-28T07:51:21.435Z"
+    },
+    {
+      "id": "notif-1787903481237-0.09210325107167083",
+      "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+      "title": "New Exam Scheduled 📅",
+      "message": "MIDTERM - \"Midterm Exam - DB\" scheduled for 2026-09-15 in SWE 301.",
+      "type": "EXAM",
+      "linkUrl": "/exams",
+      "read": false,
+      "createdAt": "2026-08-28T07:51:21.237Z"
+    },
     {
       "id": "notif-1787839565183-0.851220553001448",
       "userId": "usr_afc465ace5bd4cfba9783fa9f87a45ae",
@@ -1076,6 +1157,38 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1787903481780",
+      "actorId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "actorName": "Rashedul Hasan Mojumdar",
+      "action": "ROUTINE_ADDED",
+      "target": "Slot for batch-9 on MONDAY",
+      "timestamp": "2026-08-28T07:51:21.780Z"
+    },
+    {
+      "id": "log-1787903481669",
+      "actorId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "actorName": "Rashedul Hasan Mojumdar",
+      "action": "DEPARTMENT_NOTICE_PUBLISHED",
+      "target": "Semester Final Registration Notice",
+      "timestamp": "2026-08-28T07:51:21.669Z"
+    },
+    {
+      "id": "log-1787903481435",
+      "actorId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "actorName": "Rashedul Hasan Mojumdar",
+      "action": "ANNOUNCEMENT_CREATED",
+      "target": "Class Rescheduled for Sunday (batch-9)",
+      "timestamp": "2026-08-28T07:51:21.435Z"
+    },
+    {
+      "id": "log-1787903481237",
+      "actorId": "usr_68bf253ad3a242e79a883bb46ce99787",
+      "actorName": "Rashedul Hasan Mojumdar",
+      "action": "EXAM_CREATED",
+      "target": "MIDTERM: Midterm Exam - DB (batch-9)",
+      "timestamp": "2026-08-28T07:51:21.237Z"
+    },
     {
       "id": "log-1787839565184",
       "actorId": "usr_admin_1",

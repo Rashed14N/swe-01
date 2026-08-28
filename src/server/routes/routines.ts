@@ -250,8 +250,8 @@ router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: Au
 router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
   const { batchId, day, startTime, endTime, courseId, courseCode, courseTitle, courseShortName, teacherName, teacherShortName, room } = req.body;
 
-  if (!batchId || !day || !startTime || !endTime || !courseTitle || !teacherName || !room) {
-    return res.status(400).json({ error: 'All routine slot fields are required' });
+  if (!batchId || !day || !startTime || !endTime || (!courseTitle && !courseCode)) {
+    return res.status(400).json({ error: 'Batch, day, startTime, endTime, and course title/code are required' });
   }
 
   if (req.user!.role === 'CR' && req.user!.batchId !== batchId) {
@@ -266,12 +266,12 @@ router.post('/', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: Authen
       startTime: String(startTime).trim(),
       endTime: String(endTime).trim(),
       courseId: courseId || 'course-gen',
-      courseCode: courseCode || 'SWE 101',
-      courseTitle: String(courseTitle).trim(),
+      courseCode: courseCode ? String(courseCode).trim() : 'SWE 101',
+      courseTitle: courseTitle ? String(courseTitle).trim() : String(courseCode || 'Class Session').trim(),
       courseShortName: courseShortName ? String(courseShortName).trim() : undefined,
-      teacherName: String(teacherName).trim(),
+      teacherName: teacherName ? String(teacherName).trim() : 'Faculty Instructor',
       teacherShortName: teacherShortName ? String(teacherShortName).trim() : undefined,
-      room: String(room).trim(),
+      room: room ? String(room).trim() : 'Room TBA',
     };
 
     const created = await createRoutineSlotInDB(newSlot);

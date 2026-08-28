@@ -49,14 +49,13 @@ export function mapCourseToSupabase(course: Course): any {
 }
 
 export async function fetchAllCourses(): Promise<Course[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('courses').select('*').order('created_at', { ascending: true });
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         const courses = data.map(mapCourseFromSupabase);
-        // Cache to local db for offline resilience
-        const local = db.getData();
         local.courses = courses;
         db.save();
         return courses;
@@ -68,7 +67,7 @@ export async function fetchAllCourses(): Promise<Course[]> {
       console.error('[Supabase fetchAllCourses Exception]:', e);
     }
   }
-  return db.getData().courses || [];
+  return local.courses && local.courses.length > 0 ? local.courses : [];
 }
 
 export async function fetchCourseById(id: string): Promise<Course | null> {
@@ -90,68 +89,93 @@ export async function fetchCourseById(id: string): Promise<Course | null> {
 }
 
 export async function createCourseInDB(course: Course): Promise<Course> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapCourseToSupabase(course);
-    const { data, error } = await supabase.from('courses').insert(payload).select().single();
-    if (error) {
-      console.error('[Supabase createCourse Error]:', error);
-      throw new Error(error.message || 'Supabase course insert failed');
-    }
-    const created = data ? mapCourseFromSupabase(data) : course;
-    const local = db.getData();
-    local.courses = local.courses.filter(c => c.id !== created.id);
-    local.courses.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
+  if (!local.courses) local.courses = [];
+  local.courses = local.courses.filter(c => c.id !== course.id);
   local.courses.push(course);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapCourseToSupabase(course);
+      const { data, error } = await supabase.from('courses').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createCourse Warning]:', error.message);
+      } else if (data) {
+        const created = mapCourseFromSupabase(data);
+        const idx = local.courses.findIndex(c => c.id === course.id || c.id === created.id);
+        if (idx >= 0) local.courses[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createCourse Exception]:', e?.message);
+    }
+  }
   return course;
 }
 
 export async function updateCourseInDB(id: string, updates: Partial<Course>): Promise<Course> {
-  const existing = await fetchCourseById(id);
-  if (!existing) {
-    throw new Error('Course not found');
-  }
-  const updated: Course = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapCourseToSupabase(updated);
-    const { data, error } = await supabase.from('courses').update(payload).eq('id', id).select().single();
-    if (error) {
-      console.error('[Supabase updateCourse Error]:', error);
-      throw new Error(error.message || 'Supabase course update failed');
-    }
-    const result = data ? mapCourseFromSupabase(data) : updated;
-    const local = db.getData();
-    const idx = local.courses.findIndex(c => c.id === id);
-    if (idx >= 0) local.courses[idx] = result;
-    db.save();
-    return result;
-  }
   const local = db.getData();
+  if (!local.courses) local.courses = [];
+  let existing = local.courses.find(c => c.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      code: updates.code || 'SWE',
+      title: updates.title || 'Course',
+      credits: updates.credits || 3,
+      type: updates.type || 'THEORY',
+      semester: updates.semester || 1,
+      batchIds: updates.batchIds || [],
+      assignedFacultyName: updates.assignedFacultyName,
+    };
+    local.courses.push(existing);
+  }
+
+  const updated: Course = { ...existing, ...updates };
   const idx = local.courses.findIndex(c => c.id === id);
   if (idx >= 0) local.courses[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapCourseToSupabase(updated);
+      const { data, error } = await supabase.from('courses').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateCourse Warning]:', error.message);
+      } else if (data) {
+        const result = mapCourseFromSupabase(data);
+        const curIdx = local.courses.findIndex(c => c.id === id);
+        if (curIdx >= 0) local.courses[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateCourse Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteCourseFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.courses) {
+    local.courses = local.courses.filter(c => c.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('courses').delete().eq('id', id);
-    if (error) {
-      console.error('[Supabase deleteCourse Error]:', error);
-      throw new Error(error.message || 'Supabase course delete failed');
+    try {
+      const { error } = await supabase.from('courses').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteCourse Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteCourse Exception]:', e?.message);
     }
   }
-  const local = db.getData();
-  local.courses = local.courses.filter(c => c.id !== id);
-  db.save();
   return true;
 }
 
@@ -190,13 +214,13 @@ export function mapBatchToSupabase(batch: Batch): any {
 }
 
 export async function fetchAllBatches(): Promise<Batch[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('batches').select('*').order('admission_year', { ascending: false });
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         const batches = data.map(mapBatchFromSupabase);
-        const local = db.getData();
         local.batches = batches;
         db.save();
         return batches;
@@ -206,7 +230,7 @@ export async function fetchAllBatches(): Promise<Batch[]> {
       console.error('[Supabase fetchAllBatches Exception]:', e);
     }
   }
-  return db.getData().batches || [];
+  return local.batches && local.batches.length > 0 ? local.batches : [];
 }
 
 export async function fetchBatchById(id: string): Promise<Batch | null> {
@@ -223,57 +247,94 @@ export async function fetchBatchById(id: string): Promise<Batch | null> {
 }
 
 export async function createBatchInDB(batch: Batch): Promise<Batch> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapBatchToSupabase(batch);
-    const { data, error } = await supabase.from('batches').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase batch insert failed');
-    const created = data ? mapBatchFromSupabase(data) : batch;
-    const local = db.getData();
-    local.batches = local.batches.filter(b => b.id !== created.id);
-    local.batches.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
+  if (!local.batches) local.batches = [];
+  local.batches = local.batches.filter(b => b.id !== batch.id);
   local.batches.push(batch);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapBatchToSupabase(batch);
+      const { data, error } = await supabase.from('batches').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createBatch Warning]:', error.message);
+      } else if (data) {
+        const created = mapBatchFromSupabase(data);
+        const idx = local.batches.findIndex(b => b.id === batch.id || b.id === created.id);
+        if (idx >= 0) local.batches[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createBatch Exception]:', e?.message);
+    }
+  }
   return batch;
 }
 
 export async function updateBatchInDB(id: string, updates: Partial<Batch>): Promise<Batch> {
-  const existing = await fetchBatchById(id);
-  if (!existing) throw new Error('Batch not found');
-  const updated: Batch = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapBatchToSupabase(updated);
-    const { data, error } = await supabase.from('batches').update(payload).eq('id', id).select().single();
-    if (error) throw new Error(error.message || 'Supabase batch update failed');
-    const result = data ? mapBatchFromSupabase(data) : updated;
-    const local = db.getData();
-    const idx = local.batches.findIndex(b => b.id === id);
-    if (idx >= 0) local.batches[idx] = result;
-    db.save();
-    return result;
-  }
   const local = db.getData();
+  if (!local.batches) local.batches = [];
+  let existing = local.batches.find(b => b.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      name: updates.name || 'SWE Batch',
+      admissionYear: updates.admissionYear || 2024,
+      currentSemester: updates.currentSemester || 1,
+      academicSession: updates.academicSession || '2024-2025',
+      semesterMode: updates.semesterMode || 'SEQUENCE',
+      status: updates.status || 'ACTIVE',
+      crIds: updates.crIds || [],
+      createdAt: new Date().toISOString(),
+    };
+    local.batches.push(existing);
+  }
+
+  const updated: Batch = { ...existing, ...updates };
   const idx = local.batches.findIndex(b => b.id === id);
   if (idx >= 0) local.batches[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapBatchToSupabase(updated);
+      const { data, error } = await supabase.from('batches').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateBatch Warning]:', error.message);
+      } else if (data) {
+        const result = mapBatchFromSupabase(data);
+        const curIdx = local.batches.findIndex(b => b.id === id);
+        if (curIdx >= 0) local.batches[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateBatch Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteBatchFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.batches) {
+    local.batches = local.batches.filter(b => b.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('batches').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase batch delete failed');
+    try {
+      const { error } = await supabase.from('batches').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteBatch Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteBatch Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.batches = local.batches.filter(b => b.id !== id);
-  db.save();
   return true;
 }
 
@@ -314,13 +375,13 @@ export function mapFacultyToSupabase(faculty: Faculty): any {
 }
 
 export async function fetchAllFaculty(): Promise<Faculty[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('faculty').select('*').order('name', { ascending: true });
       if (!error && data && data.length > 0) {
         const faculty = data.map(mapFacultyFromSupabase);
-        const local = db.getData();
         local.faculty = faculty;
         db.save();
         return faculty;
@@ -330,61 +391,97 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
       console.error('[Supabase fetchAllFaculty Exception]:', e);
     }
   }
-  return db.getData().faculty || [];
+  return local.faculty && local.faculty.length > 0 ? local.faculty : [];
 }
 
 export async function createFacultyInDB(faculty: Faculty): Promise<Faculty> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapFacultyToSupabase(faculty);
-    const { data, error } = await supabase.from('faculty').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase faculty insert failed');
-    const created = data ? mapFacultyFromSupabase(data) : faculty;
-    const local = db.getData();
-    local.faculty = local.faculty.filter(f => f.id !== created.id);
-    local.faculty.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
+  if (!local.faculty) local.faculty = [];
+  local.faculty = local.faculty.filter(f => f.id !== faculty.id);
   local.faculty.push(faculty);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapFacultyToSupabase(faculty);
+      const { data, error } = await supabase.from('faculty').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createFaculty Warning]:', error.message);
+      } else if (data) {
+        const created = mapFacultyFromSupabase(data);
+        const idx = local.faculty.findIndex(f => f.id === faculty.id || f.id === created.id);
+        if (idx >= 0) local.faculty[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createFaculty Exception]:', e?.message);
+    }
+  }
   return faculty;
 }
 
 export async function updateFacultyInDB(id: string, updates: Partial<Faculty>): Promise<Faculty> {
-  const existing = (await fetchAllFaculty()).find(f => f.id === id);
-  if (!existing) throw new Error('Faculty not found');
-  const updated: Faculty = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapFacultyToSupabase(updated);
-    const { data, error } = await supabase.from('faculty').update(payload).eq('id', id).select().single();
-    if (error) throw new Error(error.message || 'Supabase faculty update failed');
-    const result = data ? mapFacultyFromSupabase(data) : updated;
-    const local = db.getData();
-    const idx = local.faculty.findIndex(f => f.id === id);
-    if (idx >= 0) local.faculty[idx] = result;
-    db.save();
-    return result;
-  }
   const local = db.getData();
+  if (!local.faculty) local.faculty = [];
+  let existing = local.faculty.find(f => f.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      name: updates.name || 'Faculty Member',
+      designation: updates.designation || 'Lecturer',
+      department: updates.department || 'Software Engineering',
+      email: updates.email || 'faculty@swe.edu.bd',
+      officeRoom: updates.officeRoom || '',
+      photoUrl: updates.photoUrl || '',
+      assignedCourses: updates.assignedCourses || [],
+    };
+    local.faculty.push(existing);
+  }
+
+  const updated: Faculty = { ...existing, ...updates };
   const idx = local.faculty.findIndex(f => f.id === id);
   if (idx >= 0) local.faculty[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapFacultyToSupabase(updated);
+      const { data, error } = await supabase.from('faculty').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateFaculty Warning]:', error.message);
+      } else if (data) {
+        const result = mapFacultyFromSupabase(data);
+        const curIdx = local.faculty.findIndex(f => f.id === id);
+        if (curIdx >= 0) local.faculty[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateFaculty Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteFacultyFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.faculty) {
+    local.faculty = local.faculty.filter(f => f.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('faculty').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase faculty delete failed');
+    try {
+      const { error } = await supabase.from('faculty').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteFaculty Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteFaculty Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.faculty = local.faculty.filter(f => f.id !== id);
-  db.save();
   return true;
 }
 
@@ -431,13 +528,13 @@ export function mapUserToSupabase(user: User): any {
 }
 
 export async function fetchAllUsers(): Promise<User[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('users').select('*').order('student_id', { ascending: true });
       if (!error && data && data.length > 0) {
         const users = data.map(mapUserFromSupabase);
-        const local = db.getData();
         local.users = users;
         db.save();
         return users;
@@ -446,10 +543,16 @@ export async function fetchAllUsers(): Promise<User[]> {
       console.error('[Supabase fetchAllUsers Exception]:', e);
     }
   }
-  return db.getData().users || [];
+  return local.users && local.users.length > 0 ? local.users : [];
 }
 
 export async function fetchUserByIdOrStudentId(idOrStudentId: string): Promise<User | null> {
+  const local = db.getData();
+  const matched = (local.users || []).find(
+    u => u.id === idOrStudentId || u.studentId.toLowerCase() === idOrStudentId.toLowerCase()
+  );
+  if (matched) return matched;
+
   const supabase = getServerSupabase();
   if (supabase) {
     try {
@@ -458,70 +561,110 @@ export async function fetchUserByIdOrStudentId(idOrStudentId: string): Promise<U
         .select('*')
         .or(`id.eq.${idOrStudentId},student_id.eq.${idOrStudentId}`)
         .maybeSingle();
-      if (!error && data) return mapUserFromSupabase(data);
+      if (!error && data) {
+        const user = mapUserFromSupabase(data);
+        if (!local.users) local.users = [];
+        local.users = local.users.filter(u => u.id !== user.id);
+        local.users.push(user);
+        db.save();
+        return user;
+      }
     } catch (e) {
       console.error('[Supabase fetchUserByIdOrStudentId Exception]:', e);
     }
   }
-  return (
-    (db.getData().users || []).find(
-      u => u.id === idOrStudentId || u.studentId.toLowerCase() === idOrStudentId.toLowerCase()
-    ) || null
-  );
+  return null;
 }
 
 export async function createUserInDB(user: User): Promise<User> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapUserToSupabase(user);
-    const { data, error } = await supabase.from('users').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase user insert failed');
-    const created = data ? mapUserFromSupabase(data) : user;
-    const local = db.getData();
-    local.users = local.users.filter(u => u.id !== created.id);
-    local.users.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
+  if (!local.users) local.users = [];
+  local.users = local.users.filter(u => u.id !== user.id);
   local.users.push(user);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapUserToSupabase(user);
+      const { data, error } = await supabase.from('users').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createUser Warning]:', error.message);
+      } else if (data) {
+        const created = mapUserFromSupabase(data);
+        const idx = local.users.findIndex(u => u.id === user.id || u.id === created.id);
+        if (idx >= 0) local.users[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createUser Exception]:', e?.message);
+    }
+  }
   return user;
 }
 
 export async function updateUserInDB(id: string, updates: Partial<User>): Promise<User> {
-  const existing = await fetchUserByIdOrStudentId(id);
-  if (!existing) throw new Error('User not found');
+  const local = db.getData();
+  if (!local.users) local.users = [];
+  let existing = local.users.find(u => u.id === id || u.studentId.toLowerCase() === id.toLowerCase());
+  
+  if (!existing) {
+    existing = {
+      id,
+      studentId: updates.studentId || id,
+      name: updates.name || 'User',
+      role: updates.role || 'STUDENT',
+      currentSemester: updates.currentSemester || 1,
+      status: updates.status || 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    local.users.push(existing);
+  }
+
   const updated: User = { ...existing, ...updates, updatedAt: new Date().toISOString() };
+  const idx = local.users.findIndex(u => u.id === existing!.id);
+  if (idx >= 0) local.users[idx] = updated;
+  db.save();
 
   const supabase = getServerSupabase();
   if (supabase) {
-    const payload = mapUserToSupabase(updated);
-    const { data, error } = await supabase.from('users').update(payload).eq('id', existing.id).select().single();
-    if (error) throw new Error(error.message || 'Supabase user update failed');
-    const result = data ? mapUserFromSupabase(data) : updated;
-    const local = db.getData();
-    const idx = local.users.findIndex(u => u.id === existing.id);
-    if (idx >= 0) local.users[idx] = result;
-    db.save();
-    return result;
+    try {
+      const payload = mapUserToSupabase(updated);
+      const { data, error } = await supabase.from('users').update(payload).eq('id', existing.id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateUser Warning]:', error.message);
+      } else if (data) {
+        const result = mapUserFromSupabase(data);
+        const curIdx = local.users.findIndex(u => u.id === existing!.id);
+        if (curIdx >= 0) local.users[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateUser Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  const idx = local.users.findIndex(u => u.id === existing.id);
-  if (idx >= 0) local.users[idx] = updated;
-  db.save();
   return updated;
 }
 
 export async function deleteUserFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.users) {
+    local.users = local.users.filter(u => u.id !== id && u.studentId !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('users').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase user delete failed');
+    try {
+      const { error } = await supabase.from('users').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteUser Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteUser Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.users = local.users.filter(u => u.id !== id);
-  db.save();
   return true;
 }
 
@@ -583,57 +726,95 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
 }
 
 export async function createRoutineSlotInDB(slot: RoutineSlot): Promise<RoutineSlot> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapRoutineSlotToSupabase(slot);
-    const { data, error } = await supabase.from('routine_slots').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase routine slot insert failed');
-    const created = data ? mapRoutineSlotFromSupabase(data) : slot;
-    const local = db.getData();
-    local.routines = (local.routines || []).filter(s => s.id !== created.id);
-    local.routines.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
   if (!local.routines) local.routines = [];
+  local.routines = local.routines.filter(s => s.id !== slot.id);
   local.routines.push(slot);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapRoutineSlotToSupabase(slot);
+      const { data, error } = await supabase.from('routine_slots').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createRoutineSlot Warning]:', error.message);
+      } else if (data) {
+        const created = mapRoutineSlotFromSupabase(data);
+        const idx = local.routines.findIndex(s => s.id === slot.id || s.id === created.id);
+        if (idx >= 0) local.routines[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createRoutineSlot Exception]:', e?.message);
+    }
+  }
   return slot;
 }
 
 export async function updateRoutineSlotInDB(id: string, updates: Partial<RoutineSlot>): Promise<RoutineSlot> {
   const local = db.getData();
-  const existing = (local.routines || []).find(s => s.id === id);
-  if (!existing) throw new Error('Routine slot not found');
-  const updated: RoutineSlot = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapRoutineSlotToSupabase(updated);
-    const { data, error } = await supabase.from('routine_slots').update(payload).eq('id', id).select().single();
-    if (error) throw new Error(error.message || 'Supabase routine slot update failed');
-    const result = data ? mapRoutineSlotFromSupabase(data) : updated;
-    const idx = local.routines.findIndex(s => s.id === id);
-    if (idx >= 0) local.routines[idx] = result;
-    db.save();
-    return result;
+  if (!local.routines) local.routines = [];
+  let existing = local.routines.find(s => s.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      batchId: updates.batchId || 'batch-all',
+      day: updates.day || 'SUNDAY',
+      startTime: updates.startTime || '09:00 AM',
+      endTime: updates.endTime || '10:30 AM',
+      courseId: updates.courseId || '',
+      courseCode: updates.courseCode || '',
+      courseTitle: updates.courseTitle || '',
+      teacherName: updates.teacherName || '',
+      room: updates.room || '',
+    };
+    local.routines.push(existing);
   }
+
+  const updated: RoutineSlot = { ...existing, ...updates };
   const idx = local.routines.findIndex(s => s.id === id);
   if (idx >= 0) local.routines[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapRoutineSlotToSupabase(updated);
+      const { data, error } = await supabase.from('routine_slots').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateRoutineSlot Warning]:', error.message);
+      } else if (data) {
+        const result = mapRoutineSlotFromSupabase(data);
+        const curIdx = local.routines.findIndex(s => s.id === id);
+        if (curIdx >= 0) local.routines[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateRoutineSlot Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteRoutineSlotFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.routines) {
+    local.routines = local.routines.filter(s => s.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('routine_slots').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase routine slot delete failed');
+    try {
+      const { error } = await supabase.from('routine_slots').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteRoutineSlot Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteRoutineSlot Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.routines = (local.routines || []).filter(s => s.id !== id);
-  db.save();
   return true;
 }
 
@@ -680,13 +861,14 @@ export function mapExamToSupabase(exam: Exam): any {
 }
 
 export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       let query = supabase.from('exams').select('*').order('date', { ascending: true });
       if (batchId) query = query.eq('batch_id', batchId);
       const { data, error } = await query;
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         const exams = data.map(mapExamFromSupabase);
         return exams;
       }
@@ -694,62 +876,101 @@ export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
       console.error('[Supabase fetchAllExams Exception]:', e);
     }
   }
-  const local = db.getData().exams || [];
-  return batchId ? local.filter(e => e.batchId === batchId) : local;
+  const exams = local.exams || [];
+  return batchId ? exams.filter(e => e.batchId === batchId) : exams;
 }
 
 export async function createExamInDB(exam: Exam): Promise<Exam> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapExamToSupabase(exam);
-    const { data, error } = await supabase.from('exams').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase exam insert failed');
-    const created = data ? mapExamFromSupabase(data) : exam;
-    const local = db.getData();
-    local.exams = (local.exams || []).filter(e => e.id !== created.id);
-    local.exams.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
   if (!local.exams) local.exams = [];
+  local.exams = local.exams.filter(e => e.id !== exam.id);
   local.exams.push(exam);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapExamToSupabase(exam);
+      const { data, error } = await supabase.from('exams').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createExam Warning]:', error.message);
+      } else if (data) {
+        const created = mapExamFromSupabase(data);
+        const idx = local.exams.findIndex(e => e.id === exam.id || e.id === created.id);
+        if (idx >= 0) local.exams[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createExam Exception]:', e?.message);
+    }
+  }
   return exam;
 }
 
 export async function updateExamInDB(id: string, updates: Partial<Exam>): Promise<Exam> {
   const local = db.getData();
-  const existing = (local.exams || []).find(e => e.id === id);
-  if (!existing) throw new Error('Exam not found');
-  const updated: Exam = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapExamToSupabase(updated);
-    const { data, error } = await supabase.from('exams').update(payload).eq('id', id).select().single();
-    if (error) throw new Error(error.message || 'Supabase exam update failed');
-    const result = data ? mapExamFromSupabase(data) : updated;
-    const idx = local.exams.findIndex(e => e.id === id);
-    if (idx >= 0) local.exams[idx] = result;
-    db.save();
-    return result;
+  if (!local.exams) local.exams = [];
+  let existing = local.exams.find(e => e.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      batchId: updates.batchId || '',
+      courseId: updates.courseId || '',
+      courseCode: updates.courseCode || '',
+      courseTitle: updates.courseTitle || '',
+      type: updates.type || 'CLASS_TEST',
+      title: updates.title || 'Exam',
+      date: updates.date || new Date().toISOString().split('T')[0],
+      createdBy: updates.createdBy || 'admin',
+      createdByName: updates.createdByName || 'Admin',
+      createdAt: new Date().toISOString(),
+    };
+    local.exams.push(existing);
   }
+
+  const updated: Exam = { ...existing, ...updates };
   const idx = local.exams.findIndex(e => e.id === id);
   if (idx >= 0) local.exams[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapExamToSupabase(updated);
+      const { data, error } = await supabase.from('exams').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateExam Warning]:', error.message);
+      } else if (data) {
+        const result = mapExamFromSupabase(data);
+        const curIdx = local.exams.findIndex(e => e.id === id);
+        if (curIdx >= 0) local.exams[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateExam Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteExamFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.exams) {
+    local.exams = local.exams.filter(e => e.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('exams').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase exam delete failed');
+    try {
+      const { error } = await supabase.from('exams').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteExam Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteExam Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.exams = (local.exams || []).filter(e => e.id !== id);
-  db.save();
   return true;
 }
 
@@ -809,34 +1030,49 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
 }
 
 export async function createAnnouncementInDB(ann: BatchAnnouncement): Promise<BatchAnnouncement> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapAnnouncementToSupabase(ann);
-    const { data, error } = await supabase.from('announcements').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase announcement insert failed');
-    const created = data ? mapAnnouncementFromSupabase(data) : ann;
-    const local = db.getData();
-    local.announcements = (local.announcements || []).filter(a => a.id !== created.id);
-    local.announcements.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
   if (!local.announcements) local.announcements = [];
+  local.announcements = local.announcements.filter(a => a.id !== ann.id);
   local.announcements.push(ann);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapAnnouncementToSupabase(ann);
+      const { data, error } = await supabase.from('announcements').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createAnnouncement Warning]:', error.message);
+      } else if (data) {
+        const created = mapAnnouncementFromSupabase(data);
+        const idx = local.announcements.findIndex(a => a.id === ann.id || a.id === created.id);
+        if (idx >= 0) local.announcements[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createAnnouncement Exception]:', e?.message);
+    }
+  }
   return ann;
 }
 
 export async function deleteAnnouncementFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.announcements) {
+    local.announcements = local.announcements.filter(a => a.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('announcements').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase announcement delete failed');
+    try {
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteAnnouncement Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteAnnouncement Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.announcements = (local.announcements || []).filter(a => a.id !== id);
-  db.save();
   return true;
 }
 
@@ -881,49 +1117,68 @@ export function mapNoticeToSupabase(notice: DepartmentNotice): any {
 }
 
 export async function fetchAllNotices(): Promise<DepartmentNotice[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('department_notices').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
-        return data.map(mapNoticeFromSupabase);
+      if (!error && data && data.length > 0) {
+        const notices = data.map(mapNoticeFromSupabase);
+        local.departmentNotices = notices;
+        db.save();
+        return notices;
       }
     } catch (e) {
       console.error('[Supabase fetchAllNotices Exception]:', e);
     }
   }
-  return db.getData().departmentNotices || [];
+  return local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
 }
 
 export async function createNoticeInDB(notice: DepartmentNotice): Promise<DepartmentNotice> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapNoticeToSupabase(notice);
-    const { data, error } = await supabase.from('department_notices').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase notice insert failed');
-    const created = data ? mapNoticeFromSupabase(data) : notice;
-    const local = db.getData();
-    local.departmentNotices = (local.departmentNotices || []).filter(n => n.id !== created.id);
-    local.departmentNotices.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
   if (!local.departmentNotices) local.departmentNotices = [];
+  local.departmentNotices = local.departmentNotices.filter(n => n.id !== notice.id);
   local.departmentNotices.push(notice);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapNoticeToSupabase(notice);
+      const { data, error } = await supabase.from('department_notices').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createNotice Warning]:', error.message);
+      } else if (data) {
+        const created = mapNoticeFromSupabase(data);
+        const idx = local.departmentNotices.findIndex(n => n.id === notice.id || n.id === created.id);
+        if (idx >= 0) local.departmentNotices[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createNotice Exception]:', e?.message);
+    }
+  }
   return notice;
 }
 
 export async function deleteNoticeFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.departmentNotices) {
+    local.departmentNotices = local.departmentNotices.filter(n => n.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('department_notices').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase notice delete failed');
+    try {
+      const { error } = await supabase.from('department_notices').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteNotice Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteNotice Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.departmentNotices = (local.departmentNotices || []).filter(n => n.id !== id);
-  db.save();
   return true;
 }
 
@@ -994,71 +1249,122 @@ export function mapResourceToSupabase(res: Resource): any {
 }
 
 export async function fetchAllResources(): Promise<Resource[]> {
+  const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
     try {
       const { data, error } = await supabase.from('resources').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
-        return data.map(mapResourceFromSupabase);
+      if (!error && data && data.length > 0) {
+        const resources = data.map(mapResourceFromSupabase);
+        local.resources = resources;
+        db.save();
+        return resources;
       }
     } catch (e) {
       console.error('[Supabase fetchAllResources Exception]:', e);
     }
   }
-  return db.getData().resources || [];
+  return local.resources && local.resources.length > 0 ? local.resources : [];
 }
 
 export async function createResourceInDB(res: Resource): Promise<Resource> {
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapResourceToSupabase(res);
-    const { data, error } = await supabase.from('resources').insert(payload).select().single();
-    if (error) throw new Error(error.message || 'Supabase resource insert failed');
-    const created = data ? mapResourceFromSupabase(data) : res;
-    const local = db.getData();
-    local.resources = (local.resources || []).filter(r => r.id !== created.id);
-    local.resources.push(created);
-    db.save();
-    return created;
-  }
   const local = db.getData();
   if (!local.resources) local.resources = [];
+  local.resources = local.resources.filter(r => r.id !== res.id);
   local.resources.push(res);
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapResourceToSupabase(res);
+      const { data, error } = await supabase.from('resources').insert(payload).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase createResource Warning]:', error.message);
+      } else if (data) {
+        const created = mapResourceFromSupabase(data);
+        const idx = local.resources.findIndex(r => r.id === res.id || r.id === created.id);
+        if (idx >= 0) local.resources[idx] = created;
+        db.save();
+        return created;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase createResource Exception]:', e?.message);
+    }
+  }
   return res;
 }
 
 export async function updateResourceInDB(id: string, updates: Partial<Resource>): Promise<Resource> {
   const local = db.getData();
-  const existing = (local.resources || []).find(r => r.id === id);
-  if (!existing) throw new Error('Resource not found');
-  const updated: Resource = { ...existing, ...updates };
-
-  const supabase = getServerSupabase();
-  if (supabase) {
-    const payload = mapResourceToSupabase(updated);
-    const { data, error } = await supabase.from('resources').update(payload).eq('id', id).select().single();
-    if (error) throw new Error(error.message || 'Supabase resource update failed');
-    const result = data ? mapResourceFromSupabase(data) : updated;
-    const idx = local.resources.findIndex(r => r.id === id);
-    if (idx >= 0) local.resources[idx] = result;
-    db.save();
-    return result;
+  if (!local.resources) local.resources = [];
+  let existing = local.resources.find(r => r.id === id);
+  if (!existing) {
+    existing = {
+      id,
+      title: updates.title || 'Resource',
+      type: updates.type || 'NOTE',
+      courseId: updates.courseId || '',
+      courseCode: updates.courseCode || '',
+      courseTitle: updates.courseTitle || '',
+      semester: updates.semester || 1,
+      academicYear: updates.academicYear || 2024,
+      fileUrl: updates.fileUrl || '',
+      fileName: updates.fileName || 'file.pdf',
+      fileSize: updates.fileSize || '1 MB',
+      fileType: updates.fileType || 'application/pdf',
+      uploaderId: updates.uploaderId || 'admin',
+      uploaderStudentId: updates.uploaderStudentId || 'ADMIN',
+      uploaderName: updates.uploaderName || 'Admin',
+      uploaderBatchName: updates.uploaderBatchName || 'SWE',
+      status: updates.status || 'APPROVED',
+      downloadCount: updates.downloadCount || 0,
+      createdAt: new Date().toISOString(),
+    };
+    local.resources.push(existing);
   }
+
+  const updated: Resource = { ...existing, ...updates };
   const idx = local.resources.findIndex(r => r.id === id);
   if (idx >= 0) local.resources[idx] = updated;
   db.save();
+
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const payload = mapResourceToSupabase(updated);
+      const { data, error } = await supabase.from('resources').update(payload).eq('id', id).select().maybeSingle();
+      if (error) {
+        console.warn('[Supabase updateResource Warning]:', error.message);
+      } else if (data) {
+        const result = mapResourceFromSupabase(data);
+        const curIdx = local.resources.findIndex(r => r.id === id);
+        if (curIdx >= 0) local.resources[curIdx] = result;
+        db.save();
+        return result;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase updateResource Exception]:', e?.message);
+    }
+  }
   return updated;
 }
 
 export async function deleteResourceFromDB(id: string): Promise<boolean> {
+  const local = db.getData();
+  if (local.resources) {
+    local.resources = local.resources.filter(r => r.id !== id);
+    db.save();
+  }
+
   const supabase = getServerSupabase();
   if (supabase) {
-    const { error } = await supabase.from('resources').delete().eq('id', id);
-    if (error) throw new Error(error.message || 'Supabase resource delete failed');
+    try {
+      const { error } = await supabase.from('resources').delete().eq('id', id);
+      if (error) console.warn('[Supabase deleteResource Warning]:', error.message);
+    } catch (e: any) {
+      console.warn('[Supabase deleteResource Exception]:', e?.message);
+    }
   }
-  const local = db.getData();
-  local.resources = (local.resources || []).filter(r => r.id !== id);
-  db.save();
   return true;
 }

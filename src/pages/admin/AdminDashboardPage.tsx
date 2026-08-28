@@ -13,7 +13,7 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { BatchDashboardViewer } from '../../components/admin/BatchDashboardViewer';
 import {
   User, Batch, Course, DepartmentNotice, Resource,
-  AuditLog, RoutineSlot, UserRole, ExamType
+  AuditLog, RoutineSlot, UserRole, ExamType, Faculty
 } from '../../types';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -22,7 +22,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Active Main Tab
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'batch-viewer' | 'students' | 'courses' | 'notices' | 'verification' | 'logs'
+    'overview' | 'batch-viewer' | 'students' | 'faculty' | 'courses' | 'notices' | 'verification' | 'logs'
   >('overview');
 
   // Selected Batch for Inspector
@@ -31,6 +31,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Main Data States
   const [students, setStudents] = useState<User[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [notices, setNotices] = useState<DepartmentNotice[]>([]);
   const [pendingResources, setPendingResources] = useState<Resource[]>([]);
@@ -59,6 +60,24 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [csvText, setCsvText] = useState('');
   const [csvBatchId, setCsvBatchId] = useState('batch-9');
+
+  // --- Faculty Management States ---
+  const [facultySearch, setFacultySearch] = useState('');
+  const [isAddFacultyOpen, setIsAddFacultyOpen] = useState(false);
+  const [isEditFacultyOpen, setIsEditFacultyOpen] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState<Faculty | null>(null);
+
+  const [facultyForm, setFacultyForm] = useState({
+    name: '',
+    shortName: '',
+    designation: 'Assistant Professor',
+    department: 'Software Engineering',
+    email: '',
+    phone: '',
+    officeRoom: '',
+    photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    specialization: '',
+  });
 
   // --- Course Management States ---
   const [courseSearch, setCourseSearch] = useState('');
@@ -99,7 +118,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   // --- Deletion Dialog State ---
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: 'student' | 'course' | 'notice';
+    type: 'student' | 'course' | 'notice' | 'faculty';
     id: string;
     name: string;
   } | null>(null);
@@ -109,13 +128,14 @@ export const AdminDashboardPage: React.FC = () => {
     if (!token) return;
     setIsLoading(true);
     try {
-      const [stRes, btRes, crRes, ntRes, vrRes, lgRes] = await Promise.all([
+      const [stRes, btRes, crRes, ntRes, vrRes, lgRes, fcRes] = await Promise.all([
         fetch('/api/admin/students', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/admin/batches', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/admin/courses', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/admin/notices', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/admin/pending-verification', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/admin/audit-logs', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('/api/admin/faculty', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (stRes.ok) {
@@ -145,6 +165,10 @@ export const AdminDashboardPage: React.FC = () => {
       if (lgRes.ok) {
         const d = await lgRes.json();
         setAuditLogs(d.auditLogs || d.logs || []);
+      }
+      if (fcRes.ok) {
+        const d = await fcRes.json();
+        setFaculty(d.faculty || []);
       }
     } catch (err) {
       console.error(err);
@@ -439,6 +463,71 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  // --- Faculty Actions ---
+  const handleCreateFaculty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/faculty', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(facultyForm),
+      });
+
+      if (res.ok) {
+        addToast('success', 'Faculty member added successfully!');
+        setIsAddFacultyOpen(false);
+        setFacultyForm({
+          name: '',
+          shortName: '',
+          designation: 'Assistant Professor',
+          department: 'Software Engineering',
+          email: '',
+          phone: '',
+          officeRoom: '',
+          photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+          specialization: '',
+        });
+        fetchData();
+      } else {
+        const d = await res.json();
+        addToast('error', d.error || 'Failed to add faculty member');
+      }
+    } catch (e) {
+      addToast('error', 'Server error adding faculty member');
+    }
+  };
+
+  const handleUpdateFaculty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFaculty) return;
+
+    try {
+      const res = await fetch(`/api/admin/faculty/${selectedFaculty.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(facultyForm),
+      });
+
+      if (res.ok) {
+        addToast('success', 'Faculty details updated successfully!');
+        setIsEditFacultyOpen(false);
+        setSelectedFaculty(null);
+        fetchData();
+      } else {
+        const d = await res.json();
+        addToast('error', d.error || 'Failed to update faculty member');
+      }
+    } catch (e) {
+      addToast('error', 'Server error updating faculty member');
+    }
+  };
+
   // --- Deletion Confirm Execution ---
   const handleExecuteDelete = async () => {
     if (!deleteTarget) return;
@@ -446,6 +535,7 @@ export const AdminDashboardPage: React.FC = () => {
     try {
       let url = '';
       if (deleteTarget.type === 'student') url = `/api/admin/users/${deleteTarget.id}`;
+      if (deleteTarget.type === 'faculty') url = `/api/admin/faculty/${deleteTarget.id}`;
       if (deleteTarget.type === 'course') url = `/api/courses/${deleteTarget.id}`;
       if (deleteTarget.type === 'notice') url = `/api/notices/${deleteTarget.id}`;
 
@@ -476,6 +566,18 @@ export const AdminDashboardPage: React.FC = () => {
     const matchesBatch = studentBatchFilter ? s.batchId === studentBatchFilter : true;
     const matchesRole = studentRoleFilter ? s.role === studentRoleFilter : true;
     return matchesSearch && matchesBatch && matchesRole;
+  });
+
+  const filteredFaculty = faculty.filter(f => {
+    const q = facultySearch.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      f.name.toLowerCase().includes(q) ||
+      (f.shortName && f.shortName.toLowerCase().includes(q)) ||
+      (f.designation && f.designation.toLowerCase().includes(q)) ||
+      (f.specialization && f.specialization.toLowerCase().includes(q)) ||
+      (f.email && f.email.toLowerCase().includes(q))
+    );
   });
 
   const filteredCourses = courses.filter(c => {
@@ -548,9 +650,10 @@ export const AdminDashboardPage: React.FC = () => {
           { id: 'overview', label: 'System Overview', icon: Activity },
           { id: 'batch-viewer', label: 'Batch Dashboards (Live)', icon: Layers, highlight: true },
           { id: 'students', label: `Students (${students.length})`, icon: Users },
+          { id: 'faculty', label: `Faculty (${faculty.length})`, icon: ShieldCheck },
           { id: 'courses', label: `Courses (${courses.length})`, icon: BookOpen },
           { id: 'notices', label: `Notices (${notices.length})`, icon: Bell },
-          { id: 'verification', label: `Verification (${pendingResources.length})`, icon: ShieldCheck, badge: pendingResources.length },
+          { id: 'verification', label: `Verification (${pendingResources.length})`, icon: ShieldAlert, badge: pendingResources.length },
           { id: 'logs', label: `Audit Logs (${auditLogs.length})`, icon: Clock },
         ].map(tab => {
           const Icon = tab.icon;
@@ -585,35 +688,40 @@ export const AdminDashboardPage: React.FC = () => {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Top KPI Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3.5">
+            <div onClick={() => setActiveTab('students')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Students</span>
               <span className="text-2xl font-black text-slate-900 block mt-1">{students.length}</span>
               <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">Active Profiles</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div onClick={() => setActiveTab('batch-viewer')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Batches</span>
               <span className="text-2xl font-black text-blue-600 block mt-1">{batches.length}</span>
               <span className="text-[11px] text-slate-500 font-semibold mt-1 block">Academic Levels</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div onClick={() => setActiveTab('faculty')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Faculty Members</span>
+              <span className="text-2xl font-black text-teal-600 block mt-1">{faculty.length}</span>
+              <span className="text-[11px] text-teal-600 font-semibold mt-1 block">Active Teachers</span>
+            </div>
+            <div onClick={() => setActiveTab('courses')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Course Catalog</span>
               <span className="text-2xl font-black text-indigo-600 block mt-1">{courses.length}</span>
               <span className="text-[11px] text-slate-500 font-semibold mt-1 block">Theory & Labs</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div onClick={() => setActiveTab('notices')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Dept Circulars</span>
               <span className="text-2xl font-black text-amber-600 block mt-1">{notices.length}</span>
               <span className="text-[11px] text-slate-500 font-semibold mt-1 block">Published</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div onClick={() => setActiveTab('verification')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Pending Queue</span>
               <span className={`text-2xl font-black block mt-1 ${pendingResources.length > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
                 {pendingResources.length}
               </span>
               <span className="text-[11px] text-rose-500 font-semibold mt-1 block">Needs Review</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div onClick={() => setActiveTab('students')} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs cursor-pointer hover:border-blue-300 transition-all">
               <span className="text-[10px] font-bold uppercase text-slate-400 block">Class Reps (CRs)</span>
               <span className="text-2xl font-black text-teal-600 block mt-1">
                 {students.filter(s => s.role === 'CR').length}
@@ -980,7 +1088,179 @@ export const AdminDashboardPage: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 4. COURSES MANAGEMENT TAB */}
+      {/* 4. FACULTY MANAGEMENT TAB */}
+      {/* ========================================================================= */}
+      {activeTab === 'faculty' && (
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search faculty name, initials (DTF), designation, specialization..."
+                value={facultySearch}
+                onChange={e => setFacultySearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                setFacultyForm({
+                  name: '',
+                  shortName: '',
+                  designation: 'Assistant Professor',
+                  department: 'Software Engineering',
+                  email: '',
+                  phone: '',
+                  officeRoom: '',
+                  photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+                  specialization: '',
+                });
+                setIsAddFacultyOpen(true);
+              }}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Faculty Member
+            </button>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredFaculty.length === 0 ? (
+              <div className="col-span-full bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs">
+                No faculty members found.
+              </div>
+            ) : (
+              filteredFaculty.map(member => {
+                const assignedCourses = courses.filter(
+                  c => c.assignedFacultyName?.toLowerCase() === member.name.toLowerCase() ||
+                       (member.shortName && c.assignedFacultyName?.toLowerCase() === member.shortName.toLowerCase())
+                );
+
+                return (
+                  <div
+                    key={member.id}
+                    className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={member.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=0D8ABC&color=fff`}
+                          alt={member.name}
+                          referrerPolicy="no-referrer"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-2xs shrink-0"
+                          onError={(e: any) => {
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=0D8ABC&color=fff`;
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="text-xs font-bold text-slate-900 truncate">{member.name}</h4>
+                            {member.shortName && (
+                              <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 font-mono font-bold text-[10px] rounded shrink-0">
+                                {member.shortName}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-blue-600 font-semibold mt-0.5">{member.designation}</p>
+                          <p className="text-[10px] text-slate-400">{member.department || 'Software Engineering'}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 space-y-1 text-[11px] text-slate-600">
+                        {member.email && (
+                          <p className="truncate">
+                            <span className="text-slate-400 font-medium">Email: </span>
+                            <span className="font-mono text-[10px]">{member.email}</span>
+                          </p>
+                        )}
+                        {member.phone && (
+                          <p>
+                            <span className="text-slate-400 font-medium">Phone: </span>
+                            <span>{member.phone}</span>
+                          </p>
+                        )}
+                        {member.officeRoom && (
+                          <p>
+                            <span className="text-slate-400 font-medium">Office: </span>
+                            <span className="font-semibold text-slate-800">{member.officeRoom}</span>
+                          </p>
+                        )}
+                        {member.specialization && (
+                          <p className="text-[10px] text-slate-500 line-clamp-1">
+                            <span className="text-slate-400 font-medium">Research: </span>
+                            {member.specialization}
+                          </p>
+                        )}
+                      </div>
+
+                      {assignedCourses.length > 0 && (
+                        <div className="mt-2.5 pt-2.5 border-t border-slate-100">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                            Assigned Courses ({assignedCourses.length}):
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {assignedCourses.map(c => (
+                              <span key={c.id} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-mono rounded">
+                                {c.code}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100">
+                      <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Active Faculty
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setSelectedFaculty(member);
+                            setFacultyForm({
+                              name: member.name,
+                              shortName: member.shortName || '',
+                              designation: member.designation || 'Assistant Professor',
+                              department: member.department || 'Software Engineering',
+                              email: member.email || '',
+                              phone: member.phone || '',
+                              officeRoom: member.officeRoom || '',
+                              photoUrl: member.photoUrl || '',
+                              specialization: member.specialization || '',
+                            });
+                            setIsEditFacultyOpen(true);
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                          title="Edit Faculty Member"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setDeleteTarget({
+                              type: 'faculty',
+                              id: member.id,
+                              name: member.name,
+                            })
+                          }
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete Faculty Member"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. COURSES MANAGEMENT TAB */}
       {/* ========================================================================= */}
       {activeTab === 'courses' && (
         <div className="space-y-4">
@@ -1487,6 +1767,148 @@ export const AdminDashboardPage: React.FC = () => {
         </form>
       </Modal>
 
+      {/* Add / Edit Faculty Modal */}
+      <Modal
+        isOpen={isAddFacultyOpen || isEditFacultyOpen}
+        onClose={() => {
+          setIsAddFacultyOpen(false);
+          setIsEditFacultyOpen(false);
+          setSelectedFaculty(null);
+        }}
+        title={isAddFacultyOpen ? 'Add Faculty Member to Department' : 'Edit Faculty Details'}
+      >
+        <form onSubmit={isAddFacultyOpen ? handleCreateFaculty : handleUpdateFaculty} className="space-y-3 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Full Name</label>
+              <input
+                type="text"
+                required
+                value={facultyForm.name}
+                onChange={e => setFacultyForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g. Dr. Md. Forhad Rabbi"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Short Code / Initials</label>
+              <input
+                type="text"
+                value={facultyForm.shortName}
+                onChange={e => setFacultyForm(prev => ({ ...prev, shortName: e.target.value.toUpperCase() }))}
+                placeholder="e.g. MFR"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-mono font-bold"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Designation</label>
+              <select
+                value={facultyForm.designation}
+                onChange={e => setFacultyForm(prev => ({ ...prev, designation: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold"
+              >
+                <option value="Professor">Professor</option>
+                <option value="Associate Professor">Associate Professor</option>
+                <option value="Assistant Professor">Assistant Professor</option>
+                <option value="Lecturer">Lecturer</option>
+                <option value="Adjunct Faculty">Adjunct Faculty</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Department</label>
+              <input
+                type="text"
+                value={facultyForm.department}
+                onChange={e => setFacultyForm(prev => ({ ...prev, department: e.target.value }))}
+                placeholder="Software Engineering"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Official Email</label>
+              <input
+                type="email"
+                required
+                value={facultyForm.email}
+                onChange={e => setFacultyForm(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="faculty@sust.edu"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-mono"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Phone Number</label>
+              <input
+                type="text"
+                value={facultyForm.phone}
+                onChange={e => setFacultyForm(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="+880 1711-XXXXXX"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Office Room</label>
+              <input
+                type="text"
+                value={facultyForm.officeRoom}
+                onChange={e => setFacultyForm(prev => ({ ...prev, officeRoom: e.target.value }))}
+                placeholder="Room 304, Academic Bldg II"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Photo URL</label>
+              <input
+                type="url"
+                value={facultyForm.photoUrl}
+                onChange={e => setFacultyForm(prev => ({ ...prev, photoUrl: e.target.value }))}
+                placeholder="https://..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-[11px]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Research Specialization / Area</label>
+            <input
+              type="text"
+              value={facultyForm.specialization}
+              onChange={e => setFacultyForm(prev => ({ ...prev, specialization: e.target.value }))}
+              placeholder="e.g. Distributed Systems, Machine Learning, HCI"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddFacultyOpen(false);
+                setIsEditFacultyOpen(false);
+                setSelectedFaculty(null);
+              }}
+              className="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs"
+            >
+              {isAddFacultyOpen ? 'Add Faculty Member' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
       {/* Add / Edit Course Modal */}
       <Modal
         isOpen={isAddCourseOpen || isEditCourseOpen}
@@ -1564,13 +1986,29 @@ export const AdminDashboardPage: React.FC = () => {
 
           <div>
             <label className="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Assigned Faculty Instructor</label>
-            <input
-              type="text"
-              value={courseForm.assignedFacultyName}
-              onChange={e => setCourseForm(prev => ({ ...prev, assignedFacultyName: e.target.value }))}
-              placeholder="e.g. Dr. Mahbubur Rahman"
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"
-            />
+            <div className="space-y-1.5">
+              {faculty.length > 0 && (
+                <select
+                  value={courseForm.assignedFacultyName}
+                  onChange={e => setCourseForm(prev => ({ ...prev, assignedFacultyName: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-semibold"
+                >
+                  <option value="">-- Choose from Faculty Directory --</option>
+                  {faculty.map(f => (
+                    <option key={f.id} value={f.name}>
+                      {f.name} {f.shortName ? `(${f.shortName})` : ''} - {f.designation}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <input
+                type="text"
+                value={courseForm.assignedFacultyName}
+                onChange={e => setCourseForm(prev => ({ ...prev, assignedFacultyName: e.target.value }))}
+                placeholder="Or type custom name: e.g. Dr. Mahbubur Rahman"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

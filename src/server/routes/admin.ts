@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { db } from '../db.ts';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth.ts';
 import { requireRole } from '../middleware.ts';
-import { User, Faculty, UserRole, Resource } from '../../types.ts';
+import { User, Faculty, UserRole, Resource, Course, Batch, DepartmentNotice } from '../../types.ts';
 import {
   fetchAllUsers,
   fetchUserByIdOrStudentId,
@@ -11,11 +11,22 @@ import {
   updateUserInDB,
   deleteUserFromDB,
   fetchAllBatches,
+  createBatchInDB,
+  updateBatchInDB,
+  deleteBatchFromDB,
   fetchAllCourses,
+  createCourseInDB,
+  updateCourseInDB,
+  deleteCourseFromDB,
   fetchAllFaculty,
+  createFacultyInDB,
+  updateFacultyInDB,
+  deleteFacultyFromDB,
   fetchAllResources,
   updateResourceInDB,
   fetchAllNotices,
+  createNoticeInDB,
+  deleteNoticeFromDB,
 } from '../supabaseData.ts';
 
 const router = Router();
@@ -26,17 +37,19 @@ router.use(verifyAuthToken, requireRole('ADMIN'));
 // GET /api/admin/overview or /api/admin/stats
 router.get(['/overview', '/stats'], async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const [allUsers, allBatches, allFaculty, allResources, allNotices] = await Promise.all([
+    const [allUsers, allBatches, allFaculty, allResources, allNotices, allCourses] = await Promise.all([
       fetchAllUsers(),
       fetchAllBatches(),
       fetchAllFaculty(),
       fetchAllResources(),
       fetchAllNotices(),
+      fetchAllCourses(),
     ]);
 
     const totalStudents = allUsers.filter(u => u.role !== 'ADMIN').length;
     const totalBatches = allBatches.length;
     const totalFaculty = allFaculty.length;
+    const totalCourses = allCourses.length;
     const pendingResourcesCount = allResources.filter(r => r.status === 'PENDING').length;
     const activeNoticesCount = allNotices.length;
     const totalApprovedResources = allResources.filter(r => r.status === 'APPROVED').length;
@@ -48,6 +61,7 @@ router.get(['/overview', '/stats'], async (req: AuthenticatedRequest, res: Respo
         totalStudents,
         totalBatches,
         totalFaculty,
+        totalCourses,
         pendingResourcesCount,
         activeNoticesCount,
         totalApprovedResources,
@@ -55,6 +69,7 @@ router.get(['/overview', '/stats'], async (req: AuthenticatedRequest, res: Respo
       totalStudents,
       totalBatches,
       totalFaculty,
+      totalCourses,
       pendingResourcesCount,
       activeNoticesCount,
       totalApprovedResources,
@@ -63,6 +78,163 @@ router.get(['/overview', '/stats'], async (req: AuthenticatedRequest, res: Respo
   } catch (err: any) {
     console.error('[Admin Overview Error]:', err);
     res.status(500).json({ error: 'Failed to load admin stats' });
+  }
+});
+
+// GET /api/admin/faculty
+router.get('/faculty', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const faculty = await fetchAllFaculty();
+    res.json({ faculty });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to fetch faculty roster' });
+  }
+});
+
+// POST /api/admin/faculty
+router.post('/faculty', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
+    if (!name || !designation || !email) {
+      return res.status(400).json({ error: 'Name, designation, and email are required.' });
+    }
+
+    const newFaculty: Faculty = {
+      id: `fac-${Date.now()}`,
+      name: String(name).trim(),
+      shortName: shortName ? String(shortName).trim() : undefined,
+      designation: String(designation).trim(),
+      department: department ? String(department).trim() : 'Software Engineering',
+      email: String(email).trim(),
+      phone: phone ? String(phone).trim() : '',
+      officeRoom: officeRoom ? String(officeRoom).trim() : '',
+      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+      specialization: specialization ? String(specialization).trim() : '',
+      assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
+    };
+
+    const created = await createFacultyInDB(newFaculty);
+    db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_CREATED', `${created.name} (${created.designation})`);
+
+    res.status(201).json({ message: 'Faculty member added successfully!', faculty: created });
+  } catch (err: any) {
+    console.error('[Admin Create Faculty Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to create faculty member' });
+  }
+});
+
+// PUT /api/admin/faculty/:id
+router.put('/faculty/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
+    const updates: Partial<Faculty> = {};
+    if (name !== undefined) updates.name = String(name).trim();
+    if (shortName !== undefined) updates.shortName = String(shortName).trim();
+    if (designation !== undefined) updates.designation = String(designation).trim();
+    if (department !== undefined) updates.department = String(department).trim();
+    if (email !== undefined) updates.email = String(email).trim();
+    if (phone !== undefined) updates.phone = String(phone).trim();
+    if (officeRoom !== undefined) updates.officeRoom = String(officeRoom).trim();
+    if (photoUrl !== undefined) updates.photoUrl = photoUrl;
+    if (specialization !== undefined) updates.specialization = String(specialization).trim();
+    if (assignedCourses !== undefined) updates.assignedCourses = Array.isArray(assignedCourses) ? assignedCourses : [];
+
+    const updated = await updateFacultyInDB(id, updates);
+    db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_UPDATED', `${updated.name}`);
+
+    res.json({ message: 'Faculty member updated successfully!', faculty: updated });
+  } catch (err: any) {
+    console.error('[Admin Update Faculty Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to update faculty member' });
+  }
+});
+
+// DELETE /api/admin/faculty/:id
+router.delete('/faculty/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await deleteFacultyFromDB(id);
+    db.addAuditLog(req.user!.id, req.user!.name, 'FACULTY_DELETED', `Faculty ID: ${id}`);
+    res.json({ message: 'Faculty member removed successfully!' });
+  } catch (err: any) {
+    console.error('[Admin Delete Faculty Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to delete faculty member' });
+  }
+});
+
+// GET /api/admin/notices
+router.get('/notices', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const notices = await fetchAllNotices();
+    res.json({ notices });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to fetch department notices' });
+  }
+});
+
+// POST /api/admin/notices
+router.post('/notices', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { title, content, category, isImportant, attachmentUrl } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Notice title and content are required.' });
+    }
+
+    const newNotice: DepartmentNotice = {
+      id: `notice-${Date.now()}`,
+      title: String(title).trim(),
+      content: String(content).trim(),
+      category: category || 'ACADEMIC',
+      publishDate: new Date().toISOString().split('T')[0],
+      isImportant: Boolean(isImportant),
+      attachmentUrl: attachmentUrl || undefined,
+      createdBy: req.user!.id,
+      createdByName: req.user!.name,
+      createdAt: new Date().toISOString(),
+    };
+
+    const created = await createNoticeInDB(newNotice);
+
+    // Also broadcast notification to all users
+    const allUsers = await fetchAllUsers();
+    const local = db.getData();
+    if (!local.notifications) local.notifications = [];
+    allUsers.forEach(u => {
+      if (u.id !== req.user!.id) {
+        local.notifications.unshift({
+          id: `notif-${Date.now()}-${Math.random()}`,
+          userId: u.id,
+          title: '🏛️ New Department Notice',
+          message: newNotice.title,
+          type: 'NOTICE',
+          linkUrl: '/notices',
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    });
+    db.save();
+
+    db.addAuditLog(req.user!.id, req.user!.name, 'NOTICE_PUBLISHED', newNotice.title);
+
+    res.status(201).json({ message: 'Notice published successfully!', notice: created });
+  } catch (err: any) {
+    console.error('[Admin Create Notice Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to publish notice' });
+  }
+});
+
+// DELETE /api/admin/notices/:id
+router.delete('/notices/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await deleteNoticeFromDB(id);
+    db.addAuditLog(req.user!.id, req.user!.name, 'NOTICE_DELETED', `Notice ID: ${id}`);
+    res.json({ message: 'Notice deleted successfully!' });
+  } catch (err: any) {
+    console.error('[Admin Delete Notice Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to delete notice' });
   }
 });
 
@@ -111,6 +283,72 @@ router.get('/batches', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// POST /api/admin/batches
+router.post('/batches', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { name, admissionYear, currentSemester, academicSession, semesterMode, status } = req.body;
+    if (!name || !admissionYear) {
+      return res.status(400).json({ error: 'Batch Name and Admission Year are required.' });
+    }
+
+    const newBatch: Batch = {
+      id: `batch-${Date.now()}`,
+      name: String(name).trim(),
+      admissionYear: Number(admissionYear),
+      currentSemester: currentSemester ? Number(currentSemester) : 1,
+      academicSession: academicSession ? String(academicSession).trim() : `${admissionYear}-${Number(admissionYear) + 1}`,
+      semesterMode: semesterMode || 'SEQUENCE',
+      status: status || 'ACTIVE',
+      crIds: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    const created = await createBatchInDB(newBatch);
+    db.addAuditLog(req.user!.id, req.user!.name, 'BATCH_CREATED', created.name);
+
+    res.status(201).json({ message: 'Batch created successfully!', batch: created });
+  } catch (err: any) {
+    console.error('[Admin Create Batch Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to create batch' });
+  }
+});
+
+// PUT /api/admin/batches/:id
+router.put('/batches/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const { name, admissionYear, currentSemester, academicSession, semesterMode, status } = req.body;
+    const updates: Partial<Batch> = {};
+    if (name !== undefined) updates.name = String(name).trim();
+    if (admissionYear !== undefined) updates.admissionYear = Number(admissionYear);
+    if (currentSemester !== undefined) updates.currentSemester = Number(currentSemester);
+    if (academicSession !== undefined) updates.academicSession = String(academicSession).trim();
+    if (semesterMode !== undefined) updates.semesterMode = semesterMode;
+    if (status !== undefined) updates.status = status;
+
+    const updated = await updateBatchInDB(id, updates);
+    db.addAuditLog(req.user!.id, req.user!.name, 'BATCH_UPDATED', updated.name);
+
+    res.json({ message: 'Batch updated successfully!', batch: updated });
+  } catch (err: any) {
+    console.error('[Admin Update Batch Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to update batch' });
+  }
+});
+
+// DELETE /api/admin/batches/:id
+router.delete('/batches/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await deleteBatchFromDB(id);
+    db.addAuditLog(req.user!.id, req.user!.name, 'BATCH_DELETED', `Batch ID: ${id}`);
+    res.json({ message: 'Batch deleted successfully!' });
+  } catch (err: any) {
+    console.error('[Admin Delete Batch Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to delete batch' });
+  }
+});
+
 // GET /api/admin/courses
 router.get('/courses', async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -118,6 +356,72 @@ router.get('/courses', async (req: AuthenticatedRequest, res: Response) => {
     res.json({ courses });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to fetch courses' });
+  }
+});
+
+// POST /api/admin/courses
+router.post('/courses', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { code, title, credits, type, semester, batchIds, assignedFacultyName } = req.body;
+    if (!code || !title) {
+      return res.status(400).json({ error: 'Course Code and Title are required.' });
+    }
+
+    const newCourse: Course = {
+      id: `course-${Date.now()}`,
+      code: String(code).trim().toUpperCase(),
+      title: String(title).trim(),
+      credits: credits ? Number(credits) : 3,
+      type: type || 'THEORY',
+      semester: semester ? Number(semester) : 1,
+      batchIds: Array.isArray(batchIds) ? batchIds : [],
+      assignedFacultyName: assignedFacultyName ? String(assignedFacultyName).trim() : undefined,
+    };
+
+    const created = await createCourseInDB(newCourse);
+    db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_CREATED', `${created.code} - ${created.title}`);
+
+    res.status(201).json({ message: 'Course created successfully!', course: created });
+  } catch (err: any) {
+    console.error('[Admin Create Course Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to create course' });
+  }
+});
+
+// PUT /api/admin/courses/:id
+router.put('/courses/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    const { code, title, credits, type, semester, batchIds, assignedFacultyName } = req.body;
+    const updates: Partial<Course> = {};
+    if (code !== undefined) updates.code = String(code).trim().toUpperCase();
+    if (title !== undefined) updates.title = String(title).trim();
+    if (credits !== undefined) updates.credits = Number(credits);
+    if (type !== undefined) updates.type = type;
+    if (semester !== undefined) updates.semester = Number(semester);
+    if (batchIds !== undefined) updates.batchIds = Array.isArray(batchIds) ? batchIds : [];
+    if (assignedFacultyName !== undefined) updates.assignedFacultyName = assignedFacultyName ? String(assignedFacultyName).trim() : undefined;
+
+    const updated = await updateCourseInDB(id, updates);
+    db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_UPDATED', `${updated.code} - ${updated.title}`);
+
+    res.json({ message: 'Course updated successfully!', course: updated });
+  } catch (err: any) {
+    console.error('[Admin Update Course Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to update course' });
+  }
+});
+
+// DELETE /api/admin/courses/:id
+router.delete('/courses/:id', async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await deleteCourseFromDB(id);
+    db.addAuditLog(req.user!.id, req.user!.name, 'COURSE_DELETED', `Course ID: ${id}`);
+    res.json({ message: 'Course deleted successfully!' });
+  } catch (err: any) {
+    console.error('[Admin Delete Course Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to delete course' });
   }
 });
 

@@ -80,16 +80,16 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
       return res.status(400).json({ error: 'Code, title, credits, type, and semester are required' });
     }
 
-    let facultyName: string | undefined = undefined;
+    let facultyName: string | undefined = reqBody.assignedFacultyName ? String(reqBody.assignedFacultyName).trim() : undefined;
     if (assignedFacultyId) {
       const allFaculty = await fetchAllFaculty().catch(() => []);
-      const faculty = allFaculty.find(f => f.id === assignedFacultyId);
+      const faculty = allFaculty.find(f => f.id === assignedFacultyId || f.name === assignedFacultyId);
       if (faculty) facultyName = faculty.name;
     }
 
     const newCourse: Course = {
       id: `course-${Date.now()}`,
-      code: String(code).trim(),
+      code: String(code).trim().toUpperCase(),
       title: String(title).trim(),
       shortName: shortName ? String(shortName).trim() : undefined,
       credits: Number(credits),

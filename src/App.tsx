@@ -22,12 +22,7 @@ import { CourseDetailPage } from './pages/CourseDetailPage';
 import { ExamsPage } from './pages/ExamsPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { QuestionBankPage } from './pages/QuestionBankPage';
-<<<<<<< HEAD
-import { NotesPage } from './pages/NotesPage';
-import { LabResourcesPage } from './pages/LabResourcesPage';
-=======
 import { FAQPage } from './pages/FAQPage';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import { FacultyPage } from './pages/FacultyPage';
 import { NoticesPage } from './pages/NoticesPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -167,20 +162,6 @@ export const App: React.FC = () => {
                 }
               />
               <Route
-<<<<<<< HEAD
-                path="/resources/notes"
-                element={
-                  <ProtectedRoute>
-                    <NotesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/resources/labs"
-                element={
-                  <ProtectedRoute>
-                    <LabResourcesPage />
-=======
                 path="/questions"
                 element={<Navigate to="/resources/questions" replace />}
               />
@@ -199,7 +180,6 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <FAQPage />
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                   </ProtectedRoute>
                 }
               />

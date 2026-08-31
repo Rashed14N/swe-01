@@ -34,12 +34,6 @@ export const PublicAuthRoute: React.FC<PublicAuthRouteProps> = ({ children }) =>
       return <Navigate to={fromPath} replace />;
     }
 
-<<<<<<< HEAD
-    if (user.role === 'ADMIN') {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     if (user.role === 'CR') {
       return <Navigate to="/cr/dashboard" replace />;
     }

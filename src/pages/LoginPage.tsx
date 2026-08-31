@@ -373,12 +373,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                   <button
                     type="button"
                     onClick={() => {
-<<<<<<< HEAD
-                      if (user.role === 'ADMIN') navigate('/admin/dashboard');
-                      else if (user.role === 'CR') navigate('/cr/dashboard');
-=======
                       if (user.role === 'CR') navigate('/cr/dashboard');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                       else navigate('/dashboard');
                     }}
                     className="flex-1 py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-colors text-center"

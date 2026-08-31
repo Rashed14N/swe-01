@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { Bell, Plus, Trash2, Megaphone } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { DepartmentNotice } from '../../types';
-
-export const AdminNoticesPage: React.FC = () => {
-  const { token } = useAuth();
-=======
 import { Bell, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { DepartmentNotice } from '../../types';
 
 export const AdminNoticesPage: React.FC = () => {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const { addToast } = useNotifications();
 
   const [notices, setNotices] = useState<DepartmentNotice[]>([]);
@@ -33,21 +23,11 @@ export const AdminNoticesPage: React.FC = () => {
   const fetchNotices = async () => {
     setIsLoading(true);
     try {
-<<<<<<< HEAD
-      const res = await fetch('/api/notices');
-      if (res.ok) {
-        const data = await res.json();
-        setNotices(data.notices || []);
-      }
-    } catch (e) {
-      console.error(e);
-=======
       const data = await adminApiClient.getNotices();
       setNotices(data);
     } catch (e: any) {
       console.error(e);
       addToast('error', e.message || 'Failed to load department notices');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsLoading(false);
     }
@@ -59,29 +39,6 @@ export const AdminNoticesPage: React.FC = () => {
 
   const handleCreateNotice = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/notices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      if (res.ok) {
-        addToast('success', 'Official Department Notice published!');
-        setIsAddModalOpen(false);
-        setForm({ title: '', category: 'ACADEMIC', content: '' });
-        fetchNotices();
-      } else {
-        addToast('error', 'Failed to publish notice');
-      }
-    } catch (e) {
-      addToast('error', 'Server error');
-=======
     if (!form.title.trim() || !form.content.trim()) {
       addToast('error', 'Notice title and content are required');
       return;
@@ -96,7 +53,6 @@ export const AdminNoticesPage: React.FC = () => {
       fetchNotices();
     } catch (e: any) {
       addToast('error', e.message || 'Failed to publish notice');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsSubmitting(false);
     }
@@ -105,25 +61,11 @@ export const AdminNoticesPage: React.FC = () => {
   const handleDeleteNotice = async (id: string) => {
     if (!window.confirm('Delete this official department notice?')) return;
     try {
-<<<<<<< HEAD
-      const res = await fetch(`/api/notices/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        addToast('success', 'Department Notice removed.');
-        fetchNotices();
-      }
-    } catch (e) {
-      addToast('error', 'Delete failed');
-=======
       await adminApiClient.deleteNotice(id);
       addToast('success', 'Department Notice deleted from Supabase.');
       fetchNotices();
     } catch (e: any) {
       addToast('error', e.message || 'Delete failed');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   };
 
@@ -137,18 +79,6 @@ export const AdminNoticesPage: React.FC = () => {
           </div>
           <h1 className="text-xl font-extrabold text-slate-900">Official Department Circulars & Notices</h1>
           <p className="text-xs text-slate-500 mt-1">
-<<<<<<< HEAD
-            Publish department-wide notices visible to all students and faculty across all batches.
-          </p>
-        </div>
-
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 shrink-0"
-        >
-          <Plus className="w-4 h-4" /> Publish Department Notice
-        </button>
-=======
             Publish department-wide notices visible to all students and faculty across all batches with direct Supabase persistence.
           </p>
         </div>
@@ -168,7 +98,6 @@ export const AdminNoticesPage: React.FC = () => {
             <Plus className="w-4 h-4" /> Publish Department Notice
           </button>
         </div>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       </div>
 
       {/* Notices List */}
@@ -265,11 +194,7 @@ export const AdminNoticesPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-<<<<<<< HEAD
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs"
-=======
                   className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs disabled:opacity-50"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 >
                   {isSubmitting ? 'Publishing...' : 'Publish Notice'}
                 </button>

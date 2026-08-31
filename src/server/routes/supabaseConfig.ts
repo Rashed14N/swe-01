@@ -15,29 +15,6 @@ const router = Router();
 router.get('/config', (req, res) => {
   try {
     const status = getSupabaseStatus();
-<<<<<<< HEAD
-    let url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-    let key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
-
-    const configPath = path.join(process.cwd(), 'data', 'supabase-config.json');
-    if (fs.existsSync(configPath)) {
-      try {
-        const raw = fs.readFileSync(configPath, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (parsed.url) url = parsed.url;
-        if (parsed.key) key = parsed.key;
-      } catch {}
-    }
-
-    const configured = Boolean(
-      url && key && 
-      url.startsWith('https://') && 
-      !url.includes('placeholder') && 
-      !key.includes('placeholder')
-    );
-
-    res.json({
-=======
     const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://aasktchpxsxxanfkkrxx.supabase.co';
     const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
 
@@ -49,17 +26,12 @@ router.get('/config', (req, res) => {
 
     res.json({
       success: true,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       configured,
       url: configured ? url : '',
       key: configured ? key : '',
     });
   } catch (err: any) {
-<<<<<<< HEAD
-    res.status(500).json({ error: err.message });
-=======
     res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: err.message } });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   }
 });
 

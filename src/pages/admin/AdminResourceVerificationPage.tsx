@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { FileCheck, CheckCircle2, XCircle, Download, ExternalLink } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { Resource } from '../../types';
-
-export const AdminResourceVerificationPage: React.FC = () => {
-  const { token } = useAuth();
-=======
 import { FileCheck, CheckCircle2, XCircle, Download, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { Resource } from '../../types';
 
 export const AdminResourceVerificationPage: React.FC = () => {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const { addToast } = useNotifications();
 
   const [pendingQueue, setPendingQueue] = useState<Resource[]>([]);
@@ -25,20 +15,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
   const [rejectReason, setRejectReason] = useState('');
 
   const fetchQueue = async () => {
-<<<<<<< HEAD
-    if (!token) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/admin/pending-verification', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPendingQueue(data.resources || []);
-      }
-    } catch (e) {
-      console.error(e);
-=======
     setIsLoading(true);
     try {
       const data = await adminApiClient.getPendingResources();
@@ -47,7 +23,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
       console.error(e);
       setPendingQueue([]);
       addToast('error', e.message || 'Failed to load pending resources');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsLoading(false);
     }
@@ -55,34 +30,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
 
   useEffect(() => {
     fetchQueue();
-<<<<<<< HEAD
-  }, [token]);
-
-  const handleVerify = async (resourceId: string, status: 'APPROVED' | 'REJECTED') => {
-    try {
-      const res = await fetch(`/api/resources/${resourceId}/verify`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          status,
-          rejectionReason: status === 'REJECTED' ? rejectReason : undefined,
-        }),
-      });
-
-      if (res.ok) {
-        addToast('success', `Resource ${status.toLowerCase()} successfully!`);
-        setRejectId(null);
-        setRejectReason('');
-        fetchQueue();
-      } else {
-        addToast('error', 'Action failed');
-      }
-    } catch (e) {
-      addToast('error', 'Server error');
-=======
   }, []);
 
   const handleVerify = async (resourceId: string, status: 'APPROVED' | 'REJECTED') => {
@@ -98,7 +45,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
       fetchQueue();
     } catch (e: any) {
       addToast('error', e.message || 'Action failed');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   };
 
@@ -116,11 +62,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
           </p>
         </div>
 
-<<<<<<< HEAD
-        <span className="px-3 py-1.5 bg-amber-100 text-amber-800 text-xs font-bold rounded-xl border border-amber-200">
-          {pendingQueue.length} Pending Submissions
-        </span>
-=======
         <div className="flex items-center gap-3">
           <button
             onClick={() => fetchQueue()}
@@ -133,7 +74,6 @@ export const AdminResourceVerificationPage: React.FC = () => {
             {pendingQueue.length} Pending Submissions
           </span>
         </div>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       </div>
 
       {/* Queue List */}

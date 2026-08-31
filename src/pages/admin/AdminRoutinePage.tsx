@@ -13,22 +13,11 @@ import {
   Upload,
   Copy,
   Check,
-<<<<<<< HEAD
-  Code2,
-  FileText,
-  Sparkles,
-  HelpCircle,
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { RoutineSlot, RoutineRequest, Batch } from '../../types';
-=======
   Sparkles,
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { RoutineSlot, RoutineRequest, Batch } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import { VisualRoutineGrid } from '../../components/routine/VisualRoutineGrid';
 import { ALL_ROOMS } from '../../constants/rooms';
 
@@ -99,10 +88,6 @@ const SAMPLE_ROUTINE_JSON = `[
 ]`;
 
 export const AdminRoutinePage: React.FC = () => {
-<<<<<<< HEAD
-  const { token } = useAuth();
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const { addToast } = useNotifications();
 
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -146,31 +131,6 @@ export const AdminRoutinePage: React.FC = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-<<<<<<< HEAD
-      const authHeader = { Authorization: `Bearer ${token || 'admin-token'}` };
-      const [btRes, routRes, reqRes] = await Promise.all([
-        fetch('/api/admin/batches', { headers: authHeader }),
-        fetch(`/api/routines?batchId=${selectedBatchId}`, { headers: authHeader }),
-        fetch('/api/routines/requests', { headers: authHeader }),
-      ]);
-
-      if (btRes.ok) {
-        const data = await btRes.json();
-        setBatches(data.batches || []);
-      }
-
-      if (routRes.ok) {
-        const data = await routRes.json();
-        setRoutines(data.routines || []);
-      }
-
-      if (reqRes.ok) {
-        const data = await reqRes.json();
-        setRequests(data.requests || []);
-      }
-    } catch (e) {
-      console.error(e);
-=======
       const [batchesData, routineData] = await Promise.all([
         adminApiClient.getBatches(),
         adminApiClient.getRoutines(selectedBatchId),
@@ -185,7 +145,6 @@ export const AdminRoutinePage: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       addToast('error', e.message || 'Failed to load routine data');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsLoading(false);
     }
@@ -193,11 +152,7 @@ export const AdminRoutinePage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-<<<<<<< HEAD
-  }, [token, selectedBatchId]);
-=======
   }, [selectedBatchId]);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
   const handleOpenAddModal = (day?: string) => {
     setEditingSlot(null);
@@ -233,30 +188,6 @@ export const AdminRoutinePage: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-<<<<<<< HEAD
-      const url = editingSlot ? `/api/routines/${editingSlot.id}` : '/api/routines';
-      const method = editingSlot ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || 'admin-token'}`,
-        },
-        body: JSON.stringify({ ...slotForm, batchId: selectedBatchId }),
-      });
-
-      if (res.ok) {
-        addToast('success', editingSlot ? 'Class slot updated!' : 'New class slot added!');
-        setIsSlotModalOpen(false);
-        fetchData();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        addToast('error', err.error || 'Failed to save routine slot');
-      }
-    } catch (e) {
-      addToast('error', 'Server error saving slot');
-=======
       if (editingSlot) {
         await adminApiClient.updateRoutineSlot(editingSlot.id, {
           ...slotForm,
@@ -274,7 +205,6 @@ export const AdminRoutinePage: React.FC = () => {
       fetchData();
     } catch (e: any) {
       addToast('error', e.message || 'Failed to save routine slot');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsSubmitting(false);
     }
@@ -284,28 +214,11 @@ export const AdminRoutinePage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this routine slot?')) return;
 
     try {
-<<<<<<< HEAD
-      const res = await fetch(`/api/routines/${slotId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token || 'admin-token'}` },
-      });
-
-      if (res.ok) {
-        addToast('success', 'Routine slot deleted.');
-        fetchData();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        addToast('error', err.error || 'Failed to delete slot');
-      }
-    } catch (e) {
-      addToast('error', 'Server error');
-=======
       await adminApiClient.deleteRoutineSlot(slotId);
       addToast('success', 'Routine slot deleted from Supabase.');
       fetchData();
     } catch (e: any) {
       addToast('error', e.message || 'Failed to delete slot');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   };
 
@@ -418,31 +331,6 @@ export const AdminRoutinePage: React.FC = () => {
 
     setIsImportingJson(true);
     try {
-<<<<<<< HEAD
-      const res = await fetch('/api/routines/bulk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || 'admin-token'}`,
-        },
-        body: JSON.stringify({
-          batchId: jsonImportBatchId,
-          mode: jsonImportMode,
-          slots: parsedSlotsPreview,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        addToast('success', data.message || `Successfully imported ${data.count || parsedSlotsPreview.length} routine slots!`);
-        setIsJsonModalOpen(false);
-        setSelectedBatchId(jsonImportBatchId);
-        fetchData();
-      } else {
-        addToast('error', data.error || 'Failed to import routine JSON');
-      }
-=======
       const res = await adminApiClient.bulkImportRoutines(
         jsonImportBatchId,
         parsedSlotsPreview,
@@ -452,7 +340,6 @@ export const AdminRoutinePage: React.FC = () => {
       setIsJsonModalOpen(false);
       setSelectedBatchId(jsonImportBatchId);
       fetchData();
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } catch (e: any) {
       console.error(e);
       addToast('error', e?.message || 'Server error importing routine JSON');
@@ -461,37 +348,6 @@ export const AdminRoutinePage: React.FC = () => {
     }
   };
 
-<<<<<<< HEAD
-  const handleReviewRequest = async (reqId: string, status: 'APPROVED' | 'REJECTED') => {
-    try {
-      const res = await fetch(`/api/routines/requests/${reqId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token || 'admin-token'}`,
-        },
-        body: JSON.stringify({
-          status,
-          rejectionReason: status === 'REJECTED' ? rejectionReason : undefined,
-        }),
-      });
-
-      if (res.ok) {
-        addToast('success', `Routine request ${status.toLowerCase()} successfully!`);
-        setRejectReqId(null);
-        setRejectionReason('');
-        fetchData();
-      } else {
-        addToast('error', 'Review action failed');
-      }
-    } catch (e) {
-      addToast('error', 'Server error');
-    }
-  };
-
-  const pendingRequests = requests.filter(r => r.status === 'PENDING');
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const selectedBatchObj = batches.find(b => b.id === selectedBatchId);
 
   return (
@@ -502,156 +358,6 @@ export const AdminRoutinePage: React.FC = () => {
           <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-wider mb-1">
             <Calendar className="w-4 h-4" /> Central Admin Portal
           </div>
-<<<<<<< HEAD
-          <h1 className="text-xl font-extrabold text-slate-900">Department Routine & CR Requests</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage official class routines per batch, import/export via JSON format, edit class slots, and review schedule modification requests.
-          </p>
-        </div>
-
-        {activeTab === 'ROUTINE' && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={handleExportCurrentRoutine}
-              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-all flex items-center gap-1.5"
-              title="Copy current batch routine in JSON format"
-            >
-              <Download className="w-3.5 h-3.5" /> Export JSON
-            </button>
-            <button
-              onClick={handleOpenJsonModal}
-              className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all flex items-center gap-1.5 shadow-2xs"
-            >
-              <FileCode className="w-4 h-4 text-indigo-600" /> JSON Import / Bulk
-            </button>
-            <button
-              onClick={() => handleOpenAddModal()}
-              className="px-4 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="w-4 h-4" /> Add Class Slot
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Navigation Tabs & Batch Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveTab('ROUTINE')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'ROUTINE' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            Official Routine Grid ({routines.length} Slots)
-          </button>
-          <button
-            onClick={() => setActiveTab('REQUESTS')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
-              activeTab === 'REQUESTS' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <RefreshCw className="w-3.5 h-3.5" /> CR Routine Requests ({pendingRequests.length} Pending)
-          </button>
-        </div>
-
-        {activeTab === 'ROUTINE' && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-700">Target Batch:</span>
-            <select
-              value={selectedBatchId}
-              onChange={e => setSelectedBatchId(e.target.value)}
-              className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-xs text-slate-900 font-bold focus:ring-2 focus:ring-blue-500"
-            >
-              {batches.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-
-      {/* Routine Grid View */}
-      {activeTab === 'ROUTINE' && (
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="py-12 text-center text-xs text-slate-400">Loading routine for {selectedBatchObj?.name || 'batch'}...</div>
-          ) : (
-            <VisualRoutineGrid
-              routines={routines}
-              canEdit={true}
-              onAddSlot={handleOpenAddModal}
-              onEditSlot={handleOpenEditModal}
-              onDeleteSlot={handleDeleteSlot}
-            />
-          )}
-        </div>
-      )}
-
-      {/* CR Routine Requests View */}
-      {activeTab === 'REQUESTS' && (
-        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-2xs p-5 space-y-4">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            CR Submitted Routine Modification Requests
-          </h3>
-
-          {requests.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
-              No routine requests submitted.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {requests.map(req => (
-                <div key={req.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-sm">{req.courseTitle}</span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded">
-                        {req.batchName}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                          req.status === 'APPROVED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : req.status === 'REJECTED'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {req.status}
-                      </span>
-                    </div>
-
-                    <p className="text-slate-600">
-                      <strong>Submitted by CR:</strong> {req.crName} • <strong>Current:</strong> {req.currentSchedule} → <strong>Requested:</strong> {req.requestedSchedule}
-                    </p>
-
-                    <p className="text-slate-500 italic">Reason: "{req.reason}"</p>
-                  </div>
-
-                  {req.status === 'PENDING' && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleReviewRequest(req.id, 'APPROVED')}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors flex items-center gap-1"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                      </button>
-                      <button
-                        onClick={() => setRejectReqId(req.id)}
-                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition-colors flex items-center gap-1"
-                      >
-                        <XCircle className="w-3.5 h-3.5" /> Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-=======
           <h1 className="text-xl font-extrabold text-slate-900">Department Routine & Schedule Matrix</h1>
           <p className="text-xs text-slate-500 mt-1">
             Manage official class schedules per batch with full Supabase synchronization, weekly visual views, and JSON bulk import/export.
@@ -721,7 +427,6 @@ export const AdminRoutinePage: React.FC = () => {
           />
         )}
       </div>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
       {/* JSON IMPORT & EXPORT MODAL */}
       {isJsonModalOpen && (
@@ -738,11 +443,7 @@ export const AdminRoutinePage: React.FC = () => {
                     JSON Routine Import & Bulk Manager
                   </h3>
                   <p className="text-[11px] text-slate-500">
-<<<<<<< HEAD
-                    Add or replace entire batch schedules instantly using standard JSON format.
-=======
                     Add or replace entire batch schedules instantly using standard JSON format with Supabase persistence.
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                   </p>
                 </div>
               </div>
@@ -1062,11 +763,7 @@ export const AdminRoutinePage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-<<<<<<< HEAD
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs"
-=======
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs disabled:opacity-50"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 >
                   {isSubmitting ? 'Saving...' : editingSlot ? 'Update Class Slot' : 'Add Class Slot'}
                 </button>
@@ -1075,47 +772,6 @@ export const AdminRoutinePage: React.FC = () => {
           </div>
         </div>
       )}
-<<<<<<< HEAD
-
-      {/* REJECT REASON MODAL */}
-      {rejectReqId && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Reject Routine Change Request</h3>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Rejection Feedback / Reason *</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="e.g. Schedule conflict in Room 504 on Tuesday afternoon."
-                  value={rejectionReason}
-                  onChange={e => setRejectionReason(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-2.5 text-slate-900"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  onClick={() => setRejectReqId(null)}
-                  className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleReviewRequest(rejectReqId, 'REJECTED')}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg shadow-xs"
-                >
-                  Confirm Reject
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     </div>
   );
 };

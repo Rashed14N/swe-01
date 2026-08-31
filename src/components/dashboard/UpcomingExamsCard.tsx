@@ -21,8 +21,6 @@ const COURSE_SHORT_NAMES: Record<string, string> = {
   'SWE 403': 'CN',
   'SWE 205': 'DAA',
   'SWE 303': 'OS',
-<<<<<<< HEAD
-=======
   'SWE-221': 'ALGO',
   'SWE-222': 'ALGO LAB',
   'SWE-311': 'TOC',
@@ -62,7 +60,6 @@ const COURSE_SHORT_NAMES: Record<string, string> = {
   'GED-301': 'BSP',
   'SWE-324': 'UI & UX',
   'SWE-232': 'CP-2',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 };
 
 export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({

@@ -13,13 +13,7 @@ export const NotFoundPage: React.FC = () => {
       navigate('/login');
       return;
     }
-<<<<<<< HEAD
-    if (user.role === 'ADMIN') {
-      navigate('/admin/dashboard');
-    } else if (user.role === 'CR') {
-=======
     if (user.role === 'CR') {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       navigate('/cr/dashboard');
     } else {
       navigate('/dashboard');

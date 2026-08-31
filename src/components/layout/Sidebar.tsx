@@ -4,12 +4,8 @@ import {
   LayoutDashboard, Calendar, BookOpen, Clock, Megaphone,
   HelpCircle, FileText, FolderGit2, Bell, Users,
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
-<<<<<<< HEAD
-  Layers, Settings, X, ChevronDown
-=======
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
   History, GraduationCap
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { useAuth } from '../../context/AuthContext';
@@ -103,8 +99,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </NavLink>
           </div>
 
-<<<<<<< HEAD
-=======
           {/* ADMIN PANEL */}
           {isRole('ADMIN') && (
             <div>
@@ -158,7 +152,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
           {/* CR PANEL */}
           {isRole('CR') && (
             <div>
@@ -188,62 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* CENTRAL ADMIN */}
-          {isRole('ADMIN') && (
-            <div>
-              {!isCollapsed && (
-                <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block mb-1 flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-rose-500" /> CENTRAL ADMIN
-                </span>
-              )}
-              <div className="space-y-1">
-                <NavLink to="/admin/dashboard" className={navLinkClass} onClick={onCloseMobile}>
-                  <LayoutDashboard className="w-4 h-4 shrink-0 text-rose-500" />
-                  {!isCollapsed && <span>Admin Overview</span>}
-                </NavLink>
-                <NavLink to="/admin/students" className={navLinkClass} onClick={onCloseMobile}>
-                  <Users className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Student Directory</span>}
-                </NavLink>
-                <NavLink to="/admin/cr-management" className={navLinkClass} onClick={onCloseMobile}>
-                  <UserCheck className="w-4 h-4 shrink-0 text-amber-600" />
-                  {!isCollapsed && <span>CR Management</span>}
-                </NavLink>
-                <NavLink to="/admin/batches" className={navLinkClass} onClick={onCloseMobile}>
-                  <Layers className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Batches</span>}
-                </NavLink>
-                <NavLink to="/admin/routine" className={navLinkClass} onClick={onCloseMobile}>
-                  <Calendar className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Routine & Requests</span>}
-                </NavLink>
-                <NavLink to="/admin/verification" className={navLinkClass} onClick={onCloseMobile}>
-                  <UserCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-                  {!isCollapsed && <span>Verification Queue</span>}
-                </NavLink>
-                <NavLink to="/admin/notices" className={navLinkClass} onClick={onCloseMobile}>
-                  <Megaphone className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Dept Notices</span>}
-                </NavLink>
-                <NavLink to="/admin/faculty" className={navLinkClass} onClick={onCloseMobile}>
-                  <Users className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Faculty Roster</span>}
-                </NavLink>
-                <NavLink to="/admin/courses" className={navLinkClass} onClick={onCloseMobile}>
-                  <BookOpen className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && <span>Courses Catalog</span>}
-                </NavLink>
-                <NavLink to="/admin/activity" className={navLinkClass} onClick={onCloseMobile}>
-                  <Shield className="w-4 h-4 shrink-0 text-slate-400" />
-                  {!isCollapsed && <span>Audit Trail</span>}
-                </NavLink>
-              </div>
-            </div>
-          )}
-=======
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
           {/* MY BATCH */}
           <div>
@@ -281,25 +219,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               <NavLink to="/resources/questions" className={navLinkClass} onClick={onCloseMobile}>
-<<<<<<< HEAD
-                <HelpCircle className="w-4 h-4 shrink-0" />
-                {!isCollapsed && <span>Question Bank</span>}
-              </NavLink>
-              <NavLink to="/resources/notes" className={navLinkClass} onClick={onCloseMobile}>
-                <FileText className="w-4 h-4 shrink-0" />
-                {!isCollapsed && <span>Notes</span>}
-              </NavLink>
-              <NavLink to="/resources/labs" className={navLinkClass} onClick={onCloseMobile}>
-                <FolderGit2 className="w-4 h-4 shrink-0" />
-                {!isCollapsed && <span>Lab Files</span>}
-=======
                 <GraduationCap className="w-4 h-4 shrink-0" />
                 {!isCollapsed && <span>Question Bank</span>}
               </NavLink>
               <NavLink to="/faq" className={navLinkClass} onClick={onCloseMobile}>
                 <HelpCircle className="w-4 h-4 shrink-0" />
                 {!isCollapsed && <span>FAQ</span>}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
               </NavLink>
             </div>
           </div>

@@ -1,46 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
-<<<<<<< HEAD
-import type { DBData } from './db.ts';
-
-const CONFIG_FILE = path.join(process.cwd(), 'data', 'supabase-config.json');
-
-let currentSupabaseUrl = '';
-let currentSupabaseKey = '';
-
-// Priority: 1. Service Role Key in ENV (bypasses RLS for secure backend API calls)
-//           2. Stored config file
-//           3. Publishable/Anon keys
-const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-const envUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const envPubKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
-
-// Try reading stored config file
-if (fs.existsSync(CONFIG_FILE)) {
-  try {
-    const raw = fs.readFileSync(CONFIG_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    if (parsed.url) currentSupabaseUrl = parsed.url;
-    if (parsed.key) currentSupabaseKey = parsed.key;
-  } catch (err) {
-    console.error('[Supabase] Failed to read supabase-config.json:', err);
-  }
-}
-
-// If service key is provided in ENV, ALWAYS prioritize it for server-side operations
-if (envServiceKey) {
-  currentSupabaseKey = envServiceKey;
-} else if (!currentSupabaseKey && envPubKey) {
-  currentSupabaseKey = envPubKey;
-}
-
-if (!currentSupabaseUrl || currentSupabaseUrl.includes('qaolvrcclqsmxtlzfvoq')) {
-  currentSupabaseUrl = (envUrl && !envUrl.includes('qaolvrcclqsmxtlzfvoq')) 
-    ? envUrl 
-    : 'https://aasktchpxsxxanfkkrxx.supabase.co';
-}
-=======
 import type { DBData } from './db';
 
 const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'sb_secret_sztWG8UZFLGZv6oApyHa0Q_sL-uYJ7_';
@@ -49,7 +9,6 @@ const envPubKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPAB
 
 let currentSupabaseUrl = envUrl;
 let currentSupabaseKey = envServiceKey || envPubKey || '';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 let serverSupabase: SupabaseClient | null = null;
 
@@ -70,18 +29,6 @@ export function initSupabase(url?: string, key?: string): { success: boolean; me
       });
       console.log('[Supabase] Initialized server-side client at:', currentSupabaseUrl);
 
-<<<<<<< HEAD
-      // Persist to file
-      try {
-        const dir = path.dirname(CONFIG_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify({ url: currentSupabaseUrl, key: currentSupabaseKey }, null, 2), 'utf-8');
-      } catch (err) {
-        console.error('[Supabase] Failed to write config file:', err);
-      }
-
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       return { success: true, message: `Connected to ${currentSupabaseUrl}` };
     } catch (err: any) {
       console.error('[Supabase] Initialization failed:', err);
@@ -279,11 +226,7 @@ export async function syncAllLocalToSupabase(dbData: DBData): Promise<{
       short_name: f.shortName || null,
       designation: f.designation,
       department: f.department || 'Software Engineering',
-<<<<<<< HEAD
-      email: f.email,
-=======
       email: f.email || null,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       phone: f.phone || null,
       office_room: f.officeRoom || '',
       photo_url: f.photoUrl || null,
@@ -820,11 +763,7 @@ export async function fetchUserFromSupabase(identifier: string): Promise<any | n
  * Starts continuous background 15-second sync between local DB and Supabase
  */
 export function startAutoSync(getDbData: () => DBData, intervalMs = 15000) {
-<<<<<<< HEAD
-  setInterval(async () => {
-=======
   const timer = setInterval(async () => {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     if (serverSupabase) {
       try {
         const dbData = getDbData();
@@ -832,11 +771,8 @@ export function startAutoSync(getDbData: () => DBData, intervalMs = 15000) {
       } catch {}
     }
   }, intervalMs);
-<<<<<<< HEAD
-=======
   if (timer && typeof timer.unref === 'function') {
     timer.unref();
   }
   return timer;
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 }

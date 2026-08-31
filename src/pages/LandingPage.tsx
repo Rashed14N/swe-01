@@ -37,29 +37,6 @@ const FALLBACK_NOTICES: DepartmentNotice[] = [
 const FALLBACK_FACULTY: Faculty[] = [
   {
     id: 'fac_1',
-<<<<<<< HEAD
-    name: 'Dr. Mahbubur Rahman',
-    shortName: 'MR',
-    designation: 'Professor & Head',
-    department: 'Department of Software Engineering',
-    email: 'mahbub.swe@dept.edu',
-    officeRoom: 'Room 401, Academic Building 1',
-    photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-    specialization: 'Software Architecture, Distributed Systems',
-    assignedCourses: ['SWE 305', 'SWE 401'],
-  },
-  {
-    id: 'fac_2',
-    name: 'Engr. Nazmul Islam',
-    shortName: 'NI',
-    designation: 'Associate Professor',
-    department: 'Department of Software Engineering',
-    email: 'nazmul.swe@dept.edu',
-    officeRoom: 'Room 403, Academic Building 1',
-    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
-    specialization: 'Database Systems, Cloud Computing',
-    assignedCourses: ['SWE 307', 'SWE 308'],
-=======
     name: 'Fuad Ahmed',
     shortName: 'FA',
     designation: 'Professor & Head',
@@ -177,7 +154,6 @@ const FALLBACK_FACULTY: Faculty[] = [
     phone: '+8801716942150',
     email: 'tanya@metrouni.edu.bd',
     assignedCourses: [],
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   },
 ];
 

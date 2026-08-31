@@ -1,9 +1,5 @@
 import { getSupabase, checkIsSupabaseConfigured } from '../lib/supabase';
-<<<<<<< HEAD
-import { User, RoutineSlot, Exam, BatchAnnouncement, DepartmentNotice, Resource } from '../types';
-=======
 import { User, RoutineSlot, Exam, BatchAnnouncement, DepartmentNotice, Resource, Course } from '../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 export const saveUserToSupabase = async (user: User): Promise<boolean> => {
   if (!checkIsSupabaseConfigured()) return false;
@@ -313,8 +309,6 @@ export const saveResourceToSupabase = async (item: Resource): Promise<boolean> =
     return false;
   }
 };
-<<<<<<< HEAD
-=======
 
 export const fetchCoursesFromSupabase = async (semester?: number, batchId?: string): Promise<Course[]> => {
   if (!checkIsSupabaseConfigured()) return [];
@@ -349,4 +343,3 @@ export const fetchCoursesFromSupabase = async (semester?: number, batchId?: stri
     return [];
   }
 };
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)

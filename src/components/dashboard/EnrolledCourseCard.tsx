@@ -71,11 +71,7 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({
 
             <div className="flex items-center gap-1.5 text-[#64748B] dark:text-slate-400 text-[11.5px] sm:text-xs font-medium mt-0.5">
               <User className="w-3.5 h-3.5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.2} />
-<<<<<<< HEAD
-              <span className="truncate">{course.assignedFacultyName || 'Faculty not assigned'}</span>
-=======
               <span className="truncate">{course.assignedFacultyName || 'Not Assigned'}</span>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
             </div>
           </div>
 
@@ -128,11 +124,7 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({
 
             <div className="flex items-center gap-1.5 text-[#64748B] dark:text-slate-400 text-[11px] font-medium mt-0.5">
               <User className="w-3 h-3 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.2} />
-<<<<<<< HEAD
-              <span className="truncate">{course.assignedFacultyName || 'Faculty not assigned'}</span>
-=======
               <span className="truncate">{course.assignedFacultyName || 'Not Assigned'}</span>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
             </div>
           </div>
 
@@ -191,11 +183,7 @@ export const EnrolledCourseCard: React.FC<EnrolledCourseCardProps> = ({
           {/* Bottom Row: Faculty */}
           <div className="flex items-center gap-1.5 text-[#64748B] dark:text-slate-400 text-[11px] font-medium pt-1 border-t border-slate-100 dark:border-slate-800/80">
             <User className="w-3 h-3 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.2} />
-<<<<<<< HEAD
-            <span className="truncate">{course.assignedFacultyName || 'Faculty not assigned'}</span>
-=======
             <span className="truncate">{course.assignedFacultyName || 'Not Assigned'}</span>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
           </div>
         </div>
       </div>

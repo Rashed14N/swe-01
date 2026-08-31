@@ -43,21 +43,12 @@ export const ProfilePage: React.FC = () => {
   // Upload Form State
   const [title, setTitle] = useState('');
   const [type, setType] = useState<ResourceType>('QUESTION');
-<<<<<<< HEAD
-  const [courseCode, setCourseCode] = useState('SWE 305');
-  const [courseTitle, setCourseTitle] = useState('Database Systems');
-  const [semester, setSemester] = useState(user?.currentSemester || 4);
-  const [academicYear, setAcademicYear] = useState(2026);
-  const [examType, setExamType] = useState('FINAL');
-  const [labCategory, setLabCategory] = useState('LAB_MANUAL');
-=======
   const [courseCode, setCourseCode] = useState('SWE 311');
   const [courseTitle, setCourseTitle] = useState('Software Engineering');
   const [facultyName, setFacultyName] = useState('');
   const [semester, setSemester] = useState(user?.currentSemester || 5);
   const [academicYear, setAcademicYear] = useState(2026);
   const [examType, setExamType] = useState('FINAL');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const [description, setDescription] = useState('');
   const [fileUrl, setFileUrl] = useState('');
 
@@ -137,20 +128,6 @@ export const ProfilePage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-<<<<<<< HEAD
-          title,
-          type,
-          courseCode,
-          courseTitle,
-          semester: Number(semester),
-          academicYear: Number(academicYear),
-          examType,
-          labCategory,
-          description,
-          fileUrl: fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          fileName: `${type.toLowerCase()}_${courseCode.replace(' ', '')}.pdf`,
-          fileSize: '1.4 MB',
-=======
           title: title.trim(),
           type: 'QUESTION',
           courseCode: courseCode.trim().toUpperCase(),
@@ -163,19 +140,13 @@ export const ProfilePage: React.FC = () => {
           fileUrl: fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
           fileName: `${courseCode.replace(/\s+/g, '_')}_${examType}.pdf`,
           fileSize: '1.6 MB',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         }),
       });
 
       if (res.ok) {
-<<<<<<< HEAD
-        addToast('success', 'Resource submitted for CR / Admin verification!');
-        setTitle('');
-=======
         addToast('success', 'Question paper submitted for Admin verification (+10 points)!');
         setTitle('');
         setFacultyName('');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         setDescription('');
         setFileUrl('');
         fetchMyContributions();
@@ -330,11 +301,7 @@ export const ProfilePage: React.FC = () => {
           }`}
         >
           <Upload className="w-4 h-4" />
-<<<<<<< HEAD
-          Contribute Resource
-=======
           Contribute Question Paper
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         </button>
 
         <button
@@ -488,11 +455,7 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Tab 2: Contribute Resource */}
-=======
       {/* Tab 2: Contribute Question Paper */}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       {activeTab === 'contribute' && (
         <div className="bg-white dark:bg-[#0F172A] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs animate-fade-in max-w-2xl mx-auto">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
@@ -500,93 +463,42 @@ export const ProfilePage: React.FC = () => {
               <Upload className="w-5 h-5" />
             </div>
             <div>
-<<<<<<< HEAD
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Contribute Study Resource</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Share question papers, lecture notes, or lab materials</p>
-=======
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Contribute Question Paper</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">Share previous semester quiz, midterm, or final exam question papers (+10 Pts)</p>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
             </div>
           </div>
 
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-<<<<<<< HEAD
-                Resource Type
-              </label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as ResourceType)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200"
-              >
-                <option value="QUESTION">Question Paper</option>
-                <option value="NOTE">Lecture Notes</option>
-                <option value="LAB">Lab Resource / Code</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Resource Title
-=======
                 Question Paper Title *
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
               </label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-<<<<<<< HEAD
-                placeholder="e.g. Database Systems Midterm 2025 Solved"
-=======
                 placeholder="e.g. SWE 311 Final Exam Autumn 2025"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white"
               />
             </div>
 
-<<<<<<< HEAD
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Course Code
-=======
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Course Code *
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 </label>
                 <input
                   type="text"
                   required
                   value={courseCode}
                   onChange={(e) => setCourseCode(e.target.value)}
-<<<<<<< HEAD
-                  placeholder="SWE 305"
-=======
                   placeholder="e.g. SWE 311"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-<<<<<<< HEAD
-                  Semester
-                </label>
-                <input
-                  type="number"
-                  required
-                  min={1}
-                  max={8}
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold"
-=======
                   Course Title *
                 </label>
                 <input
@@ -596,23 +508,12 @@ export const ProfilePage: React.FC = () => {
                   onChange={(e) => setCourseTitle(e.target.value)}
                   placeholder="e.g. Software Engineering"
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-<<<<<<< HEAD
-                Course Title
-              </label>
-              <input
-                type="text"
-                required
-                value={courseTitle}
-                onChange={(e) => setCourseTitle(e.target.value)}
-                placeholder="Database Systems"
-=======
                 Faculty / Teacher Name
               </label>
               <input
@@ -620,60 +521,10 @@ export const ProfilePage: React.FC = () => {
                 value={facultyName}
                 onChange={(e) => setFacultyName(e.target.value)}
                 placeholder="e.g. Dr. Md. Kamrul Hasan"
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
               />
             </div>
 
-<<<<<<< HEAD
-            {type === 'QUESTION' && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                    Exam Type
-                  </label>
-                  <select
-                    value={examType}
-                    onChange={(e) => setExamType(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
-                  >
-                    <option value="FINAL">Final</option>
-                    <option value="MIDTERM">Midterm</option>
-                    <option value="QUIZ">Quiz</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                    Year
-                  </label>
-                  <input
-                    type="number"
-                    value={academicYear}
-                    onChange={(e) => setAcademicYear(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold"
-                  />
-                </div>
-              </div>
-            )}
-
-            {type === 'LAB' && (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Lab Category
-                </label>
-                <select
-                  value={labCategory}
-                  onChange={(e) => setLabCategory(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
-                >
-                  <option value="LAB_MANUAL">Lab Manual</option>
-                  <option value="SOURCE_CODE">Source Code</option>
-                  <option value="VIVA_QUESTIONS">Viva Questions</option>
-                  <option value="LAB_REPORT">Sample Report</option>
-                </select>
-              </div>
-            )}
-=======
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
@@ -725,7 +576,6 @@ export const ProfilePage: React.FC = () => {
                 </select>
               </div>
             </div>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
@@ -751,34 +601,23 @@ export const ProfilePage: React.FC = () => {
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-<<<<<<< HEAD
-                placeholder="Short description of this material..."
-=======
                 placeholder="Short notes about questions, topics covered, difficulty level..."
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs"
               />
             </div>
 
-<<<<<<< HEAD
-=======
             <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/50 text-[11px] text-blue-800 dark:text-blue-300 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>Submissions earn <strong>+10 points</strong> on submission and <strong>+25 bonus points</strong> once verified by Admin!</span>
             </div>
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
             <button
               type="submit"
               disabled={isUploading}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               <Upload className="w-4 h-4" />
-<<<<<<< HEAD
-              {isUploading ? 'Submitting...' : 'Submit for Verification'}
-=======
               {isUploading ? 'Submitting...' : 'Submit Question Paper for Verification'}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
             </button>
           </form>
         </div>

@@ -71,28 +71,17 @@ export const AdminStudentsPage: React.FC = () => {
 
       if (stRes.ok) {
         const data = await stRes.json();
-<<<<<<< HEAD
-        setStudents(data.students || []);
-=======
         const studentList = data.students || data.users || data.data || (Array.isArray(data) ? data : []);
         setStudents(studentList);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       }
 
       if (btRes.ok) {
         const data = await btRes.json();
-<<<<<<< HEAD
-        setBatches(data.batches || []);
-        if (data.batches.length > 0) {
-          setAddForm(prev => ({ ...prev, batchId: data.batches[0].id }));
-          setCsvDefaultBatchId(data.batches[0].id);
-=======
         const batchList = data.batches || data.data || (Array.isArray(data) ? data : []);
         setBatches(batchList);
         if (Array.isArray(batchList) && batchList.length > 0) {
           setAddForm(prev => ({ ...prev, batchId: batchList[0].id }));
           setCsvDefaultBatchId(batchList[0].id);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         }
       }
     } catch (e) {

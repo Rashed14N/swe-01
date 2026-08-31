@@ -1,15 +1,8 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { requireRole } from '../middleware.ts';
-import { Course } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Course } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllCourses,
   fetchCourseById,
@@ -18,35 +11,15 @@ import {
   deleteCourseFromDB,
   fetchAllFaculty,
   fetchAllResources,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-
-const router = Router();
-
-// GET /api/courses (List courses for student batch or all if Admin/Public)
-=======
 } from '../supabaseData';
 
 const router = Router();
 
 // GET /api/courses (List courses for student batch/semester or all if Admin/Public)
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const allCourses = await fetchAllCourses();
     const batchId = (req.query.batchId as string) || req.user?.batchId;
-<<<<<<< HEAD
-
-    let courses = allCourses;
-    if (batchId && req.user && req.user.role !== 'ADMIN') {
-      courses = courses.filter(c => c.batchIds?.includes(batchId) || c.semester === req.user?.currentSemester);
-    }
-
-    res.json({ courses });
-  } catch (err: any) {
-    console.error('[Courses API GET / Error]:', err);
-    res.status(500).json({ error: 'Failed to fetch courses' });
-=======
     const semesterQuery = req.query.semester ? Number(req.query.semester) : undefined;
 
     let courses = Array.isArray(allCourses) ? allCourses : [];
@@ -74,7 +47,6 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     });
     const fallbackList = db.getData()?.courses || [];
     return res.status(200).json({ courses: fallbackList });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   }
 });
 

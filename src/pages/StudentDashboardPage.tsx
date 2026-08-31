@@ -7,21 +7,13 @@ import {
   FileText, Shield, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-<<<<<<< HEAD
-import { DashboardSummary } from '../types';
-=======
 import { DashboardSummary, Course } from '../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchRoutinesFromSupabase,
   fetchExamsFromSupabase,
   fetchAnnouncementsFromSupabase,
-<<<<<<< HEAD
-  fetchNoticesFromSupabase
-=======
   fetchNoticesFromSupabase,
   fetchCoursesFromSupabase,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 } from '../services/supabaseDataService';
 import { DashboardSummaryCard } from '../components/dashboard/DashboardSummaryCard';
 import { PortalHeroCard } from '../components/dashboard/PortalHeroCard';
@@ -43,21 +35,12 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       day: 'SUNDAY',
       startTime: '09:00 AM',
       endTime: '10:30 AM',
-<<<<<<< HEAD
-      courseId: 'c_1',
-      courseCode: 'SWE 305',
-      courseTitle: 'Software Architecture & Design Patterns',
-      room: 'Room 402',
-      teacherName: 'Dr. Mahbubur Rahman',
-      teacherShortName: 'MR',
-=======
       courseId: 'course-sem4-swe-221',
       courseCode: 'SWE-221',
       courseTitle: 'Algorithm',
       room: 'Room 402',
       teacherName: 'Lukman Hussain Nakib',
       teacherShortName: 'LHN',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       batchId,
     },
     {
@@ -65,21 +48,12 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       day: 'SUNDAY',
       startTime: '10:45 AM',
       endTime: '12:15 PM',
-<<<<<<< HEAD
-      courseId: 'c_2',
-      courseCode: 'SWE 307',
-      courseTitle: 'Database Management Systems',
-      room: 'Room 504',
-      teacherName: 'Engr. Nazmul Islam',
-      teacherShortName: 'NI',
-=======
       courseId: 'course-sem4-swe-225',
       courseCode: 'SWE-225',
       courseTitle: 'Database Management System',
       room: 'Room 504',
       teacherName: 'Nazia Sultana Chowdhury',
       teacherShortName: 'NSC',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       batchId,
     },
     {
@@ -87,15 +61,9 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       day: 'SUNDAY',
       startTime: '01:30 PM',
       endTime: '03:00 PM',
-<<<<<<< HEAD
-      courseId: 'c_3',
-      courseCode: 'SWE 309',
-      courseTitle: 'Web Engineering & Technologies',
-=======
       courseId: 'course-sem4-swe-231',
       courseCode: 'SWE-231',
       courseTitle: 'Software Requirement Engineering',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'XL 1',
       teacherName: 'Tasnim Ahmed',
       teacherShortName: 'TA',
@@ -105,101 +73,32 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
   upcomingExams: [
     {
       id: 'ex_1',
-<<<<<<< HEAD
-      courseId: 'c_1',
-      courseCode: 'SWE 305',
-      courseTitle: 'Software Architecture & Design Patterns',
-=======
       courseId: 'course-sem4-swe-221',
       courseCode: 'SWE-221',
       courseTitle: 'Algorithm',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       title: 'Midterm Examination',
       date: '2026-08-28',
       startTime: '09:00 AM',
       room: 'Room 401',
       type: 'MIDTERM',
       batchId,
-<<<<<<< HEAD
-      description: 'Chapters 1-5: Architectural Styles & Patterns',
-      createdBy: 'usr_cr_1',
-      createdByName: 'Dr. Mahbubur Rahman',
-=======
       description: 'Chapters 1-5: Asymptotic Analysis, Divide & Conquer, Dynamic Programming',
       createdBy: 'usr_cr_1',
       createdByName: 'Lukman Hussain Nakib',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       createdAt: new Date().toISOString(),
       daysLeft: 4,
     },
     {
       id: 'ex_2',
-<<<<<<< HEAD
-      courseId: 'c_2',
-      courseCode: 'SWE 307',
-      courseTitle: 'Database Management Systems',
-=======
       courseId: 'course-sem4-swe-225',
       courseCode: 'SWE-225',
       courseTitle: 'Database Management System',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       title: 'Class Quiz 2',
       date: '2026-09-04',
       startTime: '10:00 AM',
       room: 'Exten-2',
       type: 'QUIZ',
       batchId,
-<<<<<<< HEAD
-      description: 'SQL Queries, Joins, Triggers & Normalization',
-      createdBy: 'usr_cr_1',
-      createdByName: 'Engr. Nazmul Islam',
-      createdAt: new Date().toISOString(),
-      daysLeft: 11,
-    },
-    {
-      id: 'ex_3',
-      courseId: 'c_3',
-      courseCode: 'SWE 309',
-      courseTitle: 'Web Engineering & Technologies',
-      title: 'Milestone 2 Submission',
-      date: '2026-09-10',
-      startTime: '11:59 PM',
-      room: 'Online Portal',
-      type: 'ASSIGNMENT' as any,
-      batchId,
-      description: 'REST API & Authentication Milestone',
-      createdBy: 'usr_cr_1',
-      createdByName: 'Tasnim Ahmed',
-      createdAt: new Date().toISOString(),
-      daysLeft: 17,
-    },
-  ],
-  currentCourses: [
-    {
-      id: 'c_1',
-      code: 'SWE 305',
-      title: 'Software Architecture & Design Patterns',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Dr. Mahbubur Rahman',
-      batchIds: [batchId],
-    },
-    {
-      id: 'c_2',
-      code: 'SWE 307',
-      title: 'Database Management Systems',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Engr. Nazmul Islam',
-      batchIds: [batchId],
-    },
-    {
-      id: 'c_3',
-      code: 'SWE 309',
-      title: 'Web Engineering & Technologies',
-=======
       description: 'SQL Queries, Relational Algebra, Joins, Triggers & Normalization',
       createdBy: 'usr_cr_1',
       createdByName: 'Nazia Sultana Chowdhury',
@@ -268,46 +167,12 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       code: 'SWE-231',
       shortName: 'SRE',
       title: 'Software Requirement Engineering',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       credits: 3,
       type: 'THEORY',
       semester: 4,
       assignedFacultyName: 'Tasnim Ahmed',
       batchIds: [batchId],
     },
-<<<<<<< HEAD
-    {
-      id: 'c_4',
-      code: 'SWE 401',
-      title: 'Artificial Intelligence',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Prof. Dr. Farhana Haque',
-      batchIds: [batchId],
-    },
-    {
-      id: 'c_5',
-      code: 'SWE 403',
-      title: 'Discrete Mathematics',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Dr. Asif Mahmud',
-      batchIds: [batchId],
-    },
-    {
-      id: 'c_6',
-      code: 'SWE 405',
-      title: 'Software Testing & Quality Assurance',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Engr. Tanvir Hasan',
-      batchIds: [batchId],
-    },
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   ],
   recentAnnouncements: [
     {
@@ -402,19 +267,11 @@ export const StudentDashboardPage: React.FC = () => {
       const batchId = user?.batchId || 'batch-9';
       const fallback = getDefaultSummary(batchId);
 
-<<<<<<< HEAD
-      const [routines, exams, announcements, notices] = await Promise.all([
-=======
       const [routines, exams, announcements, notices, coursesRes] = await Promise.all([
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         fetchRoutinesFromSupabase(batchId),
         fetchExamsFromSupabase(batchId),
         fetchAnnouncementsFromSupabase(batchId),
         fetchNoticesFromSupabase(),
-<<<<<<< HEAD
-      ]);
-
-=======
         fetch(`/api/courses?batchId=${batchId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }).then(r => r.ok ? r.json() : { courses: [] }).catch(() => ({ courses: [] })),
@@ -429,7 +286,6 @@ export const StudentDashboardPage: React.FC = () => {
         enrolledCourses = fallback.currentCourses;
       }
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       const todaysRoutine = routines && routines.length > 0 ? routines : fallback.todaysRoutine;
       const upcomingExams = exams && exams.length > 0
         ? exams.map(e => ({
@@ -439,26 +295,17 @@ export const StudentDashboardPage: React.FC = () => {
         : fallback.upcomingExams;
       const recentAnnouncements = announcements && announcements.length > 0 ? announcements.slice(0, 3) : fallback.recentAnnouncements;
       const recentNotices = notices && notices.length > 0 ? notices.slice(0, 3) : fallback.recentNotices;
-<<<<<<< HEAD
-=======
       const finalCurrentCourses = enrolledCourses && enrolledCourses.length > 0 ? enrolledCourses : fallback.currentCourses;
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
       const freshSummary: DashboardSummary = {
         ...fallback,
         todaysClassesCount: todaysRoutine.length,
-<<<<<<< HEAD
-=======
         currentCoursesCount: finalCurrentCourses.length,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         upcomingExamsCount: upcomingExams.length,
         newAnnouncementsCount: recentAnnouncements.length,
         todaysRoutine,
         upcomingExams,
-<<<<<<< HEAD
-=======
         currentCourses: finalCurrentCourses,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         recentAnnouncements,
         recentNotices,
       };
@@ -474,11 +321,7 @@ export const StudentDashboardPage: React.FC = () => {
 
   useEffect(() => {
     fetchSummary();
-<<<<<<< HEAD
-  }, [user?.batchId, token]);
-=======
   }, [user?.batchId, user?.currentSemester, token]);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
   return (
     <div className="space-y-6 max-w-[1500px] mx-auto pb-10">

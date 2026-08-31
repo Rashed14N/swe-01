@@ -1,15 +1,8 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { requireRole } from '../middleware.ts';
-import { Batch, BatchProgressionItem, SemesterProgressionPreview } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Batch, BatchProgressionItem, SemesterProgressionPreview } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllBatches,
   fetchBatchById,
@@ -21,11 +14,7 @@ import {
   fetchAllExams,
   fetchAllAnnouncements,
   updateUserInDB,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 

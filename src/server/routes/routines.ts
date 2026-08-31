@@ -1,25 +1,14 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { requireRole } from '../middleware.ts';
-import { RoutineSlot, RoutineRequest } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { RoutineSlot, RoutineRequest } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllRoutineSlots,
   createRoutineSlotInDB,
   updateRoutineSlotInDB,
   deleteRoutineSlotFromDB,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 

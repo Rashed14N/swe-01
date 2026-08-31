@@ -1,22 +1,13 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { generateToken, verifyAuthToken, AuthenticatedRequest } from '../auth.ts';
-=======
 import { db } from '../db';
 import { generateToken, verifyAuthToken, AuthenticatedRequest } from '../auth';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllUsers,
   fetchUserByIdOrStudentId,
   createUserInDB,
   updateUserInDB,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 

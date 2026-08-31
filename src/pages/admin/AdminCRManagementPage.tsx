@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { ShieldCheck, Search, Plus, Trash2, Users, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
-import { User, Batch } from '../../types';
-
-export const AdminCRManagementPage: React.FC = () => {
-  const { token } = useAuth();
-=======
 import { ShieldCheck, Search, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { User, Batch } from '../../types';
 
 export const AdminCRManagementPage: React.FC = () => {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const { addToast } = useNotifications();
 
   const [students, setStudents] = useState<User[]>([]);
@@ -24,27 +14,6 @@ export const AdminCRManagementPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
-<<<<<<< HEAD
-    if (!token) return;
-    setIsLoading(true);
-    try {
-      const [stRes, btRes] = await Promise.all([
-        fetch('/api/admin/students', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/batches', { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
-
-      if (stRes.ok) {
-        const data = await stRes.json();
-        setStudents(data.students || []);
-      }
-
-      if (btRes.ok) {
-        const data = await btRes.json();
-        setBatches(data.batches || []);
-      }
-    } catch (e) {
-      console.error(e);
-=======
     setIsLoading(true);
     try {
       const [stData, btData] = await Promise.all([
@@ -57,7 +26,6 @@ export const AdminCRManagementPage: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       addToast('error', e.message || 'Failed to load students');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } finally {
       setIsLoading(false);
     }
@@ -65,37 +33,11 @@ export const AdminCRManagementPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-<<<<<<< HEAD
-  }, [token]);
-=======
   }, []);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
   const handleToggleCR = async (student: User) => {
     const newRole = student.role === 'CR' ? 'STUDENT' : 'CR';
     try {
-<<<<<<< HEAD
-      const res = await fetch(`/api/admin/users/${student.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (res.ok) {
-        addToast(
-          'success',
-          `${student.name} ${newRole === 'CR' ? 'assigned as Class Representative (CR)' : 'removed from CR role'}`
-        );
-        fetchData();
-      } else {
-        addToast('error', 'Role update failed');
-      }
-    } catch (e) {
-      addToast('error', 'Server error');
-=======
       await adminApiClient.updateUserRole(student.id, newRole);
       addToast(
         'success',
@@ -104,7 +46,6 @@ export const AdminCRManagementPage: React.FC = () => {
       fetchData();
     } catch (e: any) {
       addToast('error', e.message || 'Role update failed');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   };
 
@@ -128,11 +69,6 @@ export const AdminCRManagementPage: React.FC = () => {
           </div>
           <h1 className="text-xl font-extrabold text-slate-900">Class Representative (CR) Management</h1>
           <p className="text-xs text-slate-500 mt-1">
-<<<<<<< HEAD
-            Assign or revoke Class Representative permissions for students per batch.
-          </p>
-        </div>
-=======
             Assign or revoke Class Representative permissions for students per batch with instant Supabase persistence.
           </p>
         </div>
@@ -144,7 +80,6 @@ export const AdminCRManagementPage: React.FC = () => {
         >
           <RefreshCw className="w-4 h-4" />
         </button>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       </div>
 
       {/* Current Active CRs Overview */}
@@ -208,32 +143,6 @@ export const AdminCRManagementPage: React.FC = () => {
         </div>
 
         <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto pr-1">
-<<<<<<< HEAD
-          {filteredStudents.map(st => (
-            <div key={st.id} className="p-3 hover:bg-slate-50 flex items-center justify-between text-xs transition-colors">
-              <div>
-                <span className="font-bold text-slate-900">{st.name}</span>
-                <span className="text-slate-400 font-mono text-[11px] ml-2">({st.studentId})</span>
-                <span className="text-slate-500 text-[11px] block">{st.batchName}</span>
-              </div>
-
-              <div>
-                {st.role === 'CR' ? (
-                  <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md">
-                    CR Assigned
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleToggleCR(st)}
-                    className="px-3 py-1.5 bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-colors"
-                  >
-                    + Assign CR
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-=======
           {isLoading ? (
             <div className="py-8 text-center text-xs text-slate-400">Loading student roster...</div>
           ) : filteredStudents.length === 0 ? (
@@ -264,7 +173,6 @@ export const AdminCRManagementPage: React.FC = () => {
               </div>
             ))
           )}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         </div>
       </div>
     </div>

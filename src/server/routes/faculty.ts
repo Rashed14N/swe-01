@@ -1,25 +1,14 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { requireRole } from '../middleware.ts';
-import { Faculty } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { Faculty } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllFaculty,
   createFacultyInDB,
   updateFacultyInDB,
   deleteFacultyFromDB,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 
@@ -29,24 +18,6 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     const { search } = req.query;
     let list = await fetchAllFaculty();
 
-<<<<<<< HEAD
-    if (search) {
-      const q = (search as string).toLowerCase().trim();
-      list = list.filter(
-        f =>
-          f.name.toLowerCase().includes(q) ||
-          (f.shortName && f.shortName.toLowerCase().includes(q)) ||
-          f.designation.toLowerCase().includes(q) ||
-          (f.specialization && f.specialization.toLowerCase().includes(q)) ||
-          f.email.toLowerCase().includes(q)
-      );
-    }
-
-    res.json({ faculty: list });
-  } catch (err: any) {
-    console.error('[Faculty API GET / Error]:', err);
-    res.status(500).json({ error: 'Failed to fetch faculty' });
-=======
     if (!Array.isArray(list)) {
       list = [];
     }
@@ -80,7 +51,6 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     });
     const fallbackList = (db.getData()?.faculty) || [];
     return res.status(200).json({ faculty: fallbackList });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   }
 });
 
@@ -89,13 +59,8 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
   try {
     const { name, shortName, designation, department, email, phone, officeRoom, photoUrl, specialization, assignedCourses } = req.body;
 
-<<<<<<< HEAD
-    if (!name || !designation || !email) {
-      return res.status(400).json({ error: 'Name, designation, and email are required' });
-=======
     if (!name || !designation) {
       return res.status(400).json({ error: 'Name and designation are required' });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
 
     const calculatedShortName = (shortName && String(shortName).trim()) 
@@ -108,17 +73,10 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
       shortName: calculatedShortName || 'FAC',
       designation: String(designation).trim(),
       department: department ? String(department).trim() : 'Software Engineering',
-<<<<<<< HEAD
-      email: String(email).trim().toLowerCase(),
-      phone: phone ? String(phone).trim() : undefined,
-      officeRoom: officeRoom ? String(officeRoom).trim() : '',
-      photoUrl: photoUrl ? String(photoUrl).trim() : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-=======
       email: email ? String(email).trim().toLowerCase() : '',
       phone: phone ? String(phone).trim() : undefined,
       officeRoom: officeRoom ? String(officeRoom).trim() : '',
       photoUrl: photoUrl ? String(photoUrl).trim() : '',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       specialization: specialization ? String(specialization).trim() : '',
       assignedCourses: Array.isArray(assignedCourses) ? assignedCourses : [],
     };
@@ -131,16 +89,12 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
 
     return res.status(201).json({ faculty: created, message: 'Faculty member added successfully' });
   } catch (err: any) {
-<<<<<<< HEAD
-    console.error('Error adding faculty:', err);
-=======
     console.error({
       route: 'POST /api/faculty',
       error: err?.message || err,
       stack: err?.stack,
       supabaseError: err?.supabaseError || null,
     });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     return res.status(500).json({ error: err?.message || 'Server error adding faculty member' });
   }
 });
@@ -170,16 +124,12 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: Authentica
 
     return res.json({ faculty: updated, message: 'Faculty updated successfully' });
   } catch (err: any) {
-<<<<<<< HEAD
-    console.error('Error updating faculty:', err);
-=======
     console.error({
       route: `PUT /api/faculty/${req.params.id}`,
       error: err?.message || err,
       stack: err?.stack,
       supabaseError: err?.supabaseError || null,
     });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     return res.status(500).json({ error: err?.message || 'Server error updating faculty member' });
   }
 });
@@ -196,16 +146,12 @@ router.delete('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: Authent
 
     return res.json({ message: 'Faculty deleted successfully' });
   } catch (err: any) {
-<<<<<<< HEAD
-    console.error('Error deleting faculty:', err);
-=======
     console.error({
       route: `DELETE /api/faculty/${req.params.id}`,
       error: err?.message || err,
       stack: err?.stack,
       supabaseError: err?.supabaseError || null,
     });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     return res.status(500).json({ error: err?.message || 'Server error deleting faculty member' });
   }
 });

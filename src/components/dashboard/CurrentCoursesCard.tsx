@@ -50,11 +50,7 @@ export const CurrentCoursesCard: React.FC<CurrentCoursesCardProps> = ({ courses 
                 </div>
                 <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] text-slate-500 mt-1">
                   <span className="flex items-center gap-1 truncate">
-<<<<<<< HEAD
-                    <User className="w-3 h-3 text-slate-400 shrink-0" /> {course.assignedFacultyName || 'Dept Faculty'}
-=======
                     <User className="w-3 h-3 text-slate-400 shrink-0" /> {course.assignedFacultyName || 'Not Assigned'}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                   </span>
                   <span className="flex items-center gap-1 font-bold text-amber-700 shrink-0">
                     <Award className="w-3 h-3 text-amber-600" /> {course.credits} Cr

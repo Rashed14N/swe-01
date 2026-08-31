@@ -72,11 +72,7 @@ export const CoursesPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="font-medium text-[#0F172A] dark:text-slate-200">
-<<<<<<< HEAD
-                      {course.assignedFacultyName || 'Department Faculty'}
-=======
                       {course.assignedFacultyName || 'Not Assigned'}
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

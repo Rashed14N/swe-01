@@ -1,41 +1,18 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { Shield, Search, Clock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { AuditLog } from '../../types';
-
-export const AdminActivityLogPage: React.FC = () => {
-  const { token } = useAuth();
-
-=======
 import { Shield, Search, RefreshCw } from 'lucide-react';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { AuditLog } from '../../types';
 
 export const AdminActivityLogPage: React.FC = () => {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchLogs = async () => {
-<<<<<<< HEAD
-    if (!token) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/admin/audit-logs', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAuditLogs(data.auditLogs || data.logs || []);
-      }
-=======
     setIsLoading(true);
     try {
       const data = await adminApiClient.getAuditLogs(100);
       setAuditLogs(data);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     } catch (e) {
       console.error(e);
     } finally {
@@ -45,11 +22,7 @@ export const AdminActivityLogPage: React.FC = () => {
 
   useEffect(() => {
     fetchLogs();
-<<<<<<< HEAD
-  }, [token]);
-=======
   }, []);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
   const filtered = auditLogs.filter(
     log =>
@@ -69,11 +42,6 @@ export const AdminActivityLogPage: React.FC = () => {
           </div>
           <h1 className="text-xl font-extrabold text-slate-900">System Activity Audit Trail</h1>
           <p className="text-xs text-slate-500 mt-1">
-<<<<<<< HEAD
-            Immutable log of all administrative operations, role assignments, exam schedule changes, and user creations.
-          </p>
-        </div>
-=======
             Immutable log of all administrative operations, role assignments, exam schedule changes, and user creations in Supabase.
           </p>
         </div>
@@ -85,7 +53,6 @@ export const AdminActivityLogPage: React.FC = () => {
         >
           <RefreshCw className="w-4 h-4" />
         </button>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       </div>
 
       {/* Search */}
@@ -103,11 +70,7 @@ export const AdminActivityLogPage: React.FC = () => {
       {/* Audit Logs Table */}
       <div className="bg-white rounded-xl border border-[#CBD8E8] shadow-md overflow-hidden">
         {isLoading ? (
-<<<<<<< HEAD
-          <div className="py-12 text-center text-xs text-slate-400">Loading audit log stream...</div>
-=======
           <div className="py-12 text-center text-xs text-slate-400">Loading audit log stream from Supabase...</div>
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">No audit logs match search criteria.</div>
         ) : (

@@ -1,25 +1,14 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { requireRole } from '../middleware.ts';
-import { BatchAnnouncement } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { BatchAnnouncement } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllAnnouncements,
   createAnnouncementInDB,
   deleteAnnouncementFromDB,
   fetchAllUsers,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 

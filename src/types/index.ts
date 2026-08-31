@@ -104,10 +104,7 @@ export type ExamType =
   | 'CLASS_TEST'
   | 'MIDTERM'
   | 'FINAL'
-<<<<<<< HEAD
-=======
   | 'SUPPLE'
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   | 'LAB_EXAM'
   | 'VIVA'
   | 'PRESENTATION'
@@ -194,17 +191,6 @@ export interface Resource {
 export interface Faculty {
   id: string;
   name: string;
-<<<<<<< HEAD
-  shortName?: string; // e.g., "TR", "IH", "NJ", "AH"
-  designation: string; // e.g. "Professor", "Associate Professor", "Lecturer"
-  department: string;
-  email: string;
-  phone?: string;
-  officeRoom: string;
-  photoUrl: string;
-  specialization?: string;
-  assignedCourses: string[]; // Course codes or titles
-=======
   shortName?: string; // e.g., "FA", "NSC", "RP", "AAC"
   designation: string; // e.g. "Professor & Head", "Assistant Professor", "Lecturer"
   department?: string;
@@ -214,7 +200,6 @@ export interface Faculty {
   photoUrl?: string;
   specialization?: string;
   assignedCourses?: string[];
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 }
 
 export interface NotificationItem {

@@ -1,18 +1,10 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { verifyAuthToken, AuthenticatedRequest } from '../auth.ts';
-=======
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchUserByIdOrStudentId,
   updateUserInDB,
   fetchAllResources,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 

@@ -38,11 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('swe_portal_admin_session');
       localStorage.removeItem('swe_portal_registered_users');
       localStorage.removeItem('swe_portal_demo_session');
-<<<<<<< HEAD
-=======
       localStorage.removeItem('swe_admin_token');
       localStorage.removeItem('auth_token');
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   }, []);
 
@@ -234,11 +231,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUser(res.user);
       setSession(res.session);
       setToken(res.token || res.session.access_token);
-<<<<<<< HEAD
-      if (typeof window !== 'undefined' && (res.user.studentId === '111111111' || res.token?.startsWith('demo_'))) {
-=======
       if (typeof window !== 'undefined' && (res.user.role === 'ADMIN' || res.user.studentId === '111111111' || res.token?.startsWith('demo_') || res.token?.startsWith('admin_'))) {
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
         localStorage.setItem('swe_portal_demo_session', JSON.stringify({
           user: res.user,
           session: res.session,

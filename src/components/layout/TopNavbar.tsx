@@ -84,12 +84,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
     if (path.includes('/exams')) return 'Upcoming Exams';
     if (path.includes('/announcements')) return 'Announcements';
     if (path.includes('/resources/questions')) return 'Question Bank';
-<<<<<<< HEAD
-    if (path.includes('/resources/notes')) return 'Lecture Notes';
-    if (path.includes('/resources/labs')) return 'Lab Files';
-=======
     if (path.includes('/faq')) return 'Frequently Asked Questions (FAQ)';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     if (path.includes('/notices')) return 'Department Notices';
     if (path.includes('/faculty')) return 'Faculty Directory';
     if (path.includes('/profile')) return 'Profile & Settings';
@@ -300,20 +295,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
                     <ShieldCheck className="w-4 h-4 text-amber-600" /> CR Dashboard
                   </button>
                 )}
-<<<<<<< HEAD
-                {user?.role === 'ADMIN' && (
-                  <button
-                    onClick={() => {
-                      navigate('/admin/dashboard');
-                      setIsProfileOpen(false);
-                    }}
-                    className="w-full px-4 py-2 flex items-center gap-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left text-rose-800 dark:text-rose-300 font-bold transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-rose-600" /> Admin Dashboard
-                  </button>
-                )}
-=======
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
               </div>
 
               <div className="py-1">

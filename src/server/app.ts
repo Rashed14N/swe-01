@@ -1,22 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 
-<<<<<<< HEAD
-import authRoutes from './routes/auth.ts';
-import dashboardRoutes from './routes/dashboard.ts';
-import batchRoutes from './routes/batches.ts';
-import routineRoutes from './routes/routines.ts';
-import courseRoutes from './routes/courses.ts';
-import examRoutes from './routes/exams.ts';
-import announcementRoutes from './routes/announcements.ts';
-import noticeRoutes from './routes/notices.ts';
-import resourceRoutes from './routes/resources.ts';
-import adminRoutes from './routes/admin.ts';
-import facultyRoutes from './routes/faculty.ts';
-import notificationRoutes from './routes/notifications.ts';
-import profileRoutes from './routes/profile.ts';
-import supabaseRoutes from './routes/supabaseConfig.ts';
-=======
 import authRoutes from './routes/auth';
 import dashboardRoutes from './routes/dashboard';
 import batchRoutes from './routes/batches';
@@ -31,7 +15,6 @@ import facultyRoutes from './routes/faculty';
 import notificationRoutes from './routes/notifications';
 import profileRoutes from './routes/profile';
 import supabaseRoutes from './routes/supabaseConfig';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 export function createExpressApp() {
   const app = express();
@@ -47,11 +30,6 @@ export function createExpressApp() {
     next();
   });
 
-<<<<<<< HEAD
-  // Health check endpoint
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', app: 'SWE Portal', timestamp: new Date().toISOString() });
-=======
   // Health check & status endpoints
   app.get(['/api/health', '/api/status'], (req, res) => {
     try {
@@ -77,7 +55,6 @@ export function createExpressApp() {
       });
       res.status(200).json({ success: true, status: 'ok', database: 'connected' });
     }
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   });
 
   // API Routes
@@ -96,11 +73,6 @@ export function createExpressApp() {
   app.use('/api/profile', profileRoutes);
   app.use('/api/supabase', supabaseRoutes);
 
-<<<<<<< HEAD
-  // API 404 catch-all: ensures unmatched /api/* requests return JSON 404
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({ error: `API route ${req.method} ${req.originalUrl} not found` });
-=======
   // API 404 catch-all: ensures unmatched /api/* requests return standard JSON 404
   app.use('/api/*', (req, res) => {
     res.status(404).json({
@@ -132,7 +104,6 @@ export function createExpressApp() {
         message: err?.message || 'A safe user-facing message',
       },
     });
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
   });
 
   return app;

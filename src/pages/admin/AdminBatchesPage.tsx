@@ -58,11 +58,7 @@ export const AdminBatchesPage: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-<<<<<<< HEAD
-        setBatches(data.batches || []);
-=======
         setBatches(data.batches || data.data || (Array.isArray(data) ? data : []));
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       }
     } catch (e) {
       console.error(e);

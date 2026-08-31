@@ -36,8 +36,6 @@ export const DEMO_STUDENT_USER: User = {
   updatedAt: new Date().toISOString(),
 };
 
-<<<<<<< HEAD
-=======
 export const DEFAULT_ADMIN_USER: User = {
   id: 'usr_swe_admin_central',
   studentId: 'admin',
@@ -55,7 +53,6 @@ export const DEFAULT_ADMIN_USER: User = {
   updatedAt: new Date().toISOString(),
 };
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 /**
  * Normalizes a Student ID by removing hyphens, spaces, dots, and underscores.
  * e.g., '252-134-022' -> '252134022', '252 134 022' -> '252134022'
@@ -247,8 +244,6 @@ class SupabaseAuthService {
 
     // Demo student account bypass for quick testing
     const normalizedInputId = normalizeStudentId(input);
-<<<<<<< HEAD
-=======
     const lowInput = input.toLowerCase();
 
     // Admin account login
@@ -326,7 +321,6 @@ class SupabaseAuthService {
       }
     }
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     if (
       (normalizedInputId === '111111111' || input.toLowerCase() === 'student@swe.demo' || input.toLowerCase() === 'demo.student@metrouni.edu.bd') &&
       (cleanPassword === 'password' || cleanPassword === '111111111' || cleanPassword === '123456')

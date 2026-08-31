@@ -1,13 +1,7 @@
 import { Router, Response } from 'express';
-<<<<<<< HEAD
-import { db } from '../db.ts';
-import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth.ts';
-import { Resource } from '../../types.ts';
-=======
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { Resource } from '../../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import {
   fetchAllResources,
   createResourceInDB,
@@ -15,11 +9,7 @@ import {
   deleteResourceFromDB,
   fetchAllUsers,
   updateUserInDB,
-<<<<<<< HEAD
-} from '../supabaseData.ts';
-=======
 } from '../supabaseData';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 const router = Router();
 
@@ -180,12 +170,9 @@ router.post(['/', '/upload'], verifyAuthToken, async (req: AuthenticatedRequest,
   }
 
   try {
-<<<<<<< HEAD
-=======
     const isAdmin = req.user.role === 'ADMIN';
     const initialStatus = isAdmin ? 'APPROVED' : 'PENDING';
 
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     const newResource: Resource = {
       id: `res-${Date.now()}`,
       title: String(title).trim(),
@@ -208,12 +195,8 @@ router.post(['/', '/upload'], verifyAuthToken, async (req: AuthenticatedRequest,
       uploaderStudentId: req.user.studentId,
       uploaderName: req.user.name,
       uploaderBatchName: req.user.batchName || 'SWE Department',
-<<<<<<< HEAD
-      status: 'PENDING',
-=======
       status: initialStatus,
       verifiedAt: isAdmin ? new Date().toISOString() : undefined,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       downloadCount: 0,
       createdAt: new Date().toISOString(),
     };

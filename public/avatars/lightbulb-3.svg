@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-lightbulb-3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF9C3" />
+      <stop offset="100%" stop-color="#FACC15" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-lightbulb-3)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Glowing Halo Rings -->
+      <circle cx="100" cy="90" r="46" fill="#FEF08A" opacity="0.4" />
+      <!-- Glass Bulb Sphere -->
+      <path d="M72 90 C72 65 128 65 128 90 C128 105 116 115 116 125 L84 125 C84 115 72 105 72 90 Z" fill="#FACC15" />
+      <!-- Tungsten Filament -->
+      <path d="M92 120 L92 98 L97 90 L103 90 L108 98 L108 120" stroke="#CA8A04" stroke-width="2.5" stroke-linecap="round" fill="none" />
+      <circle cx="100" cy="90" r="3" fill="#FFFFFF" />
+      <!-- Screw Base -->
+      <rect x="86" y="125" width="28" height="6" rx="2" fill="#94A3B8" />
+      <rect x="88" y="133" width="24" height="6" rx="2" fill="#64748B" />
+      <rect x="92" y="141" width="16" height="5" rx="2" fill="#475569" />
+      <!-- Light rays -->
+      <line x1="100" y1="35" x2="100" y2="45" stroke="#EAB308" stroke-width="3" stroke-linecap="round" />
+      <line x1="55" y1="55" x2="62" y2="62" stroke="#EAB308" stroke-width="3" stroke-linecap="round" />
+      <line x1="145" y1="55" x2="138" y2="62" stroke="#EAB308" stroke-width="3" stroke-linecap="round" />
+    
+  </g>
+</svg>

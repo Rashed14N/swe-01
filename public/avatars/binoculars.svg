@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-binoculars" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECFEFF" />
+      <stop offset="100%" stop-color="#A5F3FC" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-binoculars)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Modern Teal Explorer Binoculars -->
+      <rect x="62" y="65" width="30" height="65" rx="14" fill="#0891B2" />
+      <rect x="108" y="65" width="30" height="65" rx="14" fill="#0891B2" />
+      <!-- Grip Ribs -->
+      <line x1="66" y1="85" x2="88" y2="85" stroke="#155E75" stroke-width="3" />
+      <line x1="66" y1="95" x2="88" y2="95" stroke="#155E75" stroke-width="3" />
+      <line x1="112" y1="85" x2="134" y2="85" stroke="#155E75" stroke-width="3" />
+      <line x1="112" y1="95" x2="134" y2="95" stroke="#155E75" stroke-width="3" />
+      <!-- Bridge & Knob -->
+      <rect x="90" y="75" width="20" height="15" rx="4" fill="#334155" />
+      <circle cx="100" cy="82" r="5" fill="#F97316" />
+      <!-- Sapphire Lenses -->
+      <circle cx="77" cy="120" r="12" fill="#0284C7" />
+      <circle cx="77" cy="120" r="8" fill="#38BDF8" />
+      <circle cx="123" cy="120" r="12" fill="#0284C7" />
+      <circle cx="123" cy="120" r="8" fill="#38BDF8" />
+    
+  </g>
+</svg>

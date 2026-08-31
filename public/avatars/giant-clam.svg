@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-giant-clam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF4FF" />
+      <stop offset="100%" stop-color="#E879F9" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-giant-clam)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Bottom Shell -->
+      <path d="M50 135 C50 170 150 170 150 135 C150 115 50 115 50 135 Z" fill="#D946EF" />
+      <ellipse cx="100" cy="135" rx="45" ry="15" fill="#F0ABFC" />
+      <!-- Glowing Pearl -->
+      <circle cx="100" cy="125" r="18" fill="#FFFFFF" />
+      <ellipse cx="95" cy="120" rx="5" ry="3" fill="#FDF4FF" />
+      <circle cx="94" cy="118" r="2" fill="#E879F9" opacity="0.8" />
+      <!-- Top Shell Scallop -->
+      <path d="M55 125 C50 75 150 75 145 125 C130 110 70 110 55 125 Z" fill="#C026D3" />
+      <!-- Shell Ridges -->
+      <path d="M100 76 L100 115 M80 82 L88 118 M120 82 L112 118 M65 95 L78 120 M135 95 L122 120" stroke="#E879F9" stroke-width="2.5" stroke-linecap="round" />
+      <!-- Pearl sparkles -->
+      <path d="M100 100 L100 104 M98 102 L102 102" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+    
+  </g>
+</svg>

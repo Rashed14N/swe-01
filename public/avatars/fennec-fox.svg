@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-fennec-fox" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FDE68A" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-fennec-fox)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Huge Signature Ears -->
+      <polygon points="75,95 40,40 85,75" fill="#F59E0B" />
+      <polygon points="73,90 48,50 82,78" fill="#FDE68A" />
+      <polygon points="125,95 160,40 115,75" fill="#F59E0B" />
+      <polygon points="127,90 152,50 118,78" fill="#FDE68A" />
+      <!-- Petite Face -->
+      <circle cx="100" cy="105" r="26" fill="#F59E0B" />
+      <ellipse cx="100" cy="115" rx="18" ry="14" fill="#FFFBEB" />
+      <!-- Big Dark Eyes -->
+      <circle cx="88" cy="102" r="5" fill="#1E293B" />
+      <circle cx="86" cy="100" r="1.5" fill="#FFFFFF" />
+      <circle cx="112" cy="102" r="5" fill="#1E293B" />
+      <circle cx="110" cy="100" r="1.5" fill="#FFFFFF" />
+      <!-- Little Button Nose -->
+      <polygon points="98,114 102,114 100,117" fill="#0F172A" />
+      <!-- Body -->
+      <ellipse cx="100" cy="145" rx="26" ry="18" fill="#F59E0B" />
+      <path d="M120 140 C145 135 155 110 145 105" stroke="#D97706" stroke-width="8" stroke-linecap="round" fill="none" />
+    
+  </g>
+</svg>

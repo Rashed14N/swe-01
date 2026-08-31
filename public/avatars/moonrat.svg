@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-moonrat" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-moonrat)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- White fur body -->
+      <ellipse cx="100" cy="122" rx="42" ry="28" fill="#F1F5F9" />
+      <!-- Head with black eye mask -->
+      <path d="M125 105 L165 120 L125 132 Z" fill="#FFFFFF" />
+      <ellipse cx="140" cy="115" rx="10" ry="6" fill="#334155" />
+      <circle cx="140" cy="114" r="2.5" fill="#F43F5E" />
+      <!-- Pink Nose -->
+      <ellipse cx="165" cy="120" rx="3" ry="2.5" fill="#FDA4AF" />
+      <!-- Whiskers -->
+      <line x1="150" y1="122" x2="168" y2="130" stroke="#94A3B8" stroke-width="1.5" />
+      <line x1="150" y1="118" x2="168" y2="112" stroke="#94A3B8" stroke-width="1.5" />
+      <!-- Tail -->
+      <path d="M58 126 Q30 135 25 110" stroke="#FDA4AF" stroke-width="4" stroke-linecap="round" fill="none" />
+      <!-- Ears -->
+      <ellipse cx="122" cy="100" rx="8" ry="10" fill="#FDA4AF" />
+    
+  </g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-frog-10" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DCFCE7" />
+      <stop offset="100%" stop-color="#86EFAC" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-frog-10)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Frog Head & Body -->
+      <ellipse cx="100" cy="120" rx="38" ry="30" fill="#22C55E" />
+      <ellipse cx="100" cy="126" rx="24" ry="18" fill="#BBF7D0" />
+      <!-- Big Protruding Eyes with Orange Iris -->
+      <circle cx="78" cy="85" r="13" fill="#22C55E" />
+      <circle cx="78" cy="85" r="9" fill="#EA580C" />
+      <ellipse cx="78" cy="85" rx="3" ry="8" fill="#0F172A" />
+      <circle cx="76" cy="82" r="1.5" fill="#FFFFFF" />
+      <circle cx="122" cy="85" r="13" fill="#22C55E" />
+      <circle cx="122" cy="85" r="9" fill="#EA580C" />
+      <ellipse cx="122" cy="85" rx="3" ry="8" fill="#0F172A" />
+      <circle cx="120" cy="82" r="1.5" fill="#FFFFFF" />
+      <!-- Wide Froggy Smile -->
+      <path d="M78 114 Q100 128 122 114" stroke="#15803D" stroke-width="3" stroke-linecap="round" fill="none" />
+      <!-- Suction cup toe pads -->
+      <circle cx="60" cy="145" r="5" fill="#F97316" />
+      <circle cx="140" cy="145" r="5" fill="#F97316" />
+    
+  </g>
+</svg>

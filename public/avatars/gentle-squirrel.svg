@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-gentle-squirrel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FCD34D" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-gentle-squirrel)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Fluffy Tail -->
+      <path d="M60 145 C30 120 40 60 80 50 C95 45 105 60 90 75 C75 90 85 130 75 145 Z" fill="#EA580C" />
+      <path d="M65 135 C45 115 52 70 82 62 C90 58 95 68 85 80 C75 95 82 125 75 135 Z" fill="#FED7AA" opacity="0.6" />
+      <!-- Body -->
+      <ellipse cx="115" cy="125" rx="30" ry="32" fill="#EA580C" />
+      <ellipse cx="118" cy="128" rx="18" ry="22" fill="#FFEDD5" />
+      <!-- Head & Ears -->
+      <circle cx="125" cy="85" r="22" fill="#EA580C" />
+      <polygon points="112,65 120,50 126,67" fill="#C2410C" />
+      <polygon points="132,67 138,50 145,65" fill="#C2410C" />
+      <!-- Cheeks & Eyes -->
+      <circle cx="132" cy="82" r="3.5" fill="#1E293B" />
+      <circle cx="133" cy="81" r="1.2" fill="#FFFFFF" />
+      <ellipse cx="142" cy="88" rx="5" ry="4" fill="#FFEDD5" />
+      <circle cx="144" cy="87" r="2" fill="#9A3412" />
+      <!-- Acorn in paws -->
+      <ellipse cx="138" cy="120" rx="8" ry="10" fill="#9A3412" />
+      <path d="M130 114 Q138 108 146 114 Z" fill="#78350F" />
+    
+  </g>
+</svg>

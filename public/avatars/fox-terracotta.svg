@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-fox-terracotta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEDD5" />
+      <stop offset="100%" stop-color="#FB923C" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-fox-terracotta)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Terracotta Fox Body -->
+      <path d="M70 160 C70 110 130 110 130 160 Z" fill="#C2410C" />
+      <path d="M85 160 C85 125 115 125 115 160 Z" fill="#FFF7ED" />
+      <!-- Head -->
+      <polygon points="100,70 60,115 140,115" fill="#EA580C" />
+      <polygon points="100,95 75,115 125,115" fill="#FFF7ED" />
+      <!-- Ears -->
+      <polygon points="65,100 55,55 85,80" fill="#9A3412" />
+      <polygon points="70,95 62,65 82,82" fill="#FFF7ED" />
+      <polygon points="135,100 145,55 115,80" fill="#9A3412" />
+      <polygon points="130,95 138,65 118,82" fill="#FFF7ED" />
+      <!-- Eyes & Nose -->
+      <circle cx="85" cy="102" r="3" fill="#1E293B" />
+      <circle cx="115" cy="102" r="3" fill="#1E293B" />
+      <polygon points="96,115 104,115 100,119" fill="#0F172A" />
+      <!-- Bushy Tail -->
+      <path d="M125 140 C155 130 165 95 150 85 C140 105 130 120 125 140 Z" fill="#EA580C" />
+      <path d="M150 85 C146 95 140 98 135 105 C142 98 148 90 150 85 Z" fill="#FFF7ED" />
+    
+  </g>
+</svg>

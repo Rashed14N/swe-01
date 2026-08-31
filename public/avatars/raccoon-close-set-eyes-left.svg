@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-raccoon-close-set-eyes-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-raccoon-close-set-eyes-left)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Ears with white trim -->
+      <polygon points="68,90 60,55 88,75" fill="#334155" />
+      <polygon points="72,85 66,65 84,78" fill="#FFFFFF" />
+      <polygon points="132,90 140,55 112,75" fill="#334155" />
+      <polygon points="128,85 134,65 116,78" fill="#FFFFFF" />
+      <!-- Raccoon Head -->
+      <ellipse cx="100" cy="110" rx="38" ry="32" fill="#64748B" />
+      <polygon points="100,115 70,135 130,135" fill="#FFFFFF" />
+      <!-- Black Bandit Eye Mask -->
+      <path d="M68 102 C82 96 95 104 100 106 C105 104 118 96 132 102 C134 114 122 120 100 116 C78 120 66 114 68 102 Z" fill="#0F172A" />
+      <!-- Bright Inquisitive Eyes -->
+      <circle cx="85" cy="108" r="3.5" fill="#FFFFFF" />
+      <circle cx="84" cy="108" r="2" fill="#0F172A" />
+      <circle cx="115" cy="108" r="3.5" fill="#FFFFFF" />
+      <circle cx="114" cy="108" r="2" fill="#0F172A" />
+      <!-- Button Nose -->
+      <polygon points="97,126 103,126 100,130" fill="#0F172A" />
+    
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-binoculars-6" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-binoculars-6)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Left & Right Barrels -->
+      <rect x="62" y="70" width="28" height="58" rx="12" fill="#334155" />
+      <rect x="110" y="70" width="28" height="58" rx="12" fill="#334155" />
+      <!-- Eyepieces -->
+      <rect x="66" y="55" width="20" height="18" rx="5" fill="#475569" />
+      <rect x="114" y="55" width="20" height="18" rx="5" fill="#475569" />
+      <!-- Central Focus Wheel Bridge -->
+      <rect x="88" y="78" width="24" height="12" rx="4" fill="#64748B" />
+      <rect x="94" y="94" width="12" height="20" rx="3" fill="#F59E0B" />
+      <!-- Lenses with cyan reflection -->
+      <circle cx="76" cy="120" r="11" fill="#0284C7" />
+      <circle cx="76" cy="120" r="8" fill="#38BDF8" />
+      <path d="M72 116 Q76 112 80 116" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none" />
+      <circle cx="124" cy="120" r="11" fill="#0284C7" />
+      <circle cx="124" cy="120" r="8" fill="#38BDF8" />
+      <path d="M120 116 Q124 112 128 116" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none" />
+    
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "SWE Portal",
+  "description": "Software Engineering Department Academic Portal with batch isolation, routines, courses, exams, announcements, question bank, and contribution workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

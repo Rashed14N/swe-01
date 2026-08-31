@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-compact-chick" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="100%" stop-color="#FACC15" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-compact-chick)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Chick Round Body -->
+      <circle cx="100" cy="110" r="42" fill="#FACC15" />
+      <ellipse cx="100" cy="120" rx="30" ry="25" fill="#FEF08A" />
+      <!-- Wings -->
+      <ellipse cx="65" cy="115" rx="8" ry="16" fill="#EAB308" transform="rotate(-15 65 115)" />
+      <ellipse cx="135" cy="115" rx="8" ry="16" fill="#EAB308" transform="rotate(15 135 115)" />
+      <!-- Big Eyes -->
+      <circle cx="86" cy="98" r="6" fill="#0F172A" />
+      <circle cx="84" cy="96" r="2" fill="#FFFFFF" />
+      <circle cx="114" cy="98" r="6" fill="#0F172A" />
+      <circle cx="112" cy="96" r="2" fill="#FFFFFF" />
+      <!-- Cute Beak -->
+      <polygon points="94,106 106,106 100,116" fill="#EA580C" />
+      <!-- Rosy Cheeks -->
+      <circle cx="76" cy="108" r="5" fill="#F87171" opacity="0.6" />
+      <circle cx="124" cy="108" r="5" fill="#F87171" opacity="0.6" />
+      <!-- Little Tuft -->
+      <path d="M96 68 Q100 55 106 68" stroke="#CA8A04" stroke-width="3" stroke-linecap="round" fill="none" />
+      <!-- Little Feet -->
+      <polygon points="86,152 82,160 90,160" fill="#EA580C" />
+      <polygon points="114,152 110,160 118,160" fill="#EA580C" />
+    
+  </g>
+</svg>

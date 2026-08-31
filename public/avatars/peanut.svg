@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-peanut" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FDE68A" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-peanut)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Double lobe peanut shape -->
+      <path d="M100 55 C80 55 70 70 70 85 C70 98 82 105 82 110 C82 115 68 122 68 135 C68 152 82 165 100 165 C118 165 132 152 132 135 C132 122 118 115 118 110 C118 105 130 98 130 85 C130 70 120 55 100 55 Z" fill="#D97706" />
+      <!-- Texture Grid -->
+      <path d="M85 70 Q100 78 115 70 M80 85 Q100 95 120 85 M82 125 Q100 135 118 125 M80 145 Q100 155 120 145" stroke="#B45309" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7" />
+      <path d="M92 60 L92 160 M108 60 L108 160" stroke="#B45309" stroke-width="2" stroke-dasharray="3,4" fill="none" opacity="0.6" />
+      <!-- Cute Face -->
+      <circle cx="92" cy="85" r="3" fill="#451A03" />
+      <circle cx="108" cy="85" r="3" fill="#451A03" />
+      <path d="M96 93 Q100 97 104 93" stroke="#451A03" stroke-width="2" stroke-linecap="round" fill="none" />
+    
+  </g>
+</svg>

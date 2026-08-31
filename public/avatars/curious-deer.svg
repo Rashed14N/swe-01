@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-curious-deer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" />
+      <stop offset="100%" stop-color="#FDE68A" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-curious-deer)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Antlers -->
+      <path d="M85 75 L75 48 M78 58 L70 54 M82 52 L88 44" stroke="#78350F" stroke-width="3.5" stroke-linecap="round" />
+      <path d="M115 75 L125 48 M122 58 L130 54 M118 52 L112 44" stroke="#78350F" stroke-width="3.5" stroke-linecap="round" />
+      <!-- Head -->
+      <ellipse cx="100" cy="105" rx="24" ry="28" fill="#B45309" />
+      <ellipse cx="100" cy="120" rx="14" ry="14" fill="#FFFBEB" />
+      <!-- Big Soft Doe Eyes -->
+      <circle cx="86" cy="98" r="5" fill="#1E293B" />
+      <circle cx="84" cy="96" r="1.5" fill="#FFFFFF" />
+      <circle cx="114" cy="98" r="5" fill="#1E293B" />
+      <circle cx="112" cy="96" r="1.5" fill="#FFFFFF" />
+      <!-- Nose & Spots -->
+      <ellipse cx="100" cy="124" rx="4" ry="3" fill="#1E293B" />
+      <circle cx="100" cy="85" r="2" fill="#FFFBEB" />
+      <circle cx="95" cy="80" r="1.5" fill="#FFFBEB" />
+      <circle cx="105" cy="80" r="1.5" fill="#FFFBEB" />
+      <!-- Ears -->
+      <ellipse cx="70" cy="88" rx="14" ry="6" fill="#B45309" transform="rotate(-30 70 88)" />
+      <ellipse cx="130" cy="88" rx="14" ry="6" fill="#B45309" transform="rotate(30 130 88)" />
+    
+  </g>
+</svg>

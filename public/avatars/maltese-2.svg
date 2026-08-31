@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-maltese-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF2F8" />
+      <stop offset="100%" stop-color="#FCE7F3" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-maltese-2)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Pure White Cloud Body -->
+      <circle cx="100" cy="115" r="42" fill="#FFFFFF" />
+      <!-- Fluffy Hair Puffs around head -->
+      <circle cx="72" cy="95" r="16" fill="#F8FAFC" />
+      <circle cx="128" cy="95" r="16" fill="#F8FAFC" />
+      <circle cx="100" cy="75" r="18" fill="#F8FAFC" />
+      <!-- Red Ribbon Bow on top -->
+      <polygon points="92,62 108,62 100,70" fill="#EC4899" />
+      <polygon points="92,70 108,70 100,62" fill="#EC4899" />
+      <circle cx="100" cy="66" r="3" fill="#BE185D" />
+      <!-- Big Black Glossy Eyes -->
+      <circle cx="86" cy="100" r="5" fill="#0F172A" />
+      <circle cx="84" cy="98" r="1.5" fill="#FFFFFF" />
+      <circle cx="114" cy="100" r="5" fill="#0F172A" />
+      <circle cx="112" cy="98" r="1.5" fill="#FFFFFF" />
+      <!-- Shiny Nose & Tongue -->
+      <ellipse cx="100" cy="110" rx="4.5" ry="3.5" fill="#0F172A" />
+      <ellipse cx="100" cy="118" rx="3" ry="4" fill="#FB7185" />
+    
+  </g>
+</svg>

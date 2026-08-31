@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-garden-eel-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+    <linearGradient id="grad-pango" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  <!-- Background Disc -->
+  <rect width="200" height="200" rx="44" fill="url(#bg-garden-eel-2)" />
+  
+  <!-- Artwork Container -->
+  <g filter="url(#shadow)">
+    
+      <!-- Sand Bed -->
+      <ellipse cx="100" cy="165" rx="55" ry="12" fill="#FDE68A" />
+      <!-- Eel Emerging from Sand -->
+      <path d="M94 165 C94 130 115 110 105 75 C102 65 92 65 90 75 C88 95 90 140 86 165 Z" fill="#FFFFFF" />
+      <!-- Black Spots on Eel -->
+      <circle cx="98" cy="100" r="4" fill="#0F172A" />
+      <circle cx="96" cy="120" r="5" fill="#0F172A" />
+      <circle cx="92" cy="145" r="4.5" fill="#0F172A" />
+      <!-- Big Inquisitive Eel Eye -->
+      <circle cx="96" cy="72" r="4" fill="#0F172A" />
+      <circle cx="95" cy="71" r="1.5" fill="#FFFFFF" />
+      <polygon points="88,75 84,76 88,77" fill="#F59E0B" />
+    
+  </g>
+</svg>

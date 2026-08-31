@@ -29,7 +29,8 @@
     "pngjs": "^7.0.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.2",
+    "vite": "^6.2.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

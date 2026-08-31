@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { getServerSupabase } from './supabaseSync.ts';
-import { db } from './db.ts';
-=======
 import { getServerSupabase } from './supabaseSync';
 import { db } from './db';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 import type {
   Course,
   Batch,
@@ -17,11 +12,7 @@ import type {
   Resource,
   NotificationItem,
   AuditLog,
-<<<<<<< HEAD
-} from '../types.ts';
-=======
 } from '../types';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 // ==============================================================================
 // 1. COURSES
@@ -66,14 +57,14 @@ export async function fetchAllCourses(): Promise<Course[]> {
       if (!error && data && data.length > 0) {
         const courses = data.map(mapCourseFromSupabase);
         local.courses = courses;
-        db.save();
+        try { db.save(); } catch {}
         return courses;
       }
       if (error) {
-        console.error('[Supabase fetchAllCourses Error]:', error);
+        console.warn('[Supabase fetchAllCourses Note]: Falling back to local store.', error.message || error);
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllCourses Exception]:', e);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllCourses Exception]: Falling back to local store.', e?.message || e);
     }
   }
   return local.courses && local.courses.length > 0 ? local.courses : [];
@@ -231,12 +222,12 @@ export async function fetchAllBatches(): Promise<Batch[]> {
       if (!error && data && data.length > 0) {
         const batches = data.map(mapBatchFromSupabase);
         local.batches = batches;
-        db.save();
+        try { db.save(); } catch {}
         return batches;
       }
-      if (error) console.error('[Supabase fetchAllBatches Error]:', error);
-    } catch (e) {
-      console.error('[Supabase fetchAllBatches Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllBatches Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllBatches Exception]: Falling back to local store.', e?.message || e);
     }
   }
   return local.batches && local.batches.length > 0 ? local.batches : [];
@@ -374,11 +365,7 @@ export function mapFacultyToSupabase(faculty: Faculty): any {
     short_name: faculty.shortName || null,
     designation: faculty.designation,
     department: faculty.department || 'Software Engineering',
-<<<<<<< HEAD
-    email: faculty.email,
-=======
     email: faculty.email || null,
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     phone: faculty.phone || null,
     office_room: faculty.officeRoom || '',
     photo_url: faculty.photoUrl || null,
@@ -388,25 +375,6 @@ export function mapFacultyToSupabase(faculty: Faculty): any {
 }
 
 export async function fetchAllFaculty(): Promise<Faculty[]> {
-<<<<<<< HEAD
-  const local = db.getData();
-  const supabase = getServerSupabase();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('faculty').select('*').order('name', { ascending: true });
-      if (!error && data && data.length > 0) {
-        const faculty = data.map(mapFacultyFromSupabase);
-        local.faculty = faculty;
-        db.save();
-        return faculty;
-      }
-      if (error) console.error('[Supabase fetchAllFaculty Error]:', error);
-    } catch (e) {
-      console.error('[Supabase fetchAllFaculty Exception]:', e);
-    }
-  }
-  return local.faculty && local.faculty.length > 0 ? local.faculty : [];
-=======
   try {
     const local = db.getData();
     const supabase = getServerSupabase();
@@ -414,12 +382,7 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
       try {
         const { data, error } = await supabase.from('faculty').select('*').order('name', { ascending: true });
         if (error) {
-          console.error({
-            route: '/api/faculty',
-            error: error.message,
-            stack: error.details || error.hint,
-            supabaseError: error,
-          });
+          console.warn('[Supabase fetchAllFaculty Note]: Falling back to local store.', error.message);
         } else if (data && Array.isArray(data) && data.length > 0) {
           const faculty = data.map(mapFacultyFromSupabase);
           if (local) {
@@ -429,25 +392,14 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
           return faculty;
         }
       } catch (e: any) {
-        console.error({
-          route: '/api/faculty',
-          error: e?.message || e,
-          stack: e?.stack,
-          supabaseError: e,
-        });
+        console.warn('[Supabase fetchAllFaculty Exception]: Falling back to local store.', e?.message || e);
       }
     }
     return (local && Array.isArray(local.faculty) && local.faculty.length > 0) ? local.faculty : [];
   } catch (err: any) {
-    console.error({
-      route: '/api/faculty',
-      error: err?.message || err,
-      stack: err?.stack,
-      supabaseError: null,
-    });
+    console.warn('[Faculty fallback error]:', err?.message || err);
     return (db.getData()?.faculty) || [];
   }
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 }
 
 export async function createFacultyInDB(faculty: Faculty): Promise<Faculty> {
@@ -592,11 +544,12 @@ export async function fetchAllUsers(): Promise<User[]> {
       if (!error && data && data.length > 0) {
         const users = data.map(mapUserFromSupabase);
         local.users = users;
-        db.save();
+        try { db.save(); } catch {}
         return users;
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllUsers Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllUsers Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllUsers Exception]: Falling back to local store.', e?.message || e);
     }
   }
   return local.users && local.users.length > 0 ? local.users : [];
@@ -622,11 +575,11 @@ export async function fetchUserByIdOrStudentId(idOrStudentId: string): Promise<U
         if (!local.users) local.users = [];
         local.users = local.users.filter(u => u.id !== user.id);
         local.users.push(user);
-        db.save();
+        try { db.save(); } catch {}
         return user;
       }
-    } catch (e) {
-      console.error('[Supabase fetchUserByIdOrStudentId Exception]:', e);
+    } catch (e: any) {
+      console.warn('[Supabase fetchUserByIdOrStudentId Exception]:', e?.message || e);
     }
   }
   return null;
@@ -773,8 +726,9 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
         const slots = data.map(mapRoutineSlotFromSupabase);
         return slots;
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllRoutineSlots Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllRoutineSlots Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllRoutineSlots Exception]: Falling back to local store.', e?.message || e);
     }
   }
   const local = db.getData().routines || [];
@@ -928,8 +882,9 @@ export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
         const exams = data.map(mapExamFromSupabase);
         return exams;
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllExams Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllExams Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllExams Exception]: Falling back to local store.', e?.message || e);
     }
   }
   const exams = local.exams || [];
@@ -1077,8 +1032,9 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
       if (!error && data) {
         return data.map(mapAnnouncementFromSupabase);
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllAnnouncements Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllAnnouncements Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllAnnouncements Exception]: Falling back to local store.', e?.message || e);
     }
   }
   const local = db.getData().announcements || [];
@@ -1181,11 +1137,12 @@ export async function fetchAllNotices(): Promise<DepartmentNotice[]> {
       if (!error && data && data.length > 0) {
         const notices = data.map(mapNoticeFromSupabase);
         local.departmentNotices = notices;
-        db.save();
+        try { db.save(); } catch {}
         return notices;
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllNotices Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllNotices Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllNotices Exception]: Falling back to local store.', e?.message || e);
     }
   }
   return local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
@@ -1313,11 +1270,12 @@ export async function fetchAllResources(): Promise<Resource[]> {
       if (!error && data && data.length > 0) {
         const resources = data.map(mapResourceFromSupabase);
         local.resources = resources;
-        db.save();
+        try { db.save(); } catch {}
         return resources;
       }
-    } catch (e) {
-      console.error('[Supabase fetchAllResources Exception]:', e);
+      if (error) console.warn('[Supabase fetchAllResources Note]: Falling back to local store.', error.message || error);
+    } catch (e: any) {
+      console.warn('[Supabase fetchAllResources Exception]: Falling back to local store.', e?.message || e);
     }
   }
   return local.resources && local.resources.length > 0 ? local.resources : [];
@@ -1424,8 +1382,6 @@ export async function deleteResourceFromDB(id: string): Promise<boolean> {
   }
   return true;
 }
-<<<<<<< HEAD
-=======
 
 // ==============================================================================
 // 10. NOTIFICATIONS
@@ -1470,22 +1426,12 @@ export async function fetchNotificationsForUser(userId?: string): Promise<Notifi
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error({
-            route: '/api/notifications',
-            error: error.message,
-            stack: error.details || error.hint,
-            supabaseError: error,
-          });
+          console.warn('[Supabase fetchNotifications Note]: Falling back to local store.', error.message);
         } else if (data && Array.isArray(data)) {
           return data.map(mapNotificationFromSupabase);
         }
       } catch (e: any) {
-        console.error({
-          route: '/api/notifications',
-          error: e?.message || e,
-          stack: e?.stack,
-          supabaseError: e,
-        });
+        console.warn('[Supabase fetchNotifications Exception]: Falling back to local store.', e?.message || e);
       }
     }
 
@@ -1493,12 +1439,7 @@ export async function fetchNotificationsForUser(userId?: string): Promise<Notifi
     if (!userId) return allNotifs;
     return allNotifs.filter(n => n.userId === userId);
   } catch (err: any) {
-    console.error({
-      route: '/api/notifications',
-      error: err?.message || err,
-      stack: err?.stack,
-      supabaseError: null,
-    });
+    console.warn('[Notifications fallback error]:', err?.message || err);
     return [];
   }
 }
@@ -1570,4 +1511,3 @@ export async function markAllNotificationsAsReadInDB(userId: string): Promise<bo
   }
   return true;
 }
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)

@@ -4,15 +4,9 @@ import bcrypt from 'bcryptjs';
 import type {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
-<<<<<<< HEAD
-} from '../types.ts';
-
-import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync.ts';
-=======
 } from '../types';
 
 import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
 export interface DBData {
   users: User[];
@@ -33,9 +27,13 @@ export interface DBData {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory exists safely (guard against read-only serverless filesystems)
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch {
+  // Ignored in serverless/read-only environments
 }
 
 export function seedInitialData(): DBData {
@@ -46,13 +44,8 @@ export function seedInitialData(): DBData {
       admissionYear: 2019,
       currentSemester: 8,
       academicSession: '2019-2020',
-<<<<<<< HEAD
-      semesterMode: 'MANUAL',
-      status: 'GRADUATED',
-=======
       semesterMode: 'SEQUENCE',
       status: 'ACTIVE',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       crIds: [],
       createdAt: '2019-01-15T00:00:00Z',
     },
@@ -60,17 +53,10 @@ export function seedInitialData(): DBData {
       id: 'batch-6',
       name: 'SWE 6th Batch',
       admissionYear: 2020,
-<<<<<<< HEAD
-      currentSemester: 8,
-      academicSession: '2020-2021',
-      semesterMode: 'MANUAL',
-      status: 'GRADUATED',
-=======
       currentSemester: 7,
       academicSession: '2020-2021',
       semesterMode: 'SEQUENCE',
       status: 'ACTIVE',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       crIds: [],
       createdAt: '2020-01-15T00:00:00Z',
     },
@@ -78,17 +64,10 @@ export function seedInitialData(): DBData {
       id: 'batch-7',
       name: 'SWE 7th Batch',
       admissionYear: 2021,
-<<<<<<< HEAD
-      currentSemester: 8,
-      academicSession: '2021-2022',
-      semesterMode: 'MANUAL',
-      status: 'GRADUATED',
-=======
       currentSemester: 6,
       academicSession: '2021-2022',
       semesterMode: 'SEQUENCE',
       status: 'ACTIVE',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       crIds: [],
       createdAt: '2021-01-15T00:00:00Z',
     },
@@ -156,122 +135,6 @@ export function seedInitialData(): DBData {
   const faculty: Faculty[] = [
     {
       id: 'fac-1',
-<<<<<<< HEAD
-      name: 'Dr. Tanvir Rahman',
-      designation: 'Associate Professor',
-      department: 'Software Engineering',
-      email: 'tanvir.rahman@swe.edu',
-      phone: '+8801712001122',
-      officeRoom: '501-A Academic Building',
-      photoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=300',
-      specialization: 'Database Engineering & Distributed Systems',
-      assignedCourses: ['SWE 305 Database Systems', 'SWE 401 Distributed Databases'],
-    },
-    {
-      id: 'fac-2',
-      name: 'Mr. Imran Hossain',
-      designation: 'Assistant Professor',
-      department: 'Software Engineering',
-      email: 'imran.hossain@swe.edu',
-      phone: '+8801712003344',
-      officeRoom: '405 Academic Building',
-      photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300',
-      specialization: 'Software Architecture & Agile Methodologies',
-      assignedCourses: ['SWE 307 Software Engineering', 'SWE 313 Web Engineering'],
-    },
-    {
-      id: 'fac-3',
-      name: 'Ms. Nusrat Jahan',
-      designation: 'Senior Lecturer',
-      department: 'Software Engineering',
-      email: 'nusrat.jahan@swe.edu',
-      phone: '+8801712005566',
-      officeRoom: '408 Academic Building',
-      photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-      specialization: 'Computer Networks & Cybersecurity',
-      assignedCourses: ['SWE 311 Computer Networks', 'SWE 405 Information Security'],
-    },
-    {
-      id: 'fac-4',
-      name: 'Prof. Dr. Ahsan Habib',
-      designation: 'Professor & Dean',
-      department: 'Software Engineering',
-      email: 'ahsan.habib@swe.edu',
-      phone: '+8801712007788',
-      officeRoom: '601 Dean Office',
-      photoUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=300',
-      specialization: 'Algorithm Complexity & Graph Theory',
-      assignedCourses: ['SWE 309 Algorithms', 'SWE 101 Discrete Mathematics'],
-    },
-  ];
-
-  const courses: Course[] = [
-    {
-      id: 'course-305',
-      code: 'SWE 305',
-      title: 'Database Systems',
-      credits: 3,
-      type: 'THEORY',
-      semester: 5,
-      assignedFacultyId: 'fac-1',
-      assignedFacultyName: 'Dr. Tanvir Rahman',
-      batchIds: ['batch-9'],
-    },
-    {
-      id: 'course-307',
-      code: 'SWE 307',
-      title: 'Software Engineering',
-      credits: 3,
-      type: 'THEORY',
-      semester: 5,
-      assignedFacultyId: 'fac-2',
-      assignedFacultyName: 'Mr. Imran Hossain',
-      batchIds: ['batch-9'],
-    },
-    {
-      id: 'course-309',
-      code: 'SWE 309',
-      title: 'Algorithms',
-      credits: 3,
-      type: 'THEORY',
-      semester: 5,
-      assignedFacultyId: 'fac-4',
-      assignedFacultyName: 'Prof. Dr. Ahsan Habib',
-      batchIds: ['batch-9'],
-    },
-    {
-      id: 'course-311',
-      code: 'SWE 311',
-      title: 'Computer Networks',
-      credits: 3,
-      type: 'THEORY',
-      semester: 5,
-      assignedFacultyId: 'fac-3',
-      assignedFacultyName: 'Ms. Nusrat Jahan',
-      batchIds: ['batch-9'],
-    },
-    {
-      id: 'course-313',
-      code: 'SWE 313',
-      title: 'Web Engineering',
-      credits: 3,
-      type: 'THEORY',
-      semester: 5,
-      assignedFacultyId: 'fac-2',
-      assignedFacultyName: 'Mr. Imran Hossain',
-      batchIds: ['batch-9'],
-    },
-    {
-      id: 'course-401',
-      code: 'SWE 401',
-      title: 'Distributed Databases',
-      credits: 3,
-      type: 'THEORY',
-      semester: 7,
-      assignedFacultyId: 'fac-1',
-      assignedFacultyName: 'Dr. Tanvir Rahman',
-      batchIds: ['batch-8'],
-=======
       name: 'Fuad Ahmed',
       shortName: 'FA',
       designation: 'Professor & Head',
@@ -819,7 +682,6 @@ export function seedInitialData(): DBData {
       type: 'THEORY',
       semester: 8,
       batchIds: ['batch-5'],
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     },
   ];
 
@@ -831,17 +693,10 @@ export function seedInitialData(): DBData {
       day: 'SUNDAY',
       startTime: '10:00 AM',
       endTime: '11:30 AM',
-<<<<<<< HEAD
-      courseId: 'course-305',
-      courseCode: 'SWE 305',
-      courseTitle: 'Database Systems',
-      teacherName: 'Dr. Tanvir Rahman',
-=======
       courseId: 'course-swe-225',
       courseCode: 'SWE-225',
       courseTitle: 'Database Management System',
       teacherName: 'Nazia Sultana Chowdhury',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 502',
     },
     {
@@ -850,17 +705,10 @@ export function seedInitialData(): DBData {
       day: 'SUNDAY',
       startTime: '12:00 PM',
       endTime: '01:30 PM',
-<<<<<<< HEAD
-      courseId: 'course-307',
-      courseCode: 'SWE 307',
-      courseTitle: 'Software Engineering',
-      teacherName: 'Mr. Imran Hossain',
-=======
       courseId: 'course-swe-231',
       courseCode: 'SWE-231',
       courseTitle: 'Software Requirement Engineering',
       teacherName: 'Fuad Ahmed',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 401',
     },
     {
@@ -869,17 +717,10 @@ export function seedInitialData(): DBData {
       day: 'SUNDAY',
       startTime: '02:00 PM',
       endTime: '03:30 PM',
-<<<<<<< HEAD
-      courseId: 'course-311',
-      courseCode: 'SWE 311',
-      courseTitle: 'Computer Networks',
-      teacherName: 'Ms. Nusrat Jahan',
-=======
       courseId: 'course-swe-313',
       courseCode: 'SWE-313',
       courseTitle: 'Computer Networking',
       teacherName: 'Syeda Sanjida Rahman',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 503',
     },
     // Monday - Batch 9
@@ -889,17 +730,10 @@ export function seedInitialData(): DBData {
       day: 'MONDAY',
       startTime: '09:00 AM',
       endTime: '10:30 AM',
-<<<<<<< HEAD
-      courseId: 'course-309',
-      courseCode: 'SWE 309',
-      courseTitle: 'Algorithms',
-      teacherName: 'Prof. Dr. Ahsan Habib',
-=======
       courseId: 'course-swe-221',
       courseCode: 'SWE-221',
       courseTitle: 'Algorithm',
       teacherName: 'Lukman Hussain Nakib',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 402',
     },
     {
@@ -908,17 +742,10 @@ export function seedInitialData(): DBData {
       day: 'MONDAY',
       startTime: '11:00 AM',
       endTime: '12:30 PM',
-<<<<<<< HEAD
-      courseId: 'course-313',
-      courseCode: 'SWE 313',
-      courseTitle: 'Web Engineering',
-      teacherName: 'Mr. Imran Hossain',
-=======
       courseId: 'course-swe-382',
       courseCode: 'SWE-382',
       courseTitle: 'Project on Web App Development',
       teacherName: 'Wadia Iqbal Chowdhury',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 504',
     },
     // Tuesday - Batch 9
@@ -928,17 +755,10 @@ export function seedInitialData(): DBData {
       day: 'TUESDAY',
       startTime: '10:00 AM',
       endTime: '11:30 AM',
-<<<<<<< HEAD
-      courseId: 'course-305',
-      courseCode: 'SWE 305',
-      courseTitle: 'Database Systems',
-      teacherName: 'Dr. Tanvir Rahman',
-=======
       courseId: 'course-swe-225',
       courseCode: 'SWE-225',
       courseTitle: 'Database Management System',
       teacherName: 'Nazia Sultana Chowdhury',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Exten-1',
     },
     {
@@ -947,17 +767,10 @@ export function seedInitialData(): DBData {
       day: 'TUESDAY',
       startTime: '01:30 PM',
       endTime: '03:00 PM',
-<<<<<<< HEAD
-      courseId: 'course-307',
-      courseCode: 'SWE 307',
-      courseTitle: 'Software Engineering',
-      teacherName: 'Mr. Imran Hossain',
-=======
       courseId: 'course-swe-231',
       courseCode: 'SWE-231',
       courseTitle: 'Software Requirement Engineering',
       teacherName: 'Fuad Ahmed',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'XL 1',
     },
     // Wednesday - Batch 9
@@ -967,17 +780,10 @@ export function seedInitialData(): DBData {
       day: 'WEDNESDAY',
       startTime: '10:00 AM',
       endTime: '12:00 PM',
-<<<<<<< HEAD
-      courseId: 'course-311',
-      courseCode: 'SWE 311',
-      courseTitle: 'Computer Networks',
-      teacherName: 'Ms. Nusrat Jahan',
-=======
       courseId: 'course-swe-313',
       courseCode: 'SWE-313',
       courseTitle: 'Computer Networking',
       teacherName: 'Syeda Sanjida Rahman',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 504',
     },
     // Thursday - Batch 9
@@ -987,17 +793,10 @@ export function seedInitialData(): DBData {
       day: 'THURSDAY',
       startTime: '11:00 AM',
       endTime: '12:30 PM',
-<<<<<<< HEAD
-      courseId: 'course-309',
-      courseCode: 'SWE 309',
-      courseTitle: 'Algorithms',
-      teacherName: 'Prof. Dr. Ahsan Habib',
-=======
       courseId: 'course-swe-221',
       courseCode: 'SWE-221',
       courseTitle: 'Algorithm',
       teacherName: 'Lukman Hussain Nakib',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 305',
     },
     // Batch 8 Routine
@@ -1007,17 +806,10 @@ export function seedInitialData(): DBData {
       day: 'SUNDAY',
       startTime: '09:00 AM',
       endTime: '10:30 AM',
-<<<<<<< HEAD
-      courseId: 'course-401',
-      courseCode: 'SWE 401',
-      courseTitle: 'Distributed Databases',
-      teacherName: 'Dr. Tanvir Rahman',
-=======
       courseId: 'course-swe-457',
       courseCode: 'SWE-457',
       courseTitle: 'Neural Network and Deep Learning',
       teacherName: 'Nazia Sultana Chowdhury',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       room: 'Room 403',
     },
   ];
@@ -1027,19 +819,11 @@ export function seedInitialData(): DBData {
     {
       id: 'exam-1',
       batchId: 'batch-9',
-<<<<<<< HEAD
-      courseId: 'course-305',
-      courseCode: 'SWE 305',
-      courseTitle: 'Database Systems',
-      type: 'MIDTERM',
-      title: 'Database Systems Midterm Exam',
-=======
       courseId: 'course-swe-225',
       courseCode: 'SWE-225',
       courseTitle: 'Database Management System',
       type: 'MIDTERM',
       title: 'Database Management System Midterm Exam',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       date: '2026-08-15', // 3 days from now
       startTime: '10:00 AM',
       room: 'Exam Hall 3',
@@ -1051,19 +835,11 @@ export function seedInitialData(): DBData {
     {
       id: 'exam-2',
       batchId: 'batch-9',
-<<<<<<< HEAD
-      courseId: 'course-309',
-      courseCode: 'SWE 309',
-      courseTitle: 'Algorithms',
-      type: 'QUIZ',
-      title: 'Algorithms Quiz 2 (Dynamic Programming)',
-=======
       courseId: 'course-swe-221',
       courseCode: 'SWE-221',
       courseTitle: 'Algorithm',
       type: 'QUIZ',
       title: 'Algorithm Quiz 2 (Dynamic Programming)',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       date: '2026-08-20', // 8 days from now
       startTime: '11:30 AM',
       room: 'Room 402',
@@ -1075,15 +851,9 @@ export function seedInitialData(): DBData {
     {
       id: 'exam-3',
       batchId: 'batch-9',
-<<<<<<< HEAD
-      courseId: 'course-307',
-      courseCode: 'SWE 307',
-      courseTitle: 'Software Engineering',
-=======
       courseId: 'course-swe-231',
       courseCode: 'SWE-231',
       courseTitle: 'Software Requirement Engineering',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       type: 'PRESENTATION',
       title: 'SRS Document Project Presentation',
       date: '2026-09-02', // 21 days from now
@@ -1097,19 +867,11 @@ export function seedInitialData(): DBData {
     {
       id: 'exam-4',
       batchId: 'batch-8',
-<<<<<<< HEAD
-      courseId: 'course-401',
-      courseCode: 'SWE 401',
-      courseTitle: 'Distributed Databases',
-      type: 'MIDTERM',
-      title: 'Distributed DB Midterm Assessment',
-=======
       courseId: 'course-swe-457',
       courseCode: 'SWE-457',
       courseTitle: 'Neural Network and Deep Learning',
       type: 'MIDTERM',
       title: 'Neural Network & Deep Learning Midterm Assessment',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       date: '2026-08-18',
       startTime: '10:00 AM',
       room: 'Exam Hall 1',
@@ -1124,11 +886,7 @@ export function seedInitialData(): DBData {
       id: 'ann-1',
       batchId: 'batch-9',
       title: 'Database Assignment Submission Deadline Extended',
-<<<<<<< HEAD
-      description: 'Dr. Tanvir Rahman has extended the Database ER-Diagram assignment submission till Sunday 18th August. Submit via portal or offline hardcopy.',
-=======
       description: 'Nazia Sultana Chowdhury has extended the Database ER-Diagram assignment submission till Sunday 18th August. Submit via portal or offline hardcopy.',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       publishDate: '2026-08-10',
       expiryDate: '2026-08-25',
       priority: 'IMPORTANT',
@@ -1201,21 +959,6 @@ export function seedInitialData(): DBData {
   const resources: Resource[] = [
     {
       id: 'res-1',
-<<<<<<< HEAD
-      title: 'Database Systems Final Exam Question Paper 2025',
-      type: 'QUESTION',
-      courseId: 'course-305',
-      courseCode: 'SWE 305',
-      courseTitle: 'Database Systems',
-      semester: 5,
-      academicYear: 2025,
-      examType: 'FINAL',
-      facultyName: 'Dr. Tanvir Rahman',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Official Spring 2025 Final Examination question paper with answer hints for SQL & Normalization.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'SWE_305_Final_Exam_2025.pdf',
-=======
       title: 'Database Management System Final Exam Question Paper 2025',
       type: 'QUESTION',
       courseId: 'course-swe-225',
@@ -1229,7 +972,6 @@ export function seedInitialData(): DBData {
       description: 'Official Spring 2025 Final Examination question paper with answer hints for SQL & Normalization.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'SWE_225_Final_Exam_2025.pdf',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '1.2 MB',
       fileType: 'application/pdf',
       uploaderId: 'user-student-1',
@@ -1243,21 +985,6 @@ export function seedInitialData(): DBData {
     },
     {
       id: 'res-5',
-<<<<<<< HEAD
-      title: 'Software Engineering Midterm Question Paper 2025',
-      type: 'QUESTION',
-      courseId: 'course-307',
-      courseCode: 'SWE 307',
-      courseTitle: 'Software Engineering',
-      semester: 5,
-      academicYear: 2025,
-      examType: 'MIDTERM',
-      facultyName: 'Mr. Imran Hossain',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Midterm paper covering Software Development Life Cycle (SDLC), Agile Manifesto, and Use Case Diagrams.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'SWE_307_Midterm_2025.pdf',
-=======
       title: 'Software Requirement Engineering Midterm Question Paper 2025',
       type: 'QUESTION',
       courseId: 'course-swe-231',
@@ -1271,7 +998,6 @@ export function seedInitialData(): DBData {
       description: 'Midterm paper covering Software Development Life Cycle (SDLC), Agile Manifesto, and Use Case Diagrams.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'SWE_231_Midterm_2025.pdf',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '1.1 MB',
       fileType: 'application/pdf',
       uploaderId: 'user-cr-1',
@@ -1285,21 +1011,6 @@ export function seedInitialData(): DBData {
     },
     {
       id: 'res-6',
-<<<<<<< HEAD
-      title: 'Computer Networks Quiz 1 Question Paper 2026',
-      type: 'QUESTION',
-      courseId: 'course-311',
-      courseCode: 'SWE 311',
-      courseTitle: 'Computer Networks',
-      semester: 5,
-      academicYear: 2026,
-      examType: 'QUIZ',
-      facultyName: 'Ms. Nusrat Jahan',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Quiz paper covering OSI Model layers, TCP/IP Suite, and IP Subnetting calculations.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'SWE_311_Quiz1_2026.pdf',
-=======
       title: 'Computer Networking Quiz 1 Question Paper 2026',
       type: 'QUESTION',
       courseId: 'course-swe-313',
@@ -1313,7 +1024,6 @@ export function seedInitialData(): DBData {
       description: 'Quiz paper covering OSI Model layers, TCP/IP Suite, and IP Subnetting calculations.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'SWE_313_Quiz1_2026.pdf',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '820 KB',
       fileType: 'application/pdf',
       uploaderId: 'user-student-2',
@@ -1327,20 +1037,6 @@ export function seedInitialData(): DBData {
     },
     {
       id: 'res-2',
-<<<<<<< HEAD
-      title: 'Complete Software Architecture Lecture Notes (Ch 1-8)',
-      type: 'NOTE',
-      courseId: 'course-307',
-      courseCode: 'SWE 307',
-      courseTitle: 'Software Engineering',
-      semester: 5,
-      academicYear: 2026,
-      facultyName: 'Mr. Imran Hossain',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Comprehensive handwritten and digitized lecture notes covering Agile, Scrum, Design Patterns, and SRS.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'SWE_307_Software_Engineering_Notes.pdf',
-=======
       title: 'Complete Software Verification & Testing Lecture Notes (Ch 1-8)',
       type: 'NOTE',
       courseId: 'course-swe-333',
@@ -1353,7 +1049,6 @@ export function seedInitialData(): DBData {
       description: 'Comprehensive handwritten and digitized lecture notes covering Agile, Scrum, Design Patterns, and SRS.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'SWE_333_Software_Verification_Notes.pdf',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '3.4 MB',
       fileType: 'application/pdf',
       uploaderId: 'user-student-2',
@@ -1369,19 +1064,6 @@ export function seedInitialData(): DBData {
       id: 'res-3',
       title: 'Cisco Packet Tracer Lab Experiments & Topology Files',
       type: 'LAB',
-<<<<<<< HEAD
-      courseId: 'course-311',
-      courseCode: 'SWE 311',
-      courseTitle: 'Computer Networks',
-      semester: 5,
-      academicYear: 2026,
-      labCategory: 'SOURCE_CODE',
-      facultyName: 'Ms. Nusrat Jahan',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Subnetting, VLAN configuration, RIP/OSPF routing topologies for Packet Tracer.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'Networks_Lab_Pack_SWE311.zip',
-=======
       courseId: 'course-swe-314',
       courseCode: 'SWE-314',
       courseTitle: 'Computer Networking Lab',
@@ -1393,7 +1075,6 @@ export function seedInitialData(): DBData {
       description: 'Subnetting, VLAN configuration, RIP/OSPF routing topologies for Packet Tracer.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'Networks_Lab_Pack_SWE314.zip',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '8.1 MB',
       fileType: 'application/zip',
       uploaderId: 'user-student-1',
@@ -1407,21 +1088,6 @@ export function seedInitialData(): DBData {
     },
     {
       id: 'res-4',
-<<<<<<< HEAD
-      title: 'Algorithms Midterm Exam Question 2024 (Spring)',
-      type: 'QUESTION',
-      courseId: 'course-309',
-      courseCode: 'SWE 309',
-      courseTitle: 'Algorithms',
-      semester: 5,
-      academicYear: 2024,
-      examType: 'MIDTERM',
-      facultyName: 'Prof. Dr. Ahsan Habib',
-      targetBatch: 'SWE 9th Batch',
-      description: 'Midterm paper covering Recurrence relations, Divide & Conquer, MergeSort, QuickSort proofs.',
-      fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      fileName: 'SWE_309_Midterm_2024.pdf',
-=======
       title: 'Algorithm Midterm Exam Question 2024 (Spring)',
       type: 'QUESTION',
       courseId: 'course-swe-221',
@@ -1435,7 +1101,6 @@ export function seedInitialData(): DBData {
       description: 'Midterm paper covering Recurrence relations, Divide & Conquer, MergeSort, QuickSort proofs.',
       fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileName: 'SWE_221_Midterm_2024.pdf',
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
       fileSize: '950 KB',
       fileType: 'application/pdf',
       uploaderId: 'user-student-1',
@@ -1579,11 +1244,6 @@ class JsonDB {
       return true;
     });
 
-<<<<<<< HEAD
-    // Clean up passwords for removed users
-    delete this.data.passwords['user-admin-1'];
-    delete this.data.passwords['user-admin-101'];
-=======
     // Ensure Official Central Admin user exists
     const adminUser: User = {
       id: 'usr_swe_admin_central',
@@ -1609,7 +1269,6 @@ class JsonDB {
       this.data.users.push(adminUser);
     }
     this.data.passwords[adminUser.id] = bcrypt.hashSync('admin123', 10);
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
 
     this.save();
 
@@ -1621,18 +1280,12 @@ class JsonDB {
 
   public save() {
     try {
-<<<<<<< HEAD
-      fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to save DB_FILE:', err);
-=======
       if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
         return;
       }
       fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch {
       // In read-only or serverless environments, file persistence is bypassed as Supabase is the single source of truth
->>>>>>> ae955ef (Update question bank, exam types and added FAQ)
     }
   }
 

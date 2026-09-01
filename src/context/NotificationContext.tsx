@@ -50,10 +50,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [token, user]);
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000); // poll every 15s
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
+    // Disabled background polling as notifications are turned off
+    setNotifications([]);
+    setUnreadCount(0);
+  }, []);
 
   const addToast = (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => {
     const id = `toast-${Date.now()}-${Math.random()}`;

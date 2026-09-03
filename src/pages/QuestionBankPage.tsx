@@ -16,6 +16,7 @@ import { QuestionPaperCard } from '../components/common/QuestionPaperCard';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 import { UploadQuestionModal } from '../components/resources/UploadQuestionModal';
+import { getInstantDownloadUrl } from '../lib/driveUtils';
 
 export const QuestionBankPage: React.FC = () => {
   const { token, currentUser, user } = useAuth();
@@ -457,10 +458,12 @@ export const QuestionBankPage: React.FC = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDownload(q.id);
-                          if (q.fileUrl) window.open(q.fileUrl, '_blank');
+                          if (q.fileUrl) {
+                            window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
+                          }
                         }}
                         className="p-2 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
-                        title="Download PDF"
+                        title="Instant Download PDF"
                       >
                         <Download className="w-4 h-4" />
                       </button>

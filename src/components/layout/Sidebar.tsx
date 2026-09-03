@@ -144,6 +144,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Bell className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Dept Notices</span>}
                 </NavLink>
+                <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
+                  <Megaphone className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  {!isCollapsed && <span>Announcements</span>}
+                </NavLink>
                 <NavLink to="/admin/activity" className={navLinkClass} onClick={onCloseMobile}>
                   <History className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Audit Trail</span>}

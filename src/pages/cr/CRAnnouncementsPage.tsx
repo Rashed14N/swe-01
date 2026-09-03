@@ -72,7 +72,11 @@ export const CRAnnouncementsPage: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          batchId: user?.batchId || 'batch-9',
+          sendNotification: false,
+        }),
       });
 
       if (res.ok) {

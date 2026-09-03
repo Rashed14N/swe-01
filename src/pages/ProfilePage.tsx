@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   User as UserIcon, Upload, CheckCircle2, Clock, XCircle, FileText, 
   Award, ShieldCheck, Mail, Phone, Hash, GraduationCap, Save, 
-  Sparkles, Edit3, Layers, BookOpen, Check
+  Sparkles, Edit3, Layers, BookOpen, Check, Link as LinkIcon, ExternalLink, Copy, Globe
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Resource, ResourceType } from '../types';
 import { getUserAvatarUrl } from '../data/avatars';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
+import { parseGoogleDriveLink } from '../lib/driveUtils';
 
 export const ProfilePage: React.FC = () => {
   const { user, token, updateUserInContext } = useAuth();
@@ -48,7 +49,7 @@ export const ProfilePage: React.FC = () => {
   const [facultyName, setFacultyName] = useState('');
   const [semester, setSemester] = useState(user?.currentSemester || 5);
   const [academicYear, setAcademicYear] = useState(2026);
-  const [examType, setExamType] = useState('FINAL');
+  const [examType, setExamType] = useState<'QUIZ' | 'MIDTERM' | 'FINAL' | 'SUPPLE' | 'CLASS_TEST'>('FINAL');
   const [description, setDescription] = useState('');
   const [fileUrl, setFileUrl] = useState('');
 
@@ -119,8 +120,16 @@ export const ProfilePage: React.FC = () => {
       return;
     }
 
+    const finalDownloadUrl = fileUrl.trim();
+    if (!finalDownloadUrl) {
+      addToast('error', 'Please provide a download link.');
+      return;
+    }
+
     setIsUploading(true);
     try {
+      const isDrive = finalDownloadUrl.includes('drive.google.com') || finalDownloadUrl.includes('docs.google.com');
+
       const res = await fetch('/api/resources/upload', {
         method: 'POST',
         headers: {
@@ -137,9 +146,9 @@ export const ProfilePage: React.FC = () => {
           academicYear: Number(academicYear),
           examType,
           description: description.trim() || undefined,
-          fileUrl: fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          fileName: `${courseCode.replace(/\s+/g, '_')}_${examType}.pdf`,
-          fileSize: '1.6 MB',
+          fileUrl: finalDownloadUrl,
+          fileName: `${courseCode.replace(/\s+/g, '_')}_${examType}_${academicYear}.pdf`,
+          fileSize: isDrive ? 'Google Drive' : '1.6 MB',
         }),
       });
 
@@ -532,7 +541,7 @@ export const ProfilePage: React.FC = () => {
                 </label>
                 <select
                   value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
+                  onChange={(e) => setExamType(e.target.value as 'QUIZ' | 'MIDTERM' | 'FINAL' | 'SUPPLE' | 'CLASS_TEST')}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
                 >
                   <option value="QUIZ">Quiz Question</option>
@@ -577,19 +586,24 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
 
+            {/* Download Link Input */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                File URL / Document Link
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#0A2147] dark:text-white mb-1.5">
+                Download Link *
               </label>
-              <input
-                type="url"
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                placeholder="https://drive.google.com/... or direct PDF link"
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-semibold"
-              />
-              <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">
-                Leave blank to attach standard PDF sample document.
+              <div className="relative">
+                <input
+                  type="url"
+                  required
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  placeholder="Paste direct download link or Google Drive link"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                />
+                <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">
+                Paste your instant download link directly.
               </span>
             </div>
 

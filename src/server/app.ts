@@ -19,8 +19,21 @@ import supabaseRoutes from './routes/supabaseConfig';
 export function createExpressApp() {
   const app = express();
 
+  // Disable ETag to prevent HTTP 304 caching issues on dynamic administrative & academic data
+  app.set('etag', false);
+
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
+
+  // Ensure fresh responses for all API endpoints without browser 304 caching
+  app.use('/api', (req, res, next) => {
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    });
+    next();
+  });
 
   // Log API requests
   app.use((req, res, next) => {

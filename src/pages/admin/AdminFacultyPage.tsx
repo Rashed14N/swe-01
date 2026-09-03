@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Plus, Mail, Phone, Search, Edit2, Trash2, User, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
-import type { Faculty } from '../../types';
+import { sortFacultyByHierarchy, type Faculty } from '../../types';
 
 export const AdminFacultyPage: React.FC = () => {
   const { addToast } = useNotifications();
@@ -28,7 +28,7 @@ export const AdminFacultyPage: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await adminApiClient.getFaculty();
-      setFaculty(data);
+      setFaculty(sortFacultyByHierarchy(data));
     } catch (e: any) {
       console.error(e);
       addToast('error', e.message || 'Failed to load faculty roster');
@@ -268,13 +268,14 @@ export const AdminFacultyPage: React.FC = () => {
                     onChange={e => setForm({ ...form, designation: e.target.value })}
                     className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900 font-medium"
                   >
-                    <option value="Professor & Head">Professor & Head</option>
+                    <option value="Professor & Head">Professor & Head (Department Head)</option>
                     <option value="Professor">Professor</option>
                     <option value="Associate Professor">Associate Professor</option>
                     <option value="Assistant Professor">Assistant Professor</option>
+                    <option value="Senior Lecturer">Senior Lecturer</option>
+                    <option value="Adjunct Faculty">Adjunct Faculty</option>
                     <option value="Lecturer">Lecturer</option>
                     <option value="Lecturer (Study Leave)">Lecturer (Study Leave)</option>
-                    <option value="Adjunct Faculty">Adjunct Faculty</option>
                   </select>
                 </div>
                 <div>

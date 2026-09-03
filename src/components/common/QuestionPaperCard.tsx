@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FileText, Users, Calendar, User, Download, ChevronDown, Sparkles } from 'lucide-react';
+import { parseGoogleDriveLink } from '../../lib/driveUtils';
 
 export interface QuestionPaperCardProps {
   title: string;
@@ -45,6 +46,8 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
   const isControlled = controlledExpanded !== undefined;
   const expanded = isControlled ? controlledExpanded : internalExpanded;
 
+  const parsedDrive = parseGoogleDriveLink(downloadLink);
+
   const handleCardClick四周 = () => {
     if (isControlled && onToggle) {
       onToggle();
@@ -58,8 +61,9 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
     if (onDownload) {
       onDownload();
     }
-    if (downloadLink) {
-      window.open(downloadLink, '_blank', 'noopener,noreferrer');
+    const targetUrl = parsedDrive.directDownloadUrl || downloadLink;
+    if (targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
     }
   };
 

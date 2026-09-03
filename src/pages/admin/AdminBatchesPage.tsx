@@ -148,9 +148,14 @@ export const AdminBatchesPage: React.FC = () => {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        const createdBatch = data.batch || data.data;
         addToast('success', `Batch "${addForm.name}" created successfully!`);
         setIsAddModalOpen(false);
-        fetchBatches();
+        if (createdBatch) {
+          setBatches(prev => [createdBatch, ...prev.filter(b => b.id !== createdBatch.id)]);
+        }
+        await fetchBatches();
       } else {
         const err = await res.json();
         addToast('error', err.error || 'Failed to create batch');
@@ -186,9 +191,14 @@ export const AdminBatchesPage: React.FC = () => {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        const updatedBatch = data.batch || data.data;
         addToast('success', `Batch "${editingBatch.name}" updated!`);
         setEditingBatch(null);
-        fetchBatches();
+        if (updatedBatch) {
+          setBatches(prev => prev.map(b => b.id === updatedBatch.id ? { ...b, ...updatedBatch } : b));
+        }
+        await fetchBatches();
       } else {
         const err = await res.json();
         addToast('error', err.error || 'Failed to update batch');

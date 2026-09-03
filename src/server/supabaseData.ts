@@ -1,5 +1,8 @@
 import { getServerSupabase } from './supabaseSync';
 import { db } from './db';
+import {
+  sortFacultyByHierarchy,
+} from '../types';
 import type {
   Course,
   Batch,
@@ -184,30 +187,29 @@ export async function deleteCourseFromDB(id: string): Promise<boolean> {
 // ==============================================================================
 
 export function mapBatchFromSupabase(row: any): Batch {
+  const local = db.getData().batches?.find(b => b.id === row.id);
   return {
     id: row.id,
     name: row.name || '',
     admissionYear: Number(row.admission_year || 2023),
     currentSemester: Number(row.current_semester || 1),
     academicSession: row.academic_session || '',
-    semesterMode: row.semester_mode || 'SEQUENCE',
-    status: row.status || 'ACTIVE',
-    lastProgressedAt: row.last_progressed_at || undefined,
+    semesterMode: (local && local.semesterMode) || row.semester_mode || 'SEQUENCE',
+    status: (local && local.status) || row.status || 'ACTIVE',
+    lastProgressedAt: (local && local.lastProgressedAt) || row.last_progressed_at || undefined,
     crIds: Array.isArray(row.cr_ids) ? row.cr_ids : [],
     createdAt: row.created_at || new Date().toISOString(),
   };
 }
 
 export function mapBatchToSupabase(batch: Batch): any {
+  // Only send columns that physically exist in the Supabase 'batches' table schema
   return {
     id: batch.id,
     name: batch.name,
     admission_year: batch.admissionYear,
     current_semester: batch.currentSemester,
     academic_session: batch.academicSession,
-    semester_mode: batch.semesterMode || 'SEQUENCE',
-    status: batch.status || 'ACTIVE',
-    last_progressed_at: batch.lastProgressedAt || null,
     cr_ids: batch.crIds || [],
     created_at: batch.createdAt || new Date().toISOString(),
   };
@@ -384,7 +386,7 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
         if (error) {
           console.warn('[Supabase fetchAllFaculty Note]: Falling back to local store.', error.message);
         } else if (data && Array.isArray(data) && data.length > 0) {
-          const faculty = data.map(mapFacultyFromSupabase);
+          const faculty = sortFacultyByHierarchy(data.map(mapFacultyFromSupabase));
           if (local) {
             local.faculty = faculty;
             try { db.save(); } catch {}
@@ -395,10 +397,11 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
         console.warn('[Supabase fetchAllFaculty Exception]: Falling back to local store.', e?.message || e);
       }
     }
-    return (local && Array.isArray(local.faculty) && local.faculty.length > 0) ? local.faculty : [];
+    const fallback = (local && Array.isArray(local.faculty) && local.faculty.length > 0) ? local.faculty : [];
+    return sortFacultyByHierarchy(fallback);
   } catch (err: any) {
     console.warn('[Faculty fallback error]:', err?.message || err);
-    return (db.getData()?.faculty) || [];
+    return sortFacultyByHierarchy((db.getData()?.faculty) || []);
   }
 }
 
@@ -1027,7 +1030,9 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
   if (supabase) {
     try {
       let query = supabase.from('announcements').select('*').order('created_at', { ascending: false });
-      if (batchId) query = query.eq('batch_id', batchId);
+      if (batchId && batchId !== 'ALL') {
+        query = query.or(`batch_id.eq.${batchId},batch_id.eq.ALL`);
+      }
       const { data, error } = await query;
       if (!error && data) {
         return data.map(mapAnnouncementFromSupabase);
@@ -1038,7 +1043,9 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
     }
   }
   const local = db.getData().announcements || [];
-  return batchId ? local.filter(a => a.batchId === batchId) : local;
+  return (batchId && batchId !== 'ALL')
+    ? local.filter(a => a.batchId === batchId || a.batchId === 'ALL' || !a.batchId)
+    : local;
 }
 
 export async function createAnnouncementInDB(ann: BatchAnnouncement): Promise<BatchAnnouncement> {

@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
-  Upload,
-  FileText,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
   Sparkles,
+  Link as LinkIcon,
+  Globe,
+  FileText,
+  Upload,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -36,21 +35,11 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
   const [facultyName, setFacultyName] = useState('');
   const [targetBatch, setTargetBatch] = useState(user?.batchName || 'SWE 9th Batch');
   const [description, setDescription] = useState('');
+  
   const [fileUrl, setFileUrl] = useState('');
-  const [fileName, setFileName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file不易 = e.target.files?.[0];
-    if (file不易) {
-      setFileName(file不易.name);
-      // Create local object URL for preview
-      const preview = URL.createObjectURL(file不易);
-      setFileUrl(preview);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +49,17 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
       return;
     }
 
+    const finalDownloadUrl = fileUrl.trim();
+    if (!finalDownloadUrl) {
+      addToast('error', 'Please enter a direct download link.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const generatedFileName = `${courseCode.replace(/\s+/g, '_')}_${examType}_${academicYear}.pdf`;
+      const isDrive = finalDownloadUrl.includes('drive.google.com') || finalDownloadUrl.includes('docs.google.com');
+
       const res = await fetch('/api/resources/upload', {
         method: 'POST',
         headers: {
@@ -79,9 +77,9 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
           facultyName: facultyName.trim() || undefined,
           targetBatch: targetBatch.trim() || 'SWE Department',
           description: description.trim() || undefined,
-          fileUrl: fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          fileName: fileName || `${title.replace(/\s+/g, '_')}.pdf`,
-          fileSize: '1.8 MB',
+          fileUrl: finalDownloadUrl,
+          fileName: generatedFileName,
+          fileSize: isDrive ? 'Google Drive' : '1.8 MB',
           fileType: 'application/pdf',
         }),
       });
@@ -98,7 +96,6 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
         setTitle('');
         setDescription('');
         setFileUrl('');
-        setFileName('');
         onClose();
         if (onSuccess) onSuccess();
       } else {
@@ -280,32 +277,31 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
               </div>
             </div>
 
-            {/* File Upload Attachment */}
+            {/* Download Link Input */}
             <div>
-              <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                Question Paper PDF / Document
-              </label>
-              <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-[#2563EB] rounded-xl p-4 text-center bg-[#F8FAFC] dark:bg-slate-900/50 transition-colors">
-                <input
-                  type="file"
-                  id="question-upload-input"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="question-upload-input"
-                  className="cursor-pointer flex flex-col items-center justify-center gap-1.5"
-                >
-                  <Upload className="w-6 h-6 text-[#2563EB]" />
-                  <span className="font-bold text-[#0A2147] dark:text-white">
-                    {fileName ? fileName : 'Choose file or click to browse'}
-                  </span>
-                  <span className="text-[10px] text-[#64748B] dark:text-slate-400">
-                    Supports PDF, DOCX, Images up to 25MB
-                  </span>
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <label className="flex items-center gap-1.5 font-bold text-[#0A2147] dark:text-white text-xs">
+                  <LinkIcon className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <span>Download Link *</span>
                 </label>
+                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
+                  Direct Download Link
+                </span>
               </div>
+              <div className="relative">
+                <input
+                  type="url"
+                  required
+                  placeholder="Paste instant download link or Google Drive link"
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white font-mono placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 shadow-2xs"
+                />
+                <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                Paste your instant download link directly.
+              </p>
             </div>
 
             {/* Verification Notice */}

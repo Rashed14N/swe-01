@@ -6,7 +6,7 @@ import {
   ChevronRight, LogIn, HelpCircle
 } from 'lucide-react';
 import { SweLogo } from '../components/common/SweLogo';
-import { DepartmentNotice, Faculty } from '../types';
+import { DepartmentNotice, Faculty, sortFacultyByHierarchy } from '../types';
 import { fetchNoticesFromSupabase } from '../services/supabaseDataService';
 
 const FALLBACK_NOTICES: DepartmentNotice[] = [
@@ -160,12 +160,21 @@ const FALLBACK_FACULTY: Faculty[] = [
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [notices, setNotices] = useState<DepartmentNotice[]>(FALLBACK_NOTICES);
-  const [facultyList, setFacultyList] = useState<Faculty[]>(FALLBACK_FACULTY);
+  const [facultyList, setFacultyList] = useState<Faculty[]>(() => sortFacultyByHierarchy(FALLBACK_FACULTY));
 
   useEffect(() => {
     fetchNoticesFromSupabase()
       .then(data => {
         if (data && data.length > 0) setNotices(data.slice(0, 3));
+      })
+      .catch(() => {});
+
+    fetch('/api/faculty')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.faculty && data.faculty.length > 0) {
+          setFacultyList(sortFacultyByHierarchy(data.faculty));
+        }
       })
       .catch(() => {});
   }, []);

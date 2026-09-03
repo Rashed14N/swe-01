@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { getServerSupabase } from '../supabaseSync';
 import { db } from '../db';
+import { sortFacultyByHierarchy } from '../../types';
 import type {
   User,
   Batch,
@@ -700,7 +701,7 @@ export async function getAllFaculty(): Promise<Faculty[]> {
   const { data, error } = await supabase.from('faculty').select('*').order('name', { ascending: true });
   if (error) throw new Error(`Supabase error: ${error.message}`);
 
-  return (data || []).map((row: any): Faculty => ({
+  const mapped = (data || []).map((row: any): Faculty => ({
     id: row.id,
     name: row.name,
     shortName: row.short_name || undefined,
@@ -713,6 +714,8 @@ export async function getAllFaculty(): Promise<Faculty[]> {
     specialization: row.specialization || undefined,
     assignedCourses: Array.isArray(row.assigned_courses) ? row.assigned_courses : [],
   }));
+
+  return sortFacultyByHierarchy(mapped);
 }
 
 export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { id: string; name: string }): Promise<Faculty> {

@@ -202,6 +202,47 @@ export interface Faculty {
   assignedCourses?: string[];
 }
 
+/**
+ * Returns numeric priority rank for faculty sequence:
+ * 1: Head / Professor & Head
+ * 2: Professor
+ * 3: Associate Professor
+ * 4: Assistant Professor
+ * 5: Senior Lecturer
+ * 6: Adjunct Faculty
+ * 7: Lecturer
+ * 8: Lecturer (Study Leave) / Other
+ */
+export function getFacultyRank(designation: string = ''): number {
+  const d = designation.toLowerCase().trim();
+  // 1. Head of Department / Professor & Head
+  if (d.includes('head')) return 1;
+  // 2. Professor (strictly Professor, excluding Associate/Assistant/Adjunct)
+  if (d.includes('professor') && !d.includes('associate') && !d.includes('assistant') && !d.includes('adjunct')) return 2;
+  // 3. Associate Professor
+  if (d.includes('associate')) return 3;
+  // 4. Assistant Professor
+  if (d.includes('assistant') || d.includes('ass professor') || d.includes('asst')) return 4;
+  // 5. Senior Lecturer
+  if (d.includes('senior lecturer') || d.includes('sr. lecturer') || d.includes('sr lecturer')) return 5;
+  // 6. Adjunct Faculty / Adjunct Lecturer
+  if (d.includes('adjunct') || d.includes('adju')) return 6;
+  // 7. Lecturer (active)
+  if (d.includes('lecturer') && !d.includes('study leave')) return 7;
+  // 8. Lecturer on study leave
+  if (d.includes('study leave')) return 8;
+  return 9;
+}
+
+export function sortFacultyByHierarchy(list: Faculty[]): Faculty[] {
+  return [...list].sort((a, b) => {
+    const rankA = getFacultyRank(a.designation);
+    const rankB = getFacultyRank(b.designation);
+    if (rankA !== rankB) return rankA - rankB;
+    return a.name.localeCompare(b.name);
+  });
+}
+
 export interface NotificationItem {
   id: string;
   userId: string;

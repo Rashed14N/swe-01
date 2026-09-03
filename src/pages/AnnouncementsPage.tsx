@@ -5,7 +5,7 @@ import { useNotifications } from '../context/NotificationContext';
 import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
-import { BatchAnnouncement, AnnouncementPriority } from '../types';
+import { BatchAnnouncement, AnnouncementPriority, Batch } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 
 export const AnnouncementsPage: React.FC = () => {
@@ -13,6 +13,10 @@ export const AnnouncementsPage: React.FC = () => {
   const { addToast } = useNotifications();
 
   const [announcements, setAnnouncements] = useState<BatchAnnouncement[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>(
+    user?.role === 'ADMIN' ? 'ALL' : (user?.batchId || 'batch-9')
+  );
   const [showArchive, setShowArchive] = useState(false);
   const [counts, setCounts] = useState({ activeCount: 0, archivedCount: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -22,15 +26,32 @@ export const AnnouncementsPage: React.FC = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form State
+  const [targetBatchId, setTargetBatchId] = useState(
+    user?.role === 'ADMIN' ? 'ALL' : (user?.batchId || 'batch-9')
+  );
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [priority, setPriority] = useState<AnnouncementPriority>('NORMAL');
 
+  useEffect(() => {
+    fetch('/api/batches')
+      .then(res => safeParseJson(res))
+      .then(data => {
+        if (data && Array.isArray(data.batches)) {
+          setBatches(data.batches);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const fetchAnnouncements = () => {
     if (!token) return;
     setIsLoading(true);
-    fetch(`/api/announcements?batchId=${user?.batchId || 'batch-9'}&archive=${showArchive}`, {
+    const batchParam = selectedBatchFilter && selectedBatchFilter !== 'ALL'
+      ? `batchId=${encodeURIComponent(selectedBatchFilter)}&`
+      : '';
+    fetch(`/api/announcements?${batchParam}archive=${showArchive}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => safeParseJson(res))
@@ -47,13 +68,14 @@ export const AnnouncementsPage: React.FC = () => {
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [token, user, showArchive]);
+  }, [token, user, showArchive, selectedBatchFilter]);
 
   const canManage = user?.role === 'CR' || user?.role === 'ADMIN';
 
   const handleOpenCreate = () => {
     setTitle('');
     setDescription('');
+    setTargetBatchId(user?.role === 'ADMIN' ? 'ALL' : (user?.batchId || 'batch-9'));
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     setExpiryDate(nextWeek.toISOString().split('T')[0]);
@@ -76,16 +98,17 @@ export const AnnouncementsPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          batchId: user?.batchId || 'batch-9',
+          batchId: targetBatchId,
           title,
           description,
           expiryDate,
           priority,
+          sendNotification: false, // Default: show only in announcement section, no push/notification ping
         }),
       });
 
       if (res.ok) {
-        addToast('success', 'Batch Announcement Published!');
+        addToast('success', 'Announcement Published to Announcement Section!');
         setIsModalOpen(false);
         fetchAnnouncements();
       } else {
@@ -141,23 +164,40 @@ export const AnnouncementsPage: React.FC = () => {
             : undefined
         }
       >
-        <div className="flex bg-[#F1F5FA] dark:bg-slate-800 p-1 rounded-lg border border-[#DCE5F0] dark:border-slate-700">
-          <button
-            onClick={() => setShowArchive(false)}
-            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-              !showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            Active ({counts.activeCount})
-          </button>
-          <button
-            onClick={() => setShowArchive(true)}
-            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${
-              showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <Archive className="w-3.5 h-3.5" /> Archive ({counts.archivedCount})
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {user?.role === 'ADMIN' && (
+            <select
+              value={selectedBatchFilter}
+              onChange={(e) => setSelectedBatchFilter(e.target.value)}
+              className="bg-white dark:bg-slate-800 border border-[#DCE5F0] dark:border-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg text-slate-800 dark:text-white"
+            >
+              <option value="ALL">All Batches (Department Wide)</option>
+              {batches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <div className="flex bg-[#F1F5FA] dark:bg-slate-800 p-1 rounded-lg border border-[#DCE5F0] dark:border-slate-700">
+            <button
+              onClick={() => setShowArchive(false)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                !showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              Active ({counts.activeCount})
+            </button>
+            <button
+              onClick={() => setShowArchive(true)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${
+                showArchive ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-[0_1px_2px_rgba(15,35,70,0.06)]' : 'text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <Archive className="w-3.5 h-3.5" /> Archive ({counts.archivedCount})
+            </button>
+          </div>
         </div>
       </PageHeader>
 
@@ -297,11 +337,31 @@ export const AnnouncementsPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Publish Batch Announcement"
+        title="Publish Announcement"
       >
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          {user?.role === 'ADMIN' && (
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                Target Batch
+              </label>
+              <select
+                value={targetBatchId}
+                onChange={(e) => setTargetBatchId(e.target.value)}
+                className="w-full bg-[#F8FAFC] dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
+              >
+                <option value="ALL">All Batches (Department-Wide)</option>
+                {batches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Priority</label>
+            <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Priority</label>
             <div className="grid grid-cols-3 gap-2">
               {(['NORMAL', 'IMPORTANT', 'URGENT'] as const).map((p) => (
                 <button
@@ -310,8 +370,8 @@ export const AnnouncementsPage: React.FC = () => {
                   onClick={() => setPriority(p)}
                   className={`py-2 text-xs font-bold rounded-lg border transition-all ${
                     priority === p
-                      ? 'border-blue-600 bg-blue-50 text-blue-700'
-                      : 'border-[#E2E8F0] text-slate-600'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                      : 'border-[#E2E8F0] dark:border-slate-700 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   {p}
@@ -321,31 +381,31 @@ export const AnnouncementsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Announcement Title</label>
+            <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Announcement Title</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Software Engineering Assignment Deadline"
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-bold"
+              className="w-full bg-[#F8FAFC] dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Description / Content</label>
+            <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">Description / Content</label>
             <textarea
               required
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter announcement details..."
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs"
+              className="w-full bg-[#F8FAFC] dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+            <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
               Expiration Date (Auto-Archiving)
             </label>
             <input
@@ -353,15 +413,22 @@ export const AnnouncementsPage: React.FC = () => {
               required
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs"
+              className="w-full bg-[#F8FAFC] dark:bg-slate-800 border border-[#E2E8F0] dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E8F0]">
+          <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 rounded-xl text-[11px] text-blue-900 dark:text-blue-200 flex items-start gap-2">
+            <span className="font-bold text-blue-700 dark:text-blue-400">ℹ️</span>
+            <span>
+              This announcement will be published directly in the <strong>Announcement Section</strong> without dispatching notification pings or incrementing student notification badges.
+            </span>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E8F0] dark:border-slate-700">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg"
             >
               Cancel
             </button>

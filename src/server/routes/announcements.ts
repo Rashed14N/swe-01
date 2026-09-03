@@ -18,7 +18,7 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     const requestedBatchId = req.query.batchId as string;
 
     let targetBatchId: string | undefined = undefined;
-    if (requestedBatchId) {
+    if (requestedBatchId && requestedBatchId !== 'ALL') {
       if (req.user && req.user.role !== 'ADMIN' && req.user.batchId && req.user.batchId !== requestedBatchId) {
         return res.status(403).json({
           error: "403 Forbidden: You do not have permission to access another batch's announcements.",
@@ -58,8 +58,10 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
 router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { batchId, title, description, publishDate, expiryDate, priority } = req.body;
-  const targetBatchId = batchId || req.user.batchId;
+  const { batchId, title, description, publishDate, expiryDate, priority, sendNotification } = req.body;
+  const targetBatchId = (req.user.role === 'ADMIN' && (!batchId || batchId === 'ALL'))
+    ? 'ALL'
+    : (batchId || req.user.batchId);
 
   if (req.user.role === 'CR' && req.user.batchId !== targetBatchId) {
     return res.status(403).json({ error: '403 Forbidden: CRs can only publish announcements for their assigned batch.' });
@@ -87,24 +89,29 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
     const created = await createAnnouncementInDB(newAnn);
 
-    // Notify students of this batch
-    const allUsers = await fetchAllUsers().catch(() => []);
-    const batchStudents = allUsers.filter(u => u.batchId === targetBatchId && u.id !== req.user!.id);
-    const local = db.getData();
-    if (!local.notifications) local.notifications = [];
-    batchStudents.forEach(st => {
-      local.notifications.unshift({
-        id: `notif-${Date.now()}-${Math.random()}`,
-        userId: st.id,
-        title: `${priority === 'URGENT' ? '🚨 URGENT Announcement' : '📢 Batch Announcement'}`,
-        message: title,
-        type: 'ANNOUNCEMENT',
-        linkUrl: '/announcements',
-        read: false,
-        createdAt: new Date().toISOString(),
+    // Only create notifications if explicitly requested with sendNotification === true
+    // By default, announcements are displayed directly in the announcement section without sending notifications / + badge
+    if (sendNotification === true) {
+      const allUsers = await fetchAllUsers().catch(() => []);
+      const batchStudents = allUsers.filter(u =>
+        (targetBatchId === 'ALL' || u.batchId === targetBatchId) && u.id !== req.user!.id
+      );
+      const local = db.getData();
+      if (!local.notifications) local.notifications = [];
+      batchStudents.forEach(st => {
+        local.notifications.unshift({
+          id: `notif-${Date.now()}-${Math.random()}`,
+          userId: st.id,
+          title: `${priority === 'URGENT' ? '🚨 URGENT Announcement' : '📢 Batch Announcement'}`,
+          message: title,
+          type: 'ANNOUNCEMENT',
+          linkUrl: '/announcements',
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
       });
-    });
-    db.save();
+      db.save();
+    }
 
     db.addAuditLog(req.user.id, req.user.name, 'ANNOUNCEMENT_CREATED', `${title} (${targetBatchId})`);
 

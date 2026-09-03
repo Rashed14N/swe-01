@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { safeParseJson } from '../lib/apiClient';
 import type {
   User,
   Batch,
@@ -76,12 +77,7 @@ class AdminApiClient {
       },
     });
 
-    let json: ApiResponse<T>;
-    try {
-      json = await response.json();
-    } catch {
-      throw new Error(`Server returned HTTP ${response.status} with non-JSON body`);
-    }
+    const json = await safeParseJson<ApiResponse<T>>(response);
 
     if (!response.ok || !json.success) {
       const errMsg = json.error?.message || `Request failed with status ${response.status}`;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Resource } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { ResourceDetailModal } from '../components/common/ResourceDetailModal';
 import { ContributorLeaderboard } from '../components/resources/ContributorLeaderboard';
 import { PageHeader } from '../components/common/PageHeader';
@@ -22,7 +23,7 @@ export const NotesPage: React.FC = () => {
     if (semester) params.append('semester', semester);
 
     fetch(`/api/resources?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => setNotes(data.resources || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));

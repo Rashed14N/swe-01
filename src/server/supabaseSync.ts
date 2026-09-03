@@ -3,18 +3,30 @@ import fs from 'fs';
 import path from 'path';
 import type { DBData } from './db';
 
-const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || 'sb_secret_sztWG8UZFLGZv6oApyHa0Q_sL-uYJ7_';
-const envUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://aasktchpxsxxanfkkrxx.supabase.co';
-const envPubKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+const DUMMY_UNREGISTERED_KEY = 'sb_secret_sztWG8UZFLGZv6oApyHa0Q_sL-uYJ7_';
+const rawServiceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '').trim();
+const envServiceKey = (rawServiceKey && rawServiceKey !== DUMMY_UNREGISTERED_KEY) ? rawServiceKey : '';
+const envUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://aasktchpxsxxanfkkrxx.supabase.co').trim();
+const envPubKey = (process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || 'sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1').trim();
 
 let currentSupabaseUrl = envUrl;
+// Privileged server operations MUST use the service role key if defined
 let currentSupabaseKey = envServiceKey || envPubKey || '';
 
 let serverSupabase: SupabaseClient | null = null;
 
+export function isServiceRoleKeyConfigured(): boolean {
+  return Boolean(envServiceKey && currentSupabaseKey === envServiceKey);
+}
+
 export function initSupabase(url?: string, key?: string): { success: boolean; message: string } {
   if (url) currentSupabaseUrl = url.trim();
-  if (key) currentSupabaseKey = key.trim();
+  // Server-side operations MUST prefer SUPABASE_SERVICE_ROLE_KEY for admin writes
+  if (envServiceKey) {
+    currentSupabaseKey = envServiceKey;
+  } else if (key) {
+    currentSupabaseKey = key.trim();
+  }
 
   if (
     currentSupabaseUrl &&
@@ -27,9 +39,10 @@ export function initSupabase(url?: string, key?: string): { success: boolean; me
       serverSupabase = createClient(currentSupabaseUrl, currentSupabaseKey, {
         auth: { persistSession: false },
       });
-      console.log('[Supabase] Initialized server-side client at:', currentSupabaseUrl);
+      const keyType = isServiceRoleKeyConfigured() ? 'SERVICE_ROLE_KEY (Privileged Admin)' : 'PUBLISHABLE_KEY';
+      console.log(`[Supabase] Initialized server-side client at: ${currentSupabaseUrl} using ${keyType}`);
 
-      return { success: true, message: `Connected to ${currentSupabaseUrl}` };
+      return { success: true, message: `Connected to ${currentSupabaseUrl} (${keyType})` };
     } catch (err: any) {
       console.error('[Supabase] Initialization failed:', err);
       serverSupabase = null;
@@ -59,6 +72,7 @@ export function getSupabaseStatus() {
     isConfigured,
     url: currentSupabaseUrl ? `${currentSupabaseUrl.substring(0, 20)}...` : '',
     hasKey: Boolean(currentSupabaseKey),
+    isServiceRole: isServiceRoleKeyConfigured(),
   };
 }
 

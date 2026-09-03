@@ -6,6 +6,7 @@ import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
 import { BatchAnnouncement, AnnouncementPriority } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 
 export const AnnouncementsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -32,7 +33,7 @@ export const AnnouncementsPage: React.FC = () => {
     fetch(`/api/announcements?batchId=${user?.batchId || 'batch-9'}&archive=${showArchive}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => {
         setAnnouncements(data.announcements || []);
         setCounts({
@@ -88,11 +89,11 @@ export const AnnouncementsPage: React.FC = () => {
         setIsModalOpen(false);
         fetchAnnouncements();
       } else {
-        const err = await res.json();
+        const err = await safeParseJson(res).catch(() => ({ error: `Failed with status ${res.status}` }));
         addToast('error', err.error || 'Failed to publish');
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      addToast('error', e?.message || 'Server error');
     }
   };
 

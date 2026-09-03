@@ -3,6 +3,7 @@ import { Plus, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { RoutineSlot } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { VisualRoutineGrid } from '../components/routine/VisualRoutineGrid';
 import { PageHeader } from '../components/common/PageHeader';
 import { ALL_ROOMS, CATEGORIZED_ROOMS } from '../constants/rooms';
@@ -42,7 +43,7 @@ export const RoutinePage: React.FC = () => {
     fetch(`/api/routines?batchId=${user?.batchId || 'batch-9'}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
+      .then(res => safeParseJson(res))
       .then(data => {
         setRoutines(data.routines || []);
       })
@@ -109,11 +110,11 @@ export const RoutinePage: React.FC = () => {
         setIsSlotModalOpen(false);
         fetchRoutines();
       } else {
-        const err = await res.json();
+        const err = await safeParseJson(res).catch(() => ({ error: `Failed with status ${res.status}` }));
         addToast('error', err.error || 'Failed to save routine slot');
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      addToast('error', e?.message || 'Server error');
     } finally {
       setIsSubmitting(false);
     }
@@ -132,11 +133,11 @@ export const RoutinePage: React.FC = () => {
         addToast('success', 'Routine slot deleted.');
         fetchRoutines();
       } else {
-        const err = await res.json();
+        const err = await safeParseJson(res).catch(() => ({ error: `Failed with status ${res.status}` }));
         addToast('error', err.error || 'Failed to delete slot');
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      addToast('error', e?.message || 'Server error');
     }
   };
 

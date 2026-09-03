@@ -22,7 +22,7 @@ export function createExpressApp() {
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
-  // Request logger for diagnostic debugging
+  // Log API requests
   app.use((req, res, next) => {
     if (req.url.startsWith('/api')) {
       console.log(`[HTTP ${req.method}] ${req.url}`);
@@ -31,7 +31,7 @@ export function createExpressApp() {
   });
 
   // Health check & status endpoints
-  app.get(['/api/health', '/api/status'], (req, res) => {
+  app.get(['/api', '/api/', '/api/health', '/api/status'], (req, res) => {
     try {
       res.json({
         success: true,

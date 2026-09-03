@@ -1,5 +1,6 @@
 import { User, UserRole } from '../types';
 import { supabase } from '../lib/supabase';
+import { safeParseJson } from '../lib/apiClient';
 
 export interface SignupParams {
   name: string;
@@ -265,7 +266,7 @@ class SupabaseAuthService {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: input, password: cleanPassword }),
           });
-          const apiJson = await apiRes.json();
+          const apiJson = await safeParseJson(apiRes).catch(() => null);
           if (apiRes.ok && apiJson?.token && apiJson?.user) {
             localStorage.setItem('swe_admin_token', apiJson.token);
             localStorage.setItem('auth_token', apiJson.token);

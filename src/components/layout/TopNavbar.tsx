@@ -5,6 +5,7 @@ import {
   ChevronDown, ShieldCheck, Database
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { safeParseJson } from '../../lib/apiClient';
 import { SupabaseSetupModal } from '../common/SupabaseSetupModal';
 import { getUserAvatarUrl } from '../../data/avatars';
 
@@ -25,7 +26,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
   useEffect(() => {
     const checkStatus = () => {
       fetch('/api/supabase/status')
-        .then(res => res.json())
+        .then(res => safeParseJson(res))
         .then(data => {
           if (data && typeof data.isConfigured === 'boolean') {
             setSupabaseLive(data.isConfigured);

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 import { Exam, ExamType } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { ALL_ROOMS } from '../constants/rooms';
 
 export const ExamsPage: React.FC = () => {
@@ -44,7 +45,7 @@ export const ExamsPage: React.FC = () => {
     fetch(`/api/exams?batchId=${user?.batchId || 'batch-9'}&includePast=${includePast}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => setExams(data.exams || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -114,11 +115,11 @@ export const ExamsPage: React.FC = () => {
         setIsModalOpen(false);
         fetchExams();
       } else {
-        const err = await res.json();
+        const err = await safeParseJson(res).catch(() => ({ error: `Failed with status ${res.status}` }));
         addToast('error', err.error || 'Operation failed');
       }
-    } catch (e) {
-      addToast('error', 'Server error');
+    } catch (e: any) {
+      addToast('error', e?.message || 'Server error');
     }
   };
 

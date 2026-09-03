@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, User, Award, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Course } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 
 export const CoursesPage: React.FC = () => {
@@ -17,7 +18,7 @@ export const CoursesPage: React.FC = () => {
     fetch(`/api/courses?batchId=${user?.batchId || 'batch-9'}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => setCourses(data.courses || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));

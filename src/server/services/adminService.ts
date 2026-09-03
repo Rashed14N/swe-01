@@ -419,18 +419,13 @@ export async function createBatch(batchData: Partial<Batch>, adminUser: { id: st
     created_at: now,
   };
 
-  const { data, error } = await supabase.from('batches').insert(insertPayload).select().single();
-  if (error) throw new Error(`Failed to create batch: ${error.message}`);
+  const { data, error } = await supabase.from('batches').insert(insertPayload).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase createBatch error]:', error);
+    throw new Error(`Failed to create batch in Supabase: ${error?.message || 'Database returned no data'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'BATCH_CREATED',
-    `Batch: ${data.name}`,
-    `Year: ${data.admission_year}, Semester: ${data.current_semester}`
-  );
-
-  return {
+  const createdBatch: Batch = {
     id: data.id,
     name: data.name,
     admissionYear: Number(data.admission_year),
@@ -439,6 +434,22 @@ export async function createBatch(batchData: Partial<Batch>, adminUser: { id: st
     crIds: Array.isArray(data.cr_ids) ? data.cr_ids : [],
     createdAt: data.created_at,
   };
+
+  const local = db.getData();
+  if (!local.batches) local.batches = [];
+  local.batches = local.batches.filter(b => b.id !== createdBatch.id);
+  local.batches.push(createdBatch);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'BATCH_CREATED',
+    `Batch: ${createdBatch.name}`,
+    `Year: ${createdBatch.admissionYear}, Semester: ${createdBatch.currentSemester}`
+  );
+
+  return createdBatch;
 }
 
 export async function updateBatch(id: string, updates: Partial<Batch>, adminUser: { id: string; name: string }): Promise<Batch> {
@@ -452,18 +463,13 @@ export async function updateBatch(id: string, updates: Partial<Batch>, adminUser
   if (updates.academicSession !== undefined) updatePayload.academic_session = updates.academicSession.trim();
   if (updates.crIds !== undefined) updatePayload.cr_ids = Array.isArray(updates.crIds) ? updates.crIds : [];
 
-  const { data, error } = await supabase.from('batches').update(updatePayload).eq('id', id).select().single();
-  if (error) throw new Error(`Failed to update batch: ${error.message}`);
+  const { data, error } = await supabase.from('batches').update(updatePayload).eq('id', id).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase updateBatch error]:', error);
+    throw new Error(`Failed to update batch in Supabase: ${error?.message || 'Batch record not found'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'BATCH_UPDATED',
-    `Batch: ${data.name}`,
-    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
-  );
-
-  return {
+  const updatedBatch: Batch = {
     id: data.id,
     name: data.name,
     admissionYear: Number(data.admission_year),
@@ -472,16 +478,42 @@ export async function updateBatch(id: string, updates: Partial<Batch>, adminUser
     crIds: Array.isArray(data.cr_ids) ? data.cr_ids : [],
     createdAt: data.created_at,
   };
+
+  const local = db.getData();
+  if (!local.batches) local.batches = [];
+  const idx = local.batches.findIndex(b => b.id === id);
+  if (idx >= 0) local.batches[idx] = updatedBatch;
+  else local.batches.push(updatedBatch);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'BATCH_UPDATED',
+    `Batch: ${updatedBatch.name}`,
+    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
+  );
+
+  return updatedBatch;
 }
 
 export async function deleteBatch(id: string, adminUser: { id: string; name: string }): Promise<void> {
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
-  const { data: existing } = await supabase.from('batches').select('name').eq('id', id).single();
+  const { data: existing } = await supabase.from('batches').select('name').eq('id', id).maybeSingle();
 
   const { error } = await supabase.from('batches').delete().eq('id', id);
-  if (error) throw new Error(`Failed to delete batch: ${error.message}`);
+  if (error) {
+    console.error('[Supabase deleteBatch error]:', error);
+    throw new Error(`Failed to delete batch from Supabase: ${error.message}`);
+  }
+
+  const local = db.getData();
+  if (local.batches) {
+    local.batches = local.batches.filter(b => b.id !== id);
+    try { db.save(); } catch {}
+  }
 
   await createAuditLog(
     adminUser.id,
@@ -542,18 +574,13 @@ export async function createCourse(courseData: Partial<Course>, adminUser: { id:
     created_at: now,
   };
 
-  const { data, error } = await supabase.from('courses').insert(insertPayload).select().single();
-  if (error) throw new Error(`Failed to create course: ${error.message}`);
+  const { data, error } = await supabase.from('courses').insert(insertPayload).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase createCourse error]:', error);
+    throw new Error(`Failed to create course in Supabase: ${error?.message || 'Database returned no data'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'COURSE_CREATED',
-    `Course: ${data.code} - ${data.title}`,
-    `Credits: ${data.credits}, Semester: ${data.semester}, Type: ${data.type}`
-  );
-
-  return {
+  const createdCourse: Course = {
     id: data.id,
     code: data.code,
     shortName: data.short_name || undefined,
@@ -565,6 +592,22 @@ export async function createCourse(courseData: Partial<Course>, adminUser: { id:
     assignedFacultyName: data.assigned_faculty_name || undefined,
     batchIds: Array.isArray(data.batch_ids) ? data.batch_ids : [],
   };
+
+  const local = db.getData();
+  if (!local.courses) local.courses = [];
+  local.courses = local.courses.filter(c => c.id !== createdCourse.id);
+  local.courses.push(createdCourse);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'COURSE_CREATED',
+    `Course: ${createdCourse.code} - ${createdCourse.title}`,
+    `Credits: ${createdCourse.credits}, Semester: ${createdCourse.semester}, Type: ${createdCourse.type}`
+  );
+
+  return createdCourse;
 }
 
 export async function updateCourse(id: string, updates: Partial<Course>, adminUser: { id: string; name: string }): Promise<Course> {
@@ -582,18 +625,13 @@ export async function updateCourse(id: string, updates: Partial<Course>, adminUs
   if (updates.assignedFacultyName !== undefined) updatePayload.assigned_faculty_name = updates.assignedFacultyName || null;
   if (updates.batchIds !== undefined) updatePayload.batch_ids = Array.isArray(updates.batchIds) ? updates.batchIds : [];
 
-  const { data, error } = await supabase.from('courses').update(updatePayload).eq('id', id).select().single();
-  if (error) throw new Error(`Failed to update course: ${error.message}`);
+  const { data, error } = await supabase.from('courses').update(updatePayload).eq('id', id).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase updateCourse error]:', error);
+    throw new Error(`Failed to update course in Supabase: ${error?.message || 'Course record not found'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'COURSE_UPDATED',
-    `Course: ${data.code} - ${data.title}`,
-    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
-  );
-
-  return {
+  const updatedCourse: Course = {
     id: data.id,
     code: data.code,
     shortName: data.short_name || undefined,
@@ -605,16 +643,42 @@ export async function updateCourse(id: string, updates: Partial<Course>, adminUs
     assignedFacultyName: data.assigned_faculty_name || undefined,
     batchIds: Array.isArray(data.batch_ids) ? data.batch_ids : [],
   };
+
+  const local = db.getData();
+  if (!local.courses) local.courses = [];
+  const idx = local.courses.findIndex(c => c.id === id);
+  if (idx >= 0) local.courses[idx] = updatedCourse;
+  else local.courses.push(updatedCourse);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'COURSE_UPDATED',
+    `Course: ${updatedCourse.code} - ${updatedCourse.title}`,
+    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
+  );
+
+  return updatedCourse;
 }
 
 export async function deleteCourse(id: string, adminUser: { id: string; name: string }): Promise<void> {
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
-  const { data: existing } = await supabase.from('courses').select('code, title').eq('id', id).single();
+  const { data: existing } = await supabase.from('courses').select('code, title').eq('id', id).maybeSingle();
 
   const { error } = await supabase.from('courses').delete().eq('id', id);
-  if (error) throw new Error(`Failed to delete course: ${error.message}`);
+  if (error) {
+    console.error('[Supabase deleteCourse error]:', error);
+    throw new Error(`Failed to delete course from Supabase: ${error.message}`);
+  }
+
+  const local = db.getData();
+  if (local.courses) {
+    local.courses = local.courses.filter(c => c.id !== id);
+    try { db.save(); } catch {}
+  }
 
   await createAuditLog(
     adminUser.id,
@@ -677,18 +741,13 @@ export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { 
     created_at: now,
   };
 
-  const { data, error } = await supabase.from('faculty').insert(insertPayload).select().single();
-  if (error) throw new Error(`Failed to create faculty member: ${error.message}`);
+  const { data, error } = await supabase.from('faculty').insert(insertPayload).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase createFaculty error]:', error);
+    throw new Error(`Failed to create faculty in Supabase: ${error?.message || 'Database returned no data'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'FACULTY_CREATED',
-    `Faculty: ${data.name} (${data.designation})`,
-    `Email: ${data.email}, Office: ${data.office_room}`
-  );
-
-  return {
+  const createdFaculty: Faculty = {
     id: data.id,
     name: data.name,
     shortName: data.short_name || undefined,
@@ -701,6 +760,22 @@ export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { 
     specialization: data.specialization || undefined,
     assignedCourses: Array.isArray(data.assigned_courses) ? data.assigned_courses : [],
   };
+
+  const local = db.getData();
+  if (!local.faculty) local.faculty = [];
+  local.faculty = local.faculty.filter(f => f.id !== createdFaculty.id);
+  local.faculty.push(createdFaculty);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'FACULTY_CREATED',
+    `Faculty: ${createdFaculty.name} (${createdFaculty.designation})`,
+    `Email: ${createdFaculty.email}, Office: ${createdFaculty.officeRoom}`
+  );
+
+  return createdFaculty;
 }
 
 export async function updateFaculty(id: string, updates: Partial<Faculty>, adminUser: { id: string; name: string }): Promise<Faculty> {
@@ -719,18 +794,13 @@ export async function updateFaculty(id: string, updates: Partial<Faculty>, admin
   if (updates.specialization !== undefined) updatePayload.specialization = updates.specialization ? updates.specialization.trim() : null;
   if (updates.assignedCourses !== undefined) updatePayload.assigned_courses = Array.isArray(updates.assignedCourses) ? updates.assignedCourses : [];
 
-  const { data, error } = await supabase.from('faculty').update(updatePayload).eq('id', id).select().single();
-  if (error) throw new Error(`Failed to update faculty member: ${error.message}`);
+  const { data, error } = await supabase.from('faculty').update(updatePayload).eq('id', id).select().maybeSingle();
+  if (error || !data) {
+    console.error('[Supabase updateFaculty error]:', error);
+    throw new Error(`Failed to update faculty in Supabase: ${error?.message || 'Faculty record not found'}`);
+  }
 
-  await createAuditLog(
-    adminUser.id,
-    adminUser.name,
-    'FACULTY_UPDATED',
-    `Faculty: ${data.name} (${data.designation})`,
-    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
-  );
-
-  return {
+  const updatedFaculty: Faculty = {
     id: data.id,
     name: data.name,
     shortName: data.short_name || undefined,
@@ -743,16 +813,42 @@ export async function updateFaculty(id: string, updates: Partial<Faculty>, admin
     specialization: data.specialization || undefined,
     assignedCourses: Array.isArray(data.assigned_courses) ? data.assigned_courses : [],
   };
+
+  const local = db.getData();
+  if (!local.faculty) local.faculty = [];
+  const idx = local.faculty.findIndex(f => f.id === id);
+  if (idx >= 0) local.faculty[idx] = updatedFaculty;
+  else local.faculty.push(updatedFaculty);
+  try { db.save(); } catch {}
+
+  await createAuditLog(
+    adminUser.id,
+    adminUser.name,
+    'FACULTY_UPDATED',
+    `Faculty: ${updatedFaculty.name} (${updatedFaculty.designation})`,
+    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
+  );
+
+  return updatedFaculty;
 }
 
 export async function deleteFaculty(id: string, adminUser: { id: string; name: string }): Promise<void> {
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
-  const { data: existing } = await supabase.from('faculty').select('name, designation').eq('id', id).single();
+  const { data: existing } = await supabase.from('faculty').select('name, designation').eq('id', id).maybeSingle();
 
   const { error } = await supabase.from('faculty').delete().eq('id', id);
-  if (error) throw new Error(`Failed to delete faculty member: ${error.message}`);
+  if (error) {
+    console.error('[Supabase deleteFaculty error]:', error);
+    throw new Error(`Failed to delete faculty from Supabase: ${error.message}`);
+  }
+
+  const local = db.getData();
+  if (local.faculty) {
+    local.faculty = local.faculty.filter(f => f.id !== id);
+    try { db.save(); } catch {}
+  }
 
   await createAuditLog(
     adminUser.id,

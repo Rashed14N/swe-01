@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { SweLogo } from '../components/common/SweLogo';
 import { useAuth } from '../context/AuthContext';
+import { safeParseJson } from '../lib/apiClient';
 import { UserRole, Batch } from '../types';
 
 const FALLBACK_BATCHES: Batch[] = [
@@ -62,7 +63,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
     let isMounted = true;
     setIsLoadingBatches(true);
     fetch('/api/batches')
-      .then(res => res.json())
+      .then(res => safeParseJson(res))
       .then(data => {
         if (!isMounted) return;
         if (Array.isArray(data?.batches) && data.batches.length > 0) {

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Resource } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { QuestionPaperCard } from '../components/common/QuestionPaperCard';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
@@ -40,7 +41,7 @@ export const QuestionBankPage: React.FC = () => {
     if (year) params.append('year', year);
 
     fetch(`/api/resources?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => {
         const list: Resource[] = data.resources || [];
         setQuestions(list);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Phone, User, Copy, Check } from 'lucide-react';
 import { Faculty } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 
@@ -13,7 +14,7 @@ export const FacultyPage: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/faculty?search=${encodeURIComponent(search)}`)
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => setFaculty(data.faculty || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));

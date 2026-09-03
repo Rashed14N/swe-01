@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Download } from 'lucide-react';
 import { DepartmentNotice } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 
@@ -16,7 +17,7 @@ export const NoticesPage: React.FC = () => {
     if (category) params.append('category', category);
 
     fetch(`/api/notices?${params.toString()}`)
-      .then(res => res.json())
+      .then(res => safeParseJson(res))
       .then(data => setNotices(data.notices || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));

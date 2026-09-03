@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FolderGit2, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Resource } from '../types';
+import { safeParseJson } from '../lib/apiClient';
 import { ResourceDetailModal } from '../components/common/ResourceDetailModal';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
@@ -21,7 +22,7 @@ export const LabResourcesPage: React.FC = () => {
     if (category) params.append('category', category);
 
     fetch(`/api/resources?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => safeParseJson(res))
       .then((data) => setLabs(data.resources || []))
       .catch(console.error)
       .finally(() => setIsLoading(false));

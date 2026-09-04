@@ -126,6 +126,19 @@ export const ProfilePage: React.FC = () => {
       return;
     }
 
+    const activeToken =
+      token ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('auth_token') ||
+          localStorage.getItem('swe_admin_token') ||
+          localStorage.getItem('token')
+        : null);
+
+    if (!user && !activeToken) {
+      addToast('error', 'Please log in to upload question papers.');
+      return;
+    }
+
     setIsUploading(true);
     try {
       const isDrive = finalDownloadUrl.includes('drive.google.com') || finalDownloadUrl.includes('docs.google.com');
@@ -134,7 +147,7 @@ export const ProfilePage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {}),
         },
         body: JSON.stringify({
           title: title.trim(),
@@ -162,10 +175,17 @@ export const ProfilePage: React.FC = () => {
         setActiveTab('uploads');
       } else {
         const err = await res.json();
-        addToast('error', err.error || 'Upload failed');
+        const errText =
+          typeof err.error === 'string'
+            ? err.error
+            : typeof err.message === 'string'
+            ? err.message
+            : err.error?.message || err.error?.code || 'Upload failed';
+        addToast('error', errText);
       }
-    } catch (e) {
-      addToast('error', 'Server error during upload');
+    } catch (e: any) {
+      const errMsg = typeof e === 'string' ? e : e?.message || 'Server error during upload';
+      addToast('error', errMsg);
     } finally {
       setIsUploading(false);
     }

@@ -152,6 +152,27 @@ class AdminApiClient {
     });
   }
 
+  async setBatchSemester(id: string, semester: number, syncStudents = true): Promise<{
+    success: boolean;
+    batch: Batch;
+    semester: number;
+    coursesEnrolledCount: number;
+    studentsUpdatedCount: number;
+    message: string;
+  }> {
+    return this.request<{
+      success: boolean;
+      batch: Batch;
+      semester: number;
+      coursesEnrolledCount: number;
+      studentsUpdatedCount: number;
+      message: string;
+    }>(`/batches/${id}/set-semester`, {
+      method: 'POST',
+      body: JSON.stringify({ semester, syncStudents }),
+    });
+  }
+
   async deleteBatch(id: string): Promise<void> {
     await this.request<{ deleted: boolean }>(`/batches/${id}`, {
       method: 'DELETE',

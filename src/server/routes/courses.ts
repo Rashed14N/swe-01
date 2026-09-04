@@ -6,6 +6,7 @@ import { Course } from '../../types';
 import {
   fetchAllCourses,
   fetchCourseById,
+  fetchBatchById,
   createCourseInDB,
   updateCourseInDB,
   deleteCourseFromDB,
@@ -24,15 +25,18 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
 
     let courses = Array.isArray(allCourses) ? allCourses : [];
     
-    if (req.user && req.user.role !== 'ADMIN') {
-      const targetSem = semesterQuery || req.user.currentSemester;
-      const targetBatch = batchId || req.user.batchId;
+    if (batchId) {
+      const targetBatch = await fetchBatchById(batchId);
+      const activeSem = semesterQuery || targetBatch?.currentSemester || req.user?.currentSemester;
       courses = courses.filter(c => 
-        (targetBatch && c.batchIds?.includes(targetBatch)) || 
-        (targetSem && c.semester === targetSem)
+        activeSem !== undefined ? c.semester === activeSem : (c.batchIds && c.batchIds.includes(batchId))
       );
-    } else if (batchId) {
-      courses = courses.filter(c => c.batchIds?.includes(batchId));
+    } else if (req.user && req.user.role !== 'ADMIN') {
+      const userBatch = req.user.batchId ? await fetchBatchById(req.user.batchId) : null;
+      const targetSem = semesterQuery || userBatch?.currentSemester || req.user.currentSemester;
+      courses = courses.filter(c => 
+        targetSem !== undefined ? c.semester === targetSem : (req.user!.batchId && c.batchIds?.includes(req.user!.batchId))
+      );
     } else if (semesterQuery) {
       courses = courses.filter(c => c.semester === semesterQuery);
     }

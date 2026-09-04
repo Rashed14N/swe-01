@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
   Layers, Plus, Edit, Users, BookOpen, Calendar, ChevronRight,
-  Eye, ArrowRight, AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, Clock, RefreshCw, X, Check
+  Eye, ArrowRight, AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, Clock, RefreshCw, X, Check,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Batch, User, Course, RoutineSlot, Exam, SemesterProgressionPreview } from '../../types';
+import { BatchSemesterController } from '../../components/admin/BatchSemesterController';
 
 export const AdminBatchesPage: React.FC = () => {
   const { token } = useAuth();
   const { addToast } = useNotifications();
 
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [controllerBatchId, setControllerBatchId] = useState<string>('batch-9');
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
@@ -67,9 +71,28 @@ export const AdminBatchesPage: React.FC = () => {
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch('/api/courses');
+      if (res.ok) {
+        const data = await res.json();
+        setCourses(data.courses || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchBatches();
+    fetchCourses();
   }, [token]);
+
+  const handleBatchSemesterUpdated = (updatedBatch: Batch, semester: number) => {
+    setBatches(prev => prev.map(b => b.id === updatedBatch.id ? { ...b, currentSemester: semester } : b));
+    fetchBatches();
+    fetchCourses();
+  };
 
   const fetchProgressionPreview = async () => {
     if (!token) return;
@@ -304,6 +327,25 @@ export const AdminBatchesPage: React.FC = () => {
         </div>
       </div>
 
+      {/* DEDICATED BATCH SEMESTER CONTROLLER */}
+      <BatchSemesterController
+        batches={batches}
+        courses={courses}
+        activeBatchId={controllerBatchId}
+        onSelectBatch={setControllerBatchId}
+        onBatchSemesterUpdated={handleBatchSemesterUpdated}
+      />
+
+      {/* Batch Cards Grid Header */}
+      <div className="flex items-center justify-between pt-2">
+        <h3 className="text-base font-extrabold text-slate-900">
+          All Department Batches ({batches.length})
+        </h3>
+        <span className="text-xs text-slate-500">
+          Click <strong>Semester</strong> on any batch to configure its active courses
+        </span>
+      </div>
+
       {/* Batch Cards Grid */}
       {isLoading ? (
         <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
@@ -378,20 +420,34 @@ export const AdminBatchesPage: React.FC = () => {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
                   <button
                     onClick={() => {
-                      setEditingBatch(b);
-                      setEditSyncStudents(true);
+                      setControllerBatchId(b.id);
+                      const el = document.getElementById('batch-semester-controller');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                    className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                    title="Control active semester and enrolled courses"
                   >
-                    <Edit className="w-3.5 h-3.5" /> Edit
+                    <SlidersHorizontal className="w-3.5 h-3.5" /> Semester
                   </button>
 
-                  <button
-                    onClick={() => handleOpenDetail(b.id)}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Details
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        setEditingBatch(b);
+                        setEditSyncStudents(true);
+                      }}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <Edit className="w-3.5 h-3.5" /> Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenDetail(b.id)}
+                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Details
+                    </button>
+                  </div>
                 </div>
               </div>
             );

@@ -55,12 +55,30 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setUnreadCount(0);
   }, []);
 
-  const addToast = (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => {
+  const addToast = (type: 'success' | 'error' | 'info' | 'warning', title: any, message?: any) => {
+    let safeTitle = 'Notification';
+    if (typeof title === 'string') {
+      safeTitle = title;
+    } else if (title && typeof title === 'object') {
+      safeTitle = title.message || title.error || title.code || (typeof title.toString === 'function' && title.toString() !== '[object Object]' ? title.toString() : JSON.stringify(title));
+    } else if (title !== undefined && title !== null) {
+      safeTitle = String(title);
+    }
+
+    let safeMessage: string | undefined = undefined;
+    if (typeof message === 'string') {
+      safeMessage = message;
+    } else if (message && typeof message === 'object') {
+      safeMessage = message.message || message.error || JSON.stringify(message);
+    } else if (message !== undefined && message !== null) {
+      safeMessage = String(message);
+    }
+
     const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts(prev => [...prev, { id, type, title, message }]);
+    setToasts(prev => [...prev, { id, type, title: safeTitle, message: safeMessage }]);
     setTimeout(() => {
       removeToast(id);
-    }, 4000);
+    }, 4500);
   };
 
   const removeToast = (id: string) => {

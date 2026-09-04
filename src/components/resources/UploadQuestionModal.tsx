@@ -55,6 +55,19 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
       return;
     }
 
+    const activeToken =
+      token ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('auth_token') ||
+          localStorage.getItem('swe_admin_token') ||
+          localStorage.getItem('token')
+        : null);
+
+    if (!user && !activeToken) {
+      addToast('error', 'Please log in to upload or contribute question papers.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const generatedFileName = `${courseCode.replace(/\s+/g, '_')}_${examType}_${academicYear}.pdf`;
@@ -64,7 +77,7 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {}),
         },
         body: JSON.stringify({
           title: title.trim(),
@@ -99,11 +112,18 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
         onClose();
         if (onSuccess) onSuccess();
       } else {
-        addToast('error', data.error || 'Failed to upload question paper');
+        const errorMsg =
+          typeof data.error === 'string'
+            ? data.error
+            : typeof data.message === 'string'
+            ? data.message
+            : data.error?.message || data.error?.code || 'Failed to upload question paper';
+        addToast('error', errorMsg);
       }
     } catch (err: any) {
       console.error(err);
-      addToast('error', 'Network error during question upload');
+      const msg = typeof err === 'string' ? err : err?.message || 'Network error during question upload';
+      addToast('error', msg);
     } finally {
       setIsSubmitting(false);
     }

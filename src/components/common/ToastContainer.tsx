@@ -30,8 +30,14 @@ export const ToastContainer: React.FC = () => {
         >
           <div className="shrink-0 mt-0.5">{icons[toast.type]}</div>
           <div className="flex-1 text-sm">
-            <h4 className="font-semibold leading-tight">{toast.title}</h4>
-            {toast.message && <p className="text-xs opacity-80 mt-0.5">{toast.message}</p>}
+            <h4 className="font-semibold leading-tight">
+              {typeof toast.title === 'string' ? toast.title : ((toast.title as any)?.message || String(toast.title || 'Notification'))}
+            </h4>
+            {toast.message && (
+              <p className="text-xs opacity-80 mt-0.5">
+                {typeof toast.message === 'string' ? toast.message : ((toast.message as any)?.message || String(toast.message || ''))}
+              </p>
+            )}
           </div>
           <button
             onClick={() => removeToast(toast.id)}

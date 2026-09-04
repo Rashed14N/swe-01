@@ -14,6 +14,7 @@ import {
   fetchAllExams,
   fetchAllAnnouncements,
   updateUserInDB,
+  updateCourseInDB,
 } from '../supabaseData';
 
 const router = Router();
@@ -288,6 +289,75 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
   }
 });
 
+// POST /api/batches/:id/set-semester (Admin Semester Controller Endpoint)
+router.post('/:id/set-semester', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  const batchId = req.params.id;
+  const { semester, syncStudents = true } = req.body;
+
+  const targetSemester = Number(semester);
+  if (!targetSemester || isNaN(targetSemester) || targetSemester < 1 || targetSemester > 12) {
+    return res.status(400).json({ error: 'Valid semester number (1-12) is required' });
+  }
+
+  try {
+    const oldBatch = await fetchBatchById(batchId);
+    if (!oldBatch) return res.status(404).json({ error: 'Batch not found' });
+
+    // 1. Update batch semester
+    const updated = await updateBatchInDB(batchId, { currentSemester: targetSemester });
+
+    // 2. Synchronize all students in this batch to the new semester
+    let studentsUpdatedCount = 0;
+    if (syncStudents) {
+      const allUsers = await fetchAllUsers();
+      const studentsInBatch = allUsers.filter(u => u.batchId === batchId);
+      for (const u of studentsInBatch) {
+        await updateUserInDB(u.id, { currentSemester: targetSemester });
+        studentsUpdatedCount++;
+      }
+    }
+
+    // 3. Synchronize courses:
+    // Ensure all courses of this new semester have this batchId in batchIds,
+    // and remove this batchId from courses of other semesters.
+    const allCourses = await fetchAllCourses();
+    let coursesEnrolledCount = 0;
+    for (const c of allCourses) {
+      const hasBatch = c.batchIds?.includes(batchId);
+      if (c.semester === targetSemester) {
+        coursesEnrolledCount++;
+        if (!hasBatch) {
+          const newBatchIds = [...(c.batchIds || []), batchId];
+          await updateCourseInDB(c.id, { batchIds: newBatchIds });
+        }
+      } else if (hasBatch) {
+        const newBatchIds = (c.batchIds || []).filter(b => b !== batchId);
+        await updateCourseInDB(c.id, { batchIds: newBatchIds });
+      }
+    }
+
+    db.addAuditLog(
+      req.user!.id,
+      req.user!.name,
+      'BATCH_SEMESTER_CONTROL',
+      `${updated.name} (Semester ${oldBatch.currentSemester} → ${targetSemester})`,
+      `Admin assigned ${updated.name} to Semester ${targetSemester}. ${coursesEnrolledCount} courses activated in enrolled classes. ${studentsUpdatedCount} students updated.`
+    );
+
+    res.json({
+      success: true,
+      batch: updated,
+      semester: targetSemester,
+      coursesEnrolledCount,
+      studentsUpdatedCount,
+      message: `Successfully set ${updated.name} to Semester ${targetSemester}! All ${coursesEnrolledCount} courses of Semester ${targetSemester} are now enrolled.`,
+    });
+  } catch (err: any) {
+    console.error(`[Batches API POST /:id/set-semester Error]:`, err);
+    res.status(500).json({ error: err?.message || 'Server error setting batch semester' });
+  }
+});
+
 // PUT /api/batches/:id (Admin only)
 router.put('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   const batchId = req.params.id;
@@ -298,6 +368,7 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: Authentica
     if (!oldBatch) return res.status(404).json({ error: 'Batch not found' });
 
     const updatedSemester = currentSemester !== undefined ? Number(currentSemester) : oldBatch.currentSemester;
+    const isSemesterChanged = currentSemester !== undefined && Number(currentSemester) !== oldBatch.currentSemester;
 
     const updates: Partial<Batch> = {
       name: name !== undefined ? String(name).trim() : oldBatch.name,
@@ -311,12 +382,27 @@ router.put('/:id', verifyAuthToken, requireRole('ADMIN'), async (req: Authentica
 
     const updated = await updateBatchInDB(batchId, updates);
 
-    // If semester changed or sync requested, update all students in this batch
-    if (syncStudentsSemester || (currentSemester !== undefined && Number(currentSemester) !== oldBatch.currentSemester)) {
+    // If semester changed or sync requested, update all students in this batch and sync courses
+    if (syncStudentsSemester || isSemesterChanged) {
       const allUsers = await fetchAllUsers();
       const studentsInBatch = allUsers.filter(u => u.batchId === batchId);
       for (const u of studentsInBatch) {
         await updateUserInDB(u.id, { currentSemester: updatedSemester });
+      }
+
+      // Synchronize courses
+      const allCourses = await fetchAllCourses();
+      for (const c of allCourses) {
+        const hasBatch = c.batchIds?.includes(batchId);
+        if (c.semester === updatedSemester) {
+          if (!hasBatch) {
+            const newBatchIds = [...(c.batchIds || []), batchId];
+            await updateCourseInDB(c.id, { batchIds: newBatchIds });
+          }
+        } else if (hasBatch) {
+          const newBatchIds = (c.batchIds || []).filter(b => b !== batchId);
+          await updateCourseInDB(c.id, { batchIds: newBatchIds });
+        }
       }
     }
 

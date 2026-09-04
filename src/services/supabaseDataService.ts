@@ -314,9 +314,22 @@ export const fetchCoursesFromSupabase = async (semester?: number, batchId?: stri
   if (!checkIsSupabaseConfigured()) return [];
   try {
     const client = getSupabase();
+    let targetSemester = semester;
+
+    if (!targetSemester && batchId) {
+      const { data: batchData } = await client
+        .from('batches')
+        .select('current_semester')
+        .eq('id', batchId)
+        .maybeSingle();
+      if (batchData?.current_semester) {
+        targetSemester = batchData.current_semester;
+      }
+    }
+
     let query = client.from('courses').select('*');
-    if (semester) {
-      query = query.eq('semester', semester);
+    if (targetSemester) {
+      query = query.eq('semester', targetSemester);
     }
     const { data, error } = await query;
     if (error || !data) return [];
@@ -335,7 +348,7 @@ export const fetchCoursesFromSupabase = async (semester?: number, batchId?: stri
     }));
 
     if (batchId) {
-      courses = courses.filter(c => c.batchIds?.includes(batchId) || c.semester === semester);
+      courses = courses.filter(c => c.batchIds?.includes(batchId) || (targetSemester && c.semester === targetSemester));
     }
 
     return courses;

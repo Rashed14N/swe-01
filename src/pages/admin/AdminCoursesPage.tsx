@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Plus, Search, Edit2, Trash2, Check, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Plus, Search, Edit2, Trash2, Check, RefreshCw, SlidersHorizontal, Layers } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { Course, Faculty, Batch } from '../../types';
@@ -158,11 +158,18 @@ export const AdminCoursesPage: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            to="/admin/batches"
+            to="/admin/semesters"
             className="px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shrink-0 border border-blue-200"
+            title="Open Semester Management"
+          >
+            <Layers className="w-4 h-4" /> Semester Management
+          </Link>
+          <Link
+            to="/admin/batches"
+            className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shrink-0 border border-slate-200"
             title="Open Batch Semester Controller"
           >
-            <SlidersHorizontal className="w-4 h-4" /> Batch Semester Controller
+            <SlidersHorizontal className="w-4 h-4" /> Batch Controller
           </Link>
           <button
             onClick={() => fetchData()}

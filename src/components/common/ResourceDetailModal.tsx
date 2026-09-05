@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Download,
@@ -8,14 +8,19 @@ import {
   Calendar,
   GraduationCap,
   Layers,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { Resource } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 
 export interface ResourceDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   resource: Resource | null;
   onDownload: (id: string) => void;
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
 // Format human-friendly upload timestamp
@@ -66,13 +71,60 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
   onClose,
   resource,
   onDownload,
+  onDelete,
 }) => {
+  const { user, token } = useAuth();
+  const { addToast } = useNotifications();
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const canDelete = Boolean(
+    user &&
+    resource &&
+    (user.role === 'ADMIN' || user.id === resource.uploaderId)
+  );
+
+  const handleDelete = async () => {
+    if (!resource) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/resources/${resource.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete resource');
+      }
+
+      addToast('success', 'Question deleted permanently from Supabase database!');
+      if (onDelete) {
+        await onDelete(resource.id);
+      }
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      addToast('error', err.message || 'Failed to delete question');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setShowDeleteConfirm(false);
+      setIsDeleting(false);
+      return;
+    }
 
     // Store triggering active element to return focus on modal close
     previousActiveElement.current = document.activeElement as HTMLElement;
@@ -287,8 +339,8 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
             </div>
           )}
 
-          {/* Download Action Area */}
-          <div className="pt-1 sm:pt-2 space-y-2">
+          {/* Download & Admin Action Area */}
+          <div className="pt-1 sm:pt-2 space-y-2.5">
             {/* Primary Download Button */}
             <button
               ref={downloadButtonRef}
@@ -300,6 +352,48 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
               <Download className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               <span>Download PDF</span>
             </button>
+
+            {/* Admin Delete Action & Confirmation */}
+            {canDelete && (
+              <div className="pt-1 border-t border-[#EBF1F8] dark:border-slate-800">
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full py-2.5 px-4 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/40 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Question {user?.role === 'ADMIN' ? '(Admin - Permanently from Supabase)' : ''}</span>
+                  </button>
+                ) : (
+                  <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl space-y-2">
+                    <div className="flex items-start gap-2 text-rose-800 dark:text-rose-200 text-xs font-semibold">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <span>Are you sure you want to permanently delete this resource from Supabase and the academic vault?</span>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={handleDelete}
+                        className="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{isDeleting ? 'Deleting from Supabase...' : 'Yes, Delete Permanently'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Footer Metadata */}
             <div className="text-[11px] sm:text-xs text-[#64748B] dark:text-slate-400 text-center font-medium flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">

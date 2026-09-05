@@ -1667,19 +1667,45 @@ export async function updateResource(id: string, updates: Partial<Resource>, adm
 
 export async function deleteResource(id: string, adminUser: { id: string; name: string }): Promise<void> {
   const supabase = getServerSupabase();
-  if (!supabase) throw new Error('Supabase client unavailable');
+  const local = db.getData();
+  
+  // Track existing metadata for audit logging
+  let existingTitle = '';
+  let existingType = '';
+  if (local.resources) {
+    const found = local.resources.find(r => r.id === id);
+    if (found) {
+      existingTitle = found.title;
+      existingType = found.type;
+    }
+    local.resources = local.resources.filter(r => r.id !== id);
+    try { db.save(); } catch {}
+  }
 
-  const { data: existing } = await supabase.from('resources').select('title, type').eq('id', id).single();
+  if (supabase) {
+    if (!existingTitle) {
+      try {
+        const { data: existing } = await supabase.from('resources').select('title, type').eq('id', id).maybeSingle();
+        if (existing) {
+          existingTitle = existing.title;
+          existingType = existing.type;
+        }
+      } catch {}
+    }
 
-  const { error } = await supabase.from('resources').delete().eq('id', id);
-  if (error) throw new Error(`Failed to delete resource: ${error.message}`);
+    const { error } = await supabase.from('resources').delete().eq('id', id);
+    if (error) {
+      console.warn('[Supabase deleteResource Error]:', error.message);
+      throw new Error(`Failed to delete resource from Supabase: ${error.message}`);
+    }
+  }
 
   await createAuditLog(
     adminUser.id,
     adminUser.name,
     'RESOURCE_DELETED',
-    `Resource: ${existing?.title || id} (${existing?.type || ''})`,
-    `Permanently removed from academic vault`
+    `Resource: ${existingTitle || id} (${existingType || ''})`,
+    `Permanently removed from Supabase and academic vault`
   );
 }
 

@@ -8,8 +8,10 @@ import {
   Search,
   Upload,
   ShieldCheck,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { Resource } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { QuestionPaperCard } from '../components/common/QuestionPaperCard';
@@ -20,6 +22,7 @@ import { getInstantDownloadUrl } from '../lib/driveUtils';
 
 export const QuestionBankPage: React.FC = () => {
   const { token, currentUser, user } = useAuth();
+  const { addToast } = useNotifications();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -223,6 +226,29 @@ export const QuestionBankPage: React.FC = () => {
     }).catch(console.error);
   };
 
+  const handleDeleteQuestion = async (q: Resource) => {
+    if (!window.confirm(`Are you sure you want to delete "${q.title}"? It will be deleted permanently from the Supabase database.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/resources/${q.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || 'Failed to delete question');
+      }
+      addToast('success', 'Question deleted permanently from Supabase database!');
+      setQuestions((prev) => prev.filter((item) => item.id !== q.id));
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to delete question');
+    }
+  };
+
   const getExamTypeLabel = (q: Resource) => {
     if (q.examType === 'QUIZ') return 'QUIZ QUESTION';
     if (q.examType === 'FINAL') return 'FINAL EXAM QUESTION';
@@ -396,6 +422,8 @@ export const QuestionBankPage: React.FC = () => {
                 fileSize={q.fileSize}
                 isCurrentSemesterMatch={isMatch}
                 isExpanded={expandedCardId === q.id}
+                canDelete={isAdmin || currentUser?.id === q.uploaderId}
+                onDelete={() => handleDeleteQuestion(q)}
                 onToggle={() => setExpandedCardId((prev) => (prev === q.id ? null : q.id))}
                 onDownload={() => handleDownload(q.id)}
               />
@@ -453,20 +481,35 @@ export const QuestionBankPage: React.FC = () => {
                       {q.uploaderName}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(q.id);
-                          if (q.fileUrl) {
-                            window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                        className="p-2 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
-                        title="Instant Download PDF"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(q.id);
+                            if (q.fileUrl) {
+                              window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
+                            }
+                          }}
+                          className="p-1.5 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
+                          title="Instant Download PDF"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        {(isAdmin || currentUser?.id === q.uploaderId) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteQuestion(q);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
+                            title="Delete Question (Supabase)"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

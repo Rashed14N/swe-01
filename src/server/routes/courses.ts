@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
-import { Course } from '../../types';
+import { Course, Resource } from '../../types';
 import {
   fetchAllCourses,
   fetchCourseById,
@@ -20,23 +20,28 @@ const router = Router();
 router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const allCourses = await fetchAllCourses();
-    const batchId = (req.query.batchId as string) || req.user?.batchId;
+    const isAllRequested = req.query.all === 'true' || req.query.all === '1';
+    const batchId = isAllRequested ? undefined : ((req.query.batchId as string) || req.user?.batchId);
     const semesterQuery = req.query.semester ? Number(req.query.semester) : undefined;
 
     let courses = Array.isArray(allCourses) ? allCourses : [];
     
-    if (batchId) {
-      const targetBatch = await fetchBatchById(batchId);
-      const activeSem = semesterQuery || targetBatch?.currentSemester || req.user?.currentSemester;
-      courses = courses.filter(c => 
-        activeSem !== undefined ? c.semester === activeSem : (c.batchIds && c.batchIds.includes(batchId))
-      );
-    } else if (req.user && req.user.role !== 'ADMIN') {
-      const userBatch = req.user.batchId ? await fetchBatchById(req.user.batchId) : null;
-      const targetSem = semesterQuery || userBatch?.currentSemester || req.user.currentSemester;
-      courses = courses.filter(c => 
-        targetSem !== undefined ? c.semester === targetSem : (req.user!.batchId && c.batchIds?.includes(req.user!.batchId))
-      );
+    if (!isAllRequested) {
+      if (batchId) {
+        const targetBatch = await fetchBatchById(batchId);
+        const activeSem = semesterQuery || targetBatch?.currentSemester || req.user?.currentSemester;
+        courses = courses.filter(c => 
+          activeSem !== undefined ? c.semester === activeSem : (c.batchIds && c.batchIds.includes(batchId))
+        );
+      } else if (req.user && req.user.role !== 'ADMIN') {
+        const userBatch = req.user.batchId ? await fetchBatchById(req.user.batchId) : null;
+        const targetSem = semesterQuery || userBatch?.currentSemester || req.user.currentSemester;
+        courses = courses.filter(c => 
+          targetSem !== undefined ? c.semester === targetSem : (req.user!.batchId && c.batchIds?.includes(req.user!.batchId))
+        );
+      } else if (semesterQuery) {
+        courses = courses.filter(c => c.semester === semesterQuery);
+      }
     } else if (semesterQuery) {
       courses = courses.filter(c => c.semester === semesterQuery);
     }
@@ -54,7 +59,7 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
   }
 });
 
-// GET /api/courses/:id (Course Details with related approved resources)
+// GET /api/courses/:id (Course Details with related questions, notes, labs across all years & batches)
 router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   const courseId = req.params.id;
 
@@ -68,9 +73,53 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
       fetchAllFaculty().catch(() => []),
     ]);
 
-    const resources = allResources.filter(
-      r => (r.courseId === course.id || r.courseCode === course.code) && r.status === 'APPROVED'
-    );
+    const normalizeCode = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const courseCodeNorm = normalizeCode(course.code);
+    const courseShortNorm = normalizeCode(course.shortName);
+
+    const isMatch = (r: Resource) => {
+      // 1. Direct course ID match
+      if (r.courseId && r.courseId === course.id) return true;
+
+      // 2. Normalized course code match (e.g. "SWE 311" === "SWE-311" === "SWE311")
+      const rCodeNorm = normalizeCode(r.courseCode);
+      if (rCodeNorm && (rCodeNorm === courseCodeNorm || rCodeNorm.includes(courseCodeNorm) || courseCodeNorm.includes(rCodeNorm))) {
+        return true;
+      }
+
+      // 3. Short name match (if applicable)
+      if (courseShortNorm && rCodeNorm && rCodeNorm === courseShortNorm) {
+        return true;
+      }
+
+      // 4. Resource title or courseTitle contains exact course code token
+      const rTitleNorm = normalizeCode(r.title);
+      if (courseCodeNorm && rTitleNorm.includes(courseCodeNorm)) {
+        return true;
+      }
+
+      return false;
+    };
+
+    // Filter resources matching the course code across ALL years and ALL batches (not rejected)
+    const matchedResources = allResources.filter(r => isMatch(r) && r.status !== 'REJECTED');
+
+    // Sort questions by academic year descending (newest year first, e.g. 2026, 2025, 2024...)
+    const questions = matchedResources
+      .filter(r => r.type === 'QUESTION')
+      .sort((a, b) => {
+        const yearDiff = (Number(b.academicYear) || 0) - (Number(a.academicYear) || 0);
+        if (yearDiff !== 0) return yearDiff;
+        return (b.createdAt || '').localeCompare(a.createdAt || '');
+      });
+
+    const notes = matchedResources
+      .filter(r => r.type === 'NOTE')
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    const labs = matchedResources
+      .filter(r => r.type === 'LAB')
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
     const faculty = allFaculty.find(f => f.id === course.assignedFacultyId);
 
@@ -78,9 +127,9 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
       course,
       faculty,
       resources: {
-        questions: resources.filter(r => r.type === 'QUESTION'),
-        notes: resources.filter(r => r.type === 'NOTE'),
-        labs: resources.filter(r => r.type === 'LAB'),
+        questions,
+        notes,
+        labs,
       },
     });
   } catch (err: any) {

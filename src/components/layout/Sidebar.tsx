@@ -5,7 +5,7 @@ import {
   HelpCircle, FileText, FolderGit2, Bell, Users,
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
-  History, GraduationCap
+  History, GraduationCap, SlidersHorizontal
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { useAuth } from '../../context/AuthContext';
@@ -28,10 +28,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isRole = (role: string) => user?.role === role;
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all duration-150 ease-out active:scale-[0.98] ${
+    `flex items-center gap-3 ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2.5 rounded-xl text-xs font-sans tracking-tight transition-all duration-150 ease-out active:scale-[0.98] ${
       isActive
-        ? 'bg-[#EFF6FF] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-semibold shadow-2xs'
-        : 'text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium'
+        ? 'bg-[#EFF6FF] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-semibold shadow-2xs [&>svg]:stroke-[2.6px]'
+        : 'text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium [&>svg]:stroke-[2.4px]'
     }`;
 
   return (
@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Container: Clean White in Light Theme */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 bg-white dark:bg-[#0F172A] text-[#0F172A] dark:text-[#F8FAFC] flex flex-col transition-all duration-300 border-r border-[#E2E8F0] dark:border-slate-800 shadow-xs ${
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-white dark:bg-[#0F172A] text-[#0F172A] dark:text-[#F8FAFC] font-sans flex flex-col transition-all duration-300 border-r border-[#E2E8F0] dark:border-slate-800 shadow-xs ${
           isCollapsed ? 'w-20' : 'w-60'
         } ${
           isMobileOpen ? 'translate-x-0 w-60' : '-translate-x-full md:translate-x-0'
@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="text-sm font-bold tracking-tight text-[#0B2348] dark:text-white truncate leading-tight">
                   Student Portal
                 </span>
-                <span className="text-[10px] text-[#64748B] dark:text-slate-400 truncate font-medium">
+                <span className="text-[10px] text-[#64748B] dark:text-slate-400 truncate font-medium tracking-tight">
                   Dept of Software Engineering
                 </span>
               </div>
@@ -73,19 +73,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onCloseMobile}
               className="md:hidden text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white p-1"
             >
-              <X className="w-5 h-5" />
+              <X strokeWidth={2.5} className="w-5 h-5" />
             </button>
             <button
               onClick={onToggleCollapse}
               className="hidden md:flex text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              {isCollapsed ? <ChevronRight strokeWidth={2.5} className="w-4 h-4" /> : <ChevronLeft strokeWidth={2.5} className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
         {/* Navigation Body */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-4">
           {/* MAIN */}
           <div>
             {!isCollapsed && (
@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
             <NavLink to="/dashboard" className={navLinkClass} onClick={onCloseMobile}>
-              <LayoutDashboard className="w-4 h-4 shrink-0 text-[#2563EB] dark:text-blue-400" />
+              <LayoutDashboard strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#2563EB] dark:text-blue-400" />
               {!isCollapsed && <span>Dashboard</span>}
             </NavLink>
           </div>
@@ -104,52 +104,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div>
               {!isCollapsed && (
                 <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block mb-1 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" /> CENTRAL ADMIN
+                  <ShieldCheck strokeWidth={2.5} className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" /> CENTRAL ADMIN
                 </span>
               )}
               <div className="space-y-1">
                 <NavLink to="/admin/dashboard" className={navLinkClass} onClick={onCloseMobile}>
-                  <LayoutDashboard className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <LayoutDashboard strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Admin Overview</span>}
                 </NavLink>
                 <NavLink to="/admin/students" className={navLinkClass} onClick={onCloseMobile}>
-                  <Users className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <Users strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Students & Users</span>}
                 </NavLink>
                 <NavLink to="/admin/cr-management" className={navLinkClass} onClick={onCloseMobile}>
-                  <UserCheck className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <UserCheck strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>CR Permissions</span>}
                 </NavLink>
                 <NavLink to="/admin/batches" className={navLinkClass} onClick={onCloseMobile}>
-                  <Layers className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <Layers strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Academic Batches</span>}
                 </NavLink>
                 <NavLink to="/admin/courses" className={navLinkClass} onClick={onCloseMobile}>
-                  <BookOpen className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <BookOpen strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Curriculum & Courses</span>}
                 </NavLink>
+                <NavLink to="/admin/semesters" className={navLinkClass} onClick={onCloseMobile}>
+                  <SlidersHorizontal strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
+                  {!isCollapsed && <span>Semester Management</span>}
+                </NavLink>
                 <NavLink to="/admin/faculty" className={navLinkClass} onClick={onCloseMobile}>
-                  <GraduationCap className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <GraduationCap strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Faculty Directory</span>}
                 </NavLink>
                 <NavLink to="/admin/routine" className={navLinkClass} onClick={onCloseMobile}>
-                  <Calendar className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Routine Matrix</span>}
                 </NavLink>
                 <NavLink to="/admin/verification" className={navLinkClass} onClick={onCloseMobile}>
-                  <FileCheck className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <FileCheck strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Resource Queue</span>}
                 </NavLink>
                 <NavLink to="/admin/notices" className={navLinkClass} onClick={onCloseMobile}>
-                  <Bell className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <Bell strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Dept Notices</span>}
                 </NavLink>
                 <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
-                  <Megaphone className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Announcements</span>}
                 </NavLink>
                 <NavLink to="/admin/activity" className={navLinkClass} onClick={onCloseMobile}>
-                  <History className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <History strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Audit Trail</span>}
                 </NavLink>
               </div>
@@ -161,24 +165,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div>
               {!isCollapsed && (
                 <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block mb-1 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-amber-500" /> CR MANAGEMENT
+                  <Sparkles strokeWidth={2.5} className="w-3 h-3 text-amber-500" /> CR MANAGEMENT
                 </span>
               )}
               <div className="space-y-1">
                 <NavLink to="/cr/dashboard" className={navLinkClass} onClick={onCloseMobile}>
-                  <Shield className="w-4 h-4 shrink-0 text-amber-600" />
+                  <Shield strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>CR Control Desk</span>}
                 </NavLink>
                 <NavLink to="/cr/announcements" className={navLinkClass} onClick={onCloseMobile}>
-                  <Megaphone className="w-4 h-4 shrink-0 text-amber-600" />
+                  <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>Batch Notices</span>}
                 </NavLink>
                 <NavLink to="/cr/exams" className={navLinkClass} onClick={onCloseMobile}>
-                  <Clock className="w-4 h-4 shrink-0 text-amber-600" />
+                  <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>Schedule Exams</span>}
                 </NavLink>
                 <NavLink to="/cr/routine-requests" className={navLinkClass} onClick={onCloseMobile}>
-                  <Calendar className="w-4 h-4 shrink-0 text-amber-600" />
+                  <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>Routine Requests</span>}
                 </NavLink>
               </div>
@@ -196,19 +200,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               <NavLink to="/routine" className={navLinkClass} onClick={onCloseMobile}>
-                <Calendar className="w-4 h-4 shrink-0" />
+                <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Routine</span>}
               </NavLink>
               <NavLink to="/courses" className={navLinkClass} onClick={onCloseMobile}>
-                <BookOpen className="w-4 h-4 shrink-0" />
+                <BookOpen strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Courses</span>}
               </NavLink>
               <NavLink to="/exams" className={navLinkClass} onClick={onCloseMobile}>
-                <Clock className="w-4 h-4 shrink-0" />
+                <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Upcoming Exams</span>}
               </NavLink>
               <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
-                <Megaphone className="w-4 h-4 shrink-0" />
+                <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Announcements</span>}
               </NavLink>
             </div>
@@ -223,11 +227,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               <NavLink to="/resources/questions" className={navLinkClass} onClick={onCloseMobile}>
-                <GraduationCap className="w-4 h-4 shrink-0" />
+                <GraduationCap strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Question Bank</span>}
               </NavLink>
               <NavLink to="/faq" className={navLinkClass} onClick={onCloseMobile}>
-                <HelpCircle className="w-4 h-4 shrink-0" />
+                <HelpCircle strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>FAQ</span>}
               </NavLink>
             </div>
@@ -242,11 +246,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               <NavLink to="/notices" className={navLinkClass} onClick={onCloseMobile}>
-                <Bell className="w-4 h-4 shrink-0" />
+                <Bell strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Department Notice</span>}
               </NavLink>
               <NavLink to="/faculty" className={navLinkClass} onClick={onCloseMobile}>
-                <Users className="w-4 h-4 shrink-0" />
+                <Users strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Faculty</span>}
               </NavLink>
             </div>
@@ -260,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
             <NavLink to="/profile" className={navLinkClass} onClick={onCloseMobile}>
-              <Settings className="w-4 h-4 shrink-0" />
+              <Settings strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
               {!isCollapsed && <span>Profile & Settings</span>}
             </NavLink>
           </div>
@@ -282,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               </div>
               <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 flex items-center justify-center">
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown strokeWidth={2.5} className="w-4 h-4" />
               </div>
             </div>
           </div>

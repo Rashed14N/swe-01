@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -7,37 +7,164 @@ import {
   Globe,
   FileText,
   Upload,
+  Check,
+  ChevronDown,
+  GraduationCap,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { ExamType } from '../../types';
+import { ExamType, Course, Faculty, getFacultyRank } from '../../types';
 
 interface UploadQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialCourseCode?: string;
+  initialCourseTitle?: string;
 }
 
 export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  initialCourseCode,
+  initialCourseTitle,
 }) => {
   const { user, token } = useAuth();
   const { addToast } = useNotifications();
 
   const [title, setTitle] = useState('');
-  const [courseCode, setCourseCode] = useState('SWE 311');
-  const [courseTitle, setCourseTitle] = useState('Software Engineering');
-  const [semester, setSemester] = useState<number>(user?.currentSemester || 5);
+  const [courseCode, setCourseCode] = useState(initialCourseCode || 'SWE 311');
+  const [courseTitle, setCourseTitle] = useState(initialCourseTitle || 'Software Engineering');
   const [academicYear, setAcademicYear] = useState<number>(new Date().getFullYear());
   const [examType, setExamType] = useState<ExamType>('FINAL');
   const [facultyName, setFacultyName] = useState('');
+  const [isCustomFaculty, setIsCustomFaculty] = useState(false);
   const [targetBatch, setTargetBatch] = useState(user?.batchName || 'SWE 9th Batch');
   const [description, setDescription] = useState('');
+
+  const [coursesList, setCoursesList] = useState<Course[]>([]);
+  const [facultyList, setFacultyList] = useState<Faculty[]>([]);
+  const [autoMatchedCourse, setAutoMatchedCourse] = useState<Course | null>(null);
   
   const [fileUrl, setFileUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load courses and faculty members for dropdowns and auto-detection
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    const fetchMetadata = async () => {
+      try {
+        const [resCourses, resFaculty] = await Promise.all([
+          fetch('/api/courses?all=true'),
+          fetch('/api/faculty'),
+        ]);
+
+        if (resCourses.ok && isMounted) {
+          const cData = await resCourses.json();
+          const list: Course[] = Array.isArray(cData.courses) ? cData.courses : [];
+          setCoursesList(list);
+
+          // If courseCode is already populated, attempt match
+          if (courseCode) {
+            matchAndFillCourse(courseCode, list);
+          }
+        }
+
+        if (resFaculty.ok && isMounted) {
+          const fData = await resFaculty.json();
+          const list: Faculty[] = Array.isArray(fData) ? fData : fData.faculty || [];
+          // Sort faculty by rank (Head -> Professor -> Associate -> Assistant -> Lecturer)
+          list.sort((a, b) => {
+            const rankA = getFacultyRank ? getFacultyRank(a.designation) : 99;
+            const rankB = getFacultyRank ? getFacultyRank(b.designation) : 99;
+            if (rankA !== rankB) return rankA - rankB;
+            return a.name.localeCompare(b.name);
+          });
+          setFacultyList(list);
+        }
+      } catch (err) {
+        console.error('Failed to load courses or faculty for upload:', err);
+      }
+    };
+
+    fetchMetadata();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
+
+  // Reset or initialize on modal open
+  useEffect(() => {
+    if (isOpen) {
+      if (initialCourseCode) {
+        setCourseCode(initialCourseCode);
+        if (coursesList.length > 0) {
+          matchAndFillCourse(initialCourseCode, coursesList);
+        }
+      }
+      if (initialCourseTitle) {
+        setCourseTitle(initialCourseTitle);
+      }
+    }
+  }, [isOpen, initialCourseCode, initialCourseTitle]);
+
+  // Function to search course by code and auto-fill course title
+  const matchAndFillCourse = (inputCode: string, courses = coursesList) => {
+    if (!inputCode || !inputCode.trim()) {
+      setAutoMatchedCourse(null);
+      return;
+    }
+
+    const cleanInput = inputCode.trim().toUpperCase().replace(/[\s\-_]/g, '');
+    const cleanNumbersOnly = inputCode.trim().replace(/\D/g, '');
+
+    const matched =
+      courses.find((c) => c.code.trim().toUpperCase().replace(/[\s\-_]/g, '') === cleanInput) ||
+      courses.find((c) => c.code.trim().toUpperCase() === inputCode.trim().toUpperCase()) ||
+      courses.find((c) => {
+        if (cleanNumbersOnly.length >= 3) {
+          return c.code.replace(/\D/g, '') === cleanNumbersOnly;
+        }
+        return false;
+      });
+
+    if (matched) {
+      setCourseTitle(matched.title);
+      setAutoMatchedCourse(matched);
+      // Auto-suggest faculty if not already selected and course has assigned faculty
+      if (!facultyName && matched.assignedFacultyName) {
+        setFacultyName(matched.assignedFacultyName);
+        setIsCustomFaculty(false);
+      }
+    } else {
+      setAutoMatchedCourse(null);
+    }
+  };
+
+  const handleCourseCodeChange = (newCode: string) => {
+    setCourseCode(newCode);
+    matchAndFillCourse(newCode, coursesList);
+  };
+
+  // Quick auto-generate title if empty
+  const handleAutoGenerateTitle = () => {
+    const examLabel =
+      examType === 'FINAL'
+        ? 'Final Exam'
+        : examType === 'MIDTERM'
+        ? 'Midterm Exam'
+        : examType === 'QUIZ'
+        ? 'Quiz Question'
+        : examType === 'SUPPLE'
+        ? 'Supple Exam'
+        : 'Class Test';
+    setTitle(`${courseCode} ${examLabel} ${academicYear}`);
+  };
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -84,7 +211,6 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
           type: 'QUESTION',
           courseCode: courseCode.trim().toUpperCase(),
           courseTitle: courseTitle.trim(),
-          semester: Number(semester),
           academicYear: Number(academicYear),
           examType,
           facultyName: facultyName.trim() || undefined,
@@ -169,11 +295,21 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-            {/* Title */}
+            {/* Title with auto-generate helper */}
             <div>
-              <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                Question Paper Title *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-bold text-[#0A2147] dark:text-slate-200">
+                  Question Paper Title *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateTitle}
+                  className="text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  title="Generate standard title from Course, Exam Type, and Year"
+                >
+                  <Sparkles className="w-3 h-3" /> Auto-suggest Title
+                </button>
+              </div>
               <input
                 type="text"
                 required
@@ -187,23 +323,52 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
             {/* Course Code & Title */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                  Course Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. SWE 311"
-                  value={courseCode}
-                  onChange={(e) => setCourseCode(e.target.value)}
-                  className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 focus:border-[#2563EB]"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-[#0A2147] dark:text-slate-200">
+                    Course Code *
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-medium">Type or pick from list</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    list="upload-course-codes"
+                    placeholder="e.g. SWE 311 or 311"
+                    value={courseCode}
+                    onChange={(e) => handleCourseCodeChange(e.target.value)}
+                    className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 focus:border-[#2563EB]"
+                  />
+                  <datalist id="upload-course-codes">
+                    {coursesList.map((c) => (
+                      <option key={c.id || c.code} value={c.code}>
+                        {c.code} — {c.title} {c.semester ? `(Sem ${c.semester})` : ''}
+                      </option>
+                    ))}
+                  </datalist>
+                </div>
+                {autoMatchedCourse ? (
+                  <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                    <Check className="w-3 h-3 shrink-0" /> Recognized: {autoMatchedCourse.code} (Sem {autoMatchedCourse.semester})
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Entering code (e.g. SWE 311) auto-fills Course Title.
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                  Course Title *
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-[#0A2147] dark:text-slate-200">
+                    Course Title *
+                  </label>
+                  {autoMatchedCourse && (
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40">
+                      Auto-filled
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
                   required
@@ -215,8 +380,8 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
               </div>
             </div>
 
-            {/* Question Type & Semester */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Question Type & Academic Year */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
                   Exam Type *
@@ -230,23 +395,6 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
                   <option value="FINAL">Final Exam Question</option>
                   <option value="SUPPLE">Supple Exam Question</option>
                   <option value="CLASS_TEST">CT Question</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                  Semester *
-                </label>
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value))}
-                  className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 cursor-pointer"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                    <option key={s} value={s}>
-                      Semester {s}
-                    </option>
-                  ))}
                 </select>
               </div>
 
@@ -271,16 +419,81 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
             {/* Faculty & Batch */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#0A2147] dark:text-slate-200 mb-1">
-                  Faculty / Teacher Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dr. Md. Kamrul Hasan"
-                  value={facultyName}
-                  onChange={(e) => setFacultyName(e.target.value)}
-                  className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-[#0A2147] dark:text-slate-200">
+                    Faculty / Teacher <span className="text-slate-400 font-normal text-[11px]">(Optional)</span>
+                  </label>
+                  {isCustomFaculty ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomFaculty(false);
+                        setFacultyName('');
+                      }}
+                      className="text-[10px] text-[#2563EB] dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+                    >
+                      ← Dropdown
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomFaculty(true)}
+                      className="text-[10px] text-slate-500 hover:text-[#2563EB] dark:hover:text-blue-400 font-medium cursor-pointer"
+                    >
+                      + Custom
+                    </button>
+                  )}
+                </div>
+
+                {!isCustomFaculty ? (
+                  <div className="relative">
+                    <select
+                      value={
+                        facultyList.some((f) => f.name === facultyName)
+                          ? facultyName
+                          : facultyName
+                          ? '__CUSTOM__'
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '__CUSTOM__') {
+                          setIsCustomFaculty(true);
+                        } else {
+                          setFacultyName(val);
+                        }
+                      }}
+                      className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 cursor-pointer appearance-none pr-8"
+                    >
+                      <option value="">-- Select Faculty / Teacher --</option>
+                      {facultyList.map((f) => (
+                        <option key={f.id || f.name} value={f.name}>
+                          {f.name} {f.shortName ? `(${f.shortName})` : ''} — {f.designation}
+                        </option>
+                      ))}
+                      <option value="__CUSTOM__">✍️ Other / Custom Faculty Name...</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      placeholder="Type teacher name..."
+                      value={facultyName}
+                      onChange={(e) => setFacultyName(e.target.value)}
+                      className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40"
+                      autoFocus
+                    />
+                  </div>
+                )}
+                {facultyName && !isCustomFaculty && (
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1 font-medium">
+                    <GraduationCap className="w-3 h-3 shrink-0" /> {facultyName}
+                  </p>
+                )}
               </div>
 
               <div>

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   User as UserIcon, Upload, CheckCircle2, Clock, XCircle, FileText, 
   Award, ShieldCheck, Mail, Phone, Hash, GraduationCap, Save, 
-  Sparkles, Edit3, Layers, BookOpen, Check, Link as LinkIcon, ExternalLink, Copy, Globe
+  Sparkles, Edit3, Layers, BookOpen, Check, Link as LinkIcon, ExternalLink, Copy, Globe, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Resource, ResourceType } from '../types';
+import { Resource, ResourceType, Course, Faculty, getFacultyRank } from '../types';
 import { getUserAvatarUrl } from '../data/avatars';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
 import { parseGoogleDriveLink } from '../lib/driveUtils';
@@ -47,11 +47,61 @@ export const ProfilePage: React.FC = () => {
   const [courseCode, setCourseCode] = useState('SWE 311');
   const [courseTitle, setCourseTitle] = useState('Software Engineering');
   const [facultyName, setFacultyName] = useState('');
-  const [semester, setSemester] = useState(user?.currentSemester || 5);
+  const [isCustomFaculty, setIsCustomFaculty] = useState(false);
   const [academicYear, setAcademicYear] = useState(2026);
   const [examType, setExamType] = useState<'QUIZ' | 'MIDTERM' | 'FINAL' | 'SUPPLE' | 'CLASS_TEST'>('FINAL');
   const [description, setDescription] = useState('');
   const [fileUrl, setFileUrl] = useState('');
+
+  const [coursesList, setCoursesList] = useState<Course[]>([]);
+  const [facultyList, setFacultyList] = useState<Faculty[]>([]);
+  const [autoMatchedCourse, setAutoMatchedCourse] = useState<Course | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/courses?all=true').then((r) => (r.ok ? r.json() : { courses: [] })),
+      fetch('/api/faculty').then((r) => (r.ok ? r.json() : [])),
+    ])
+      .then(([cData, fData]) => {
+        const courses: Course[] = Array.isArray(cData.courses) ? cData.courses : [];
+        setCoursesList(courses);
+        const facs: Faculty[] = Array.isArray(fData) ? fData : fData.faculty || [];
+        facs.sort((a, b) => {
+          const rankA = getFacultyRank ? getFacultyRank(a.designation) : 99;
+          const rankB = getFacultyRank ? getFacultyRank(b.designation) : 99;
+          if (rankA !== rankB) return rankA - rankB;
+          return a.name.localeCompare(b.name);
+        });
+        setFacultyList(facs);
+      })
+      .catch(console.error);
+  }, []);
+
+  const handleCourseCodeChange = (inputCode: string) => {
+    setCourseCode(inputCode);
+    if (!inputCode.trim()) {
+      setAutoMatchedCourse(null);
+      return;
+    }
+    const cleanInput = inputCode.trim().toUpperCase().replace(/[\s\-_]/g, '');
+    const cleanNumbers = inputCode.trim().replace(/\D/g, '');
+
+    const matched =
+      coursesList.find((c) => c.code.trim().toUpperCase().replace(/[\s\-_]/g, '') === cleanInput) ||
+      coursesList.find((c) => c.code.trim().toUpperCase() === inputCode.trim().toUpperCase()) ||
+      coursesList.find((c) => cleanNumbers.length >= 3 && c.code.replace(/\D/g, '') === cleanNumbers);
+
+    if (matched) {
+      setCourseTitle(matched.title);
+      setAutoMatchedCourse(matched);
+      if (!facultyName && matched.assignedFacultyName) {
+        setFacultyName(matched.assignedFacultyName);
+        setIsCustomFaculty(false);
+      }
+    } else {
+      setAutoMatchedCourse(null);
+    }
+  };
 
   const fetchMyContributions = () => {
     if (!token) return;
@@ -155,7 +205,6 @@ export const ProfilePage: React.FC = () => {
           courseCode: courseCode.trim().toUpperCase(),
           courseTitle: courseTitle.trim(),
           facultyName: facultyName.trim() || undefined,
-          semester: Number(semester),
           academicYear: Number(academicYear),
           examType,
           description: description.trim() || undefined,
@@ -514,47 +563,132 @@ export const ProfilePage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Course Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={courseCode}
-                  onChange={(e) => setCourseCode(e.target.value)}
-                  placeholder="e.g. SWE 311"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Course Code *
+                  </label>
+                  <span className="text-[10px] text-slate-400 lowercase">type or pick</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    list="profile-course-codes"
+                    value={courseCode}
+                    onChange={(e) => handleCourseCodeChange(e.target.value)}
+                    placeholder="e.g. SWE 311 or 311"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  />
+                  <datalist id="profile-course-codes">
+                    {coursesList.map((c) => (
+                      <option key={c.id || c.code} value={c.code}>
+                        {c.code} — {c.title}
+                      </option>
+                    ))}
+                  </datalist>
+                </div>
+                {autoMatchedCourse && (
+                  <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Auto-detected: {autoMatchedCourse.code} (Sem {autoMatchedCourse.semester})
+                  </p>
+                )}
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Course Title *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Course Title *
+                  </label>
+                  {autoMatchedCourse && (
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                      Auto-filled
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
                   required
                   value={courseTitle}
                   onChange={(e) => setCourseTitle(e.target.value)}
                   placeholder="e.g. Software Engineering"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Faculty / Teacher Name
-              </label>
-              <input
-                type="text"
-                value={facultyName}
-                onChange={(e) => setFacultyName(e.target.value)}
-                placeholder="e.g. Dr. Md. Kamrul Hasan"
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Faculty / Teacher Name <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                </label>
+                {isCustomFaculty ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomFaculty(false);
+                      setFacultyName('');
+                    }}
+                    className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+                  >
+                    ← Select from Dropdown
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomFaculty(true)}
+                    className="text-[10px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer"
+                  >
+                    + Type Custom
+                  </button>
+                )}
+              </div>
+
+              {!isCustomFaculty ? (
+                <div className="relative">
+                  <select
+                    value={
+                      facultyList.some((f) => f.name === facultyName)
+                        ? facultyName
+                        : facultyName
+                        ? '__CUSTOM__'
+                        : ''
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '__CUSTOM__') {
+                        setIsCustomFaculty(true);
+                      } else {
+                        setFacultyName(val);
+                      }
+                    }}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white appearance-none pr-8 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  >
+                    <option value="">-- Select Faculty / Teacher --</option>
+                    {facultyList.map((f) => (
+                      <option key={f.id || f.name} value={f.name}>
+                        {f.name} {f.shortName ? `(${f.shortName})` : ''} — {f.designation}
+                      </option>
+                    ))}
+                    <option value="__CUSTOM__">✍️ Other / Enter Custom Faculty Name...</option>
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    value={facultyName}
+                    onChange={(e) => setFacultyName(e.target.value)}
+                    placeholder="Optional — e.g. Dr. Md. Kamrul Hasan"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white"
+                    autoFocus
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Exam Type *
@@ -568,23 +702,6 @@ export const ProfilePage: React.FC = () => {
                   <option value="FINAL">Final Exam Question</option>
                   <option value="SUPPLE">Supple Exam Question</option>
                   <option value="CLASS_TEST">CT Question</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Semester *
-                </label>
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                    <option key={s} value={s}>
-                      Semester {s}
-                    </option>
-                  ))}
                 </select>
               </div>
 

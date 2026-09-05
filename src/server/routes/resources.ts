@@ -4,6 +4,7 @@ import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../aut
 import { Resource } from '../../types';
 import {
   fetchAllResources,
+  fetchAllCourses,
   createResourceInDB,
   updateResourceInDB,
   deleteResourceFromDB,
@@ -30,9 +31,11 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     }
 
     if (courseCode) {
-      list = list.filter(
-        r => r.courseCode.replace(/\s+/g, '').toLowerCase() === (courseCode as string).replace(/\s+/g, '').toLowerCase()
-      );
+      const normQuery = (courseCode as string).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      list = list.filter(r => {
+        const normCode = (r.courseCode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        return normCode === normQuery || normCode.includes(normQuery) || normQuery.includes(normCode);
+      });
     }
 
     if (examType) {
@@ -165,25 +168,40 @@ router.post(['/', '/upload'], verifyAuthToken, async (req: AuthenticatedRequest,
     academicYear, examType, facultyName, targetBatch, labCategory, description, fileUrl, fileName, fileSize, fileType
   } = req.body;
 
-  if (!title || !type || !courseTitle || !semester) {
-    return res.status(400).json({ error: 'Title, type, course, and semester are required' });
+  if (!title || !type || (!courseTitle && !courseCode)) {
+    return res.status(400).json({ error: 'Title, type, and course details are required' });
   }
 
   try {
     const isAdmin = req.user.role === 'ADMIN';
     const initialStatus = isAdmin ? 'APPROVED' : 'PENDING';
 
+    // Auto-resolve course if available
+    const allCourses = await fetchAllCourses().catch(() => []);
+    const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const queryCodeNorm = normalize(courseCode);
+
+    const matchingCourse = allCourses.find(c => {
+      const cNorm = normalize(c.code);
+      return cNorm === queryCodeNorm || (queryCodeNorm && (cNorm.includes(queryCodeNorm) || queryCodeNorm.includes(cNorm)));
+    });
+
+    const resolvedCourseId = courseId && courseId !== 'course-gen' ? courseId : (matchingCourse?.id || 'course-gen');
+    const resolvedCourseCode = courseCode ? String(courseCode).trim().toUpperCase() : (matchingCourse?.code || 'SWE 300');
+    const resolvedCourseTitle = courseTitle ? String(courseTitle).trim() : (matchingCourse?.title || 'Course Material');
+    const resolvedSemester = Number(semester || matchingCourse?.semester || req.user.currentSemester || 1);
+
     const newResource: Resource = {
       id: `res-${Date.now()}`,
       title: String(title).trim(),
       type,
-      courseId: courseId || 'course-gen',
-      courseCode: courseCode || 'SWE 300',
-      courseTitle: String(courseTitle).trim(),
-      semester: Number(semester),
+      courseId: resolvedCourseId,
+      courseCode: resolvedCourseCode,
+      courseTitle: resolvedCourseTitle,
+      semester: resolvedSemester,
       academicYear: Number(academicYear || new Date().getFullYear()),
       examType,
-      facultyName: facultyName || undefined,
+      facultyName: facultyName?.trim() || undefined,
       targetBatch: targetBatch || req.user.batchName || 'SWE 9th Batch',
       labCategory,
       description,
@@ -313,6 +331,44 @@ router.post('/:id/download', optionalAuthToken, async (req: AuthenticatedRequest
   } catch (err: any) {
     console.error('[Resources API download Error]:', err);
     res.status(500).json({ error: 'Failed to record download' });
+  }
+});
+
+// DELETE /api/resources/:id (Admin only or Resource Uploader)
+router.delete('/:id', verifyAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+  const resourceId = req.params.id;
+  try {
+    const allResources = await fetchAllResources();
+    const resource = allResources.find(r => r.id === resourceId);
+
+    const isAdmin = req.user.role === 'ADMIN';
+    const isOwner = resource && resource.uploaderId === req.user.id;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Only administrators or the uploader can delete this question' });
+    }
+
+    // Delete permanently from Supabase & local DB
+    await deleteResourceFromDB(resourceId);
+
+    db.addAuditLog(
+      req.user.id,
+      req.user.name,
+      'RESOURCE_DELETED',
+      resource?.title || resourceId,
+      `Permanently deleted from Supabase & vault by ${req.user.role}`
+    );
+
+    return res.json({
+      success: true,
+      message: 'Question resource deleted permanently from Supabase database.',
+      id: resourceId,
+    });
+  } catch (err: any) {
+    console.error('[Resources API delete Error]:', err);
+    return res.status(500).json({ error: err?.message || 'Failed to delete resource' });
   }
 });
 

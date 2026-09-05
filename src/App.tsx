@@ -40,6 +40,7 @@ import { AdminCRManagementPage } from './pages/admin/AdminCRManagementPage';
 import { AdminBatchesPage } from './pages/admin/AdminBatchesPage';
 import { AdminFacultyPage } from './pages/admin/AdminFacultyPage';
 import { AdminCoursesPage } from './pages/admin/AdminCoursesPage';
+import { AdminSemestersPage } from './pages/admin/AdminSemestersPage';
 import { AdminRoutinePage } from './pages/admin/AdminRoutinePage';
 import { AdminNoticesPage } from './pages/admin/AdminNoticesPage';
 import { AdminResourceVerificationPage } from './pages/admin/AdminResourceVerificationPage';
@@ -325,6 +326,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['ADMIN']}>
                     <AdminCoursesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/semesters"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminSemestersPage />
                   </ProtectedRoute>
                 }
               />

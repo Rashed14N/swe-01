@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Users, Calendar, User, Download, ChevronDown, Sparkles } from 'lucide-react';
+import { FileText, Users, Calendar, User, Download, ChevronDown, Sparkles, Trash2 } from 'lucide-react';
 import { parseGoogleDriveLink } from '../../lib/driveUtils';
 
 export interface QuestionPaperCardProps {
@@ -17,6 +17,8 @@ export interface QuestionPaperCardProps {
   fileSize?: string;
   isCurrentSemesterMatch?: boolean;
   isExpanded?: boolean;
+  canDelete?: boolean;
+  onDelete?: () => void;
   onToggle?: () => void;
   onDownload?: () => void;
   onAuthorClick?: (author: string) => void;
@@ -37,6 +39,8 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
   fileSize,
   isCurrentSemesterMatch = false,
   isExpanded: controlledExpanded,
+  canDelete = false,
+  onDelete,
   onToggle,
   onDownload,
   onAuthorClick,
@@ -125,9 +129,24 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
             )}
           </div>
 
-          {/* Right Badge: Course Code */}
-          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EFF5FF] dark:bg-blue-950/50 border border-[#DBEAFE] dark:border-blue-900/60 text-[#2563EB] dark:text-blue-400 font-mono font-bold text-[11px] shrink-0">
-            {courseCode}
+          {/* Right Badges: Course Code + Optional Delete */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EFF5FF] dark:bg-blue-950/50 border border-[#DBEAFE] dark:border-blue-900/60 text-[#2563EB] dark:text-blue-400 font-mono font-bold text-[11px]">
+              {courseCode}
+            </div>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
+                title="Delete Question (Admin - Permanently from Supabase)"
+                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -240,6 +259,20 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
                     </span>
                   )}
                 </motion.button>
+
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                    className="w-full mt-2 py-1.5 px-3 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 font-semibold text-[11px] rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Question (Supabase)</span>
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

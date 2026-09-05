@@ -541,29 +541,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     </motion.button>
                   </form>
 
-                  {/* Quick Demo Student Account for Testing */}
-                  <div className="mt-3.5 p-2.5 sm:p-3 rounded-xl bg-blue-50/80 border border-blue-100/90 flex items-center justify-between gap-2.5 text-xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="px-2 py-0.5 rounded-md bg-[#0B4491] text-white font-bold text-[10px] tracking-wider uppercase shrink-0">
-                        Demo
-                      </span>
-                      <span className="truncate text-slate-600 text-[11px] sm:text-xs">
-                        ID: <strong className="text-slate-900 font-mono">111111111</strong> • Pass: <strong className="text-slate-900 font-mono">password</strong>
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStudentIdOrEmail('111111111');
-                        setLoginPassword('password');
-                        setLoginError(null);
-                      }}
-                      className="text-[11px] font-bold text-[#0B4491] hover:text-[#08336E] bg-white hover:bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-200/80 shadow-2xs transition-colors shrink-0 cursor-pointer"
-                    >
-                      Auto-fill
-                    </button>
-                  </div>
-
                   {/* Prompt to Register */}
                   <div className="mt-4 text-center p-3.5 bg-slate-50/90 border border-slate-200 rounded-xl">
                     <p className="text-xs sm:text-sm text-slate-600">

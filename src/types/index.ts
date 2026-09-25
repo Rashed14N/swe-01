@@ -82,6 +82,10 @@ export interface Course {
   assignedFacultyId?: string;
   assignedFacultyName?: string;
   batchIds: string[]; // Batches taking this course
+  isRetakeCourse?: boolean;
+  retakeType?: string;
+  retakeBatchId?: string;
+  retakeBatchName?: string;
 }
 
 export interface RoutineSlot {
@@ -126,6 +130,13 @@ export interface Exam {
   createdBy: string;
   createdByName: string;
   createdAt: string;
+  daysLeft?: number;
+  isArchived?: boolean;
+  isRetakeCourse?: boolean;
+  retakeType?: string;
+  retakeBatchName?: string;
+  isUpdatedByCR?: boolean;
+  batchName?: string;
 }
 
 export type AnnouncementPriority = 'NORMAL' | 'IMPORTANT' | 'URGENT';
@@ -291,4 +302,68 @@ export interface DashboardSummary {
   currentCourses: Course[];
   recentAnnouncements: BatchAnnouncement[];
   recentNotices: DepartmentNotice[];
+  retakeCoursesCount?: number;
 }
+
+export type RetakeType = 'RETAKE' | 'IMPROVEMENT';
+export type RetakeStatus = 'ENROLLED' | 'IN_PROGRESS' | 'COMPLETED' | 'DROPPED';
+
+export interface RetakeRegistration {
+  id: string;
+  studentId: string;
+  studentName?: string;
+  studentRoll?: string;
+  studentEmail?: string;
+  courseId: string;
+  courseCode: string;
+  courseTitle: string;
+  courseCredits: number;
+  courseSemester?: number;
+  type: RetakeType;
+  retakeBatchId?: string;
+  retakeBatchName?: string;
+  previousGrade?: string;
+  targetGrade?: string;
+  status: RetakeStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RetakeRoutineSlot extends RoutineSlot {
+  retakeCourseCode: string;
+  retakeCourseTitle: string;
+  batchName?: string;
+  isToday?: boolean;
+  hasConflictWithRegularRoutine?: boolean;
+}
+
+export interface RetakeExamItem extends Exam {
+  retakeCourseCode: string;
+  retakeCourseTitle: string;
+  batchName?: string;
+  daysLeft: number;
+  hasConflictWithRegularExam?: boolean;
+}
+
+export interface RetakeAnnouncementItem extends BatchAnnouncement {
+  retakeCourseCode?: string;
+  batchName?: string;
+}
+
+export interface RetakeSummaryOverview {
+  registrations: RetakeRegistration[];
+  routineSlots: RetakeRoutineSlot[];
+  upcomingExams: RetakeExamItem[];
+  announcements: RetakeAnnouncementItem[];
+  stats: {
+    totalRegistered: number;
+    retakeCount: number;
+    improvementCount: number;
+    totalCredits: number;
+    upcomingExamsCount: number;
+    classesPerWeek: number;
+    conflictsCount: number;
+  };
+}
+

@@ -19,7 +19,9 @@ export const NoticesPage: React.FC = () => {
     fetch(`/api/notices?${params.toString()}`)
       .then(res => safeParseJson(res))
       .then(data => setNotices(data.notices || []))
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch notices:', err);
+      })
       .finally(() => setIsLoading(false));
   }, [category]);
 

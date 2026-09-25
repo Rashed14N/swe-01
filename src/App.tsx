@@ -19,6 +19,7 @@ import { StudentDashboardPage } from './pages/StudentDashboardPage';
 import { RoutinePage } from './pages/RoutinePage';
 import { CoursesPage } from './pages/CoursesPage';
 import { CourseDetailPage } from './pages/CourseDetailPage';
+import { RetakeCoursesPage } from './pages/RetakeCoursesPage';
 import { ExamsPage } from './pages/ExamsPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { QuestionBankPage } from './pages/QuestionBankPage';
@@ -131,6 +132,22 @@ export const App: React.FC = () => {
                     <CourseDetailPage />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="/retake-courses"
+                element={
+                  <ProtectedRoute>
+                    <RetakeCoursesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/retake-improvement"
+                element={<Navigate to="/retake-courses" replace />}
+              />
+              <Route
+                path="/retakes"
+                element={<Navigate to="/retake-courses" replace />}
               />
               <Route
                 path="/exams"

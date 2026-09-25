@@ -8,6 +8,7 @@ import { VisualRoutineGrid } from '../components/routine/VisualRoutineGrid';
 import { PageHeader } from '../components/common/PageHeader';
 import { ALL_ROOMS, CATEGORIZED_ROOMS } from '../constants/rooms';
 import { RoutineExportModal } from '../components/routine/RoutineExportModal';
+import { deduplicateAndMergeRoutineSlots } from '../utils/routineUtils';
 
 export const RoutinePage: React.FC = () => {
   const { token, user } = useAuth();
@@ -45,9 +46,11 @@ export const RoutinePage: React.FC = () => {
     })
       .then(res => safeParseJson(res))
       .then(data => {
-        setRoutines(data.routines || []);
+        setRoutines(deduplicateAndMergeRoutineSlots(data.routines || []));
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch routines:', err);
+      })
       .finally(() => setIsLoading(false));
   };
 

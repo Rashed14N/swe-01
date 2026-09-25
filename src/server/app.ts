@@ -15,6 +15,7 @@ import facultyRoutes from './routes/faculty';
 import notificationRoutes from './routes/notifications';
 import profileRoutes from './routes/profile';
 import supabaseRoutes from './routes/supabaseConfig';
+import retakeRoutes from './routes/retakes';
 
 export function createExpressApp() {
   const app = express();
@@ -85,6 +86,7 @@ export function createExpressApp() {
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/profile', profileRoutes);
   app.use('/api/supabase', supabaseRoutes);
+  app.use('/api/retakes', retakeRoutes);
 
   // API 404 catch-all: ensures unmatched /api/* requests return standard JSON 404
   app.use('/api/*', (req, res) => {

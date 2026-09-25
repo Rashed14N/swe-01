@@ -872,7 +872,15 @@ export async function getAllRoutineSlots(batchId?: string): Promise<RoutineSlot[
 
   let query = supabase.from('routine_slots').select('*');
   if (batchId) {
-    query = query.eq('batch_id', batchId);
+    const normalizedBatchId = batchId.trim().toLowerCase().replace(/th$|st$|nd$|rd$/i, '');
+    const batchCandidates = [
+      batchId,
+      normalizedBatchId,
+      `${normalizedBatchId}th`,
+      ...(normalizedBatchId === 'batch-13' ? ['batch-1788450159710'] : []),
+      ...(batchId === 'batch-1788450159710' ? ['batch-13', 'batch-13th'] : [])
+    ];
+    query = query.in('batch_id', batchCandidates);
   }
   const { data, error } = await query;
   if (error) throw new Error(`Supabase error: ${error.message}`);

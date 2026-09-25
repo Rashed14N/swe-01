@@ -20,6 +20,7 @@ import { adminApiClient } from '../../services/adminApiClient';
 import type { RoutineSlot, RoutineRequest, Batch } from '../../types';
 import { VisualRoutineGrid } from '../../components/routine/VisualRoutineGrid';
 import { ALL_ROOMS } from '../../constants/rooms';
+import { deduplicateAndMergeRoutineSlots } from '../../utils/routineUtils';
 
 const SAMPLE_ROUTINE_JSON = `[
   {
@@ -137,7 +138,7 @@ export const AdminRoutinePage: React.FC = () => {
       ]);
 
       setBatches(batchesData);
-      setRoutines(routineData);
+      setRoutines(deduplicateAndMergeRoutineSlots(routineData));
 
       if (batchesData.length > 0 && !batchesData.some(b => b.id === selectedBatchId)) {
         setSelectedBatchId(batchesData[0].id);

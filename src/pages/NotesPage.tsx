@@ -25,7 +25,9 @@ export const NotesPage: React.FC = () => {
     fetch(`/api/resources?${params.toString()}`)
       .then((res) => safeParseJson(res))
       .then((data) => setNotes(data.resources || []))
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch notes:', err);
+      })
       .finally(() => setIsLoading(false));
   };
 
@@ -37,7 +39,9 @@ export const NotesPage: React.FC = () => {
     fetch(`/api/resources/${resourceId}/download`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
-    }).catch(console.error);
+    }).catch((err) => {
+      console.warn('Download tracking error:', err);
+    });
   };
 
   return (

@@ -8,7 +8,9 @@ import {
   createAnnouncementInDB,
   deleteAnnouncementFromDB,
   fetchAllUsers,
+  fetchAllBatches,
 } from '../supabaseData';
+import { sendRetakeCourseUpdateEmail } from '../emailService';
 
 const router = Router();
 
@@ -111,6 +113,62 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
         });
       });
       db.save();
+    }
+
+    // Check if announcement relates to any retake course (by course code in title/description or matching batch)
+    try {
+      const allRetakes = db.getRetakes();
+      const allUsers = await fetchAllUsers().catch(() => []);
+      const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+      const batchObj = allBatches.find(b => b.id === targetBatchId);
+      const batchLabel = batchObj?.name || 'Academic Batch';
+
+      const matchedRetakes = allRetakes.filter(r => {
+        if (r.status === 'DROPPED') return false;
+        const codeInText =
+          (r.courseCode && title.toLowerCase().includes(r.courseCode.toLowerCase())) ||
+          (r.courseCode && description.toLowerCase().includes(r.courseCode.toLowerCase())) ||
+          (r.courseTitle && title.toLowerCase().includes(r.courseTitle.toLowerCase())) ||
+          (r.retakeBatchId && r.retakeBatchId === targetBatchId);
+        return codeInText;
+      });
+
+      if (matchedRetakes.length > 0) {
+        const local = db.getData();
+        if (!local.notifications) local.notifications = [];
+
+        for (const retake of matchedRetakes) {
+          local.notifications.unshift({
+            id: `notif-ann-retake-${Date.now()}-${Math.random()}`,
+            userId: retake.studentId,
+            title: `Course Announcement: ${retake.courseCode} 📢`,
+            message: `${title} (${batchLabel})`,
+            type: 'ANNOUNCEMENT',
+            linkUrl: '/retake-courses',
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+
+          const studentUser = allUsers.find(u => u.id === retake.studentId);
+          const studentEmail = retake.studentEmail || studentUser?.email;
+          if (studentEmail) {
+            sendRetakeCourseUpdateEmail({
+              to: studentEmail,
+              studentName: retake.studentName || studentUser?.name || 'Student',
+              courseCode: retake.courseCode,
+              courseTitle: retake.courseTitle,
+              updateType: 'ANNOUNCEMENT',
+              title,
+              description,
+              batchName: batchLabel,
+              actorName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+            }).catch(e => console.warn('[Announcement Retake Email Error]:', e));
+          }
+        }
+        db.save();
+      }
+    } catch (notifErr) {
+      console.warn('[Retake announcement notice error]:', notifErr);
     }
 
     db.addAuditLog(req.user.id, req.user.name, 'ANNOUNCEMENT_CREATED', `${title} (${targetBatchId})`);

@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verifyAuthToken, optionalAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { RoutineSlot, RoutineRequest } from '../../types';
+import { deduplicateAndMergeRoutineSlots } from '../../utils/routineUtils';
 import {
   fetchAllRoutineSlots,
   createRoutineSlotInDB,
@@ -217,6 +218,8 @@ router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: Au
   }
 
   try {
+    const finalSlotsToInsert = deduplicateAndMergeRoutineSlots(processedSlots);
+
     if (mode === 'REPLACE') {
       const existing = await fetchAllRoutineSlots(targetBatchId);
       for (const slot of existing) {
@@ -224,13 +227,13 @@ router.post('/bulk', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: Au
       }
     }
 
-    for (const slot of processedSlots) {
+    for (const slot of finalSlotsToInsert) {
       await createRoutineSlotInDB(slot);
     }
 
     const actorId = req.user?.id || 'admin';
     const actorName = req.user?.name || 'Admin';
-    db.addAuditLog(actorId, actorName, 'ROUTINE_BULK_IMPORTED', `${processedSlots.length} slots imported for ${targetBatchId} (${mode})`);
+    db.addAuditLog(actorId, actorName, 'ROUTINE_BULK_IMPORTED', `${finalSlotsToInsert.length} slots imported for ${targetBatchId} (${mode})`);
 
     const updatedBatchRoutines = await fetchAllRoutineSlots(targetBatchId);
 

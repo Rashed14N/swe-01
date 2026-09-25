@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Clock, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RoutineSlot } from '../../types';
 import { RoutineClassCard } from '../routine/RoutineClassCard';
+import { deduplicateAndMergeRoutineSlots, sortRoutineSlots } from '../../utils/routineUtils';
 
 interface TodaysRoutineCardProps {
   routine: RoutineSlot[];
@@ -10,6 +11,10 @@ interface TodaysRoutineCardProps {
 
 export const TodaysRoutineCard: React.FC<TodaysRoutineCardProps> = ({ routine }) => {
   const navigate = useNavigate();
+
+  const cleanedRoutine = useMemo(() => {
+    return sortRoutineSlots(deduplicateAndMergeRoutineSlots(routine));
+  }, [routine]);
 
   return (
     <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] flex flex-col h-full overflow-hidden">
@@ -33,17 +38,17 @@ export const TodaysRoutineCard: React.FC<TodaysRoutineCardProps> = ({ routine })
           <h3 className="text-xs sm:text-sm font-bold text-[#0A2147]">Today's Class Schedule</h3>
         </div>
         <span className="relative z-10 px-2.5 py-0.5 bg-blue-50/90 text-blue-700 border border-blue-200 text-[10px] sm:text-xs font-bold rounded-full">
-          {routine.length} {routine.length === 1 ? 'Class' : 'Classes'}
+          {cleanedRoutine.length} {cleanedRoutine.length === 1 ? 'Class' : 'Classes'}
         </span>
       </div>
 
       <div className="flex-1 p-2.5 sm:p-3 space-y-2 sm:space-y-2.5">
-        {routine.length === 0 ? (
+        {cleanedRoutine.length === 0 ? (
           <div className="py-6 text-center text-xs text-slate-500 bg-[#F6F9FD] rounded-lg border border-dashed border-[#D8E2EE]">
             🎉 No classes scheduled for today!
           </div>
         ) : (
-          routine.map(slot => (
+          cleanedRoutine.map(slot => (
             <RoutineClassCard key={slot.id} slot={slot} />
           ))
         )}

@@ -5,7 +5,7 @@ import {
   HelpCircle, FileText, FolderGit2, Bell, Users,
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
-  History, GraduationCap, SlidersHorizontal
+  History, GraduationCap, SlidersHorizontal, RotateCcw
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { useAuth } from '../../context/AuthContext';
@@ -206,6 +206,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <NavLink to="/courses" className={navLinkClass} onClick={onCloseMobile}>
                 <BookOpen strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Courses</span>}
+              </NavLink>
+              <NavLink to="/retake-courses" className={navLinkClass} onClick={onCloseMobile}>
+                <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600 dark:text-amber-400" />
+                {!isCollapsed && <span>Retake / Improvement</span>}
               </NavLink>
               <NavLink to="/exams" className={navLinkClass} onClick={onCloseMobile}>
                 <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />

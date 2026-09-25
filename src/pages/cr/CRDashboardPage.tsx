@@ -123,7 +123,7 @@ export const CRDashboardPage: React.FC = () => {
   // Today's Routine Filter
   const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
   const todayDayName = days[new Date().getDay()] || 'SUNDAY';
-  const todaysClasses = routines.filter(r => r.day === todayDayName);
+  const todaysClasses = routines.filter(r => r.day?.toUpperCase() === todayDayName);
 
   // Submit Handlers
   const handleCreateAnnouncement = async (e: React.FormEvent) => {

@@ -46,6 +46,64 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       courses = courses.filter(c => c.semester === semesterQuery);
     }
 
+    // Include registered retake courses for student users
+    if (req.user && req.user.role === 'STUDENT' && !isAllRequested) {
+      try {
+        const userRetakes = (db.getRetakes?.() || []).filter(r => r.studentId === req.user!.id && r.status !== 'DROPPED');
+        if (userRetakes.length > 0) {
+          const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+          for (const retake of userRetakes) {
+            const rCode = normalize(retake.courseCode);
+            const rId = retake.courseId;
+
+            const existingIndex = courses.findIndex(c =>
+              (rId && c.id === rId) || (rCode && normalize(c.code) === rCode)
+            );
+
+            if (existingIndex !== -1) {
+              courses[existingIndex] = {
+                ...courses[existingIndex],
+                isRetakeCourse: true,
+                retakeType: retake.type || 'RETAKE',
+                retakeBatchId: retake.retakeBatchId,
+                retakeBatchName: retake.retakeBatchName || 'Junior Batch',
+              };
+            } else {
+              const matchedAll = allCourses.find(c =>
+                (rId && c.id === rId) || (rCode && normalize(c.code) === rCode)
+              );
+              if (matchedAll) {
+                courses.push({
+                  ...matchedAll,
+                  isRetakeCourse: true,
+                  retakeType: retake.type || 'RETAKE',
+                  retakeBatchId: retake.retakeBatchId,
+                  retakeBatchName: retake.retakeBatchName || 'Junior Batch',
+                });
+              } else {
+                courses.push({
+                  id: retake.courseId || `course-${retake.id}`,
+                  code: retake.courseCode,
+                  title: retake.courseTitle,
+                  credits: 3,
+                  type: 'THEORY',
+                  semester: 1,
+                  batchIds: retake.retakeBatchId ? [retake.retakeBatchId] : [],
+                  isRetakeCourse: true,
+                  retakeType: retake.type || 'RETAKE',
+                  retakeBatchId: retake.retakeBatchId,
+                  retakeBatchName: retake.retakeBatchName || 'Junior Batch',
+                });
+              }
+            }
+          }
+        }
+      } catch (retakeErr) {
+        console.warn('[Courses API retakes error]:', retakeErr);
+      }
+    }
+
     return res.json({ courses });
   } catch (err: any) {
     console.error({

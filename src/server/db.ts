@@ -3,7 +3,8 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import type {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
-  DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest
+  DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest,
+  RetakeRegistration
 } from '../types';
 
 import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
@@ -22,6 +23,7 @@ export interface DBData {
   faculty: Faculty[];
   notifications: NotificationItem[];
   auditLogs: AuditLog[];
+  retakeRegistrations: RetakeRegistration[];
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -125,6 +127,17 @@ export function seedInitialData(): DBData {
       status: 'ACTIVE',
       crIds: [],
       createdAt: '2026-01-15T00:00:00Z',
+    },
+    {
+      id: 'batch-13',
+      name: 'SWE 13th Batch',
+      admissionYear: 2026,
+      currentSemester: 1,
+      academicSession: '2026-2027',
+      semesterMode: 'SEQUENCE',
+      status: 'ACTIVE',
+      crIds: [],
+      createdAt: '2026-07-01T00:00:00Z',
     },
   ];
 
@@ -1171,6 +1184,7 @@ export function seedInitialData(): DBData {
     notifications,
     auditLogs,
     routineRequests: [],
+    retakeRegistrations: [],
   };
 }
 
@@ -1206,6 +1220,7 @@ class JsonDB {
     if (!this.data.routineRequests) this.data.routineRequests = [];
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
+    if (!this.data.retakeRegistrations) this.data.retakeRegistrations = [];
 
     // Normalize and populate default batches with semesterMode and status
     const initialBatches = seedInitialData().batches;
@@ -1291,6 +1306,26 @@ class JsonDB {
 
   public getData(): DBData {
     return this.data;
+  }
+
+  public getCourses(): Course[] {
+    return this.data.courses || [];
+  }
+
+  public getBatches(): Batch[] {
+    return this.data.batches || [];
+  }
+
+  public getRoutines(): RoutineSlot[] {
+    return this.data.routines || [];
+  }
+
+  public getExams(): Exam[] {
+    return this.data.exams || [];
+  }
+
+  public getAnnouncements(): BatchAnnouncement[] {
+    return this.data.announcements || [];
   }
 
   // Helper methods
@@ -1394,6 +1429,37 @@ class JsonDB {
     };
     this.data.auditLogs.unshift(log);
     this.save();
+  }
+
+  public getRetakes(): RetakeRegistration[] {
+    if (!this.data.retakeRegistrations) {
+      this.data.retakeRegistrations = [];
+    }
+    return this.data.retakeRegistrations;
+  }
+
+  public saveRetake(registration: RetakeRegistration) {
+    if (!this.data.retakeRegistrations) {
+      this.data.retakeRegistrations = [];
+    }
+    const idx = this.data.retakeRegistrations.findIndex(r => r.id === registration.id);
+    if (idx >= 0) {
+      this.data.retakeRegistrations[idx] = registration;
+    } else {
+      this.data.retakeRegistrations.push(registration);
+    }
+    this.save();
+  }
+
+  public deleteRetake(id: string): boolean {
+    if (!this.data.retakeRegistrations) return false;
+    const initialLen = this.data.retakeRegistrations.length;
+    this.data.retakeRegistrations = this.data.retakeRegistrations.filter(r => r.id !== id);
+    if (this.data.retakeRegistrations.length !== initialLen) {
+      this.save();
+      return true;
+    }
+    return false;
   }
 }
 

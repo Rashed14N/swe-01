@@ -8,6 +8,7 @@ import {
   fetchAllAnnouncements,
   fetchAllNotices,
 } from '../supabaseData';
+import { db } from '../db';
 
 const router = Router();
 
@@ -37,28 +38,130 @@ router.get('/summary', verifyAuthToken, async (req: AuthenticatedRequest, res: R
     const todayIndex = new Date().getDay();
     const todayName = daysOfWeek[todayIndex];
 
-    // 1. Today's Routine
+    // 1. Today's Routine (strictly matching today's weekday)
     const todaysRoutine = allRoutines.filter(
-      r => r.batchId === userBatchId && r.day === todayName
+      r => r.day?.toUpperCase() === todayName
     );
 
     // 2. Current Courses
-    const currentCourses = allCourses.filter(c => 
+    let currentCourses = allCourses.filter(c => 
       c.batchIds?.includes(userBatchId) || c.semester === activeSemester
     );
 
-    // 3. Upcoming Exams sorted by date & calculated daysLeft
+    // 6. Student Retake Courses
+    const userRetakes = (db.getRetakes?.() || []).filter(r => r.studentId === user.id && r.status !== 'DROPPED');
+    const retakeCoursesCount = userRetakes.length;
+
+    // Append retakes to currentCourses for student view
+    if (user.role === 'STUDENT' && userRetakes.length > 0) {
+      const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      for (const retake of userRetakes) {
+        const rCode = normalize(retake.courseCode);
+        const rId = retake.courseId;
+        const existing = currentCourses.find(c => (rId && c.id === rId) || (rCode && normalize(c.code) === rCode));
+        if (!existing) {
+          const matched = allCourses.find(c => (rId && c.id === rId) || (rCode && normalize(c.code) === rCode));
+          if (matched) {
+            currentCourses.push({
+              ...matched,
+              isRetakeCourse: true,
+              retakeType: retake.type || 'RETAKE',
+              retakeBatchId: retake.retakeBatchId,
+              retakeBatchName: retake.retakeBatchName || 'Junior Batch',
+            });
+          } else {
+            currentCourses.push({
+              id: retake.courseId || `course-${retake.id}`,
+              code: retake.courseCode,
+              title: retake.courseTitle,
+              credits: 3,
+              type: 'THEORY',
+              semester: 1,
+              batchIds: retake.retakeBatchId ? [retake.retakeBatchId] : [],
+              isRetakeCourse: true,
+              retakeType: retake.type || 'RETAKE',
+              retakeBatchId: retake.retakeBatchId,
+              retakeBatchName: retake.retakeBatchName || 'Junior Batch',
+            });
+          }
+        }
+      }
+    }
+
+    // 3. Upcoming Exams strictly matching enrolled courses + retakes
     const todayStr = new Date().toISOString().split('T')[0];
-    const upcomingExams = allExams
-      .filter(e => e.batchId === userBatchId && e.date >= todayStr)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map(e => {
-        const examDate = new Date(e.date);
-        const now = new Date(todayStr);
-        const diffTime = examDate.getTime() - now.getTime();
-        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return { ...e, daysLeft };
-      });
+    const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+    // Only keep batch exams for courses the student is actually enrolled in
+    let candidateExams = allExams.filter(e => {
+      if (e.batchId !== userBatchId || e.date < todayStr) return false;
+      if (user.role !== 'STUDENT') return true;
+      const eCode = normalize(e.courseCode);
+      const eTitle = normalize(e.courseTitle);
+      const eId = e.courseId;
+      return currentCourses.some(c =>
+        (eId && c.id === eId) ||
+        (eCode && (normalize(c.code) === eCode || normalize(c.shortName) === eCode)) ||
+        (eTitle && normalize(c.title).includes(eTitle))
+      );
+    });
+
+    if (userRetakes.length > 0) {
+      try {
+        const departmentExams = await fetchAllExams();
+        const retakeExams = departmentExams.filter(e => {
+          if (e.batchId === userBatchId) return false;
+          if (e.date < todayStr) return false;
+          return userRetakes.some(r => {
+            const rCode = normalize(r.courseCode);
+            const rTitle = normalize(r.courseTitle);
+            const eCode = normalize(e.courseCode);
+            const eTitle = normalize(e.courseTitle);
+            return (
+              (r.courseId && e.courseId && r.courseId === e.courseId) ||
+              (rCode && eCode && (rCode === eCode || eCode.includes(rCode) || rCode.includes(eCode))) ||
+              (rTitle && eTitle && (rTitle.includes(eTitle) || eTitle.includes(rTitle)))
+            );
+          });
+        }).map(e => {
+          const matchingRetake = userRetakes.find(r => {
+            const rCode = normalize(r.courseCode);
+            const rTitle = normalize(r.courseTitle);
+            const eCode = normalize(e.courseCode);
+            const eTitle = normalize(e.courseTitle);
+            return (
+              (r.courseId && e.courseId && r.courseId === e.courseId) ||
+              (rCode && eCode && (rCode === eCode || eCode.includes(rCode) || rCode.includes(eCode))) ||
+              (rTitle && eTitle && (rTitle.includes(eTitle) || eTitle.includes(rTitle)))
+            );
+          });
+          const examBatch = allBatches.find(b => b.id === e.batchId);
+          const batchName = examBatch?.name || matchingRetake?.retakeBatchName || 'Junior Batch';
+          return {
+            ...e,
+            isRetakeCourse: true,
+            retakeType: matchingRetake?.type || 'RETAKE',
+            retakeBatchName: batchName,
+            batchName,
+            isUpdatedByCR: true,
+          };
+        });
+
+        candidateExams = [...candidateExams, ...retakeExams];
+      } catch (e) {
+        console.warn('[Dashboard retake exams fetch error]:', e);
+      }
+    }
+
+    candidateExams.sort((a, b) => a.date.localeCompare(b.date));
+
+    const upcomingExams = candidateExams.map(e => {
+      const examDate = new Date(e.date);
+      const now = new Date(todayStr);
+      const diffTime = examDate.getTime() - now.getTime();
+      const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return { ...e, daysLeft };
+    });
 
     // 4. Active Announcements
     const activeAnnouncements = allAnnouncements.filter(
@@ -73,6 +176,7 @@ router.get('/summary', verifyAuthToken, async (req: AuthenticatedRequest, res: R
       currentCoursesCount: currentCourses.length,
       upcomingExamsCount: upcomingExams.length,
       newAnnouncementsCount: activeAnnouncements.length,
+      retakeCoursesCount,
       todaysRoutine,
       upcomingExams,
       currentCourses,

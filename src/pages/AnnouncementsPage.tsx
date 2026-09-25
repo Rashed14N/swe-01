@@ -62,7 +62,9 @@ export const AnnouncementsPage: React.FC = () => {
           archivedCount: data.archivedCount || 0,
         });
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch announcements:', err);
+      })
       .finally(() => setIsLoading(false));
   };
 

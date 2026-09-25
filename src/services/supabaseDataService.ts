@@ -1,5 +1,6 @@
 import { getSupabase, checkIsSupabaseConfigured } from '../lib/supabase';
 import { User, RoutineSlot, Exam, BatchAnnouncement, DepartmentNotice, Resource, Course } from '../types';
+import { deduplicateAndMergeRoutineSlots } from '../utils/routineUtils';
 
 export const saveUserToSupabase = async (user: User): Promise<boolean> => {
   if (!checkIsSupabaseConfigured()) return false;
@@ -27,16 +28,48 @@ export const saveUserToSupabase = async (user: User): Promise<boolean> => {
 };
 
 export const fetchRoutinesFromSupabase = async (batchId?: string): Promise<RoutineSlot[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  if (!checkIsSupabaseConfigured()) {
+    try {
+      const res = await fetch(`/api/routines?batchId=${batchId || ''}`);
+      if (res.ok) {
+        const json = await res.json();
+        return json.routines || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
   try {
     const client = getSupabase();
     let query = client.from('routine_slots').select('*');
     if (batchId) {
-      query = query.eq('batch_id', batchId);
+      const norm = batchId.trim().toLowerCase().replace(/th$|st$|nd$|rd$/i, '');
+      const candidates = [
+        batchId,
+        norm,
+        `${norm}th`,
+        ...(norm === 'batch-13' ? ['batch-1788450159710'] : []),
+        ...(batchId === 'batch-1788450159710' ? ['batch-13', 'batch-13th'] : [])
+      ];
+      query = query.in('batch_id', candidates);
     }
     const { data, error } = await query;
-    if (error || !data) return [];
-    return data.map((r: any) => ({
+    if (error || !data || data.length === 0) {
+      try {
+        const res = await fetch(`/api/routines?batchId=${batchId || ''}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.routines && Array.isArray(json.routines) && json.routines.length > 0) {
+            return deduplicateAndMergeRoutineSlots(json.routines);
+          }
+        }
+      } catch {
+        // ignore
+      }
+      return [];
+    }
+    const mapped = data.map((r: any) => ({
       id: r.id,
       batchId: r.batch_id,
       day: r.day,
@@ -50,7 +83,17 @@ export const fetchRoutinesFromSupabase = async (batchId?: string): Promise<Routi
       teacherShortName: r.teacher_short_name,
       room: r.room,
     }));
+    return deduplicateAndMergeRoutineSlots(mapped);
   } catch {
+    try {
+      const res = await fetch(`/api/routines?batchId=${batchId || ''}`);
+      if (res.ok) {
+        const json = await res.json();
+        return deduplicateAndMergeRoutineSlots(json.routines || []);
+      }
+    } catch {
+      // ignore
+    }
     return [];
   }
 };

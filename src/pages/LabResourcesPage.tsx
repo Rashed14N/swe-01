@@ -24,7 +24,9 @@ export const LabResourcesPage: React.FC = () => {
     fetch(`/api/resources?${params.toString()}`)
       .then((res) => safeParseJson(res))
       .then((data) => setLabs(data.resources || []))
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch lab resources:', err);
+      })
       .finally(() => setIsLoading(false));
   };
 
@@ -36,7 +38,9 @@ export const LabResourcesPage: React.FC = () => {
     fetch(`/api/resources/${resourceId}/download`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
-    }).catch(console.error);
+    }).catch((err) => {
+      console.warn('Download tracking error:', err);
+    });
   };
 
   const getCategoryBadge = (cat?: string) => {

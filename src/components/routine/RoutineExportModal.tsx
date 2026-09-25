@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Download, Image as ImageIcon, X, CheckCircle2, Calendar, Sparkles, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { toPng } from 'html-to-image';
 import { RoutineSlot } from '../../types';
 import { cleanRoomNumber } from '../../constants/rooms';
+import { deduplicateAndMergeRoutineSlots, sortRoutineSlots } from '../../utils/routineUtils';
 
 interface RoutineExportModalProps {
   isOpen: boolean;
@@ -93,7 +94,8 @@ export const RoutineExportModal: React.FC<RoutineExportModalProps> = ({
     }
   };
 
-  const totalClasses = routines.length;
+  const cleanedRoutines = useMemo(() => deduplicateAndMergeRoutineSlots(routines), [routines]);
+  const totalClasses = cleanedRoutines.length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
@@ -239,9 +241,9 @@ export const RoutineExportModal: React.FC<RoutineExportModalProps> = ({
             {/* Routine Days Grid */}
             <div className="space-y-4">
               {DAYS.map((day) => {
-                const daySlots = routines
-                  .filter((r) => r.day === day)
-                  .sort((a, b) => a.startTime.localeCompare(b.startTime));
+                const daySlots = sortRoutineSlots(
+                  cleanedRoutines.filter((r) => r.day === day)
+                );
 
                 return (
                   <div

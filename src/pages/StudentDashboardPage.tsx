@@ -4,10 +4,10 @@ import {
   Calendar, BookOpen, Clock, Megaphone, CalendarDays, ClipboardList,
   ChevronRight, User, MapPin, RefreshCw, Sparkles,
   Award, Bell, ArrowUpRight, CheckCircle2, TrendingUp,
-  FileText, Shield, ExternalLink
+  FileText, Shield, ExternalLink, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { DashboardSummary, Course } from '../types';
+import { DashboardSummary, Course, RoutineSlot } from '../types';
 import {
   fetchRoutinesFromSupabase,
   fetchExamsFromSupabase,
@@ -15,6 +15,7 @@ import {
   fetchNoticesFromSupabase,
   fetchCoursesFromSupabase,
 } from '../services/supabaseDataService';
+import { deduplicateAndMergeRoutineSlots, sortRoutineSlots } from '../utils/routineUtils';
 import { DashboardSummaryCard } from '../components/dashboard/DashboardSummaryCard';
 import { PortalHeroCard } from '../components/dashboard/PortalHeroCard';
 import { RoutineClassCard } from '../components/routine/RoutineClassCard';
@@ -24,12 +25,23 @@ import { EnrolledCourseCard } from '../components/dashboard/EnrolledCourseCard';
 // In-memory module-level cache for instant dashboard transitions (0ms delay)
 let cachedDashboardSummary: DashboardSummary | null = null;
 
-const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
-  todaysClassesCount: 3,
-  currentCoursesCount: 6,
-  upcomingExamsCount: 2,
-  newAnnouncementsCount: 3,
-  todaysRoutine: [
+export const DAYS_OF_WEEK = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
+export const ACADEMIC_WEEKDAYS: { key: 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY'; label: string; short: string }[] = [
+  { key: 'SUNDAY', label: 'Sunday', short: 'Sun' },
+  { key: 'MONDAY', label: 'Monday', short: 'Mon' },
+  { key: 'TUESDAY', label: 'Tuesday', short: 'Tue' },
+  { key: 'WEDNESDAY', label: 'Wednesday', short: 'Wed' },
+  { key: 'THURSDAY', label: 'Thursday', short: 'Thu' },
+];
+
+export const getCurrentDayName = (): string => {
+  const dayIndex = new Date().getDay();
+  return DAYS_OF_WEEK[dayIndex] || 'SUNDAY';
+};
+
+const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => {
+  const currentDay = getCurrentDayName();
+  const demoSlots: RoutineSlot[] = [
     {
       id: 'r_1',
       day: 'SUNDAY',
@@ -69,44 +81,18 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       teacherShortName: 'TA',
       batchId,
     },
-  ],
-  upcomingExams: [
-    {
-      id: 'ex_1',
-      courseId: 'course-sem4-swe-221',
-      courseCode: 'SWE-221',
-      courseTitle: 'Algorithm',
-      title: 'Midterm Examination',
-      date: '2026-08-28',
-      startTime: '09:00 AM',
-      room: 'Room 401',
-      type: 'MIDTERM',
-      batchId,
-      description: 'Chapters 1-5: Asymptotic Analysis, Divide & Conquer, Dynamic Programming',
-      createdBy: 'usr_cr_1',
-      createdByName: 'Lukman Hussain Nakib',
-      createdAt: new Date().toISOString(),
-      daysLeft: 4,
-    },
-    {
-      id: 'ex_2',
-      courseId: 'course-sem4-swe-225',
-      courseCode: 'SWE-225',
-      courseTitle: 'Database Management System',
-      title: 'Class Quiz 2',
-      date: '2026-09-04',
-      startTime: '10:00 AM',
-      room: 'Exten-2',
-      type: 'QUIZ',
-      batchId,
-      description: 'SQL Queries, Relational Algebra, Joins, Triggers & Normalization',
-      createdBy: 'usr_cr_1',
-      createdByName: 'Nazia Sultana Chowdhury',
-      createdAt: new Date().toISOString(),
-      daysLeft: 11,
-    },
-  ],
-  currentCourses: [
+  ];
+
+  const todaysRoutine = demoSlots.filter(s => s.day === currentDay);
+
+  return {
+    todaysClassesCount: todaysRoutine.length,
+    currentCoursesCount: 6,
+    upcomingExamsCount: 0,
+    newAnnouncementsCount: 3,
+    todaysRoutine,
+    upcomingExams: [],
+    currentCourses: [
     {
       id: 'course-sem4-swe-221',
       code: 'SWE-221',
@@ -247,11 +233,16 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => ({
       createdAt: new Date().toISOString(),
     },
   ],
-});
+  };
+};
 
 export const StudentDashboardPage: React.FC = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+
+  const currentDayName = getCurrentDayName();
+  const [selectedDay, setSelectedDay] = useState<string>(currentDayName);
+  const [allRoutines, setAllRoutines] = useState<RoutineSlot[]>([]);
 
   // Instant render with memory cache or default summary (0ms delay)
   const [summary, setSummary] = useState<DashboardSummary>(() => {
@@ -267,15 +258,39 @@ export const StudentDashboardPage: React.FC = () => {
       const batchId = user?.batchId || 'batch-9';
       const fallback = getDefaultSummary(batchId);
 
-      const [routines, exams, announcements, notices, coursesRes] = await Promise.all([
+      const todayStr = new Date().toISOString().split('T')[0];
+      const [routines, examsRes, announcements, notices, coursesRes] = await Promise.all([
         fetchRoutinesFromSupabase(batchId),
-        fetchExamsFromSupabase(batchId),
+        fetch(`/api/exams?batchId=${batchId}&includePast=false`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }).then(r => r.ok ? r.json() : null).catch(() => null),
         fetchAnnouncementsFromSupabase(batchId),
         fetchNoticesFromSupabase(),
         fetch(`/api/courses?batchId=${batchId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }).then(r => r.ok ? r.json() : { courses: [] }).catch(() => ({ courses: [] })),
       ]);
+
+      let rawExams = examsRes?.exams;
+      if (!rawExams || !Array.isArray(rawExams)) {
+        rawExams = await fetchExamsFromSupabase(batchId);
+      }
+
+      // Filter strictly: Only exams on or after today are upcoming!
+      // Once the date passes, they are automatically excluded from upcoming (archived)
+      const upcomingExams = (rawExams || [])
+        .filter((e: any) => Boolean(e?.date && e.date >= todayStr))
+        .map((e: any) => {
+          const examDate = new Date(e.date);
+          const now = new Date(todayStr);
+          const diffDays = Math.ceil((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          return {
+            ...e,
+            daysLeft: Math.max(0, diffDays),
+            isArchived: false,
+          };
+        })
+        .sort((a: any, b: any) => a.date.localeCompare(b.date));
 
       let enrolledCourses: Course[] = coursesRes.courses || [];
       if (!enrolledCourses || enrolledCourses.length === 0) {
@@ -286,13 +301,33 @@ export const StudentDashboardPage: React.FC = () => {
         enrolledCourses = fallback.currentCourses;
       }
 
-      const todaysRoutine = routines && routines.length > 0 ? routines : fallback.todaysRoutine;
-      const upcomingExams = exams && exams.length > 0
-        ? exams.map(e => ({
-            ...e,
-            daysLeft: Math.max(0, Math.ceil((new Date(e.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))),
-          }))
-        : fallback.upcomingExams;
+      let rawRoutines: RoutineSlot[] = routines && routines.length > 0 ? routines : [];
+      if (rawRoutines.length === 0) {
+        try {
+          const res = await fetch(`/api/routines?batchId=${batchId}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.routines && Array.isArray(data.routines)) {
+              rawRoutines = data.routines;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const cleanedAllRoutines = deduplicateAndMergeRoutineSlots(rawRoutines);
+      setAllRoutines(cleanedAllRoutines);
+
+      // Filter strictly by the current weekday for Today's Routine!
+      const activeDay = getCurrentDayName();
+      const currentDaySlots = sortRoutineSlots(
+        cleanedAllRoutines.filter(r => r.day?.toUpperCase() === activeDay)
+      );
+      const todaysRoutine = cleanedAllRoutines.length > 0 ? currentDaySlots : fallback.todaysRoutine;
+
       const recentAnnouncements = announcements && announcements.length > 0 ? announcements.slice(0, 3) : fallback.recentAnnouncements;
       const recentNotices = notices && notices.length > 0 ? notices.slice(0, 3) : fallback.recentNotices;
       const finalCurrentCourses = enrolledCourses && enrolledCourses.length > 0 ? enrolledCourses : fallback.currentCourses;
@@ -404,60 +439,117 @@ export const StudentDashboardPage: React.FC = () => {
         {/* Left Column (60%): Today's Schedule + Enrolled Courses */}
         <div className="lg:col-span-3 space-y-6">
           {/* Today's Schedule Card */}
-          <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all">
-            <div
-              className="relative overflow-hidden px-4 py-3 sm:px-4.5 sm:py-3 border-b border-[#D8E2EE] dark:border-blue-900/30 flex items-center justify-between"
-              style={{
-                background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
-                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
-              }}
-            >
-              {/* Soft Radial Ambient Glow */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
-                  }}
-                />
-                <div
-                  className="absolute top-0 right-10 w-36 h-full pointer-events-none opacity-40"
-                  style={{
-                    backgroundImage: 'radial-gradient(rgba(101, 120, 255, 0.2) 1px, transparent 1px)',
-                    backgroundSize: '10px 10px',
-                  }}
-                />
-              </div>
+          {(() => {
+            const isViewingToday = selectedDay === currentDayName;
+            const currentPool = allRoutines.length > 0 ? allRoutines : (isViewingToday ? summary.todaysRoutine : []);
+            const displayedSlots = sortRoutineSlots(
+              deduplicateAndMergeRoutineSlots(currentPool.filter(r => r.day?.toUpperCase() === selectedDay))
+            );
 
-              <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
-                <Calendar className="w-5 h-5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.4} />
-                <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
-                  Today's Class Schedule
-                </h2>
-              </div>
-              <button
-                onClick={() => navigate('/routine')}
-                className="relative z-10 text-xs font-semibold text-[#2563EB] hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 hover:underline transition-colors shrink-0"
-              >
-                Full Routine <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            return (
+              <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all">
+                <div
+                  className="relative overflow-hidden px-4 py-3 sm:px-4.5 sm:py-3 border-b border-[#D8E2EE] dark:border-blue-900/30 flex items-center justify-between"
+                  style={{
+                    background: 'linear-gradient(135deg, #FBFCFF 0%, #F4F6FF 38%, #ECEFFF 68%, #E4E9FF 100%)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+                  }}
+                >
+                  {/* Soft Radial Ambient Glow */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'radial-gradient(circle at 85% 30%, rgba(126, 140, 255, 0.16), transparent 50%)',
+                      }}
+                    />
+                    <div
+                      className="absolute top-0 right-10 w-36 h-full pointer-events-none opacity-40"
+                      style={{
+                        backgroundImage: 'radial-gradient(rgba(101, 120, 255, 0.2) 1px, transparent 1px)',
+                        backgroundSize: '10px 10px',
+                      }}
+                    />
+                  </div>
 
-            {summary.todaysRoutine.length === 0 ? (
-              <div className="py-10 text-center text-xs text-[#475569] dark:text-slate-400">
-                No classes scheduled for today! Enjoy your self-study time.
+                  <div className="relative z-10 flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                    <Calendar className="w-5 h-5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.4} />
+                    <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
+                      {isViewingToday ? "Today's Class Schedule" : `${selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase()} Schedule`}
+                    </h2>
+                    <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-[#1D4ED8] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/50">
+                      {displayedSlots.length} {displayedSlots.length === 1 ? 'Class' : 'Classes'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => navigate('/routine')}
+                    className="relative z-10 text-xs font-semibold text-[#2563EB] hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 hover:underline transition-colors shrink-0"
+                  >
+                    Full Routine <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Weekday Switcher Toolbar */}
+                <div className="px-3 sm:px-4 py-2 border-b border-[#E2E8F0] dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#0B1120] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDay(currentDayName)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 shrink-0 ${
+                      isViewingToday
+                        ? 'bg-[#2563EB] text-white shadow-sm'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/80'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${isViewingToday ? 'bg-emerald-300 animate-pulse' : 'bg-slate-400'}`} />
+                    Today ({currentDayName.slice(0, 3)})
+                  </button>
+                  {ACADEMIC_WEEKDAYS.map(w => {
+                    const isSelected = selectedDay === w.key;
+                    const isThisToday = currentDayName === w.key;
+                    if (isThisToday) return null;
+                    return (
+                      <button
+                        key={w.key}
+                        type="button"
+                        onClick={() => setSelectedDay(w.key)}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all shrink-0 ${
+                          isSelected
+                            ? 'bg-[#2563EB] text-white shadow-sm font-semibold'
+                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/80'
+                        }`}
+                      >
+                        {w.short}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {displayedSlots.length === 0 ? (
+                  <div className="py-9 px-4 text-center">
+                    <p className="text-xs font-semibold text-[#475569] dark:text-slate-300">
+                      {isViewingToday
+                        ? `No classes scheduled for today (${currentDayName.charAt(0) + currentDayName.slice(1).toLowerCase()})!`
+                        : `No classes scheduled for ${selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase()}!`}
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                      {currentDayName === 'FRIDAY' || currentDayName === 'SATURDAY'
+                        ? 'Weekend holiday / self-study day. Select another day above or view Full Routine.'
+                        : 'Enjoy your self-study time or prepare for upcoming lectures.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-2.5 sm:p-3 flex flex-col gap-2 sm:gap-2.5 bg-[#F8FAFC]/50 dark:bg-[#0B1120]/50">
+                    {displayedSlots.map(slot => (
+                      <RoutineClassCard
+                        key={slot.id}
+                        slot={slot}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="p-2.5 sm:p-3 flex flex-col gap-2 sm:gap-2.5 bg-[#F8FAFC]/50 dark:bg-[#0B1120]/50">
-                {summary.todaysRoutine.map(slot => (
-                  <RoutineClassCard
-                    key={slot.id}
-                    slot={slot}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Enrolled Courses Grid Card */}
           <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all">
@@ -609,6 +701,46 @@ export const StudentDashboardPage: React.FC = () => {
                 })}
               </div>
             )}
+          </div>
+
+          {/* Retake & Improvement Section Card */}
+          <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all">
+            <div
+              className="relative overflow-hidden px-4 py-3 sm:px-4.5 sm:py-3 border-b border-[#D8E2EE] dark:border-amber-900/30 flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8ED 50%, #FEF3C7 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
+                <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" strokeWidth={2.4} />
+                <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
+                  Retake & Improvement
+                </h2>
+              </div>
+              <button
+                onClick={() => navigate('/retake-courses')}
+                className="relative z-10 text-xs font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 flex items-center gap-1 hover:underline transition-colors shrink-0"
+              >
+                Retake Portal <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-[#475569] dark:text-slate-400 leading-relaxed">
+                  {summary.retakeCoursesCount && summary.retakeCoursesCount > 0
+                    ? `You currently have ${summary.retakeCoursesCount} active retake/improvement course${summary.retakeCoursesCount > 1 ? 's' : ''} enrolled.`
+                    : 'Register courses with junior batches to auto-sync routines, exam schedules & notices.'}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/retake-courses')}
+                className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition-all shadow-xs"
+              >
+                {summary.retakeCoursesCount && summary.retakeCoursesCount > 0 ? 'View Retake Desk' : '+ Add Course'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

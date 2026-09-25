@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, GraduationCap } from 'lucide-react';
+import { ChevronRight, GraduationCap, CheckCircle2, Archive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Exam, Course } from '../../types';
 
@@ -68,6 +68,8 @@ export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({
   className = '',
 }) => {
   const navigate = useNavigate();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeUpcomingExams = exams.filter(e => Boolean(e.date && e.date >= todayStr));
 
   const getCourseShortName = (exam: Exam & { courseShortName?: string }) => {
     if (exam.courseShortName) return exam.courseShortName;
@@ -149,13 +151,28 @@ export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({
       </div>
 
       {/* Exam Rows with thin dividers */}
-      {exams.length === 0 ? (
-        <div className="py-10 px-4 text-center text-xs text-[#64748B] dark:text-slate-400 font-medium">
-          No upcoming exams scheduled.
+      {activeUpcomingExams.length === 0 ? (
+        <div className="py-8 px-4 text-center flex flex-col items-center justify-center bg-[#FAFCFF] dark:bg-slate-900/40">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2.5 shadow-2xs">
+            <CheckCircle2 className="w-5 h-5" strokeWidth={2.4} />
+          </div>
+          <h4 className="text-xs font-bold text-slate-800 dark:text-white">
+            No Upcoming Exams
+          </h4>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mt-1 leading-relaxed">
+            There are currently no upcoming tests or exams. Any exams whose date has passed have been archived.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/exams?tab=archived')}
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 border border-slate-200 dark:border-slate-700 shadow-2xs transition-colors"
+          >
+            <Archive className="w-3.5 h-3.5 text-slate-500" /> View Archived Exams
+          </button>
         </div>
       ) : (
         <div className="divide-y divide-[#EEF2F7] dark:divide-slate-800/80">
-          {exams.map(exam => {
+          {activeUpcomingExams.map(exam => {
             const examDate = new Date(exam.date);
             const weekday = isNaN(examDate.getTime())
               ? ''
@@ -235,6 +252,15 @@ export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({
                         <span className="text-[#94A3B8] dark:text-slate-600 text-[10px] select-none shrink-0">·</span>
                         <span className="text-[11px] font-bold text-[#2563EB] dark:text-blue-400 shrink-0">
                           {shortName || exam.courseCode}
+                        </span>
+                      </>
+                    )}
+
+                    {(exam as any).isRetakeCourse && (
+                      <>
+                        <span className="text-[#94A3B8] dark:text-slate-600 text-[10px] select-none shrink-0">·</span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 uppercase shrink-0">
+                          {(exam as any).retakeType || 'Retake'} • {(exam as any).retakeBatchName || 'CR Updated'}
                         </span>
                       </>
                     )}

@@ -9,10 +9,16 @@ import {
   Upload,
   ShieldCheck,
   Trash2,
+  BookOpen,
+  RotateCcw,
+  Sparkles,
+  Layers,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Resource } from '../types';
+import { Resource, Course } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { QuestionPaperCard } from '../components/common/QuestionPaperCard';
 import { PageHeader } from '../components/common/PageHeader';
@@ -27,6 +33,9 @@ export const QuestionBankPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState<Resource[]>([]);
+  const [myCourses, setMyCourses] = useState<Course[]>([]);
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState<string | null>(null);
+
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [examType, setExamType] = useState<string>(searchParams.get('examType') || '');
   const [year, setYear] = useState<string>(searchParams.get('year') || '');
@@ -36,6 +45,21 @@ export const QuestionBankPage: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
+
+  // Fetch enrolled courses & retakes for the student
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/courses', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => safeParseJson(res))
+      .then((data) => {
+        setMyCourses(data.courses || []);
+      })
+      .catch((err) => {
+        console.warn('Could not fetch student enrolled courses:', err);
+      });
+  }, [token, user]);
 
   // Fetch base resource list from backend API
   const fetchQuestions = () => {
@@ -50,7 +74,9 @@ export const QuestionBankPage: React.FC = () => {
         const list: Resource[] = data.resources || [];
         setQuestions(list);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch questions:', err);
+      })
       .finally(() => setIsLoading(false));
   };
 
@@ -67,24 +93,67 @@ export const QuestionBankPage: React.FC = () => {
     setSearchParams(nextParams, { replace: true });
   }, [search, examType, year, setSearchParams]);
 
+  // Normalization helper for accurate matching
+  const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+  const isCourseMatch = (course: Course, q: Resource) => {
+    const cCode = normalize(course.code);
+    const cShort = normalize(course.shortName);
+    const qCode = normalize(q.courseCode);
+    const qTitle = normalize(q.courseTitle || q.title);
+
+    if (q.courseId && q.courseId === course.id) return true;
+    if (qCode && cCode && (qCode === cCode || qCode.includes(cCode) || cCode.includes(qCode))) return true;
+    if (qCode && cShort && qCode === cShort) return true;
+    if (cCode && qTitle && qTitle.includes(cCode)) return true;
+    return false;
+  };
+
+  // Count question papers per enrolled / retake course
+  const coursePaperCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of myCourses) {
+      const count = questions.filter((q) => isCourseMatch(c, q)).length;
+      map.set(c.id, count);
+    }
+    return map;
+  }, [myCourses, questions]);
+
   // -------------------------------------------------------------
-  // INTELLIGENT SEARCH & STUDENT SEMESTER FIRST ALGORITHM
+  // INTELLIGENT FILTERING & PRIORITIZATION ALGORITHM
   // -------------------------------------------------------------
   const processedQuestions = useMemo(() => {
-    const result = [...questions];
+    let result = [...questions];
     const userSem = currentUser?.currentSemester;
     const query = search.toLowerCase().trim();
 
+    // Filter by selected course if a chip in the enrolled courses bar was clicked
+    if (selectedCourseFilter) {
+      const targetCourse = myCourses.find((c) => c.id === selectedCourseFilter);
+      if (targetCourse) {
+        result = result.filter((q) => isCourseMatch(targetCourse, q));
+      }
+    }
+
     if (!query) {
       // DEFAULT SORTING ALGORITHM:
-      // 1. If student has a semester, and questions of that semester exist, put those FIRST
-      // 2. Otherwise/afterwards sort by academic year & creation date
+      // Priority 1: Retake & Enrolled courses of the student are placed FIRST!
+      // Priority 2: Student current semester matches
+      // Priority 3: Academic year descending & creation timestamp
       return result.sort((a, b) => {
+        const aIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, a)) ? 1 : 0;
+        const bIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
+        if (aIsRetake !== bIsRetake) return bIsRetake - aIsRetake;
+
+        const aIsEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, a)) ? 1 : 0;
+        const bIsEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
+        if (aIsEnrolled !== bIsEnrolled) return bIsEnrolled - aIsEnrolled;
+
         if (userSem) {
           const aMatch = a.semester === userSem ? 1 : 0;
           const bMatch = b.semester === userSem ? 1 : 0;
           if (aMatch !== bMatch) {
-            return bMatch - aMatch; // Current semester items first
+            return bMatch - aMatch;
           }
         }
         // Then by academic year descending
@@ -95,8 +164,7 @@ export const QuestionBankPage: React.FC = () => {
       });
     }
 
-    // SEARCH RANKING ALGORITHM:
-    // Split search query into normalized keyword tokens (e.g., "swe 311 quiz")
+    // SEARCH RANKING ALGORITHM with Enrolled & Retake course boost
     const searchTokens = query.split(/\s+/).filter(Boolean);
 
     interface ScoredResource {
@@ -167,7 +235,6 @@ export const QuestionBankPage: React.FC = () => {
           score += 10;
           tokenFound = true;
         }
-        // Specific Exam Types match tokens
         if (
           examTypeLower.includes(token) ||
           (token === 'quiz' && q.examType === 'QUIZ') ||
@@ -193,31 +260,32 @@ export const QuestionBankPage: React.FC = () => {
         }
       }
 
-      // Boost if every single word in query matches somewhere
       if (allTokensMatch) {
         score += 40;
       }
 
-      // 5. Personalization Bonus: Current Semester Relevance Boost during search
+      // Priority boost for student's enrolled courses and retakes
+      const isRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, q));
+      const isEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, q));
+      if (isRetake) score += 60;
+      if (isEnrolled) score += 50;
+
       if (userSem && q.semester === userSem) {
         score += 30;
       }
 
-      // 6. Recency Boost
       if (q.academicYear) {
         score += Math.max(0, (q.academicYear - 2020) * 2);
       }
 
-      // Only include items with non-zero search relevance
       if (score > 0) {
         scored.push({ resource: q, score });
       }
     }
 
-    // Sort by computed relevance score descending
     scored.sort((a, b) => b.score - a.score);
     return scored.map((item) => item.resource);
-  }, [questions, search, currentUser]);
+  }, [questions, search, currentUser, myCourses, selectedCourseFilter]);
 
   const handleDownload = (resourceId: string) => {
     fetch(`/api/resources/${resourceId}/download`, {
@@ -291,6 +359,112 @@ export const QuestionBankPage: React.FC = () => {
         onSuccess={() => fetchQuestions()}
       />
 
+      {/* TOP SECTION: Enrolled & Retake Courses Filter Bar */}
+      {myCourses.length > 0 && (
+        <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-[#D8E2EE] dark:border-slate-800 p-4 sm:p-5 shadow-[0_1px_3px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.06)] space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  My Enrolled & Retake Courses
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  {myCourses.length} Courses
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Quick filter: click any enrolled or retake course to filter questions, or view all department questions by default.
+              </p>
+            </div>
+
+            {selectedCourseFilter && (
+              <button
+                type="button"
+                onClick={() => setSelectedCourseFilter(null)}
+                className="self-start sm:self-center px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <span>Clear course filter</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Courses Horizontal Scroll / Flex Chips */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+            <button
+              type="button"
+              onClick={() => setSelectedCourseFilter(null)}
+              className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer border ${
+                selectedCourseFilter === null
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                  : 'bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>All Questions</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                selectedCourseFilter === null
+                  ? 'bg-white/20 text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+              }`}>
+                {questions.length}
+              </span>
+            </button>
+
+            {myCourses.map((course) => {
+              const count = coursePaperCounts.get(course.id) || 0;
+              const isSelected = selectedCourseFilter === course.id;
+
+              return (
+                <button
+                  key={course.id}
+                  type="button"
+                  onClick={() => setSelectedCourseFilter(isSelected ? null : course.id)}
+                  className={`shrink-0 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all cursor-pointer border text-left ${
+                    isSelected
+                      ? course.isRetakeCourse
+                        ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-500 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/20'
+                        : 'bg-blue-50 dark:bg-blue-950/50 border-blue-600 text-blue-950 dark:text-blue-200 ring-2 ring-blue-600/20'
+                      : course.isRetakeCourse
+                      ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50 text-slate-700 dark:text-slate-300 hover:border-amber-300'
+                      : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-[11px] text-blue-600 dark:text-blue-400">
+                        {course.code}
+                      </span>
+                      {course.isRetakeCourse ? (
+                        <span className="px-1.5 py-0.2 bg-amber-500 text-white font-extrabold text-[9px] rounded-full uppercase">
+                          {course.retakeType || 'RETAKE'}
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-[9px] rounded">
+                          Sem {course.semester || currentUser?.currentSemester}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 line-clamp-1 max-w-[150px]">
+                      {course.title}
+                    </span>
+                  </div>
+
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                    count > 0
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                  }`}>
+                    {count} {count === 1 ? 'paper' : 'papers'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <FilterBar
         searchQuery={search}
         onSearchChange={setSearch}
@@ -324,8 +498,9 @@ export const QuestionBankPage: React.FC = () => {
           setSearch('');
           setExamType('');
           setYear('');
+          setSelectedCourseFilter(null);
         }}
-        isFiltered={Boolean(search || examType || year)}
+        isFiltered={Boolean(search || examType || year || selectedCourseFilter)}
       />
 
       {/* Status Bar */}
@@ -334,6 +509,19 @@ export const QuestionBankPage: React.FC = () => {
           <span>Showing</span>
           <span className="text-[#0A2147] dark:text-white font-bold">{processedQuestions.length}</span>
           <span>question papers</span>
+          {selectedCourseFilter && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              <span>Filtered: {myCourses.find((c) => c.id === selectedCourseFilter)?.code}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedCourseFilter(null)}
+                className="hover:text-amber-950 dark:hover:text-amber-100 cursor-pointer ml-0.5"
+                title="Clear filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
           {search && (
             <span className="text-[#64748B] italic">
               • ranked by search relevance for &ldquo;{search}&rdquo;
@@ -384,28 +572,54 @@ export const QuestionBankPage: React.FC = () => {
           <p className="text-xs text-[#64748B] dark:text-slate-400 max-w-sm mx-auto">
             {search
               ? `No papers matched your search for "${search}". Try searching by course code (e.g. SWE 311), year, or keywords.`
+              : selectedCourseFilter
+              ? `No question papers found for ${myCourses.find((c) => c.id === selectedCourseFilter)?.code || 'this course'}. Click below to show all questions.`
               : 'Try selecting a different filter or search term to browse available question papers.'}
           </p>
-          {(search || examType || year) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('');
-                setExamType('');
-                setYear('');
-              }}
-              className="px-4 py-2 bg-[#EFF5FF] text-[#2563EB] hover:bg-[#DBEAFE] text-xs font-bold rounded-lg border border-[#DBEAFE] transition-colors cursor-pointer inline-flex items-center gap-1.5"
-            >
-              <Search className="w-3.5 h-3.5" />
-              <span>Clear all filters</span>
-            </button>
-          )}
+          <div className="flex items-center justify-center gap-2 pt-2 flex-wrap">
+            {selectedCourseFilter && (
+              <button
+                type="button"
+                onClick={() => setSelectedCourseFilter(null)}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-xs font-bold rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Show All Questions</span>
+              </button>
+            )}
+            {(search || examType || year || selectedCourseFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setExamType('');
+                  setYear('');
+                  setSelectedCourseFilter(null);
+                }}
+                className="px-4 py-2 bg-[#EFF5FF] text-[#2563EB] hover:bg-[#DBEAFE] text-xs font-bold rounded-lg border border-[#DBEAFE] transition-colors cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Clear all filters</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : viewMode === 'grid' ? (
         /* Responsive 3-Column Question Paper Card Grid with Clean In-Card Accordion */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-start">
           {processedQuestions.map((q) => {
             const isMatch = Boolean(userSemesterNumber && q.semester === userSemesterNumber);
+            const retakeMatch = myCourses.find((c) => c.isRetakeCourse && isCourseMatch(c, q));
+            const enrolledMatch = myCourses.find((c) => !c.isRetakeCourse && isCourseMatch(c, q));
+
+            const retakeBadge = retakeMatch
+              ? `${retakeMatch.retakeType || 'Retake'} • ${retakeMatch.retakeBatchName || 'Junior Batch'}`
+              : undefined;
+
+            const enrolledBadge = enrolledMatch && !retakeMatch
+              ? 'Enrolled Course'
+              : undefined;
+
             return (
               <QuestionPaperCard
                 key={q.id}
@@ -421,6 +635,8 @@ export const QuestionBankPage: React.FC = () => {
                 typeBadge={getExamTypeLabel(q)}
                 fileSize={q.fileSize}
                 isCurrentSemesterMatch={isMatch}
+                enrolledBadge={enrolledBadge}
+                retakeBadge={retakeBadge}
                 isExpanded={expandedCardId === q.id}
                 canDelete={isAdmin || currentUser?.id === q.uploaderId}
                 onDelete={() => handleDeleteQuestion(q)}
@@ -438,7 +654,7 @@ export const QuestionBankPage: React.FC = () => {
               <thead>
                 <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
                   <th className="px-4 py-3.5">PAPER TITLE</th>
-                  <th className="px-4 py-3.5 w-28">COURSE</th>
+                  <th className="px-4 py-3.5 w-32">COURSE</th>
                   <th className="px-4 py-3.5 w-32">FACULTY</th>
                   <th className="px-4 py-3.5 w-28">BATCH</th>
                   <th className="px-4 py-3.5 w-28">SEMESTER</th>
@@ -447,55 +663,67 @@ export const QuestionBankPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
-                {processedQuestions.map((q) => (
-                  <tr
-                    key={q.id}
-                    className="hover:bg-[#F6FAFF] dark:hover:bg-slate-800/50 transition-colors h-14"
-                  >
-                    <td className="px-4 py-3 font-bold text-[#0F172A] dark:text-white">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-[#2563EB] shrink-0" />
-                        <span className="line-clamp-1">{q.title}</span>
-                        {userSemesterNumber && q.semester === userSemesterNumber && (
-                          <span className="px-1.5 py-0.5 text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 rounded border border-emerald-200 font-bold shrink-0">
-                            Your Sem
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 bg-[#EFF5FF] text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400 font-mono text-[10px] font-bold rounded border border-[#DBEAFE] dark:border-blue-900/50">
-                        {q.courseCode}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-[#475569] dark:text-slate-300 truncate max-w-[120px]">
-                      {q.facultyName || 'Department Faculty'}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-[#475569] dark:text-slate-300">
-                      {q.targetBatch || q.uploaderBatchName || 'SWE 9th Batch'}
-                    </td>
-                    <td className="px-4 py-3 text-[#475569] dark:text-slate-300 font-medium">
-                      {q.semester}th Sem ({q.academicYear})
-                    </td>
-                    <td className="px-4 py-3 text-[#64748B] dark:text-slate-400 truncate max-w-[120px]">
-                      {q.uploaderName}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(q.id);
-                            if (q.fileUrl) {
-                              window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
-                            }
-                          }}
-                          className="p-1.5 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
-                          title="Instant Download PDF"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
+                {processedQuestions.map((q) => {
+                  const retakeMatch = myCourses.find((c) => c.isRetakeCourse && isCourseMatch(c, q));
+                  const enrolledMatch = myCourses.find((c) => !c.isRetakeCourse && isCourseMatch(c, q));
+
+                  return (
+                    <tr
+                      key={q.id}
+                      className="hover:bg-[#F6FAFF] dark:hover:bg-slate-800/50 transition-colors h-14"
+                    >
+                      <td className="px-4 py-3 font-bold text-[#0F172A] dark:text-white">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <FileText className="w-4 h-4 text-[#2563EB] shrink-0" />
+                          <span className="line-clamp-1">{q.title}</span>
+                          {retakeMatch ? (
+                            <span className="px-1.5 py-0.5 text-[9px] bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 rounded border border-amber-300 font-bold shrink-0">
+                              {retakeMatch.retakeType || 'Retake'} • {retakeMatch.retakeBatchName || 'CR Synced'}
+                            </span>
+                          ) : enrolledMatch ? (
+                            <span className="px-1.5 py-0.5 text-[9px] bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 font-bold shrink-0">
+                              Enrolled
+                            </span>
+                          ) : userSemesterNumber && q.semester === userSemesterNumber ? (
+                            <span className="px-1.5 py-0.5 text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 rounded border border-emerald-200 font-bold shrink-0">
+                              Your Sem
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 bg-[#EFF5FF] text-[#2563EB] dark:bg-blue-950/40 dark:text-blue-400 font-mono text-[10px] font-bold rounded border border-[#DBEAFE] dark:border-blue-900/50">
+                          {q.courseCode}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-[#475569] dark:text-slate-300 truncate max-w-[120px]">
+                        {q.facultyName || 'Department Faculty'}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-[#475569] dark:text-slate-300">
+                        {q.targetBatch || q.uploaderBatchName || 'SWE 9th Batch'}
+                      </td>
+                      <td className="px-4 py-3 text-[#475569] dark:text-slate-300 font-medium">
+                        {q.semester}th Sem ({q.academicYear})
+                      </td>
+                      <td className="px-4 py-3 text-[#64748B] dark:text-slate-400 truncate max-w-[120px]">
+                        {q.uploaderName}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(q.id);
+                              if (q.fileUrl) {
+                                window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
+                              }
+                            }}
+                            className="p-1.5 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"
+                            title="Instant Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
                         {(isAdmin || currentUser?.id === q.uploaderId) && (
                           <button
                             type="button"
@@ -512,7 +740,8 @@ export const QuestionBankPage: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>

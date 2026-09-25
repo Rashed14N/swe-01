@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Users, Calendar, User, Download, ChevronDown, Sparkles, Trash2 } from 'lucide-react';
+import { FileText, Users, Calendar, User, Download, ChevronDown, Sparkles, Trash2, RotateCcw, BookOpen } from 'lucide-react';
 import { parseGoogleDriveLink } from '../../lib/driveUtils';
 
 export interface QuestionPaperCardProps {
@@ -16,6 +16,8 @@ export interface QuestionPaperCardProps {
   academicYear?: string | number;
   fileSize?: string;
   isCurrentSemesterMatch?: boolean;
+  enrolledBadge?: string;
+  retakeBadge?: string;
   isExpanded?: boolean;
   canDelete?: boolean;
   onDelete?: () => void;
@@ -38,6 +40,8 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
   academicYear,
   fileSize,
   isCurrentSemesterMatch = false,
+  enrolledBadge,
+  retakeBadge,
   isExpanded: controlledExpanded,
   canDelete = false,
   onDelete,
@@ -121,12 +125,22 @@ export const QuestionPaperCard: React.FC<QuestionPaperCardProps> = ({
               <span>{typeBadge}</span>
             </div>
 
-            {isCurrentSemesterMatch && (
+            {retakeBadge ? (
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold text-[9px] uppercase tracking-wider">
+                <RotateCcw className="w-2.5 h-2.5" />
+                <span>{retakeBadge}</span>
+              </div>
+            ) : enrolledBadge ? (
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300 font-bold text-[9px] uppercase tracking-wider">
+                <BookOpen className="w-2.5 h-2.5" />
+                <span>{enrolledBadge}</span>
+              </div>
+            ) : isCurrentSemesterMatch ? (
               <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ECFDF5] dark:bg-emerald-950/50 border border-[#A7F3D0] dark:border-emerald-900/60 text-[#059669] dark:text-emerald-400 font-bold text-[9px] uppercase tracking-wider">
                 <Sparkles className="w-2.5 h-2.5" />
                 <span>Your Sem</span>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Right Badges: Course Code + Optional Delete */}

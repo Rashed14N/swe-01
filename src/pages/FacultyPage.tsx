@@ -16,7 +16,9 @@ export const FacultyPage: React.FC = () => {
     fetch(`/api/faculty?search=${encodeURIComponent(search)}`)
       .then((res) => safeParseJson(res))
       .then((data) => setFaculty(sortFacultyByHierarchy(data.faculty || [])))
-      .catch(console.error)
+      .catch((err) => {
+        console.warn('Could not fetch faculty:', err);
+      })
       .finally(() => setIsLoading(false));
   }, [search]);
 

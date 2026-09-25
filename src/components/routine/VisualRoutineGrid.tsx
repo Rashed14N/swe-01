@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, List, LayoutGrid, Table, Download } from 'lucide-react';
 import { RoutineSlot } from '../../types';
 import { RoutineClassCard } from './RoutineClassCard';
 import { cleanRoomNumber } from '../../constants/rooms';
 import { RoutineExportModal } from './RoutineExportModal';
+import { deduplicateAndMergeRoutineSlots, sortRoutineSlots } from '../../utils/routineUtils';
 
 interface VisualRoutineGridProps {
   routines: RoutineSlot[];
@@ -41,9 +42,11 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
   const [selectedDay, setSelectedDay] = useState<string>('SUNDAY');
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
-  const selectedDaySlots = routines
-    .filter((r) => r.day === selectedDay)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const cleanedRoutines = useMemo(() => deduplicateAndMergeRoutineSlots(routines), [routines]);
+
+  const selectedDaySlots = useMemo(() => {
+    return sortRoutineSlots(cleanedRoutines.filter((r) => r.day === selectedDay));
+  }, [cleanedRoutines, selectedDay]);
 
   return (
     <div className="space-y-5">
@@ -100,7 +103,7 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
             {DAYS.map((day) => {
               const config = DAY_CONFIG[day];
               const isSelected = selectedDay === day;
-              const count = routines.filter((r) => r.day === day).length;
+              const count = cleanedRoutines.filter((r) => r.day === day).length;
 
               return (
                 <button
@@ -302,9 +305,7 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
       {viewMode === 'WEEKLY_GRID' && (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {DAYS.map((day) => {
-            const daySlots = routines
-              .filter((r) => r.day === day)
-              .sort((a, b) => a.startTime.localeCompare(b.startTime));
+            const daySlots = sortRoutineSlots(cleanedRoutines.filter((r) => r.day === day));
 
             return (
               <div
@@ -382,7 +383,7 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
       <RoutineExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        routines={routines}
+        routines={cleanedRoutines}
       />
     </div>
   );

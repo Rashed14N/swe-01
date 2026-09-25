@@ -3,6 +3,7 @@ import { db } from './db';
 import {
   sortFacultyByHierarchy,
 } from '../types';
+import { deduplicateAndMergeRoutineSlots } from '../utils/routineUtils';
 import type {
   Course,
   Batch,
@@ -720,14 +721,23 @@ export function mapRoutineSlotToSupabase(slot: RoutineSlot): any {
 
 export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlot[]> {
   const supabase = getServerSupabase();
+  const normalizedBatchId = batchId ? batchId.trim().toLowerCase().replace(/th$|st$|nd$|rd$/i, '') : undefined;
+  const batchCandidates = batchId ? [
+    batchId,
+    normalizedBatchId!,
+    `${normalizedBatchId}th`,
+    ...(normalizedBatchId === 'batch-13' ? ['batch-1788450159710'] : []),
+    ...(batchId === 'batch-1788450159710' ? ['batch-13', 'batch-13th'] : [])
+  ] : [];
+
   if (supabase) {
     try {
       let query = supabase.from('routine_slots').select('*');
-      if (batchId) query = query.eq('batch_id', batchId);
+      if (batchId) query = query.in('batch_id', batchCandidates);
       const { data, error } = await query;
       if (!error && data) {
         const slots = data.map(mapRoutineSlotFromSupabase);
-        return slots;
+        return deduplicateAndMergeRoutineSlots(slots);
       }
       if (error) console.warn('[Supabase fetchAllRoutineSlots Note]: Falling back to local store.', error.message || error);
     } catch (e: any) {
@@ -735,7 +745,8 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
     }
   }
   const local = db.getData().routines || [];
-  return batchId ? local.filter(s => s.batchId === batchId) : local;
+  const filtered = batchId ? local.filter(s => batchCandidates.includes(s.batchId)) : local;
+  return deduplicateAndMergeRoutineSlots(filtered);
 }
 
 export async function createRoutineSlotInDB(slot: RoutineSlot): Promise<RoutineSlot> {

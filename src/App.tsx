@@ -33,6 +33,7 @@ import { CRDashboardPage } from './pages/cr/CRDashboardPage';
 import { CRAnnouncementsPage } from './pages/cr/CRAnnouncementsPage';
 import { CRExamsPage } from './pages/cr/CRExamsPage';
 import { CRRoutineRequestsPage } from './pages/cr/CRRoutineRequestsPage';
+import { CRRetakesPage } from './pages/cr/CRRetakesPage';
 
 // Admin Pages
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
@@ -150,6 +151,14 @@ export const App: React.FC = () => {
                 element={<Navigate to="/retake-courses" replace />}
               />
               <Route
+                path="/batch-cr"
+                element={<Navigate to="/courses" replace />}
+              />
+              <Route
+                path="/cr-profile"
+                element={<Navigate to="/courses" replace />}
+              />
+              <Route
                 path="/exams"
                 element={
                   <ProtectedRoute>
@@ -263,6 +272,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
                     <CRRoutineRequestsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cr/retakes"
+                element={
+                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
+                    <CRRetakesPage />
                   </ProtectedRoute>
                 }
               />

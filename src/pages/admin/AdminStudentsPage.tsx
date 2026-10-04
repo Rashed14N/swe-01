@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { User, Batch, UserRole } from '../../types';
+import { formatStudentId } from '../../utils/studentId';
 
 export const AdminStudentsPage: React.FC = () => {
   const { token } = useAuth();
@@ -339,7 +340,7 @@ export const AdminStudentsPage: React.FC = () => {
                 <div key={st.id} className="pt-3 first:pt-0 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono font-bold text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded">
-                      {st.studentId}
+                      {formatStudentId(st.studentId)}
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span
@@ -414,7 +415,7 @@ export const AdminStudentsPage: React.FC = () => {
               <tbody className="divide-y divide-[#E0E8F2] font-medium">
                 {filteredStudents.map(st => (
                   <tr key={st.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-mono font-bold text-slate-900">{st.studentId}</td>
+                    <td className="px-4 py-3 font-mono font-bold text-slate-900">{formatStudentId(st.studentId)}</td>
                     <td className="px-4 py-3">
                       <span className="font-bold text-slate-900 block">{st.name}</span>
                       <span className="text-[11px] text-slate-400">{st.email || 'No email registered'}</span>
@@ -696,7 +697,7 @@ export const AdminStudentsPage: React.FC = () => {
       {isEditModalOpen && selectedStudent && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Edit Student ({selectedStudent.studentId})</h3>
+            <h3 className="text-base font-bold text-slate-900">Edit Student ({formatStudentId(selectedStudent.studentId)})</h3>
 
             <form onSubmit={handleEditStudent} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">

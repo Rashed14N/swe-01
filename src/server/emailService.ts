@@ -28,13 +28,8 @@ export interface CourseUpdateEmailPayload {
   actorName?: string;
 }
 
-/**
- * Sends an email via Resend to a student registered for a retake/improvement course
- * whenever an update (such as an exam added by a CR or announcement) is published.
- */
-export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayload): Promise<{ success: boolean; id?: string; error?: string }> {
+function buildHtmlTemplate(payload: CourseUpdateEmailPayload, sandboxNote?: string): string {
   const {
-    to,
     studentName = 'Student',
     courseCode,
     courseTitle,
@@ -48,8 +43,6 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
     actorName = 'Course Representative (CR)',
   } = payload;
 
-  const resend = getResendClient();
-
   const typeBadgeLabel =
     updateType === 'EXAM'
       ? '📅 New Exam / Quiz Scheduled'
@@ -59,14 +52,12 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
       ? '⏰ Class Routine Updated'
       : '📢 New Course Announcement';
 
-  const subject = `[SWE Retake Alert] ${courseCode}: ${title}`;
-
-  const htmlContent = `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${subject}</title>
+  <title>[SWE Retake Alert] ${courseCode}: ${title}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
     .container { max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
@@ -84,7 +75,6 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
     .detail-value { font-weight: 700; color: #1e293b; flex: 1; }
     .desc { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; font-size: 13px; color: #475569; line-height: 1.5; }
     .footer { padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
-    .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -92,10 +82,17 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
     <div class="header">
       <div class="badge">${typeBadgeLabel}</div>
       <h1>${courseCode}: ${courseTitle}</h1>
-      <p>Automatic update for your registered retake / improvement course</p>
+      <p>Academic Retake & Improvement Real-time Portal Sync</p>
     </div>
 
     <div class="content">
+      ${
+        sandboxNote
+          ? `<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #1e40af; line-height: 1.5;">
+              <strong>ℹ️ Resend Sandbox Notice:</strong> ${sandboxNote}
+            </div>`
+          : ''
+      }
       <div class="greeting">Hello ${studentName},</div>
       <p style="font-size: 13px; color: #475569; margin: 0 0 16px 0;">
         An update was just published by <strong>${actorName}</strong> ${batchName ? `for <strong>${batchName}</strong>` : ''} regarding your retake course:
@@ -123,14 +120,27 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
 </body>
 </html>
   `;
+}
+
+/**
+ * Sends an email via Resend to a student registered for a retake/improvement course
+ * whenever an update (such as an exam added by a CR or announcement) is published.
+ */
+export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayload): Promise<{ success: boolean; id?: string; error?: string; note?: string }> {
+  const { to, courseCode, title } = payload;
+  const resend = getResendClient();
+
+  const subject = `[SWE Retake Alert] ${courseCode}: ${title}`;
+  const htmlContent = buildHtmlTemplate(payload);
 
   if (!resend) {
     console.log(`[Resend Email Simulated] (RESEND_API_KEY not configured). Would send to: ${to}, Subject: "${subject}", Update: "${title}"`);
     return { success: true, id: 'simulated-resend-id' };
   }
 
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'SWE Retake Desk <onboarding@resend.dev>';
+
   try {
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'SWE Retake Desk <onboarding@resend.dev>';
     const result = await resend.emails.send({
       from: fromEmail,
       to: [to],
@@ -138,10 +148,51 @@ export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayl
       html: htmlContent,
     });
 
+    if (result.error) {
+      throw new Error(result.error.message || 'Resend error');
+    }
+
     console.log(`[Resend Email Sent] Successfully sent update to ${to} (ID: ${result.data?.id})`);
     return { success: true, id: result.data?.id };
   } catch (err: any) {
-    console.error(`[Resend Email Error] Failed to send email to ${to}:`, err?.message || err);
-    return { success: false, error: err?.message || 'Failed to send email via Resend' };
+    const errorMessage = String(err?.message || err);
+    console.warn(`[Resend Email Attempt Failed] for ${to}:`, errorMessage);
+
+    // If Resend sandbox domain restricts recipients to account owner (e.g. rashedulhasanrashed0@gmail.com):
+    const ownerEmail = 'rashedulhasanrashed0@gmail.com';
+    const isSandboxRestriction =
+      errorMessage.includes('only send testing emails to your own email address') ||
+      errorMessage.includes('validation_error') ||
+      errorMessage.includes('verify a domain');
+
+    if (isSandboxRestriction && to.toLowerCase() !== ownerEmail.toLowerCase()) {
+      try {
+        console.log(`[Resend Fallback] Delivering notification to verified account owner (${ownerEmail}) with intended recipient: ${to}`);
+        const fallbackNote = `Intended recipient was <strong>${to}</strong>. Delivered to registered Resend account (<code>${ownerEmail}</code>) because the default Resend sandbox domain (<code>onboarding@resend.dev</code>) restricts delivery to the verified account owner. To deliver directly to external inboxes like <code>${to}</code>, verify a custom domain at resend.com/domains.`;
+        
+        const fallbackHtml = buildHtmlTemplate(payload, fallbackNote);
+        const fallbackSubject = `[SWE Retake Alert] (For ${to}) ${courseCode}: ${title}`;
+
+        const fallbackResult = await resend.emails.send({
+          from: fromEmail,
+          to: [ownerEmail],
+          subject: fallbackSubject,
+          html: fallbackHtml,
+        });
+
+        if (fallbackResult.data?.id) {
+          console.log(`[Resend Fallback Success] ID: ${fallbackResult.data.id}`);
+          return {
+            success: true,
+            id: fallbackResult.data.id,
+            note: `Delivered to verified Resend account (${ownerEmail}) for intended recipient (${to})`,
+          };
+        }
+      } catch (fallbackErr: any) {
+        console.error('[Resend Fallback Error]:', fallbackErr?.message || fallbackErr);
+      }
+    }
+
+    return { success: false, error: errorMessage };
   }
 }

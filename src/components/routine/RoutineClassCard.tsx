@@ -58,6 +58,9 @@ export const RoutineClassCard: React.FC<RoutineClassCardProps> = ({
     } else if (/^exten/i.test(trimmed)) {
       roomLabel = 'EXTEN';
       roomValue = trimmed.replace(/^exten[- ]*/i, '').trim() || trimmed;
+    } else if (/^e[- ]*([1-9]\d*)$/i.test(trimmed)) {
+      roomLabel = 'EXTEN';
+      roomValue = trimmed.replace(/^e[- ]*/i, '').trim();
     } else if (/^xl\b/i.test(trimmed)) {
       roomLabel = 'HALL';
       roomValue = trimmed.toUpperCase();

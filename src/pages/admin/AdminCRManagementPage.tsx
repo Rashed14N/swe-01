@@ -3,6 +3,7 @@ import { ShieldCheck, Search, RefreshCw } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { User, Batch } from '../../types';
+import { formatStudentId } from '../../utils/studentId';
 
 export const AdminCRManagementPage: React.FC = () => {
   const { addToast } = useNotifications();
@@ -96,7 +97,7 @@ export const AdminCRManagementPage: React.FC = () => {
               <div key={cr.id} className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between">
                 <div>
                   <span className="font-bold text-amber-950 text-xs block">{cr.name}</span>
-                  <span className="text-[10px] text-amber-800 block font-mono">{cr.studentId} • {cr.batchName}</span>
+                  <span className="text-[10px] text-amber-800 block font-mono">{formatStudentId(cr.studentId)} • {cr.batchName}</span>
                 </div>
                 <button
                   onClick={() => handleToggleCR(cr)}
@@ -152,7 +153,7 @@ export const AdminCRManagementPage: React.FC = () => {
               <div key={st.id} className="p-3 hover:bg-slate-50 flex items-center justify-between text-xs transition-colors">
                 <div>
                   <span className="font-bold text-slate-900">{st.name}</span>
-                  <span className="text-slate-400 font-mono text-[11px] ml-2">({st.studentId})</span>
+                  <span className="text-slate-400 font-mono text-[11px] ml-2">({formatStudentId(st.studentId)})</span>
                   <span className="text-slate-500 text-[11px] block">{st.batchName}</span>
                 </div>
 

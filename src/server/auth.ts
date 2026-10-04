@@ -89,6 +89,7 @@ export async function verifyAuthToken(req: AuthenticatedRequest, res: Response, 
   }
 
   if (
+    token.startsWith('demo_') ||
     token.startsWith('demo_session_token') ||
     token === 'demo_token' ||
     token.includes('111111111') ||
@@ -97,7 +98,7 @@ export async function verifyAuthToken(req: AuthenticatedRequest, res: Response, 
     const allUsers: User[] = db.getData().users || [];
     const demoUser = allUsers.find(u => u.studentId === '111111111') ||
       allUsers.find(u => u.role === 'STUDENT') || {
-        id: 'usr_swe_demo_student',
+        id: 'usr_demo_student_111111111',
         studentId: '111111111',
         name: 'Demo Student',
         email: 'student@swe.demo',

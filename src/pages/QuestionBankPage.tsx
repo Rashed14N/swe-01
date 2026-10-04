@@ -124,7 +124,6 @@ export const QuestionBankPage: React.FC = () => {
   // -------------------------------------------------------------
   const processedQuestions = useMemo(() => {
     let result = [...questions];
-    const userSem = currentUser?.currentSemester;
     const query = search.toLowerCase().trim();
 
     // Filter by selected course if a chip in the enrolled courses bar was clicked
@@ -138,8 +137,7 @@ export const QuestionBankPage: React.FC = () => {
     if (!query) {
       // DEFAULT SORTING ALGORITHM:
       // Priority 1: Retake & Enrolled courses of the student are placed FIRST!
-      // Priority 2: Student current semester matches
-      // Priority 3: Academic year descending & creation timestamp
+      // Priority 2: Academic year descending & creation timestamp
       return result.sort((a, b) => {
         const aIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, a)) ? 1 : 0;
         const bIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
@@ -149,13 +147,6 @@ export const QuestionBankPage: React.FC = () => {
         const bIsEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
         if (aIsEnrolled !== bIsEnrolled) return bIsEnrolled - aIsEnrolled;
 
-        if (userSem) {
-          const aMatch = a.semester === userSem ? 1 : 0;
-          const bMatch = b.semester === userSem ? 1 : 0;
-          if (aMatch !== bMatch) {
-            return bMatch - aMatch;
-          }
-        }
         // Then by academic year descending
         const yearDiff = (b.academicYear || 0) - (a.academicYear || 0);
         if (yearDiff !== 0) return yearDiff;
@@ -270,10 +261,6 @@ export const QuestionBankPage: React.FC = () => {
       if (isRetake) score += 60;
       if (isEnrolled) score += 50;
 
-      if (userSem && q.semester === userSem) {
-        score += 30;
-      }
-
       if (q.academicYear) {
         score += Math.max(0, (q.academicYear - 2020) * 2);
       }
@@ -285,7 +272,7 @@ export const QuestionBankPage: React.FC = () => {
 
     scored.sort((a, b) => b.score - a.score);
     return scored.map((item) => item.resource);
-  }, [questions, search, currentUser, myCourses, selectedCourseFilter]);
+  }, [questions, search, myCourses, selectedCourseFilter]);
 
   const handleDownload = (resourceId: string) => {
     fetch(`/api/resources/${resourceId}/download`, {
@@ -327,8 +314,6 @@ export const QuestionBankPage: React.FC = () => {
     return 'EXAM QUESTION';
   };
 
-  const userSemesterNumber = currentUser?.currentSemester;
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -361,8 +346,8 @@ export const QuestionBankPage: React.FC = () => {
 
       {/* TOP SECTION: Enrolled & Retake Courses Filter Bar */}
       {myCourses.length > 0 && (
-        <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-[#D8E2EE] dark:border-slate-800 p-4 sm:p-5 shadow-[0_1px_3px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.06)] space-y-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="bg-gradient-to-br from-white via-[#F8FAFD] to-[#EFF5FC] dark:from-[#0F172A] dark:via-[#111C2E] dark:to-[#142036] rounded-2xl border border-[#D2DFEE] dark:border-slate-800 p-4 sm:p-5 shadow-[0_2px_12px_rgba(15,35,70,0.04)] space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/70 dark:border-slate-800 pb-3">
             <div>
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -608,7 +593,6 @@ export const QuestionBankPage: React.FC = () => {
         /* Responsive 3-Column Question Paper Card Grid with Clean In-Card Accordion */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-start">
           {processedQuestions.map((q) => {
-            const isMatch = Boolean(userSemesterNumber && q.semester === userSemesterNumber);
             const retakeMatch = myCourses.find((c) => c.isRetakeCourse && isCourseMatch(c, q));
             const enrolledMatch = myCourses.find((c) => !c.isRetakeCourse && isCourseMatch(c, q));
 
@@ -634,7 +618,6 @@ export const QuestionBankPage: React.FC = () => {
                 downloadLink={q.fileUrl || ''}
                 typeBadge={getExamTypeLabel(q)}
                 fileSize={q.fileSize}
-                isCurrentSemesterMatch={isMatch}
                 enrolledBadge={enrolledBadge}
                 retakeBadge={retakeBadge}
                 isExpanded={expandedCardId === q.id}
@@ -683,10 +666,6 @@ export const QuestionBankPage: React.FC = () => {
                           ) : enrolledMatch ? (
                             <span className="px-1.5 py-0.5 text-[9px] bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 font-bold shrink-0">
                               Enrolled
-                            </span>
-                          ) : userSemesterNumber && q.semester === userSemesterNumber ? (
-                            <span className="px-1.5 py-0.5 text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 rounded border border-emerald-200 font-bold shrink-0">
-                              Your Sem
                             </span>
                           ) : null}
                         </div>

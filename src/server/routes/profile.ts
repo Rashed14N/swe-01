@@ -17,7 +17,28 @@ router.get('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Response
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const allResources = await fetchAllResources();
-    const contributions = allResources.filter(r => r.uploaderId === user.id);
+    const currentUserId = user.id;
+    const currentStudentId = user.studentId?.trim().toLowerCase();
+    const currentDigitsOnly = currentStudentId ? currentStudentId.replace(/\D/g, '') : '';
+    const currentEmail = user.email?.trim().toLowerCase();
+    const currentName = user.name?.trim().toLowerCase();
+
+    const contributions = allResources.filter(r => {
+      if (r.uploaderId && r.uploaderId === currentUserId) return true;
+      if (currentDigitsOnly) {
+        const uploaderSidDigits = (r.uploaderStudentId || '').replace(/\D/g, '');
+        const uploaderIdDigits = (r.uploaderId || '').replace(/\D/g, '');
+        if (uploaderSidDigits && uploaderSidDigits === currentDigitsOnly) return true;
+        if (uploaderIdDigits && uploaderIdDigits === currentDigitsOnly) return true;
+      }
+      if (currentStudentId && (
+        (r.uploaderStudentId && r.uploaderStudentId.toLowerCase() === currentStudentId) ||
+        (r.uploaderId && r.uploaderId.toLowerCase() === currentStudentId)
+      )) return true;
+      if (currentEmail && (r as any).uploaderEmail && (r as any).uploaderEmail.toLowerCase() === currentEmail) return true;
+      if (currentName && r.uploaderName && r.uploaderName.toLowerCase() === currentName) return true;
+      return false;
+    });
 
     res.json({
       user,

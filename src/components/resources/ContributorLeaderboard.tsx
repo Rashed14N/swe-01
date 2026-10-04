@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Trophy, Star, FileText, CheckCircle, TrendingUp, ShieldCheck } from 'lucide-react';
 import { Contributor } from '../../types';
 import { getUserAvatarUrl } from '../../data/avatars';
+import { formatStudentId } from '../../utils/studentId';
 
 export const ContributorLeaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<Contributor[]>([]);
@@ -96,7 +97,7 @@ export const ContributorLeaderboard: React.FC = () => {
                   />
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">{contributor.name}</h3>
-                    <span className="text-[10px] font-mono text-slate-500 block">{contributor.studentId}</span>
+                    <span className="text-[10px] font-mono text-slate-500 block">{formatStudentId(contributor.studentId)}</span>
                     <span className="text-[10px] font-bold text-blue-600 block">{contributor.batchName}</span>
                   </div>
                 </div>

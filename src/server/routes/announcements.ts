@@ -9,6 +9,7 @@ import {
   deleteAnnouncementFromDB,
   fetchAllUsers,
   fetchAllBatches,
+  createNotificationInDB,
 } from '../supabaseData';
 import { sendRetakeCourseUpdateEmail } from '../emailService';
 
@@ -98,10 +99,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
       const batchStudents = allUsers.filter(u =>
         (targetBatchId === 'ALL' || u.batchId === targetBatchId) && u.id !== req.user!.id
       );
-      const local = db.getData();
-      if (!local.notifications) local.notifications = [];
-      batchStudents.forEach(st => {
-        local.notifications.unshift({
+      for (const st of batchStudents) {
+        await createNotificationInDB({
           id: `notif-${Date.now()}-${Math.random()}`,
           userId: st.id,
           title: `${priority === 'URGENT' ? '🚨 URGENT Announcement' : '📢 Batch Announcement'}`,
@@ -111,8 +110,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
           read: false,
           createdAt: new Date().toISOString(),
         });
-      });
-      db.save();
+      }
     }
 
     // Check if announcement relates to any retake course (by course code in title/description or matching batch)
@@ -134,11 +132,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
       });
 
       if (matchedRetakes.length > 0) {
-        const local = db.getData();
-        if (!local.notifications) local.notifications = [];
-
         for (const retake of matchedRetakes) {
-          local.notifications.unshift({
+          await createNotificationInDB({
             id: `notif-ann-retake-${Date.now()}-${Math.random()}`,
             userId: retake.studentId,
             title: `Course Announcement: ${retake.courseCode} 📢`,
@@ -165,7 +160,6 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
             }).catch(e => console.warn('[Announcement Retake Email Error]:', e));
           }
         }
-        db.save();
       }
     } catch (notifErr) {
       console.warn('[Retake announcement notice error]:', notifErr);

@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { safeParseJson } from '../../lib/apiClient';
 import { SupabaseSetupModal } from '../common/SupabaseSetupModal';
 import { getUserAvatarUrl } from '../../data/avatars';
+import { formatStudentId } from '../../utils/studentId';
 
 interface TopNavbarProps {
   onOpenMobileMenu: () => void;
@@ -125,11 +126,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#0B2348] dark:bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border border-slate-200 dark:border-slate-700">
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs border-2 border-blue-500/30 dark:border-blue-500/40">
               <img
                 src={getUserAvatarUrl(user)}
                 alt={user?.name || 'User Avatar'}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full scale-105 transition-transform"
                 onError={(e) => {
                   (e.currentTarget as HTMLElement).style.display = 'none';
                 }}
@@ -148,17 +149,27 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0F172A] rounded-2xl shadow-xl border border-[#E2E8F0] dark:border-slate-700 overflow-hidden z-50 divide-y divide-[#E2E8F0] dark:divide-slate-800 animate-dropdown-entry">
-              <div className="p-3.5 bg-[#F8FAFC] dark:bg-slate-800/60">
-                <p className="text-xs font-bold text-[#0B2348] dark:text-white truncate">{user?.name}</p>
-                <p className="text-[11px] text-[#64748B] dark:text-slate-400 truncate">{user?.studentId || user?.email}</p>
-                <div className="mt-2 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 bg-[#EFF6FF] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-[10px] font-bold rounded-md uppercase">
-                    {user?.role}
-                  </span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
-                    {user?.batchName}
-                  </span>
+            <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#0F172A] rounded-2xl shadow-xl border border-[#E2E8F0] dark:border-slate-700 overflow-hidden z-50 divide-y divide-[#E2E8F0] dark:divide-slate-800 animate-dropdown-entry">
+              <div className="p-3.5 bg-[#F8FAFC] dark:bg-slate-800/60 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-500/30 dark:border-blue-500/40 shrink-0 shadow-xs">
+                  <img
+                    src={getUserAvatarUrl(user)}
+                    alt={user?.name || 'User Avatar'}
+                    className="w-full h-full object-cover rounded-full scale-105"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-[#0B2348] dark:text-white truncate">{user?.name}</p>
+                  <p className="text-[11px] text-[#64748B] dark:text-slate-400 truncate">{user?.studentId ? formatStudentId(user.studentId) : user?.email}</p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-[#EFF6FF] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-[10px] font-bold rounded-md uppercase">
+                      {user?.role}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">
+                      {user?.batchName}
+                    </span>
+                  </div>
                 </div>
               </div>
 

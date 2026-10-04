@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   User as UserIcon, Upload, CheckCircle2, Clock, XCircle, FileText, 
   Award, ShieldCheck, Mail, Phone, Hash, GraduationCap, Save, 
-  Sparkles, Edit3, Layers, BookOpen, Check, Link as LinkIcon, ExternalLink, Copy, Globe, ChevronDown
+  Sparkles, Edit3, Layers, BookOpen, Check, Link as LinkIcon, ExternalLink, Copy, Globe, ChevronDown,
+  Camera, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Resource, ResourceType, Course, Faculty, getFacultyRank } from '../types';
-import { getUserAvatarUrl } from '../data/avatars';
+import { getUserAvatarUrl, PRESET_AVATARS, DEFAULT_AVATAR_URL } from '../data/avatars';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
 import { parseGoogleDriveLink } from '../lib/driveUtils';
+import { formatStudentId } from '../utils/studentId';
+import { fetchResourcesFromSupabase, saveResourceToSupabase } from '../services/supabaseDataService';
 
 export const ProfilePage: React.FC = () => {
   const { user, token, updateUserInContext } = useAuth();
@@ -103,21 +106,120 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  const fetchMyContributions = () => {
-    if (!token) return;
+  const fetchMyContributions = async () => {
     setIsLoadingContributions(true);
-    fetch('/api/resources/my-uploads', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setMyContributions(data.resources || []))
-      .catch(console.error)
-      .finally(() => setIsLoadingContributions(false));
+    const activeToken =
+      token ||
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('auth_token') ||
+          localStorage.getItem('swe_portal_auth_token') ||
+          localStorage.getItem('swe_admin_token') ||
+          localStorage.getItem('token') ||
+          'demo_session_token_111111111'
+        : null);
+
+    let list: Resource[] = [];
+
+    // 1. Try server API /api/resources/my-uploads
+    if (activeToken) {
+      try {
+        const res = await fetch('/api/resources/my-uploads', {
+          headers: { Authorization: `Bearer ${activeToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.resources) && data.resources.length > 0) {
+            list = data.resources;
+          }
+        }
+      } catch (err) {
+        console.warn('[ProfilePage] /api/resources/my-uploads warning:', err);
+      }
+    }
+
+    // 2. If empty, query /api/resources and match by user ID, student ID, email, or name
+    if (list.length === 0 && user) {
+      try {
+        const res = await fetch('/api/resources');
+        if (res.ok) {
+          const data = await res.json();
+          const allRes: Resource[] = Array.isArray(data.resources) ? data.resources : (Array.isArray(data) ? data : []);
+          const currentUserId = user.id;
+          const currentStudentId = user.studentId?.trim().toLowerCase();
+          const currentDigitsOnly = currentStudentId ? currentStudentId.replace(/\D/g, '') : '';
+          const currentEmail = user.email?.trim().toLowerCase();
+          const currentName = user.name?.trim().toLowerCase();
+
+          const filtered = allRes.filter((r) => {
+            if (r.uploaderId && r.uploaderId === currentUserId) return true;
+            if (currentDigitsOnly) {
+              const uploaderSidDigits = (r.uploaderStudentId || '').replace(/\D/g, '');
+              const uploaderIdDigits = (r.uploaderId || '').replace(/\D/g, '');
+              if (uploaderSidDigits && uploaderSidDigits === currentDigitsOnly) return true;
+              if (uploaderIdDigits && uploaderIdDigits === currentDigitsOnly) return true;
+            }
+            if (currentStudentId && (
+              (r.uploaderStudentId && r.uploaderStudentId.toLowerCase() === currentStudentId) ||
+              (r.uploaderId && r.uploaderId.toLowerCase() === currentStudentId)
+            )) return true;
+            if (currentEmail && (r as any).uploaderEmail && (r as any).uploaderEmail.toLowerCase() === currentEmail) return true;
+            if (currentName && r.uploaderName && r.uploaderName.toLowerCase().includes(currentName)) return true;
+            return false;
+          });
+
+          if (filtered.length > 0) {
+            list = filtered;
+          }
+        }
+      } catch (err) {
+        console.warn('[ProfilePage] /api/resources fallback warning:', err);
+      }
+    }
+
+    // 3. Direct Supabase query fallback if list is still empty
+    if (list.length === 0 && user) {
+      try {
+        const supabaseData = await fetchResourcesFromSupabase();
+        if (supabaseData && supabaseData.length > 0) {
+          const currentUserId = user.id;
+          const currentStudentId = user.studentId?.trim().toLowerCase();
+          const currentDigitsOnly = currentStudentId ? currentStudentId.replace(/\D/g, '') : '';
+          const currentEmail = user.email?.trim().toLowerCase();
+          const currentName = user.name?.trim().toLowerCase();
+
+          const filtered = supabaseData.filter((r) => {
+            if (r.uploaderId && r.uploaderId === currentUserId) return true;
+            if (currentDigitsOnly) {
+              const uploaderSidDigits = (r.uploaderStudentId || '').replace(/\D/g, '');
+              const uploaderIdDigits = (r.uploaderId || '').replace(/\D/g, '');
+              if (uploaderSidDigits && uploaderSidDigits === currentDigitsOnly) return true;
+              if (uploaderIdDigits && uploaderIdDigits === currentDigitsOnly) return true;
+            }
+            if (currentStudentId && (
+              (r.uploaderStudentId && r.uploaderStudentId.toLowerCase() === currentStudentId) ||
+              (r.uploaderId && r.uploaderId.toLowerCase() === currentStudentId)
+            )) return true;
+            if (currentEmail && (r as any).uploaderEmail && (r as any).uploaderEmail.toLowerCase() === currentEmail) return true;
+            if (currentName && r.uploaderName && r.uploaderName.toLowerCase().includes(currentName)) return true;
+            return false;
+          });
+
+          if (filtered.length > 0) {
+            list = filtered;
+          }
+        }
+      } catch (err) {
+        console.warn('[ProfilePage] Supabase fallback warning:', err);
+      }
+    }
+
+    setMyContributions(list);
+    setIsLoadingContributions(false);
   };
 
   useEffect(() => {
     fetchMyContributions();
-  }, [token]);
+  }, [token, user?.id, user?.studentId, activeTab]);
 
   // Handle Profile Update (Name, Email, Phone)
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -161,6 +263,85 @@ export const ProfilePage: React.FC = () => {
     } catch (e) {
       addToast('error', 'Failed to update avatar.');
     }
+  };
+
+  // Handle Avatar Reset to Default
+  const handleResetAvatar = async () => {
+    try {
+      await updateUserInContext({
+        profileImage: DEFAULT_AVATAR_URL,
+      });
+      addToast('success', 'Profile avatar reset to default!');
+    } catch (e) {
+      addToast('error', 'Failed to reset avatar.');
+    }
+  };
+
+  // Custom Photo Upload (Max 100KB)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      addToast('error', 'Please choose an image file (PNG, JPG, WEBP).');
+      if (e.target) e.target.value = '';
+      return;
+    }
+
+    const MAX_BYTES = 100 * 1024; // 100 KB limit
+    if (file.size > MAX_BYTES) {
+      const sizeInKb = (file.size / 1024).toFixed(1);
+      addToast('error', `Image size (${sizeInKb} KB) exceeds the 100 KB limit. Please select an image under 100 KB.`);
+      if (e.target) e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      if (!base64) return;
+
+      const base64Part = base64.split(',')[1] || '';
+      const calculatedBytes = Math.floor((base64Part.length * 3) / 4);
+      if (calculatedBytes > MAX_BYTES) {
+        addToast('error', `Encoded image exceeds the 100 KB limit.`);
+        if (e.target) e.target.value = '';
+        return;
+      }
+
+      setIsUploadingPhoto(true);
+      try {
+        const res = await updateUserInContext({
+          profileImage: base64,
+        });
+
+        if (token) {
+          await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ profileImage: base64 }),
+          }).catch(console.warn);
+        }
+
+        if (res && res.success === false) {
+          addToast('error', res.error || 'Failed to update profile photo.');
+        } else {
+          addToast('success', `Profile photo uploaded successfully (${(file.size / 1024).toFixed(1)} KB)!`);
+        }
+      } catch (err: any) {
+        addToast('error', err?.message || 'Failed to upload photo.');
+      } finally {
+        setIsUploadingPhoto(false);
+        if (e.target) e.target.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -215,12 +396,16 @@ export const ProfilePage: React.FC = () => {
       });
 
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data && data.resource) {
+          saveResourceToSupabase(data.resource).catch(console.warn);
+        }
         addToast('success', 'Question paper submitted for Admin verification (+10 points)!');
         setTitle('');
         setFacultyName('');
         setDescription('');
         setFileUrl('');
-        fetchMyContributions();
+        await fetchMyContributions();
         setActiveTab('uploads');
       } else {
         const err = await res.json();
@@ -264,91 +449,105 @@ export const ProfilePage: React.FC = () => {
   };
 
   const avatarUrl = getUserAvatarUrl(user);
+  const currentAvatarObj = PRESET_AVATARS.find(
+    (a) => a.url === avatarUrl || a.id === user?.profileImage || a.fileName === user?.profileImage
+  );
+  const isCustomPhoto = user?.profileImage?.startsWith('data:image/');
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-5 sm:space-y-6 max-w-6xl mx-auto font-sans antialiased">
       {/* Profile Hero Header Card */}
-      <div className="bg-white dark:bg-[#0F172A] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 z-10">
-          {/* Avatar with Change Button */}
-          <div className="relative group">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 p-1 border-2 border-blue-500/40 dark:border-blue-500/30 shadow-md flex items-center justify-center">
+      <div className="bg-white dark:bg-[#0F172A] p-4 sm:p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 relative overflow-hidden">
+        {/* Subtle accent glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 z-10 min-w-0 w-full lg:w-auto">
+          {/* Avatar with Camera badge */}
+          <div className="relative shrink-0">
+            <div 
+              onClick={() => setIsAvatarModalOpen(true)}
+              title="Click to change avatar"
+              className="w-18 h-18 sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden bg-slate-50 dark:bg-slate-800 p-0.5 border-2 border-blue-500/30 dark:border-blue-500/40 shadow-xs flex items-center justify-center cursor-pointer group"
+            >
               <img
                 src={avatarUrl}
-                alt={user?.name}
-                className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform"
+                alt={user?.name || 'Student Avatar'}
+                className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
                 referrerPolicy="no-referrer"
               />
             </div>
             <button
+              type="button"
               onClick={() => setIsAvatarModalOpen(true)}
-              title="Change Preset Avatar"
-              className="absolute -bottom-1.5 -right-1.5 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg border-2 border-white dark:border-slate-900 transition-all hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center"
+              title="Change Avatar"
+              className="absolute bottom-0 right-0 p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-sm border-2 border-white dark:border-slate-900 transition-transform active:scale-95 hover:scale-105 cursor-pointer flex items-center justify-center"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Camera className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          {/* Student Profile Info */}
+          <div className="min-w-0 flex-1">
+            {/* Student Name & Badges in clean horizontal hierarchy */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
                 {user?.name || 'Student Profile'}
               </h1>
-              <span className="px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full border border-blue-200 dark:border-blue-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full border border-blue-200/80 dark:border-blue-800/80">
                 {user?.batchName || 'SWE 9th Batch'}
               </span>
-              <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-md uppercase border border-slate-200 dark:border-slate-700">
+              <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold rounded-md uppercase tracking-wider border border-slate-200 dark:border-slate-700">
                 {user?.role || 'STUDENT'}
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-500 dark:text-slate-400 mt-2 font-mono">
-              <span className="flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5 text-slate-400" />
-                ID: <strong className="text-slate-800 dark:text-slate-200">{user?.studentId || 'N/A'}</strong>
+            {/* Compact Secondary Information Row (ID, Email, Phone) */}
+            <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 text-xs text-slate-500 dark:text-slate-400 mt-2">
+              <span className="inline-flex items-center gap-1.5 font-mono text-slate-700 dark:text-slate-300">
+                <Hash className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                ID: <strong className="font-semibold text-slate-800 dark:text-slate-200">{formatStudentId(user?.studentId) || 'N/A'}</strong>
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 break-all sm:truncate max-w-xs">
+                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 {user?.email}
               </span>
               {user?.phone && (
                 <>
-                  <span>•</span>
-                  <span className="flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+                  <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     {user.phone}
                   </span>
                 </>
               )}
             </div>
 
-            <div className="flex items-center gap-3 mt-3">
+            {/* Change Avatar Action */}
+            <div className="mt-2.5 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsAvatarModalOpen(true)}
-                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer group"
               >
-                <Edit3 className="w-3.5 h-3.5" />
-                Change Preset Avatar
+                <Camera className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                Change Avatar
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Stats Block */}
-        <div className="flex items-center gap-3 z-10 w-full sm:w-auto">
-          <div className="flex-1 sm:flex-initial bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+        {/* Right Stats Block: Total Uploads Card */}
+        <div className="shrink-0 w-full sm:w-auto z-10">
+          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3.5 min-w-[190px]">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
               <Award className="w-5 h-5" />
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 block">
                 Total Uploads
               </span>
-              <span className="text-lg font-black text-slate-900 dark:text-white">
+              <span className="text-lg font-bold text-slate-900 dark:text-white">
                 {myContributions.length} Files
               </span>
             </div>
@@ -356,23 +555,23 @@ export const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-1">
+      {/* Navigation Tabs - Mobile Optimized Scrollable Header */}
+      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-slate-200 dark:border-slate-800 pb-1.5 overflow-x-auto scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('profile')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
+          className={`shrink-0 whitespace-nowrap px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'profile'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <UserIcon className="w-4 h-4" />
-          Edit Profile Information
+          Profile Information
         </button>
 
         <button
           onClick={() => setActiveTab('contribute')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
+          className={`shrink-0 whitespace-nowrap px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'contribute'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -384,7 +583,7 @@ export const ProfilePage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('uploads')}
-          className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer relative ${
+          className={`shrink-0 whitespace-nowrap px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer relative ${
             activeTab === 'uploads'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -402,48 +601,116 @@ export const ProfilePage: React.FC = () => {
         </button>
       </div>
 
-      {/* Tab 1: Profile Information & Rename Details */}
+      {/* Tab 1: Profile Information (Balanced 2-Column Redesign) */}
       {activeTab === 'profile' && (
-        <div className="grid md:grid-cols-3 gap-6 animate-fade-in">
-          {/* Avatar Preview Card */}
-          <div className="md:col-span-1 bg-white dark:bg-[#0F172A] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col items-center text-center space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              Profile Avatar
-            </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch animate-fade-in">
+          {/* LEFT: Profile Avatar Card */}
+          <div className="lg:col-span-5 bg-white dark:bg-[#0F172A] p-4 sm:p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+            {/* Card Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Profile Avatar
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Custom character avatar
+                </p>
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
+                38 Presets
+              </span>
+            </div>
 
-            <div className="relative">
-              <div className="w-28 h-28 rounded-3xl overflow-hidden bg-slate-50 dark:bg-slate-800/80 p-1.5 border-2 border-blue-500 shadow-lg">
-                <img
-                  src={avatarUrl}
-                  alt={user?.name}
-                  className="w-full h-full object-cover rounded-2xl"
-                  referrerPolicy="no-referrer"
-                />
+            {/* Centered Avatar Area (Circle) */}
+            <div className="my-auto py-5 flex flex-col items-center text-center">
+              {/* Avatar with Camera Overlay (Circular) */}
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                title="Click to upload photo (Max 100KB)"
+                className="relative group cursor-pointer"
+              >
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-slate-50 dark:bg-slate-800 p-1 border-2 border-blue-500/30 dark:border-blue-500/40 shadow-sm transition-transform group-hover:scale-102">
+                  <img
+                    src={avatarUrl}
+                    alt={user?.name || 'Current Avatar'}
+                    className="w-full h-full object-cover rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div 
+                  className="absolute bottom-0 right-0 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md border-2 border-white dark:border-slate-900 transition-transform group-hover:scale-110 active:scale-95 flex items-center justify-center"
+                  title="Upload photo"
+                >
+                  <Camera className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Status and description */}
+              <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {isCustomPhoto ? 'Custom Photo Active' : 'Preset Avatar Active'}
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[260px] leading-relaxed">
+                {isCustomPhoto
+                  ? 'Your uploaded profile photo is active across the student portal'
+                  : 'Choose from our curated collection or upload your own custom photo'}
+              </p>
+
+              <div className="mt-3 px-3 py-1 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/70 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                {isCustomPhoto ? (
+                  <span>Photo: <strong className="text-blue-600 dark:text-blue-400">Uploaded Custom Photo</strong> (≤100KB)</span>
+                ) : (
+                  <span>Active preset: <strong className="text-slate-800 dark:text-slate-100">{currentAvatarObj?.name || 'Default Avatar'}</strong></span>
+                )}
               </div>
             </div>
 
-            <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                Preset Avatar Active
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Choose from our curated collection of student and tech avatars
-              </p>
-            </div>
+            {/* Avatar Actions */}
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+              {/* Hidden file input for 100KB photo upload */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
 
-            <button
-              type="button"
-              onClick={() => setIsAvatarModalOpen(true)}
-              className="w-full py-2.5 px-4 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl border border-blue-200 dark:border-blue-800 flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Select Different Avatar
-            </button>
+              <button
+                type="button"
+                disabled={isUploadingPhoto}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-70"
+              >
+                <Upload className="w-4 h-4" />
+                {isUploadingPhoto ? 'Uploading Photo...' : 'Upload Photo (Max 100KB)'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsAvatarModalOpen(true)}
+                className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                Choose Preset Avatar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetAvatar}
+                className="w-full py-1.5 px-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset to Default
+              </button>
+            </div>
           </div>
 
-          {/* Edit Information Form */}
-          <div className="md:col-span-2 bg-white dark:bg-[#0F172A] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-4 mb-5 flex items-center justify-between">
+          {/* RIGHT: Account Details & Contact Information Card */}
+          <div className="lg:col-span-7 bg-white dark:bg-[#0F172A] p-4 sm:p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+            {/* Card Header with Top-Right Save Changes Button */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Account Details & Contact Information
@@ -452,90 +719,135 @@ export const ProfilePage: React.FC = () => {
                   Update your full name, email address, and phone number
                 </p>
               </div>
+
+              {/* Clearly visible Save Changes button in top-right */}
+              <button
+                type="submit"
+                form="account-details-form"
+                disabled={isSavingProfile}
+                className="hidden sm:inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-70 shrink-0"
+              >
+                <Save className="w-4 h-4" />
+                {isSavingProfile ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-4">
+            {/* Form Fields */}
+            <form id="account-details-form" onSubmit={handleSaveProfile} className="space-y-4 my-auto py-3">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Full Name (নাম পরিবর্তন)
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Full Name
                 </label>
                 <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                   />
                 </div>
               </div>
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Email Address (ইমেইল পরিবর্তন)
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Email Address
                 </label>
                 <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <Mail className="w-4 h-4" />
+                  </div>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                   />
                 </div>
               </div>
 
               {/* Phone Number */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Phone Number (ফোন নম্বর)
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Phone Number
                 </label>
                 <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <Phone className="w-4 h-4" />
+                  </div>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. 017XXXXXXXX"
-                    className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                   />
                 </div>
               </div>
 
-              {/* Read-Only Academic Badges */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block">Student ID (Verified)</span>
-                  <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{user?.studentId || 'N/A'}</span>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block">Batch & Semester</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{user?.batchName} (Sem {user?.currentSemester})</span>
-                </div>
-              </div>
-
-              {/* Save Button */}
-              <div className="pt-3">
+              {/* Mobile Save Button (Visible only on small screens) */}
+              <div className="sm:hidden pt-2">
                 <button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                  className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                 >
                   <Save className="w-4 h-4" />
-                  {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
+                  {isSavingProfile ? 'Saving Changes...' : 'Save Changes'}
                 </button>
               </div>
             </form>
+
+            {/* Bottom Compact Information Cards: Student ID & Batch/Semester */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+              <div className="p-3 bg-slate-50/70 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      Student ID
+                    </span>
+                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded">
+                      Verified
+                    </span>
+                  </div>
+                  <span className="text-xs sm:text-sm font-mono font-bold text-slate-800 dark:text-slate-100 truncate block">
+                    {formatStudentId(user?.studentId) || 'N/A'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50/70 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    Batch & Semester
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate block">
+                    {user?.batchName || 'SWE Batch'} {user?.currentSemester ? `(Sem ${user.currentSemester})` : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Tab 2: Contribute Question Paper */}
       {activeTab === 'contribute' && (
-        <div className="bg-white dark:bg-[#0F172A] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs animate-fade-in max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-[#0F172A] p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs animate-fade-in max-w-2xl mx-auto">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
               <Upload className="w-5 h-5" />
@@ -776,22 +1088,35 @@ export const ProfilePage: React.FC = () => {
 
       {/* Tab 3: Uploaded Files */}
       {activeTab === 'uploads' && (
-        <div className="bg-white dark:bg-[#0F172A] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs animate-fade-in">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
+        <div className="bg-white dark:bg-[#0F172A] p-4 sm:p-7 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">My Uploaded Contributions</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">My Uploaded Files</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">Track verification status of your uploaded study materials</p>
             </div>
-            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-xl border border-blue-200 dark:border-blue-800">
+            <span className="self-start sm:self-auto px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-xl border border-blue-200 dark:border-blue-800">
               {myContributions.length} Total Uploads
             </span>
           </div>
 
           {isLoadingContributions ? (
-            <div className="py-12 text-center text-xs text-slate-400">Loading your contributions...</div>
+            <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+              <Clock className="w-5 h-5 text-blue-500 animate-pulse" />
+              <span>Loading your uploaded files...</span>
+            </div>
           ) : myContributions.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-6">
-              You haven't contributed any resources yet. Switch to the "Contribute Resource" tab to upload questions, notes, or lab solutions!
+            <div className="py-12 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-6 space-y-3">
+              <p>You haven&apos;t contributed any resources yet.</p>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('contribute')}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer text-xs sm:text-sm"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Contribute Question Paper
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid gap-3">

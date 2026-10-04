@@ -7,7 +7,10 @@ import {
   fetchAllRoutineSlots,
   fetchAllExams,
   fetchAllAnnouncements,
+  fetchAllUsers,
+  createNotificationInDB,
 } from '../supabaseData';
+import { sendRetakeCourseUpdateEmail } from '../emailService';
 import type {
   RetakeRegistration,
   RetakeRoutineSlot,
@@ -43,6 +46,164 @@ function checkTimeOverlap(start1: string, end1: string, start2: string, end2: st
   if (s1 >= e1 || s2 >= e2) return false;
   return Math.max(s1, s2) < Math.min(e1, e2);
 }
+
+// GET /api/retakes/cr/students
+// For Class Representatives & Admins: Returns all retake & improvement students taking courses with this CR's batch or across the department
+router.get('/cr/students', verifyAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  // Allow CR and ADMIN roles
+  if (req.user.role !== 'CR' && req.user.role !== 'ADMIN') {
+    return res.status(403).json({
+      success: false,
+      error: 'Forbidden: Only Class Representatives and Admins can view the retake students directory.',
+    });
+  }
+
+  try {
+    const crBatchId = req.user.batchId || 'batch-9';
+    const [allCourses, allBatches, allUsers] = await Promise.all([
+      fetchAllCourses().catch(() => db.getCourses()),
+      fetchAllBatches().catch(() => db.getBatches()),
+      fetchAllUsers().catch(() => db.getUsers()),
+    ]);
+
+    const crBatch = allBatches.find(b => b.id === crBatchId) || {
+      id: crBatchId,
+      name: req.user.batchName || 'SWE 9th Batch',
+      currentSemester: req.user.currentSemester || 5,
+    };
+
+    let allRetakes = db.getRetakes();
+
+    // Auto-seed sample realistic retakes if list is empty
+    if (allRetakes.length === 0) {
+      const sampleRetakes: RetakeRegistration[] = [
+        {
+          id: 'retake-sample-1',
+          studentId: 'usr_a917725e3b30440cbecf040af72c6fc0',
+          studentName: 'Anindro Kishor Ovi',
+          studentRoll: '252134043',
+          studentEmail: 'anindro.ovi@gmail.com',
+          courseId: 'course-sem4-swe-221',
+          courseCode: 'SWE-221',
+          courseTitle: 'Algorithm',
+          courseCredits: 3,
+          courseSemester: 4,
+          type: 'RETAKE',
+          retakeBatchId: crBatchId,
+          retakeBatchName: crBatch.name,
+          previousGrade: 'F',
+          targetGrade: 'A-',
+          status: 'ENROLLED',
+          notes: 'Regular attendance with junior batch. Needs exam notices.',
+          createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'retake-sample-2',
+          studentId: 'usr_dc0ac6623ddb4c1abd5da0cc485a6b70',
+          studentName: 'Mahbuba Chowdhury Eity',
+          studentRoll: '252134003',
+          studentEmail: 'mahbuba.eity@gmail.com',
+          courseId: 'course-sem4-swe-225',
+          courseCode: 'SWE-225',
+          courseTitle: 'Database Management System',
+          courseCredits: 3,
+          courseSemester: 4,
+          type: 'IMPROVEMENT',
+          retakeBatchId: crBatchId,
+          retakeBatchName: crBatch.name,
+          previousGrade: 'C+',
+          targetGrade: 'A',
+          status: 'ENROLLED',
+          notes: 'CGPA improvement. Syncing CT dates with CR.',
+          createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'retake-sample-3',
+          studentId: 'usr_e77702669a144283be0071f47704a2b7',
+          studentName: 'Md Hossain Akhiar',
+          studentRoll: '252134012',
+          studentEmail: 'akhiar.swe@gmail.com',
+          courseId: 'course-sem4-swe-231',
+          courseCode: 'SWE-231',
+          courseTitle: 'Software Requirement Engineering',
+          courseCredits: 3,
+          courseSemester: 4,
+          type: 'RETAKE',
+          retakeBatchId: crBatchId,
+          retakeBatchName: crBatch.name,
+          previousGrade: 'F',
+          targetGrade: 'B+',
+          status: 'ENROLLED',
+          notes: 'Retake registration synced with CR attendance list.',
+          createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      ];
+
+      for (const s of sampleRetakes) {
+        db.saveRetake(s);
+      }
+      allRetakes = db.getRetakes();
+    }
+
+    // Enhance each registration record
+    const enhanced = allRetakes.map(reg => {
+      const studentUser = allUsers.find(u => u.id === reg.studentId || u.studentId === reg.studentRoll);
+      const studentOriginalBatch = allBatches.find(b => b.id === studentUser?.batchId);
+      const targetCourse = allCourses.find(c => c.id === reg.courseId || c.code === reg.courseCode);
+      const targetBatch = allBatches.find(b => b.id === reg.retakeBatchId);
+
+      const isInCRBatch = (reg.retakeBatchId && reg.retakeBatchId === crBatchId) ||
+        (!reg.retakeBatchId && targetCourse && targetCourse.semester === crBatch.currentSemester);
+
+      return {
+        ...reg,
+        studentName: reg.studentName || studentUser?.name || 'Student',
+        studentRoll: reg.studentRoll || studentUser?.studentId || 'N/A',
+        studentEmail: reg.studentEmail || studentUser?.email || 'N/A',
+        studentPhone: studentUser?.phone || '+880 1712-000000',
+        studentProfileImage: studentUser?.profileImage || '',
+        studentOriginalBatchName: studentOriginalBatch?.name || (studentUser?.batchName ? studentUser.batchName : 'Senior Batch'),
+        courseTitle: reg.courseTitle || targetCourse?.title || reg.courseCode,
+        courseCredits: reg.courseCredits || targetCourse?.credits || 3,
+        retakeBatchName: reg.retakeBatchName || targetBatch?.name || crBatch.name,
+        isInCRBatch,
+      };
+    });
+
+    const inMyBatch = enhanced.filter(r => r.isInCRBatch);
+    const inOtherBatches = enhanced.filter(r => !r.isInCRBatch);
+
+    return res.json({
+      success: true,
+      crBatch: {
+        id: crBatch.id,
+        name: crBatch.name,
+        currentSemester: crBatch.currentSemester,
+      },
+      registrations: enhanced,
+      inMyBatch,
+      inOtherBatches,
+      stats: {
+        totalInMyBatch: inMyBatch.length,
+        totalDepartment: enhanced.length,
+        retakeCount: inMyBatch.filter(r => r.type === 'RETAKE').length,
+        improvementCount: inMyBatch.filter(r => r.type === 'IMPROVEMENT').length,
+        distinctStudentsCount: new Set(inMyBatch.map(r => r.studentId)).size,
+        distinctCoursesCount: new Set(inMyBatch.map(r => r.courseCode)).size,
+      },
+    });
+  } catch (err: any) {
+    console.error('[CR Retakes GET Error]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to fetch retake students' });
+  }
+});
 
 // GET /api/retakes
 // Returns current student's retake registrations with live routine slots, upcoming exams, and announcements
@@ -289,7 +450,7 @@ router.post('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Respons
       }
     }
 
-    const studentEmail = req.user.email || 'rashedulhasanrashed0@gmail.com';
+    const studentEmail = (req.body.studentEmail || req.user.email || 'rashedtech14@gmail.com').trim();
 
     const newRegistration: RetakeRegistration = {
       id: `retake-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -338,8 +499,72 @@ router.post('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Respons
   }
 });
 
+// POST /api/retakes/test-notification
+// Sends a live test in-app and Resend email notification confirming the retake alert system is functioning properly
+router.post('/test-notification', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    // Graceful user resolution (authenticated user or default student user)
+    const user = req.user || {
+      id: 'student-rashed',
+      name: 'Rashedul Hasan',
+      studentId: '1092',
+      role: 'STUDENT',
+      email: 'rashedtech14@gmail.com',
+    };
+
+    const targetEmail = (req.body.email || 'rashedtech14@gmail.com').trim();
+    const courseCode = req.body.courseCode || 'SWE-223';
+    const courseTitle = req.body.courseTitle || 'Object Oriented Programming';
+    const title = req.body.title || 'Quiz 2 Scheduled (Verified Alert Test)';
+    const date = req.body.date || '2026-10-15';
+    const time = req.body.time || '10:30 AM';
+    const room = req.body.room || 'Room 505';
+
+    // 1. Create In-App Notification (synced to Supabase & local DB)
+    const inAppNotif = await createNotificationInDB({
+      id: `notif-retake-test-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      title: `Retake Alert: ${title} 📅`,
+      message: `CR added EXAM - "${title}" on ${date} for your retake course ${courseCode}. Alert sent to ${targetEmail}.`,
+      type: 'EXAM',
+      linkUrl: '/retake-courses',
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+
+    // 2. Dispatch Live Email via Resend
+    const emailResult = await sendRetakeCourseUpdateEmail({
+      to: targetEmail,
+      studentName: user.name || 'Rashedul Hasan',
+      courseCode,
+      courseTitle,
+      updateType: 'EXAM',
+      title,
+      description: 'This is an automatic notification confirming that the SWE Retake & Improvement live CR sync and email notification system is working properly.',
+      date,
+      time,
+      room,
+      batchName: 'SWE 9th Batch',
+      actorName: `${user.name} (${user.role === 'CR' ? 'Class Representative' : 'Academic Desk'})`,
+    });
+
+    return res.json({
+      success: true,
+      message: `Retake notification processed successfully! Email alert sent for ${targetEmail}.`,
+      emailResult,
+      notification: inAppNotif,
+    });
+  } catch (err: any) {
+    console.error('[Retake Test Notification Error]:', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to dispatch test notification',
+    });
+  }
+});
+
 // PUT /api/retakes/:id
-// Update notes, target grade, previous grade, retakeBatchId, or status
+// Update notes, target grade, previous grade, retakeBatchId, status, or studentEmail
 router.put('/:id', verifyAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -347,7 +572,7 @@ router.put('/:id', verifyAuthToken, async (req: AuthenticatedRequest, res: Respo
 
   try {
     const { id } = req.params;
-    const { previousGrade, targetGrade, status, notes, retakeBatchId } = req.body;
+    const { previousGrade, targetGrade, status, notes, retakeBatchId, studentEmail } = req.body;
 
     const existing = db.getRetakes().find(r => r.id === id);
     if (!existing) {
@@ -368,6 +593,7 @@ router.put('/:id', verifyAuthToken, async (req: AuthenticatedRequest, res: Respo
 
     const updated: RetakeRegistration = {
       ...existing,
+      studentEmail: studentEmail !== undefined ? String(studentEmail).trim() : existing.studentEmail,
       previousGrade: previousGrade !== undefined ? previousGrade : existing.previousGrade,
       targetGrade: targetGrade !== undefined ? targetGrade : existing.targetGrade,
       status: status !== undefined ? status : existing.status,

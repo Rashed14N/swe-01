@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { ExamType, Course, Faculty, getFacultyRank } from '../../types';
+import { saveResourceToSupabase } from '../../services/supabaseDataService';
 
 interface UploadQuestionModalProps {
   isOpen: boolean;
@@ -226,6 +227,9 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
       const data = await res.json();
 
       if (res.ok) {
+        if (data && data.resource) {
+          saveResourceToSupabase(data.resource).catch(console.warn);
+        }
         if (isAdmin) {
           addToast('success', 'Question paper published instantly as Admin!');
         } else {

@@ -77,7 +77,28 @@ router.get(['/my-contributions', '/my-uploads'], verifyAuthToken, async (req: Au
 
   try {
     const allResources = await fetchAllResources();
-    const contributions = allResources.filter(r => r.uploaderId === req.user!.id);
+    const currentUserId = req.user!.id;
+    const currentStudentId = req.user!.studentId?.trim().toLowerCase();
+    const currentDigitsOnly = currentStudentId ? currentStudentId.replace(/\D/g, '') : '';
+    const currentEmail = req.user!.email?.trim().toLowerCase();
+    const currentName = req.user!.name?.trim().toLowerCase();
+
+    const contributions = allResources.filter(r => {
+      if (r.uploaderId && r.uploaderId === currentUserId) return true;
+      if (currentDigitsOnly) {
+        const uploaderSidDigits = (r.uploaderStudentId || '').replace(/\D/g, '');
+        const uploaderIdDigits = (r.uploaderId || '').replace(/\D/g, '');
+        if (uploaderSidDigits && uploaderSidDigits === currentDigitsOnly) return true;
+        if (uploaderIdDigits && uploaderIdDigits === currentDigitsOnly) return true;
+      }
+      if (currentStudentId && (
+        (r.uploaderStudentId && r.uploaderStudentId.toLowerCase() === currentStudentId) ||
+        (r.uploaderId && r.uploaderId.toLowerCase() === currentStudentId)
+      )) return true;
+      if (currentEmail && (r as any).uploaderEmail && (r as any).uploaderEmail.toLowerCase() === currentEmail) return true;
+      if (currentName && r.uploaderName && r.uploaderName.toLowerCase() === currentName) return true;
+      return false;
+    });
     contributions.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
     res.json({

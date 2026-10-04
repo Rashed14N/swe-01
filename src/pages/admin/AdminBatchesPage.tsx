@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Batch, User, Course, RoutineSlot, Exam, SemesterProgressionPreview } from '../../types';
 import { BatchSemesterController } from '../../components/admin/BatchSemesterController';
+import { formatStudentId } from '../../utils/studentId';
 
 export const AdminBatchesPage: React.FC = () => {
   const { token } = useAuth();
@@ -909,7 +910,7 @@ export const AdminBatchesPage: React.FC = () => {
                 <div className="space-y-1.5">
                   {selectedBatchDetail.crs.map(cr => (
                     <div key={cr.id} className="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex items-center justify-between text-xs">
-                      <span className="font-bold text-amber-900">{cr.name} ({cr.studentId})</span>
+                      <span className="font-bold text-amber-900">{cr.name} ({formatStudentId(cr.studentId)})</span>
                       <span className="text-amber-700 text-[10px]">{cr.email || 'No email'}</span>
                     </div>
                   ))}
@@ -926,7 +927,7 @@ export const AdminBatchesPage: React.FC = () => {
                 {selectedBatchDetail.students.slice(0, 10).map(st => (
                   <div key={st.id} className="p-2 bg-slate-50 rounded border border-slate-100 flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-800">{st.name}</span>
-                    <span className="font-mono text-slate-400 text-[10px]">{st.studentId}</span>
+                    <span className="font-mono text-slate-400 text-[10px]">{formatStudentId(st.studentId)}</span>
                   </div>
                 ))}
               </div>

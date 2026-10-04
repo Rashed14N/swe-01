@@ -12,6 +12,7 @@ import {
   fetchAllBatches,
   fetchBatchById,
   fetchAllCourses,
+  createNotificationInDB,
 } from '../supabaseData';
 import { sendRetakeCourseUpdateEmail } from '../emailService';
 
@@ -197,10 +198,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
     const batchName = targetBatch?.name || 'Junior Batch';
 
     const batchStudents = allUsers.filter(u => u.batchId === targetBatchId && u.id !== req.user!.id);
-    const local = db.getData();
-    if (!local.notifications) local.notifications = [];
-    batchStudents.forEach(st => {
-      local.notifications.unshift({
+    for (const st of batchStudents) {
+      await createNotificationInDB({
         id: `notif-${Date.now()}-${Math.random()}`,
         userId: st.id,
         title: 'New Exam Scheduled 📅',
@@ -210,7 +209,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
         read: false,
         createdAt: new Date().toISOString(),
       });
-    });
+    }
 
     // Alert Retake/Improvement students enrolled in this course & send Resend email
     const allRetakes = db.getRetakes();
@@ -225,8 +224,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
     });
 
     for (const retake of enrolledRetakes) {
-      // In-app alert
-      local.notifications.unshift({
+      // In-app alert synced to Supabase & local DB
+      await createNotificationInDB({
         id: `notif-retake-${Date.now()}-${Math.random()}`,
         userId: retake.studentId,
         title: `Retake Alert: ${type} Scheduled 📅`,
@@ -313,11 +312,8 @@ router.put('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Auth
       return codeMatches || (existing.courseId && r.courseId && r.courseId === existing.courseId);
     });
 
-    const local = db.getData();
-    if (!local.notifications) local.notifications = [];
-
     for (const retake of enrolledRetakes) {
-      local.notifications.unshift({
+      await createNotificationInDB({
         id: `notif-retake-upd-${Date.now()}-${Math.random()}`,
         userId: retake.studentId,
         title: `Exam Schedule Updated 🔄`,

@@ -727,7 +727,9 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
     normalizedBatchId!,
     `${normalizedBatchId}th`,
     ...(normalizedBatchId === 'batch-13' ? ['batch-1788450159710'] : []),
-    ...(batchId === 'batch-1788450159710' ? ['batch-13', 'batch-13th'] : [])
+    ...(batchId === 'batch-1788450159710' ? ['batch-13', 'batch-13th'] : []),
+    ...(normalizedBatchId === 'batch-12' ? ['batch-1788449554669'] : []),
+    ...(batchId === 'batch-1788449554669' ? ['batch-12', 'batch-12th'] : [])
   ] : [];
 
   if (supabase) {

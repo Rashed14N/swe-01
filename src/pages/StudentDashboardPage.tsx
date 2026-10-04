@@ -21,6 +21,8 @@ import { PortalHeroCard } from '../components/dashboard/PortalHeroCard';
 import { RoutineClassCard } from '../components/routine/RoutineClassCard';
 import { UpcomingExamsCard } from '../components/dashboard/UpcomingExamsCard';
 import { EnrolledCourseCard } from '../components/dashboard/EnrolledCourseCard';
+import { BatchCRCard } from '../components/dashboard/BatchCRCard';
+import { CRProfileData } from '../components/common/CRProfileModal';
 
 // In-memory module-level cache for instant dashboard transitions (0ms delay)
 let cachedDashboardSummary: DashboardSummary | null = null;
@@ -249,6 +251,8 @@ export const StudentDashboardPage: React.FC = () => {
     return cachedDashboardSummary || getDefaultSummary(user?.batchId || 'batch-9');
   });
   const [isBackgroundRefreshing, setIsBackgroundRefreshing] = useState(false);
+  const [batchCR, setBatchCR] = useState<CRProfileData | null>(null);
+  const [isCRLoading, setIsCRLoading] = useState(true);
 
   const fetchSummary = async (isManualRefresh = false) => {
     if (isManualRefresh) {
@@ -356,6 +360,19 @@ export const StudentDashboardPage: React.FC = () => {
 
   useEffect(() => {
     fetchSummary();
+
+    // Fetch batch CR profile
+    fetch('/api/batches/my-cr', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.crs && data.crs.length > 0) {
+          setBatchCR(data.crs[0]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsCRLoading(false));
   }, [user?.batchId, user?.currentSemester, token]);
 
   return (
@@ -606,6 +623,9 @@ export const StudentDashboardPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Batch Class Representative (CR) Short Profile Card - Placed Under Courses */}
+          <BatchCRCard cr={batchCR} isLoading={isCRLoading} />
         </div>
 
         {/* Right Column (40%): Upcoming Exams + Batch Announcements */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BookOpen, CalendarDays, ArrowUpRight, Terminal } from 'lucide-react';
 import { User } from '../../types';
+import { formatStudentId } from '../../utils/studentId';
 
 interface PortalHeroCardProps {
   user: User | null;
@@ -15,7 +16,7 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
 }) => {
   const nameDisplay = user?.name || 'Student';
   const batchDisplay = user?.batchName || 'SWE 9th Batch';
-  const studentIdDisplay = user?.studentId || '21-XXXXX-1';
+  const studentIdDisplay = user?.studentId ? formatStudentId(user.studentId) : '21-XXXXX-1';
   const semesterDisplay = user?.currentSemester ? `Semester ${user.currentSemester}` : 'Semester 4';
 
   return (

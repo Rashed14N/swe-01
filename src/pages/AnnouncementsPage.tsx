@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Megaphone, Plus, Archive, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -230,7 +231,13 @@ export const AnnouncementsPage: React.FC = () => {
                 </p>
 
                 <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-[#E5EBF3] dark:border-slate-800">
-                  <span>By: <strong className="text-[#0F172A] dark:text-slate-200">{ann.createdByName}</strong></span>
+                  <span className="flex items-center gap-1.5">
+                    By: 
+                    <Link to="/batch-cr" className="text-blue-600 dark:text-blue-400 hover:underline font-bold inline-flex items-center gap-1">
+                      <span>{ann.createdByName}</span>
+                      <span className="text-[9px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-1.5 py-0.2 rounded font-extrabold">CR</span>
+                    </Link>
+                  </span>
                   <span>Expires: {ann.expiryDate}</span>
                 </div>
               </div>

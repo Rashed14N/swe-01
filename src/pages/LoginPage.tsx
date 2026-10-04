@@ -21,6 +21,7 @@ import { SweLogo } from '../components/common/SweLogo';
 import { useAuth } from '../context/AuthContext';
 import { safeParseJson } from '../lib/apiClient';
 import { UserRole, Batch } from '../types';
+import { formatStudentId } from '../utils/studentId';
 
 const FALLBACK_BATCHES: Batch[] = [
   { id: 'batch-8', name: 'SWE 8th Batch', admissionYear: 2022, currentSemester: 5, academicSession: '2022-2023', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
@@ -367,7 +368,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
                     <span className="font-extrabold text-slate-900">{user.name}</span>
                   </div>
                   <span className="text-[11px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-blue-700">
-                    ID: {user.studentId || user.email}
+                    ID: {user.studentId ? formatStudentId(user.studentId) : user.email}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 pt-1">

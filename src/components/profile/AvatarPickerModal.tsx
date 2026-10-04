@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { X, Check, UserCircle, Search } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { X, Check, UserCircle, Search, Upload, AlertCircle } from 'lucide-react';
 import { PRESET_AVATARS, DEFAULT_AVATAR_URL } from '../../data/avatars';
 
 interface AvatarPickerModalProps {
@@ -22,6 +22,8 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'animals' | 'nature' | 'creatures' | 'items'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string>(currentAvatarUrl || DEFAULT_AVATAR_URL);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredAvatars = useMemo(() => {
     return PRESET_AVATARS.filter((avatar) => {
@@ -40,7 +42,37 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
     onClose();
   };
 
+  const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select a valid image file (PNG, JPG, WEBP).');
+      if (e.target) e.target.value = '';
+      return;
+    }
+
+    const MAX_BYTES = 100 * 1024; // 100 KB limit
+    if (file.size > MAX_BYTES) {
+      setUploadError(`Image size (${(file.size / 1024).toFixed(1)} KB) exceeds the 100 KB limit. Please choose an image up to 100 KB.`);
+      if (e.target) e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setPreviewUrl(base64);
+        setUploadError(null);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const selectedAvatarObj = PRESET_AVATARS.find(a => a.url === previewUrl || a.id === previewUrl);
+  const isCustomUploaded = previewUrl.startsWith('data:image/');
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
@@ -74,30 +106,60 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
           </button>
         </div>
 
-        {/* Selected Preview Banner */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border-b border-blue-100 dark:border-slate-800 flex items-center justify-between gap-4">
+        {/* Selected Preview Banner with Custom Upload Option */}
+        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border-b border-blue-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 p-1 border-2 border-blue-500 shadow-md shrink-0">
+            <div className="w-14 h-14 rounded-full overflow-hidden bg-white dark:bg-slate-800 p-0.5 border-2 border-blue-500 shadow-md shrink-0">
               <img
                 src={previewUrl}
                 alt="Avatar Preview"
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover rounded-full"
                 referrerPolicy="no-referrer"
               />
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">
-                Selected Profile Avatar
+                {isCustomUploaded ? 'Custom Upload Active' : 'Selected Profile Avatar'}
               </span>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
-                {selectedAvatarObj?.name || 'Selected Avatar'}
+                {isCustomUploaded ? 'Custom Uploaded Photo' : (selectedAvatarObj?.name || 'Selected Avatar')}
               </p>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                {selectedAvatarObj?.fileName || 'preset.svg'}
+                {isCustomUploaded ? 'File size verified (under 100KB)' : (selectedAvatarObj?.fileName || 'preset.svg')}
               </span>
             </div>
           </div>
+
+          {/* Upload Button */}
+          <div className="shrink-0 flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/png, image/jpeg, image/jpg, image/webp"
+              className="hidden"
+              onChange={handleCustomUpload}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              Upload Photo
+              <span className="text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded font-mono font-bold">
+                Max 100KB
+              </span>
+            </button>
+          </div>
         </div>
+
+        {/* Upload Error Banner if image exceeds 100KB */}
+        {uploadError && (
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-900/60 flex items-center gap-2 text-xs text-rose-700 dark:text-rose-300">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+            <span>{uploadError}</span>
+          </div>
+        )}
 
         {/* Filters & Search */}
         <div className="p-3.5 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-50/50 dark:bg-slate-900/30">

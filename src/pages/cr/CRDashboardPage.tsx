@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Megaphone, Calendar, Clock, BookOpen, Plus, Sparkles,
-  ArrowRight, Shield, CheckCircle2, AlertCircle, RefreshCw, FileText
+  ArrowRight, Shield, CheckCircle2, AlertCircle, RefreshCw, FileText,
+  RotateCcw, Users, Mail
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -28,6 +29,8 @@ export const CRDashboardPage: React.FC = () => {
   const [routines, setRoutines] = useState<RoutineSlot[]>(() => crDashboardCache?.routines || []);
   const [routineRequests, setRoutineRequests] = useState<RoutineRequest[]>(() => crDashboardCache?.routineRequests || []);
   const [coursesCount, setCoursesCount] = useState<number>(() => crDashboardCache?.coursesCount || 5);
+  const [retakeStudentsCount, setRetakeStudentsCount] = useState<number>(0);
+  const [retakeStudentsList, setRetakeStudentsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(!crDashboardCache);
 
   // Quick Action Modal states
@@ -101,6 +104,17 @@ export const CRDashboardPage: React.FC = () => {
       setRoutines(fetchedRoutines);
       setRoutineRequests(fetchedRequests);
       setCoursesCount(fetchedCoursesCount);
+
+      // Fetch retake students taking classes with this CR's batch
+      fetch('/api/retakes/cr/students', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.success) {
+            setRetakeStudentsCount(data.stats?.totalInMyBatch || 0);
+            setRetakeStudentsList(data.inMyBatch || []);
+          }
+        })
+        .catch(() => {});
 
       crDashboardCache = {
         announcements: fetchedAnnouncements,
@@ -264,15 +278,21 @@ export const CRDashboardPage: React.FC = () => {
           </button>
           <button
             onClick={() => setIsRoutineReqModalOpen(true)}
-            className="px-3.5 py-2 bg-slate-900/80 hover:bg-slate-900 text-amber-300 border border-amber-400/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+            className="px-3.5 py-2 bg-slate-900/80 hover:bg-slate-900 text-amber-300 border border-amber-400/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" /> Request Routine Change
+          </button>
+          <button
+            onClick={() => navigate('/cr/retakes')}
+            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" /> Retake Students ({retakeStudentsCount})
           </button>
         </div>
       </div>
 
       {/* Compact Stat Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">Active Announcements</span>
@@ -315,6 +335,20 @@ export const CRDashboardPage: React.FC = () => {
           </div>
           <p className="text-2xl font-bold text-slate-900 mt-2">{coursesCount}</p>
           <span className="text-[10px] text-slate-400 block mt-1">Enrolled Courses</span>
+        </div>
+
+        <div
+          onClick={() => navigate('/cr/retakes')}
+          className="bg-white p-4 rounded-xl border border-amber-200/80 hover:border-amber-400 shadow-2xs cursor-pointer transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 group-hover:text-amber-700 transition-colors">Retake Students</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <RotateCcw className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-amber-600 mt-2">{retakeStudentsCount}</p>
+          <span className="text-[10px] text-amber-700/80 font-medium block mt-1">Taking Batch Classes →</span>
         </div>
       </div>
 
@@ -573,6 +607,73 @@ export const CRDashboardPage: React.FC = () => {
                 ))}
               </div>
             )}
+            </div>
+          </div>
+
+          {/* Retake & Improvement Students Panel */}
+          <div className="bg-white rounded-xl border border-[#D8E2EE] shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden">
+            <div
+              className="relative overflow-hidden px-5 py-4 border-b border-[#D8E2EE] flex items-center justify-between"
+              style={{
+                background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8ED 50%, #FEF3C7 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+              }}
+            >
+              <h3 className="relative z-10 text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-white/90 text-amber-600 flex items-center justify-center border border-amber-300 shadow-2xs">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                Retake Students ({retakeStudentsList.length})
+              </h3>
+              <button
+                onClick={() => navigate('/cr/retakes')}
+                className="relative z-10 text-[11px] font-bold text-amber-700 hover:underline cursor-pointer"
+              >
+                View Directory →
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              {retakeStudentsList.length === 0 ? (
+                <div className="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-lg">
+                  No retake or improvement students currently enrolled in your batch courses.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {retakeStudentsList.slice(0, 3).map((student: any) => (
+                    <div key={student.id} className="p-3 bg-amber-50/40 rounded-xl border border-amber-200/60 text-xs flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900 truncate">{student.studentName}</span>
+                          <span className="px-1.5 py-0.2 rounded bg-amber-200/80 text-amber-800 font-mono text-[10px] font-bold">
+                            {student.studentRoll}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 truncate mt-0.5">
+                          {student.courseCode} • {student.courseTitle}
+                        </p>
+                      </div>
+
+                      <a
+                        href={`mailto:${student.studentEmail}`}
+                        className="p-2 rounded-lg bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors shrink-0"
+                        title={`Email ${student.studentName}`}
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  ))}
+
+                  {retakeStudentsList.length > 3 && (
+                    <button
+                      onClick={() => navigate('/cr/retakes')}
+                      className="w-full py-2 text-center text-xs font-semibold text-amber-700 hover:text-amber-800 hover:underline cursor-pointer"
+                    >
+                      + {retakeStudentsList.length - 3} more retake students enrolled
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -185,6 +185,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>Routine Requests</span>}
                 </NavLink>
+                <NavLink to="/cr/retakes" className={navLinkClass} onClick={onCloseMobile}>
+                  <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
+                  {!isCollapsed && <span>Retake Students</span>}
+                </NavLink>
               </div>
             </div>
           )}

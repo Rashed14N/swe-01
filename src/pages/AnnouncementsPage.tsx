@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Megaphone, Plus, Archive, Trash2 } from 'lucide-react';
+import { Megaphone, Plus, Archive, Trash2, Mail, Calendar, Clock, Sparkles, Eye, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Modal } from '../components/common/Modal';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
-import { BatchAnnouncement, AnnouncementPriority, Batch } from '../types';
+import { BatchAnnouncement, AnnouncementPriority, Batch, Course } from '../types';
 import { safeParseJson } from '../lib/apiClient';
+import { EmailAnnouncementPreview } from '../components/announcements/EmailAnnouncementPreview';
 
 export const AnnouncementsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -15,6 +16,7 @@ export const AnnouncementsPage: React.FC = () => {
 
   const [announcements, setAnnouncements] = useState<BatchAnnouncement[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>(
     user?.role === 'ADMIN' ? 'ALL' : (user?.batchId || 'batch-9')
   );
@@ -24,6 +26,7 @@ export const AnnouncementsPage: React.FC = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'EDIT' | 'PREVIEW'>('EDIT');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form State
@@ -35,12 +38,31 @@ export const AnnouncementsPage: React.FC = () => {
   const [expiryDate, setExpiryDate] = useState('');
   const [priority, setPriority] = useState<AnnouncementPriority>('NORMAL');
 
+  // Exam Announcement Specific State
+  const [isExamRelated, setIsExamRelated] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [courseCode, setCourseCode] = useState('');
+  const [courseTitle, setCourseTitle] = useState('');
+  const [examType, setExamType] = useState('Midterm');
+  const [examDate, setExamDate] = useState('');
+  const [examTime, setExamTime] = useState('10:00 AM');
+  const [room, setRoom] = useState('');
+
   useEffect(() => {
     fetch('/api/batches')
       .then(res => safeParseJson(res))
       .then(data => {
         if (data && Array.isArray(data.batches)) {
           setBatches(data.batches);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/courses?all=true')
+      .then(res => safeParseJson(res))
+      .then(data => {
+        if (data && Array.isArray(data.courses)) {
+          setCourses(data.courses);
         }
       })
       .catch(() => {});
@@ -83,13 +105,38 @@ export const AnnouncementsPage: React.FC = () => {
     nextWeek.setDate(nextWeek.getDate() + 7);
     setExpiryDate(nextWeek.toISOString().split('T')[0]);
     setPriority('NORMAL');
+    setIsExamRelated(false);
+    setSelectedCourseId('');
+    setCourseCode('');
+    setCourseTitle('');
+    setExamType('Midterm');
+    setExamDate(new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0]);
+    setExamTime('10:00 AM');
+    setRoom('');
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCourseSelect = (cId: string) => {
+    setSelectedCourseId(cId);
+    const found = courses.find(c => c.id === cId);
+    if (found) {
+      setCourseCode(found.code);
+      setCourseTitle(found.title);
+      if (!title) {
+        setTitle(`${found.code} ${examType} Announcement`);
+      }
+    }
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!title || !description || !expiryDate) {
       addToast('error', 'Please fill in all required fields');
+      return;
+    }
+
+    if (isExamRelated && (!courseTitle || !examDate)) {
+      addToast('error', 'Please provide Course Title and Exam Date for the exam announcement');
       return;
     }
 
@@ -106,12 +153,25 @@ export const AnnouncementsPage: React.FC = () => {
           description,
           expiryDate,
           priority,
-          sendNotification: false, // Default: show only in announcement section, no push/notification ping
+          sendNotification: false,
+          isExamRelated,
+          courseCode: isExamRelated ? courseCode : undefined,
+          courseTitle: isExamRelated ? courseTitle : undefined,
+          courseId: isExamRelated ? selectedCourseId : undefined,
+          examType: isExamRelated ? examType : undefined,
+          examDate: isExamRelated ? examDate : undefined,
+          examTime: isExamRelated ? examTime : undefined,
+          room: isExamRelated ? room : undefined,
         }),
       });
 
       if (res.ok) {
-        addToast('success', 'Announcement Published to Announcement Section!');
+        const data = await safeParseJson(res);
+        if (data?.emailsDispatched && data.emailsDispatched > 0) {
+          addToast('success', `Exam announcement published! Email notifications dispatched to ${data.emailsDispatched} enrolled students via Resend.`);
+        } else {
+          addToast('success', data?.message || 'Announcement Published!');
+        }
         setIsModalOpen(false);
         fetchAnnouncements();
       } else {
@@ -347,8 +407,73 @@ export const AnnouncementsPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Publish Announcement"
+        maxWidth={modalTab === 'PREVIEW' ? '4xl' : '2xl'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        {/* Tab Switcher: Compose vs Visual Email Preview */}
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setModalTab('EDIT')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                modalTab === 'EDIT'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              📝 Compose Announcement
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalTab('PREVIEW')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                modalTab === 'PREVIEW'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5 text-blue-600" />
+              <span>Visual Email Preview</span>
+              {isExamRelated && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              )}
+            </button>
+          </div>
+
+          <div className="text-[11px] text-slate-500 hidden sm:block">
+            {isExamRelated ? '⚡ Exam Alert Email will be dispatched' : 'Standard Announcement'}
+          </div>
+        </div>
+
+        {modalTab === 'PREVIEW' ? (
+          <div className="space-y-4">
+            <EmailAnnouncementPreview
+              courseTitle={courseTitle || 'Course Title'}
+              courseCode={courseCode}
+              examType={examType}
+              examDate={examDate}
+              examTime={examTime}
+              room={room}
+              title={title}
+              description={description}
+              batchName={batches.find(b => b.id === targetBatchId)?.name || 'SWE 9th Batch'}
+              publisherName={`${user?.name} (${user?.role === 'CR' ? 'Class Representative' : 'Admin'})`}
+              onSend={handleSubmit}
+              isSending={isLoading}
+            />
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalTab('EDIT')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-xs cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Editing
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {user?.role === 'ADMIN' && (
             <div>
               <label className="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
@@ -387,6 +512,145 @@ export const AnnouncementsPage: React.FC = () => {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* EXAM ANNOUNCEMENT SECTION */}
+          <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isExamRelated}
+                  onChange={(e) => setIsExamRelated(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700"
+                />
+                <span className="font-bold text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  Is this an Exam / Quiz Announcement?
+                </span>
+              </label>
+              {isExamRelated && (
+                <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] flex items-center gap-1">
+                  <Mail className="w-3 h-3" /> Resend Active
+                </span>
+              )}
+            </div>
+
+            {isExamRelated && (
+              <div className="space-y-3 pt-2 border-t border-blue-200/80 dark:border-blue-900/60 animate-in fade-in duration-150">
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-200 dark:border-blue-950 text-[11px] text-slate-600 dark:text-slate-300">
+                  ⚡ <strong>Automated Resend Email:</strong> All students currently enrolled in this course (including batch students & retake students) will receive an official exam notification in their email with <strong>Course Title, Exam Type, and Exam Date</strong>!
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                      Select Course *
+                    </label>
+                    <select
+                      value={selectedCourseId}
+                      onChange={(e) => handleCourseSelect(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
+                    >
+                      <option value="">-- Choose a course --</option>
+                      {courses.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.code} • {c.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                      Exam Type *
+                    </label>
+                    <select
+                      value={examType}
+                      onChange={(e) => {
+                        setExamType(e.target.value);
+                        if (courseCode && (!title || title.includes('Announcement'))) {
+                          setTitle(`${courseCode} ${e.target.value} Announcement`);
+                        }
+                      }}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
+                    >
+                      <option value="Quiz">Quiz</option>
+                      <option value="Class Test">Class Test</option>
+                      <option value="Midterm">Midterm Exam</option>
+                      <option value="Final Exam">Final Exam</option>
+                      <option value="Lab Exam">Lab Exam</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                      Exam Date *
+                    </label>
+                    <input
+                      type="date"
+                      required={isExamRelated}
+                      value={examDate}
+                      onChange={(e) => setExamDate(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                      Exam Time
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 10:00 AM"
+                      value={examTime}
+                      onChange={(e) => setExamTime(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-700 dark:text-slate-300 mb-1">
+                      Room / Venue
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Room 502 / E-2"
+                      value={room}
+                      onChange={(e) => setRoom(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {!selectedCourseId && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Custom Course Code</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. SWE 305"
+                        value={courseCode}
+                        onChange={(e) => setCourseCode(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Custom Course Title</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Database Systems"
+                        value={courseTitle}
+                        onChange={(e) => setCourseTitle(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -433,22 +697,33 @@ export const AnnouncementsPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E8F0] dark:border-slate-700">
+          <div className="flex items-center justify-between gap-2 pt-4 border-t border-[#E2E8F0] dark:border-slate-700">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg cursor-pointer"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-2xs"
-            >
-              Publish Announcement
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setModalTab('PREVIEW')}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Preview Email
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-2xs cursor-pointer"
+              >
+                Publish Announcement
+              </button>
+            </div>
           </div>
         </form>
+      )}
       </Modal>
 
       <ConfirmDialog

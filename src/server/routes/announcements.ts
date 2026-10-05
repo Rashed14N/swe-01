@@ -9,9 +9,10 @@ import {
   deleteAnnouncementFromDB,
   fetchAllUsers,
   fetchAllBatches,
+  fetchAllCourses,
   createNotificationInDB,
 } from '../supabaseData';
-import { sendRetakeCourseUpdateEmail } from '../emailService';
+import { sendRetakeCourseUpdateEmail, sendExamAnnouncementEmail, getEnrolledStudentsForCourse } from '../emailService';
 
 const router = Router();
 
@@ -61,7 +62,23 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
 router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { batchId, title, description, publishDate, expiryDate, priority, sendNotification } = req.body;
+  const {
+    batchId,
+    title,
+    description,
+    publishDate,
+    expiryDate,
+    priority,
+    sendNotification,
+    isExamRelated,
+    courseCode: rawCourseCode,
+    courseTitle: rawCourseTitle,
+    courseId: rawCourseId,
+    examType: rawExamType,
+    examDate: rawExamDate,
+    examTime: rawExamTime,
+    room: rawRoom,
+  } = req.body;
   const targetBatchId = (req.user.role === 'ADMIN' && (!batchId || batchId === 'ALL'))
     ? 'ALL'
     : (batchId || req.user.batchId);
@@ -92,9 +109,124 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
     const created = await createAnnouncementInDB(newAnn);
 
-    // Only create notifications if explicitly requested with sendNotification === true
-    // By default, announcements are displayed directly in the announcement section without sending notifications / + badge
-    if (sendNotification === true) {
+    // 1. Check if this announcement is exam-related
+    const titleLower = String(title || '').toLowerCase();
+    const descLower = String(description || '').toLowerCase();
+    const combinedText = `${titleLower} ${descLower}`;
+
+    const isExplicitlyExam = isExamRelated === true || isExamRelated === 'true';
+    const hasExamKeywords =
+      combinedText.includes('exam') ||
+      combinedText.includes('quiz') ||
+      combinedText.includes('midterm') ||
+      combinedText.includes('final') ||
+      combinedText.includes('class test') ||
+      combinedText.includes('ct') ||
+      combinedText.includes('lab exam') ||
+      combinedText.includes('পরীক্ষা');
+
+    const isExamAnnouncement = isExplicitlyExam || hasExamKeywords;
+    let emailsDispatched = 0;
+
+    const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+    const batchObj = allBatches.find(b => b.id === targetBatchId);
+    const batchLabel = batchObj?.name || 'Academic Batch';
+
+    if (isExamAnnouncement) {
+      let effectiveCourseTitle = rawCourseTitle ? String(rawCourseTitle).trim() : '';
+      let effectiveCourseCode = rawCourseCode ? String(rawCourseCode).trim() : '';
+      let effectiveExamType = rawExamType ? String(rawExamType).trim() : '';
+      let effectiveExamDate = rawExamDate ? String(rawExamDate).trim() : '';
+      const effectiveExamTime = rawExamTime ? String(rawExamTime).trim() : undefined;
+      const effectiveRoom = rawRoom ? String(rawRoom).trim() : undefined;
+
+      // Auto-detect course code and title if not explicitly provided
+      if (!effectiveCourseTitle || !effectiveCourseCode) {
+        const allCourses = await fetchAllCourses().catch(() => db.getCourses());
+        for (const c of allCourses) {
+          const cCode = c.code.toLowerCase();
+          const cShort = (c.shortName || '').toLowerCase();
+          const codeDigits = c.code.replace(/\D/g, '');
+          if (
+            (cCode && combinedText.includes(cCode)) ||
+            (cShort && cShort.length >= 2 && combinedText.includes(cShort)) ||
+            (codeDigits.length >= 3 && combinedText.includes(codeDigits))
+          ) {
+            effectiveCourseTitle = effectiveCourseTitle || c.title;
+            effectiveCourseCode = effectiveCourseCode || c.code;
+            break;
+          }
+        }
+      }
+
+      if (!effectiveCourseTitle) {
+        effectiveCourseTitle = effectiveCourseCode || title;
+      }
+
+      if (!effectiveExamType) {
+        if (combinedText.includes('quiz')) effectiveExamType = 'Quiz';
+        else if (combinedText.includes('midterm')) effectiveExamType = 'Midterm';
+        else if (combinedText.includes('final')) effectiveExamType = 'Final Exam';
+        else if (combinedText.includes('class test') || combinedText.includes('ct')) effectiveExamType = 'Class Test';
+        else if (combinedText.includes('lab test') || combinedText.includes('lab exam')) effectiveExamType = 'Lab Exam';
+        else effectiveExamType = 'Exam';
+      }
+
+      if (!effectiveExamDate) {
+        const dateMatch = combinedText.match(/\b202\d-\d{2}-\d{2}\b/);
+        if (dateMatch) {
+          effectiveExamDate = dateMatch[0];
+        } else {
+          effectiveExamDate = expiryDate || publishDate || todayStr;
+        }
+      }
+
+      // Fetch all enrolled students for this course (both Batch students + Retake students)
+      const enrolledStudents = await getEnrolledStudentsForCourse({
+        courseCode: effectiveCourseCode,
+        courseTitle: effectiveCourseTitle,
+        courseId: rawCourseId,
+        batchId: targetBatchId,
+      });
+
+      console.log(`[Exam Announcement] Found ${enrolledStudents.length} enrolled students for ${effectiveCourseTitle}. Dispatching Resend emails...`);
+
+      for (const student of enrolledStudents) {
+        // Create in-app notification
+        await createNotificationInDB({
+          id: `notif-exam-ann-${Date.now()}-${Math.random()}`,
+          userId: student.id,
+          title: `Exam Announcement: ${effectiveCourseTitle} 📅`,
+          message: `${effectiveExamType} on ${effectiveExamDate} (${batchLabel}) - "${title}"`,
+          type: 'EXAM',
+          linkUrl: '/announcements',
+          read: false,
+          createdAt: new Date().toISOString(),
+        }).catch(e => console.warn('[Exam In-App Notif Error]:', e));
+
+        // Send Resend email with Course Title, Exam Type, Exam Date
+        if (student.email) {
+          sendExamAnnouncementEmail({
+            to: student.email,
+            studentName: student.name,
+            courseTitle: effectiveCourseTitle,
+            courseCode: effectiveCourseCode,
+            examType: effectiveExamType,
+            examDate: effectiveExamDate,
+            examTime: effectiveExamTime,
+            room: effectiveRoom,
+            title,
+            description,
+            batchName: student.batchName || batchLabel,
+            publisherName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+            enrollmentType: student.enrollmentType,
+          }).catch(err => console.warn('[Exam Announcement Email Error]:', err));
+
+          emailsDispatched++;
+        }
+      }
+    } else if (sendNotification === true) {
+      // General announcement notifications
       const allUsers = await fetchAllUsers().catch(() => []);
       const batchStudents = allUsers.filter(u =>
         (targetBatchId === 'ALL' || u.batchId === targetBatchId) && u.id !== req.user!.id
@@ -113,61 +245,16 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
       }
     }
 
-    // Check if announcement relates to any retake course (by course code in title/description or matching batch)
-    try {
-      const allRetakes = db.getRetakes();
-      const allUsers = await fetchAllUsers().catch(() => []);
-      const allBatches = await fetchAllBatches().catch(() => db.getBatches());
-      const batchObj = allBatches.find(b => b.id === targetBatchId);
-      const batchLabel = batchObj?.name || 'Academic Batch';
-
-      const matchedRetakes = allRetakes.filter(r => {
-        if (r.status === 'DROPPED') return false;
-        const codeInText =
-          (r.courseCode && title.toLowerCase().includes(r.courseCode.toLowerCase())) ||
-          (r.courseCode && description.toLowerCase().includes(r.courseCode.toLowerCase())) ||
-          (r.courseTitle && title.toLowerCase().includes(r.courseTitle.toLowerCase())) ||
-          (r.retakeBatchId && r.retakeBatchId === targetBatchId);
-        return codeInText;
-      });
-
-      if (matchedRetakes.length > 0) {
-        for (const retake of matchedRetakes) {
-          await createNotificationInDB({
-            id: `notif-ann-retake-${Date.now()}-${Math.random()}`,
-            userId: retake.studentId,
-            title: `Course Announcement: ${retake.courseCode} 📢`,
-            message: `${title} (${batchLabel})`,
-            type: 'ANNOUNCEMENT',
-            linkUrl: '/retake-courses',
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-
-          const studentUser = allUsers.find(u => u.id === retake.studentId);
-          const studentEmail = retake.studentEmail || studentUser?.email;
-          if (studentEmail) {
-            sendRetakeCourseUpdateEmail({
-              to: studentEmail,
-              studentName: retake.studentName || studentUser?.name || 'Student',
-              courseCode: retake.courseCode,
-              courseTitle: retake.courseTitle,
-              updateType: 'ANNOUNCEMENT',
-              title,
-              description,
-              batchName: batchLabel,
-              actorName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
-            }).catch(e => console.warn('[Announcement Retake Email Error]:', e));
-          }
-        }
-      }
-    } catch (notifErr) {
-      console.warn('[Retake announcement notice error]:', notifErr);
-    }
-
     db.addAuditLog(req.user.id, req.user.name, 'ANNOUNCEMENT_CREATED', `${title} (${targetBatchId})`);
 
-    res.status(201).json({ announcement: created });
+    res.status(201).json({
+      announcement: created,
+      isExamAnnouncement,
+      emailsDispatched,
+      message: isExamAnnouncement
+        ? `Exam announcement published! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.`
+        : 'Announcement published successfully!',
+    });
   } catch (err: any) {
     console.error('[Announcements API POST / Error]:', err);
     res.status(500).json({ error: err?.message || 'Server error creating announcement' });

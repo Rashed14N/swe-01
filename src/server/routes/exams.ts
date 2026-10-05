@@ -14,7 +14,7 @@ import {
   fetchAllCourses,
   createNotificationInDB,
 } from '../supabaseData';
-import { sendRetakeCourseUpdateEmail } from '../emailService';
+import { sendRetakeCourseUpdateEmail, sendExamAnnouncementEmail, getEnrolledStudentsForCourse } from '../emailService';
 
 const normalizeCode = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
@@ -191,69 +191,55 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
     const created = await createExamInDB(newExam);
 
-    // Send notifications to all students in this batch
-    const allUsers = await fetchAllUsers().catch(() => []);
     const allBatches = await fetchAllBatches().catch(() => db.getBatches());
     const targetBatch = allBatches.find(b => b.id === targetBatchId);
     const batchName = targetBatch?.name || 'Junior Batch';
 
-    const batchStudents = allUsers.filter(u => u.batchId === targetBatchId && u.id !== req.user!.id);
-    for (const st of batchStudents) {
-      await createNotificationInDB({
-        id: `notif-${Date.now()}-${Math.random()}`,
-        userId: st.id,
-        title: 'New Exam Scheduled 📅',
-        message: `${type} - "${title}" scheduled for ${date} in ${courseCode || courseTitle}.`,
-        type: 'EXAM',
-        linkUrl: '/exams',
-        read: false,
-        createdAt: new Date().toISOString(),
-      });
-    }
-
-    // Alert Retake/Improvement students enrolled in this course & send Resend email
-    const allRetakes = db.getRetakes();
-
-    const enrolledRetakes = allRetakes.filter(r => {
-      if (r.status === 'DROPPED') return false;
-      const rCodeNorm = normalizeCode(r.courseCode);
-      const examCodeNorm = normalizeCode(courseCode);
-      const codeMatches = rCodeNorm && examCodeNorm && (rCodeNorm === examCodeNorm || rCodeNorm.includes(examCodeNorm) || examCodeNorm.includes(rCodeNorm));
-      const idMatches = courseId && r.courseId && r.courseId === courseId;
-      return codeMatches || idMatches;
+    // Dispatch notifications & Resend emails to ALL students enrolled in this course (both Batch students + Retake students)
+    const enrolledStudents = await getEnrolledStudentsForCourse({
+      courseCode,
+      courseTitle,
+      courseId,
+      batchId: targetBatchId,
     });
 
-    for (const retake of enrolledRetakes) {
-      // In-app alert synced to Supabase & local DB
+    console.log(`[Exam Creation] Found ${enrolledStudents.length} enrolled students for ${courseTitle}. Dispatching Resend emails...`);
+
+    let emailsDispatched = 0;
+    for (const student of enrolledStudents) {
+      if (student.id === req.user!.id) continue;
+
+      // In-app alert
       await createNotificationInDB({
-        id: `notif-retake-${Date.now()}-${Math.random()}`,
-        userId: retake.studentId,
-        title: `Retake Alert: ${type} Scheduled 📅`,
-        message: `CR added ${type} - "${title}" on ${date} for your retake course ${courseCode || courseTitle} (${batchName}).`,
+        id: `notif-exam-${Date.now()}-${Math.random()}`,
+        userId: student.id,
+        title: `${student.enrollmentType === 'RETAKE' ? 'Retake Alert: ' : ''}New ${type} Scheduled 📅`,
+        message: `${type} - "${title}" scheduled on ${date} for ${courseCode || courseTitle} (${student.batchName || batchName}).`,
         type: 'EXAM',
-        linkUrl: '/retake-courses',
+        linkUrl: student.enrollmentType === 'RETAKE' ? '/retake-courses' : '/exams',
         read: false,
         createdAt: new Date().toISOString(),
-      });
+      }).catch(e => console.warn('[Exam In-App Notif Error]:', e));
 
-      // Resend Email notification
-      const studentUser = allUsers.find(u => u.id === retake.studentId);
-      const studentEmail = retake.studentEmail || studentUser?.email;
-      if (studentEmail) {
-        sendRetakeCourseUpdateEmail({
-          to: studentEmail,
-          studentName: retake.studentName || studentUser?.name || 'Student',
-          courseCode: courseCode || retake.courseCode,
-          courseTitle: courseTitle || retake.courseTitle,
-          updateType: 'EXAM',
-          title: `${type}: ${title}`,
-          description,
-          date,
-          time: startTime,
+      // Resend Email notification to all enrolled students with Course Title, Exam Type, Exam Date
+      if (student.email) {
+        sendExamAnnouncementEmail({
+          to: student.email,
+          studentName: student.name,
+          courseTitle: courseTitle,
+          courseCode: courseCode,
+          examType: type,
+          examDate: date,
+          examTime: startTime,
           room,
-          batchName,
-          actorName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
-        }).catch(err => console.warn('[Exam Retake Email Notice Error]:', err));
+          title,
+          description,
+          batchName: student.batchName || batchName,
+          publisherName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+          enrollmentType: student.enrollmentType,
+        }).catch(err => console.warn('[Exam Email Notice Error]:', err));
+
+        emailsDispatched++;
       }
     }
 
@@ -261,7 +247,11 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
     db.addAuditLog(req.user.id, req.user.name, 'EXAM_CREATED', `${type}: ${title} (${targetBatchId})`);
 
-    res.status(201).json({ exam: created });
+    res.status(201).json({
+      exam: created,
+      emailsDispatched,
+      message: `Exam scheduled! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.`,
+    });
   } catch (err: any) {
     console.error('[Exams API POST / Error]:', err);
     res.status(500).json({ error: err?.message || 'Server error creating exam' });
@@ -297,50 +287,55 @@ router.put('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Auth
     const updated = await updateExamInDB(examId, updates);
     db.addAuditLog(req.user!.id, req.user!.name, 'EXAM_UPDATED', `Exam #${examId}`);
 
-    // Notify enrolled retake students of exam update via in-app & Resend email
-    const allRetakes = db.getRetakes();
-    const allUsers = await fetchAllUsers().catch(() => []);
+    // Notify ALL enrolled students of exam update via in-app & Resend email
     const allBatches = await fetchAllBatches().catch(() => db.getBatches());
     const batch = allBatches.find(b => b.id === existing.batchId);
     const targetCode = updates.courseCode || existing.courseCode;
+    const targetTitle = updates.courseTitle || existing.courseTitle;
+    const examDate = updates.date || existing.date;
+    const examType = updates.type || existing.type;
+    const examTitle = updates.title || existing.title;
+    const examTime = updates.startTime || existing.startTime;
+    const effectiveRoom = updates.room || existing.room;
+    const effectiveDescription = updates.description !== undefined ? updates.description : existing.description;
 
-    const enrolledRetakes = allRetakes.filter(r => {
-      if (r.status === 'DROPPED') return false;
-      const rCodeNorm = normalizeCode(r.courseCode);
-      const targetCodeNorm = normalizeCode(targetCode);
-      const codeMatches = rCodeNorm && targetCodeNorm && (rCodeNorm === targetCodeNorm || rCodeNorm.includes(targetCodeNorm) || targetCodeNorm.includes(rCodeNorm));
-      return codeMatches || (existing.courseId && r.courseId && r.courseId === existing.courseId);
+    const enrolledStudents = await getEnrolledStudentsForCourse({
+      courseCode: targetCode,
+      courseTitle: targetTitle,
+      courseId: existing.courseId,
+      batchId: existing.batchId,
     });
 
-    for (const retake of enrolledRetakes) {
+    for (const student of enrolledStudents) {
+      if (student.id === req.user!.id) continue;
+
       await createNotificationInDB({
-        id: `notif-retake-upd-${Date.now()}-${Math.random()}`,
-        userId: retake.studentId,
+        id: `notif-exam-upd-${Date.now()}-${Math.random()}`,
+        userId: student.id,
         title: `Exam Schedule Updated 🔄`,
-        message: `CR updated ${updates.type || existing.type} - "${updates.title || existing.title}" in ${targetCode}. Date: ${updates.date || existing.date}, Room: ${updates.room || existing.room || 'TBA'}.`,
+        message: `${examType} - "${examTitle}" in ${targetCode}. Date: ${examDate}, Room: ${effectiveRoom || 'TBA'}.`,
         type: 'EXAM',
-        linkUrl: '/retake-courses',
+        linkUrl: student.enrollmentType === 'RETAKE' ? '/retake-courses' : '/exams',
         read: false,
         createdAt: new Date().toISOString(),
-      });
+      }).catch(e => console.warn('[Exam Update In-App Notif Error]:', e));
 
-      const studentUser = allUsers.find(u => u.id === retake.studentId);
-      const studentEmail = retake.studentEmail || studentUser?.email;
-      if (studentEmail) {
-        sendRetakeCourseUpdateEmail({
-          to: studentEmail,
-          studentName: retake.studentName || studentUser?.name || 'Student',
-          courseCode: targetCode || retake.courseCode,
-          courseTitle: updates.courseTitle || existing.courseTitle || retake.courseTitle,
-          updateType: 'EXAM_UPDATED',
-          title: `Updated: ${updates.type || existing.type} - ${updates.title || existing.title}`,
-          description: updates.description !== undefined ? updates.description : existing.description,
-          date: updates.date || existing.date,
-          time: updates.startTime || existing.startTime,
-          room: updates.room || existing.room,
-          batchName: batch?.name,
-          actorName: `${req.user!.name} (${req.user!.role === 'CR' ? 'Class Representative' : 'Admin'})`,
-        }).catch(err => console.warn('[Exam Update Retake Email Error]:', err));
+      if (student.email) {
+        sendExamAnnouncementEmail({
+          to: student.email,
+          studentName: student.name,
+          courseTitle: targetTitle,
+          courseCode: targetCode,
+          examType: `${examType} (UPDATED)`,
+          examDate,
+          examTime,
+          room: effectiveRoom,
+          title: `Updated: ${examTitle}`,
+          description: effectiveDescription,
+          batchName: student.batchName || batch?.name,
+          publisherName: `${req.user!.name} (${req.user!.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+          enrollmentType: student.enrollmentType,
+        }).catch(err => console.warn('[Exam Update Email Error]:', err));
       }
     }
     db.save();

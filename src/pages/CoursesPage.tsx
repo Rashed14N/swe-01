@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOpen, User, Award, ArrowRight, RotateCcw,
-  ShieldCheck, Mail, Phone, Clock, UserCheck, Copy, Check, ChevronRight
+  ShieldCheck, Mail, Phone, Clock, Copy, Check, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -10,7 +10,7 @@ import { Course } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { getUserAvatarUrl } from '../data/avatars';
-import { CRProfileModal, CRProfileData } from '../components/common/CRProfileModal';
+import { CRProfileData } from '../components/common/CRProfileModal';
 
 export const CoursesPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -22,7 +22,6 @@ export const CoursesPage: React.FC = () => {
   // Batch CR State
   const [cr, setCr] = useState<CRProfileData | null>(null);
   const [isCRLoading, setIsCRLoading] = useState(true);
-  const [isCRModalOpen, setIsCRModalOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -247,89 +246,67 @@ export const CoursesPage: React.FC = () => {
 
           {/* Class Representative (CR) Sector - Placed Under Courses */}
           {cr && (
-            <div id="batch-cr" className="pt-2 space-y-3.5">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Batch Class Representative (CR)
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 uppercase tracking-wide">
-                    Academic Coordinator
+            <div id="batch-cr" className="pt-2 flex flex-col items-center">
+              {/* Compact Centered CR Card */}
+              <div className="w-full max-w-[380px] bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-4.5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] hover:shadow-[0_6px_20px_rgba(15,23,42,0.06)] hover:border-blue-300 dark:hover:border-slate-700 transition-all flex flex-col items-center text-center">
+                {/* Header Tag */}
+                <div className="flex items-center justify-center gap-1.5 mb-2.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    Class Representative (CR)
                   </span>
                 </div>
-                <span className="text-xs text-slate-500 font-medium">
-                  {cr.batchName || user?.batchName || 'SWE Batch'}
-                </span>
-              </div>
 
-              {/* Short Profile Card */}
-              <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:border-blue-300 dark:hover:border-blue-800/60 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
-                {/* SIDE 1: Profile Avatar + Name, ID, CR Batch (Stacked upor-nic) */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    <img
-                      src={getUserAvatarUrl({
-                        name: cr.name,
-                        studentId: cr.studentId,
-                        profileImage: cr.profileImage,
-                      })}
-                      alt={cr.name}
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-blue-500/20 dark:border-blue-400/20 bg-blue-50 dark:bg-slate-800 object-cover shadow-2xs"
-                    />
-                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0F172A] flex items-center justify-center text-white text-[9px] font-bold" title="Active CR">
-                      ✓
-                    </span>
-                  </div>
-
-                  {/* Name, ID, CR Batch (Stacked upor-nic) */}
-                  <div className="flex flex-col gap-1 min-w-0 w-full sm:w-auto">
-                    {/* 1. Name */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
-                        {cr.name}
-                      </h4>
-                      <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-amber-300/60 dark:border-amber-800/60">
-                        CR
-                      </span>
-                    </div>
-
-                    {/* 2. ID */}
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        ID:
-                      </span>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md">
-                        {cr.studentId}
-                      </span>
-                    </div>
-
-                    {/* 3. CR Batch */}
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        CR Batch:
-                      </span>
-                      <span className="font-bold text-blue-700 dark:text-blue-400">
-                        {cr.batchName || user?.batchName || 'SWE 9th Batch'}
-                      </span>
-                    </div>
-                  </div>
+                {/* Circular Photo */}
+                <div className="relative mb-2 flex items-center justify-center">
+                  <img
+                    src={getUserAvatarUrl({
+                      name: cr.name,
+                      studentId: cr.studentId,
+                      profileImage: cr.profileImage,
+                    })}
+                    alt={cr.name}
+                    className="w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-full border-2 border-white dark:border-slate-800 ring-2 ring-blue-500/20 dark:ring-blue-400/20 bg-blue-50 dark:bg-slate-800 object-cover shadow-2xs"
+                  />
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0F172A] flex items-center justify-center text-white text-[9px] font-bold"
+                    title="Active CR"
+                  >
+                    ✓
+                  </span>
                 </div>
 
-                {/* SIDE 2: Email & Number (Stacked upor-nic) + View Details */}
-                <div className="flex flex-col gap-2 shrink-0 w-full md:w-auto md:min-w-[280px] pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800/80">
-                  {/* 1. Email (upor) */}
-                  <div className="flex items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 px-3 py-2 rounded-xl text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <Mail className="w-3.5 h-3.5" />
+                {/* Name */}
+                <h4 className="text-[15px] sm:text-[16px] font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
+                  {cr.name}
+                </h4>
+
+                {/* Student ID & Batch (Compact centered text) */}
+                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-3 font-medium">
+                  <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                    ID: {cr.studentId}
+                  </span>
+                  <span>•</span>
+                  <span className="text-blue-600 dark:text-blue-400">
+                    {cr.batchName || user?.batchName || 'SWE Batch'}
+                  </span>
+                </div>
+
+                {/* Contact Rows - Compact with copy buttons */}
+                <div className="w-full space-y-2 text-left">
+                  {/* Email Row */}
+                  <div className="w-full bg-[#F8FAFC] dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-between gap-2 transition-colors">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                        <Mail className="w-3 h-3 stroke-[2]" />
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Email</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9.5px] font-medium text-slate-400 dark:text-slate-400 block leading-none">
+                          Email
+                        </span>
                         <a
                           href={`mailto:${cr.email}`}
-                          className="font-mono font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 truncate text-xs transition-colors"
+                          className="font-mono text-[11px] sm:text-[12px] font-medium text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 truncate block mt-0.5 transition-colors"
                           title={`Email ${cr.email}`}
                         >
                           {cr.email}
@@ -339,24 +316,31 @@ export const CoursesPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleCopy(cr.email, 'cr-email')}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0 ml-1"
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer shadow-2xs shrink-0"
                       title="Copy Email"
+                      aria-label="Copy Email"
                     >
-                      {copiedField === 'cr-email' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedField === 'cr-email' ? (
+                        <Check className="w-3 h-3 text-emerald-600 stroke-[2.2]" />
+                      ) : (
+                        <Copy className="w-3 h-3 stroke-[1.8]" />
+                      )}
                     </button>
                   </div>
 
-                  {/* 2. Number (nic) */}
-                  <div className="flex items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 px-3 py-2 rounded-xl text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <Phone className="w-3.5 h-3.5" />
+                  {/* Phone Row */}
+                  <div className="w-full bg-[#F8FAFC] dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-between gap-2 transition-colors">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                        <Phone className="w-3 h-3 stroke-[2]" />
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Number / WhatsApp</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9.5px] font-medium text-slate-400 dark:text-slate-400 block leading-none">
+                          Phone / WhatsApp
+                        </span>
                         <a
                           href={`tel:${cr.phone || '01312321255'}`}
-                          className="font-mono font-semibold text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 truncate text-xs transition-colors"
+                          className="font-mono text-[11px] sm:text-[12px] font-medium text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 truncate block mt-0.5 transition-colors"
                           title={`Call ${cr.phone || '01312321255'}`}
                         >
                           {cr.phone || '01312321255'}
@@ -366,33 +350,21 @@ export const CoursesPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleCopy(cr.phone || '01312321255', 'cr-phone')}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0 ml-1"
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer shadow-2xs shrink-0"
                       title="Copy Phone"
+                      aria-label="Copy Phone"
                     >
-                      {copiedField === 'cr-phone' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedField === 'cr-phone' ? (
+                        <Check className="w-3 h-3 text-emerald-600 stroke-[2.2]" />
+                      ) : (
+                        <Copy className="w-3 h-3 stroke-[1.8]" />
+                      )}
                     </button>
                   </div>
-
-                  {/* 3. View Full CR Profile */}
-                  <button
-                    type="button"
-                    onClick={() => setIsCRModalOpen(true)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    <span>View Full CR Profile</span>
-                  </button>
                 </div>
               </div>
             </div>
           )}
-
-          {/* CR Profile Modal */}
-          <CRProfileModal
-            isOpen={isCRModalOpen}
-            onClose={() => setIsCRModalOpen(false)}
-            cr={cr}
-          />
         </div>
       )}
     </div>

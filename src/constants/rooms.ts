@@ -58,6 +58,7 @@ export const ALL_ROOMS = [
   'Exten-3',
   'Exten-4',
   'Exten-5',
+  'Exten-6',
 
   // Specialized Labs
   'EEE Lab',
@@ -86,7 +87,7 @@ export const CATEGORIZED_ROOMS: RoomCategory[] = [
   },
   {
     category: 'Extension Building',
-    rooms: ['Exten-1', 'Exten-2', 'Exten-3', 'Exten-4', 'Exten-5'],
+    rooms: ['Exten-1', 'Exten-2', 'Exten-3', 'Exten-4', 'Exten-5', 'Exten-6'],
   },
   {
     category: 'Laboratories',

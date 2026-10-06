@@ -2,718 +2,504 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  HelpCircle, Search, ChevronDown, ChevronUp, Sparkles,
-  BookOpen, GraduationCap, Clock, Award, ShieldCheck,
-  CheckCircle2, MessageSquare, ThumbsUp, ArrowRight,
-  FileQuestion, Users, RefreshCw, AlertCircle, Edit2, Trash2, Plus, X, RotateCcw
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  ArrowRight,
+  HelpCircle,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
+import { PageHeader } from '../components/common/PageHeader';
+import { FilterBar } from '../components/common/FilterBar';
+
+interface FeeRow {
+  fee: string;
+  amount: string;
+}
+
+interface GradeRow {
+  marks: string;
+  grade: string;
+  point: string;
+}
 
 interface FAQItem {
   id: string;
-  category: 'QUESTION_BANK' | 'EXAMS_GRADING' | 'ROUTINE_ACADEMICS' | 'CR_ADMIN' | 'ACCOUNT_POINTS';
+  number: number;
+  section: 'After Admission' | 'Exams and Grading' | 'Forum Fee';
   question: string;
-  answer: string;
-  tags: string[];
-  points?: number;
+  answerText?: string;
+  bullets?: string[];
+  postText?: string;
+  feeTable?: FeeRow[];
+  gradeTable?: GradeRow[];
+  italicNote?: string;
 }
 
-const FAQ_DATA: FAQItem[] = [
+const SWE_FAQ_DATA: FAQItem[] = [
+  // SECTION 1: After Admission
   {
     id: 'faq-1',
-    category: 'QUESTION_BANK',
-    question: 'How do I upload and share previous year question papers?',
-    answer: 'You can contribute question papers directly from the Question Bank page by clicking the "+ Upload Question" button, or from your Profile under "Contribute Question Paper". Simply provide the Course Code (e.g. SWE 311), Course Title, Faculty Name, Semester, Academic Year, and select the Exam Type (Quiz Question, Final Exam Question, Supple Exam Question, or CT Question). You will instantly receive +10 contributor points, plus an additional +25 points once verified by an Admin!',
-    tags: ['Upload', 'Question Bank', 'Points', 'Contribution'],
-    points: 10,
+    number: 1,
+    section: 'After Admission',
+    question: 'What fees do I pay after getting admitted?',
+    answerText: 'Here is the breakdown of post-admission fees for the Software Engineering program:',
+    feeTable: [
+      { fee: 'Admission Fee (one-time)', amount: '20,000' },
+      { fee: 'Registration Fee (per term)', amount: '10,000' },
+      { fee: 'BNCC & Other Fee (one-time)', amount: '500' },
+      { fee: 'Campus Activities (per month)', amount: '2,000' },
+      { fee: 'Monthly installment of credit fees', amount: '7,000' },
+    ],
+    italicNote: 'Note: Fee amounts should be confirmed with the university accounts office as departmental figures and fee schedules may update.',
   },
   {
     id: 'faq-2',
-    category: 'QUESTION_BANK',
-    question: 'What are the 4 standard Question Types supported in the Question Bank?',
-    answer: 'The SWE Academic Portal standardizes 4 distinct exam paper types:\n• Quiz Question: Short quizzes, pop quizzes, and lab quizzes.\n• Final Exam Question: Comprehensive semester-end board examinations.\n• Supple Exam Question: Supplementary/improvement examination papers.\n• CT Question: Class Tests administered by course teachers throughout the term.',
-    tags: ['Quiz Question', 'Final Exam Question', 'Supple Exam Question', 'CT Question'],
+    number: 2,
+    section: 'After Admission',
+    question: 'How do I pay my tuition?',
+    answerText:
+      'Tuition is paid in four equal installments in each term, before the deadline. If you pay late, you must pay a late fee. Registration and term fees cannot be refunded.',
   },
   {
     id: 'faq-3',
-    category: 'QUESTION_BANK',
-    question: 'How does the Semester-Smart algorithm work when viewing questions?',
-    answer: 'When you open the Question Bank, our semester algorithm automatically matches your student profile\'s current semester and prioritizes those relevant questions at the very top of your feed. If no questions exist for your current semester yet, or when you type a specific search query, the portal automatically expands to display all matching departmental resources.',
-    tags: ['Algorithm', 'Semester Priority', 'Search', 'Feed'],
+    number: 3,
+    section: 'After Admission',
+    question: 'Where do I deposit my payments?',
+    answerText:
+      'Deposit at NRB Commercial Bank, Metropolitan University Campus Branch, Bateshwar, Sylhet (A/C: 015954000000001). Write your full name, mobile number and student ID on the deposit slip, and keep the slip safe. For questions about fees, contact accounts@metrouni.edu.bd or call 01757535844.',
   },
   {
     id: 'faq-4',
-    category: 'QUESTION_BANK',
-    question: 'How does the Admin Verification process work for uploaded questions?',
-    answer: 'When a student uploads a question paper, it enters the Admin Verification Queue with a "PENDING" status. Department Admins and CRs review the document for readability, accurate course code, correct faculty attribution, and exam type consistency. Once approved, the status changes to "VERIFIED", the paper is published globally to all students, and the uploader receives +25 bonus points.',
-    tags: ['Verification', 'Admin Review', 'Approval', 'Quality'],
+    number: 4,
+    section: 'After Admission',
+    question: 'Why can my admission be cancelled?',
+    answerText: 'The university can cancel your admission if you:',
+    bullets: [
+      'Do not submit the required documents,',
+      'Break the Proctorial Rules,',
+      'Stay absent without permission for three terms in a row, or',
+      'Do not pay your dues on time.',
+    ],
   },
   {
     id: 'faq-5',
-    category: 'EXAMS_GRADING',
-    question: 'What is the procedure and eligibility for Supplementary (Supple) Exams?',
-    answer: 'Supplementary (Supple) examinations are arranged for students seeking grade improvement or clearing backlogs after official semester results. Supple schedules and seat plans are published under Department Notices. Check previous year Supple Exam Question papers in our Question Bank to prepare effectively.',
-    tags: ['Supple Exam', 'Eligibility', 'Backlog', 'Improvement'],
+    number: 5,
+    section: 'After Admission',
+    question: 'What if I drop out or do not get promoted?',
+    answerText:
+      'You must take admission again and pay the readmission fee. Submit a readmission application to the head of your department.',
   },
   {
     id: 'faq-6',
-    category: 'EXAMS_GRADING',
-    question: 'Where can I find upcoming Class Tests (CTs), Quizzes, and Exam dates?',
-    answer: 'Upcoming exam schedules are pinned in your Student Dashboard under "Upcoming Exams" and in the dedicated "Upcoming Exams" tab on the sidebar. Each exam entry specifies the Course Code, Exam Type, Date, Time, Room Number, and Syllabus description posted by your Class Representative.',
-    tags: ['Exam Schedule', 'Class Test', 'Quiz', 'Syllabus'],
+    number: 6,
+    section: 'After Admission',
+    question: 'Can I transfer credits from another university?',
+    answerText:
+      'Yes, you can transfer up to 50% of the credits needed for your degree. You must give the university your old syllabus and official transcripts so they can check them.',
   },
   {
     id: 'faq-7',
-    category: 'ROUTINE_ACADEMICS',
-    question: 'How is the daily class routine updated when classes are rescheduled?',
-    answer: 'Class Representatives (CR) update class timings and room shifts directly via the CR Dashboard. Any routine modification immediately updates your Today\'s Schedule card and triggers an instant batch notification banner so you never miss a room or time change.',
-    tags: ['Routine', 'Reschedule', 'Class Time', 'Room Shift'],
+    number: 7,
+    section: 'After Admission',
+    question: 'How long is the BSc in Software Engineering?',
+    answerText:
+      'It takes four years (48 months) and has 160 credits in total. You complete 148 credits of theory and lab courses and a 12-credit internship at a software company.',
   },
   {
     id: 'faq-8',
-    category: 'ROUTINE_ACADEMICS',
-    question: 'How can I view faculty consultation hours and office rooms?',
-    answer: 'Navigate to the "Faculty Directory" page in the sidebar. You can view all departmental teachers along with their official designations, contact emails, room numbers, and designated weekly student consultation hours.',
-    tags: ['Faculty', 'Consultation', 'Office Room', 'Advising'],
+    number: 8,
+    section: 'After Admission',
+    question: 'Are there scholarships?',
+    answerText: 'The university offers several scholarship opportunities:',
+    bullets: [
+      'Students with Golden A+ in both SSC and HSC get an 80% tuition waiver.',
+      "Students who get A+ in all courses in three terms in a row can apply for the Chairman's Scholarship.",
+      "There is also a Vice Chancellor's Scholarship.",
+    ],
   },
+
+  // SECTION 2: Exams and Grading
   {
     id: 'faq-9',
-    category: 'CR_ADMIN',
-    question: 'What are the responsibilities and privileges of a Class Representative (CR)?',
-    answer: 'Class Representatives are authorized to publish Batch Announcements, create and update Class Test / Quiz exam schedules, submit class routine adjustment requests, and assist with verifying student uploaded question papers.',
-    tags: ['CR Dashboard', 'Batch Rep', 'Announcements', 'Permissions'],
+    number: 9,
+    section: 'Exams and Grading',
+    question: 'How does the grading system work?',
+    answerText:
+      'The university follows the grading scale approved by the University Grants Commission (UGC).',
+    gradeTable: [
+      { marks: '80 and above', grade: 'A+', point: '4.00' },
+      { marks: '75 to less than 80', grade: 'A', point: '3.75' },
+      { marks: '70 to less than 75', grade: 'A-', point: '3.50' },
+      { marks: '65 to less than 70', grade: 'B+', point: '3.25' },
+      { marks: '60 to less than 65', grade: 'B', point: '3.00' },
+      { marks: '55 to less than 60', grade: 'B-', point: '2.75' },
+      { marks: '50 to less than 55', grade: 'C+', point: '2.50' },
+      { marks: '45 to less than 50', grade: 'C', point: '2.25' },
+      { marks: '40 to less than 45', grade: 'D', point: '2.00' },
+      { marks: 'Less than 40', grade: 'F (Fail)', point: '0.00' },
+    ],
+    postText: 'If you get an F, the credits do not count and you must retake the course.',
   },
   {
     id: 'faq-10',
-    category: 'ACCOUNT_POINTS',
-    question: 'How do Contributor Points and Student Leaderboard rankings work?',
-    answer: 'Students earn Academic Contributor Points for positive community engagement:\n• +10 Points: Submitting a valid question paper.\n• +25 Points: When your question paper is approved by Admin.\n• +5 Points: When other students upvote or download your verified papers.\nTop contributors are featured on the Department Contributor Board!',
-    tags: ['Leaderboard', 'Points', 'Rankings', 'Badges'],
-    points: 25,
+    number: 10,
+    section: 'Exams and Grading',
+    question: 'What do I need to graduate?',
+    answerText:
+      'You need a GPA of at least 2.0 in all courses and all the required credits. You must also earn at least 50% of your credits at Metropolitan University.',
+  },
+  {
+    id: 'faq-11',
+    number: 11,
+    section: 'Exams and Grading',
+    question: 'What if I miss an exam because of illness or an emergency?',
+    answerText:
+      'Apply to your department head with proof. If they accept it, you get an "Incomplete (I)" grade. You must take a make-up exam within one month of the next term. If you do not, the I automatically becomes an F.',
+  },
+
+  // SECTION 3: Forum Fee
+  {
+    id: 'faq-12',
+    number: 12,
+    section: 'Forum Fee',
+    question: 'Why do I have to pay 200 taka to the forum?',
+    answerText:
+      'The 200 taka helps the forum run its activities. The forum organizes programming activities for students and helps them take part in programming competitions and events. The fee pays for organizing these activities and supporting students.',
+    italicNote:
+      'Please confirm with the forum officers exactly how the money is used, and say in the FAQ whether the fee is one-time or charged every term.',
   },
 ];
 
-const CATEGORIES = [
-  { id: 'ALL', label: 'All Questions', icon: HelpCircle },
-  { id: 'QUESTION_BANK', label: 'Question Bank & Uploads', icon: GraduationCap },
-  { id: 'EXAMS_GRADING', label: 'Exams & Quizzes', icon: Clock },
-  { id: 'ROUTINE_ACADEMICS', label: 'Routine & Academics', icon: BookOpen },
-  { id: 'CR_ADMIN', label: 'CR & Admin Roles', icon: ShieldCheck },
-  { id: 'ACCOUNT_POINTS', label: 'Points & Rewards', icon: Award },
+const SECTIONS: Array<'After Admission' | 'Exams and Grading' | 'Forum Fee'> = [
+  'After Admission',
+  'Exams and Grading',
+  'Forum Fee',
 ];
 
 export const FAQPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { addToast } = useNotifications();
-  const isAdmin = user?.role === 'ADMIN';
 
-  const [faqs, setFaqs] = useState<FAQItem[]>(() => {
+  // Purge any legacy FAQ storage forever on mount
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem('portal_faqs_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
+      localStorage.removeItem('portal_faqs');
+      localStorage.removeItem('portal_faqs_v2');
+      localStorage.removeItem('portal_faqs_v3');
     } catch (e) {
-      console.error(e);
+      console.warn('Could not clear legacy FAQs:', e);
     }
-    return FAQ_DATA;
-  });
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  // Single active expanded FAQ ID: opening one closes all other questions with animation!
+  // Single active expanded FAQ ID: opening one closes all other questions automatically
   const [openFaqId, setOpenFaqId] = useState<string | null>('faq-1');
-  const [helpfulFeedback, setHelpfulFeedback] = useState<Record<string, boolean>>({});
-
-  // Admin FAQ modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingFaq, setEditingFaq] = useState<FAQItem | null>(null);
-  const [formQuestion, setFormQuestion] = useState('');
-  const [formAnswer, setFormAnswer] = useState('');
-  const [formCategory, setFormCategory] = useState<FAQItem['category']>('QUESTION_BANK');
-  const [formTags, setFormTags] = useState('');
-  const [formPoints, setFormPoints] = useState<number | undefined>(undefined);
-
-  // Save to localStorage when faqs change
-  const saveFaqs = (updated: FAQItem[]) => {
-    setFaqs(updated);
-    try {
-      localStorage.setItem('portal_faqs_v2', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const toggleExpand = (id: string) => {
-    // If clicked is already open, close it; otherwise open it and close all others
+    // If clicked FAQ is already open, close it; otherwise open it and auto-close others
     setOpenFaqId((prev) => (prev === id ? null : id));
-  };
-
-  const handleHelpfulClick = (id: string, isHelpful: boolean) => {
-    if (helpfulFeedback[id] !== undefined) return;
-    setHelpfulFeedback((prev) => ({ ...prev, [id]: isHelpful }));
-    addToast('success', isHelpful ? 'Thank you for your feedback!' : 'We will improve this answer.');
-  };
-
-  // Admin Edit Handler
-  const handleOpenEditModal = (faq: FAQItem) => {
-    setEditingFaq(faq);
-    setFormQuestion(faq.question);
-    setFormAnswer(faq.answer);
-    setFormCategory(faq.category);
-    setFormTags(faq.tags.join(', '));
-    setFormPoints(faq.points);
-    setIsModalOpen(true);
-  };
-
-  // Admin Add Handler
-  const handleOpenAddModal = () => {
-    setEditingFaq(null);
-    setFormQuestion('');
-    setFormAnswer('');
-    setFormCategory(selectedCategory !== 'ALL' ? (selectedCategory as FAQItem['category']) : 'QUESTION_BANK');
-    setFormTags('SWE, Exam, Help');
-    setFormPoints(undefined);
-    setIsModalOpen(true);
-  };
-
-  // Admin Delete Handler
-  const handleDeleteFaq = (id: string, questionTitle: string) => {
-    if (!window.confirm(`Are you sure you want to delete this FAQ?\n"${questionTitle}"`)) {
-      return;
-    }
-    const updated = faqs.filter((item) => item.id !== id);
-    saveFaqs(updated);
-    if (openFaqId === id) {
-      setOpenFaqId(null);
-    }
-    addToast('success', 'FAQ deleted successfully!');
-  };
-
-  // Admin Save Modal Form
-  const handleSaveModal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formQuestion.trim() || !formAnswer.trim()) {
-      addToast('error', 'Question and answer cannot be empty');
-      return;
-    }
-
-    const tagsArray = formTags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    if (editingFaq) {
-      const updated = faqs.map((f) =>
-        f.id === editingFaq.id
-          ? {
-              ...f,
-              question: formQuestion.trim(),
-              answer: formAnswer.trim(),
-              category: formCategory,
-              tags: tagsArray.length > 0 ? tagsArray : ['General'],
-              points: formPoints && formPoints > 0 ? formPoints : undefined,
-            }
-          : f
-      );
-      saveFaqs(updated);
-      addToast('success', 'FAQ updated successfully!');
-    } else {
-      const newFaq: FAQItem = {
-        id: `faq-${Date.now()}`,
-        question: formQuestion.trim(),
-        answer: formAnswer.trim(),
-        category: formCategory,
-        tags: tagsArray.length > 0 ? tagsArray : ['General'],
-        points: formPoints && formPoints > 0 ? formPoints : undefined,
-      };
-      saveFaqs([newFaq, ...faqs]);
-      setOpenFaqId(newFaq.id);
-      addToast('success', 'New FAQ added successfully!');
-    }
-    setIsModalOpen(false);
-  };
-
-  const handleResetDefaults = () => {
-    if (window.confirm('Reset all FAQs back to original departmental default questions?')) {
-      saveFaqs(FAQ_DATA);
-      setOpenFaqId('faq-1');
-      addToast('success', 'FAQs reset to departmental defaults.');
-    }
   };
 
   const filteredFAQs = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return faqs.filter((item) => {
-      const matchesCat = selectedCategory === 'ALL' || item.category === selectedCategory;
-      const matchesSearch =
-        !q ||
-        item.question.toLowerCase().includes(q) ||
-        item.answer.toLowerCase().includes(q) ||
-        item.tags.some((tag) => tag.toLowerCase().includes(q));
-      return matchesCat && matchesSearch;
+    if (!q) return SWE_FAQ_DATA;
+
+    return SWE_FAQ_DATA.filter((item) => {
+      const matchQuestion = item.question.toLowerCase().includes(q);
+      const matchSection = item.section.toLowerCase().includes(q);
+      const matchAnswer = item.answerText?.toLowerCase().includes(q);
+      const matchPost = item.postText?.toLowerCase().includes(q);
+      const matchBullets = item.bullets?.some((b) => b.toLowerCase().includes(q));
+      const matchFee = item.feeTable?.some(
+        (f) => f.fee.toLowerCase().includes(q) || f.amount.includes(q)
+      );
+      const matchGrade = item.gradeTable?.some(
+        (g) =>
+          g.marks.toLowerCase().includes(q) ||
+          g.grade.toLowerCase().includes(q) ||
+          g.point.includes(q)
+      );
+
+      return (
+        matchQuestion ||
+        matchSection ||
+        matchAnswer ||
+        matchPost ||
+        matchBullets ||
+        matchFee ||
+        matchGrade
+      );
     });
-  }, [faqs, searchQuery, selectedCategory]);
+  }, [searchQuery]);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 animate-fade-in">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden bg-linear-to-r from-[#0A2147] via-[#0F326D] to-[#1E3A8A] rounded-2xl p-6 sm:p-8 text-white shadow-md border border-blue-900/40">
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold backdrop-blur-xs">
-            <HelpCircle className="w-3.5 h-3.5 text-blue-300" />
-            <span>Academic Knowledge Base & Help Center</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-            Find instant answers to questions regarding past exam papers, question upload guidelines, exam types (Quiz, Final, Supple, CT), class routines, and contributor reward points.
-          </p>
+    <div className="space-y-6 max-w-[1400px] pb-12 animate-fade-in">
+      <PageHeader
+        title="Software Engineering FAQ"
+        description="Official Metropolitan University department guidelines covering post-admission fee structure, tuition installments, grading scales, credit transfers, and academic policies."
+        breadcrumb="OFFICIAL ACADEMIC KNOWLEDGE BASE"
+      />
 
-          {/* Search Box inside Header */}
-          <div className="pt-2">
-            <div className="relative max-w-xl">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search topics (e.g. upload question, supple exam, CT, points)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white text-slate-900 placeholder:text-slate-400 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 px-1.5 py-0.5 rounded-md hover:bg-slate-100"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      <FilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search topics (e.g. fees, tuition, grading, scholarship, forum)..."
+      />
 
-        {/* Ambient Decorative Accents */}
-        <div className="absolute right-[-20px] bottom-[-20px] opacity-15 pointer-events-none">
-          <FileQuestion className="w-64 h-64 text-white" />
-        </div>
-      </div>
-
-      {/* Admin Action Bar (if admin) */}
-      {isAdmin && (
-        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl p-3 px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold">
-            <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <span>Administrator Controls: You can edit, delete, or create FAQ knowledge base entries.</span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleOpenAddModal}
-              className="px-3 py-1.5 bg-[#2563EB] hover:bg-blue-700 text-white rounded-lg font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add New FAQ</span>
-            </button>
-            <button
-              onClick={handleResetDefaults}
-              title="Reset FAQs to original state"
-              className="p-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Category Pills Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
-        {CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-[#0F172A] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Quick Action Info Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div
-          onClick={() => navigate('/resources/questions')}
-          className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800 transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                Question Bank
-              </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Search & download past exam papers</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          onClick={() => navigate('/routine')}
-          className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800 transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                Class Routine
-              </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">View real-time batch weekly timetable</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          onClick={() => navigate('/faculty')}
-          className="bg-white dark:bg-[#0F172A] p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800 transition-all cursor-pointer group shadow-2xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                Faculty Directory
-              </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Office hours & teacher consultation info</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* FAQ Accordion List (with smooth single-open animation) */}
-      <div className="space-y-3">
-        {filteredFAQs.length === 0 ? (
-          <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-slate-800 p-10 text-center space-y-3">
-            <AlertCircle className="w-10 h-10 text-slate-400 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No matching questions found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              Try searching with different terms like "upload", "exam", "routine", or clear your filter.
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('ALL');
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors cursor-pointer"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          filteredFAQs.map((faq) => {
-            const isExpanded = openFaqId === faq.id;
-            const hasFeedback = helpfulFeedback[faq.id];
-
-            return (
-              <div
-                key={faq.id}
-                className={`bg-white dark:bg-[#0F172A] rounded-xl border transition-all shadow-2xs overflow-hidden ${
-                  isExpanded
-                    ? 'border-blue-300 dark:border-blue-800 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                <div className="w-full px-5 py-4 flex items-start justify-between gap-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                  <div
-                    onClick={() => toggleExpand(faq.id)}
-                    className="space-y-1.5 min-w-0 flex-1 cursor-pointer select-none"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
-                        {faq.category.replace('_', ' ')}
-                      </span>
-                      {faq.points && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/50 flex items-center gap-1">
-                          <Sparkles className="w-2.5 h-2.5" /> +{faq.points} Pts Reward
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-xs sm:text-sm font-bold text-[#0A2147] dark:text-white leading-snug">
-                      {faq.question}
-                    </h2>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    {/* Admin Action Buttons */}
-                    {isAdmin && (
-                      <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg mr-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditModal(faq);
-                          }}
-                          className="p-1 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                          title="Edit FAQ item"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteFaq(faq.id, faq.question);
-                          }}
-                          className="p-1 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                          title="Delete FAQ item"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(faq.id)}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                        isExpanded
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
-                      }`}
-                      title={isExpanded ? 'Collapse' : 'Expand'}
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Animated Accordion Content (smooth collapse/expand with motion) */}
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      key={`content-${faq.id}`}
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.26, ease: [0.25, 1, 0.5, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/80 bg-[#FAFCFF]/60 dark:bg-[#0B1120]/40 space-y-3 text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <div className="whitespace-pre-line pt-2">
-                          {faq.answer}
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-[10px] font-semibold text-slate-400">Tags:</span>
-                          {faq.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSearchQuery(tag);
-                              }}
-                              className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Helpful Feedback Box */}
-                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">Was this answer helpful?</span>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleHelpfulClick(faq.id, true)}
-                              disabled={hasFeedback !== undefined}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
-                                hasFeedback === true
-                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                              }`}
-                            >
-                              <ThumbsUp className="w-3 h-3" /> Yes
-                            </button>
-                            <button
-                              onClick={() => handleHelpfulClick(faq.id, false)}
-                              disabled={hasFeedback !== undefined}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
-                                hasFeedback === false
-                                  ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                              }`}
-                            >
-                              No
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })
+      {/* Question Counter Bar */}
+      <div className="flex items-center justify-between px-1 text-xs text-[#52657C] dark:text-slate-400">
+        <span className="font-semibold">
+          Showing {filteredFAQs.length} questions
+        </span>
+        {openFaqId && (
+          <button
+            type="button"
+            onClick={() => setOpenFaqId(null)}
+            className="font-semibold text-[#1D5FD1] hover:underline cursor-pointer"
+          >
+            Collapse Active Question
+          </button>
         )}
       </div>
 
-      {/* Still Have Questions CTA */}
-      <div className="bg-linear-to-r from-slate-900 to-blue-950 rounded-2xl p-6 text-white border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="space-y-1 text-center sm:text-left">
-          <h2 className="text-base font-bold text-white">Still need assistance?</h2>
-          <p className="text-xs text-slate-300">
-            Reach out to your Class Representative or consult the Department Faculty office.
+      {/* FAQ Sections */}
+      {filteredFAQs.length === 0 ? (
+        <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-10 text-center space-y-3">
+          <AlertCircle className="w-10 h-10 text-slate-400 mx-auto" />
+          <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">
+            No matching questions found
+          </h3>
+          <p className="text-xs text-[#52657C] dark:text-slate-400 max-w-sm mx-auto">
+            Try searching for other terms such as "admission", "fees", "grading", or "tuition".
           </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
           <button
-            onClick={() => navigate('/announcements')}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="px-4 py-2 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
-            Announcements
-          </button>
-          <button
-            onClick={() => navigate('/faculty')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <span>Contact Faculty</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            Reset Search
           </button>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-6">
+          {SECTIONS.map((sectionName) => {
+            const sectionItems = filteredFAQs.filter(
+              (item) => item.section === sectionName
+            );
+            if (sectionItems.length === 0) return null;
 
-      {/* Admin Edit/Add Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {editingFaq ? 'Edit FAQ Item' : 'Add New FAQ Item'}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModal} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Question *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formQuestion}
-                  onChange={(e) => setFormQuestion(e.target.value)}
-                  placeholder="e.g. How do I request an exam date change?"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Category *
-                </label>
-                <select
-                  value={formCategory}
-                  onChange={(e) => setFormCategory(e.target.value as FAQItem['category'])}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white"
-                >
-                  <option value="QUESTION_BANK">Question Bank & Uploads</option>
-                  <option value="EXAMS_GRADING">Exams & Quizzes</option>
-                  <option value="ROUTINE_ACADEMICS">Routine & Academics</option>
-                  <option value="CR_ADMIN">CR & Admin Roles</option>
-                  <option value="ACCOUNT_POINTS">Points & Rewards</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Detailed Answer *
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formAnswer}
-                  onChange={(e) => setFormAnswer(e.target.value)}
-                  placeholder="Explain step-by-step instructions or policy guidelines..."
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white leading-relaxed"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Tags (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={formTags}
-                    onChange={(e) => setFormTags(e.target.value)}
-                    placeholder="e.g. Upload, Exam, Supple"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white"
-                  />
+            return (
+              <div key={sectionName} className="space-y-3">
+                {/* Section Title */}
+                <div className="flex items-center gap-2 pb-1.5 border-b border-[#DDE5F0] dark:border-slate-800">
+                  <span className="w-2 h-2 rounded-full bg-[#1D5FD1]" />
+                  <h2 className="text-sm md:text-base font-extrabold text-[#0A2147] dark:text-white tracking-tight">
+                    {sectionName}
+                  </h2>
+                  <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
+                    ({sectionItems.length} {sectionItems.length === 1 ? 'question' : 'questions'})
+                  </span>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Reward Points (Optional)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formPoints || ''}
-                    onChange={(e) =>
-                      setFormPoints(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    placeholder="e.g. 10 or 25"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white"
-                  />
+                {/* Section Questions Accordion */}
+                <div className="space-y-2.5">
+                  {sectionItems.map((faq) => {
+                    const isExpanded = openFaqId === faq.id;
+
+                    return (
+                      <div
+                        key={faq.id}
+                        className={`bg-white dark:bg-[#0F172A] rounded-xl border transition-all shadow-[0_1px_3px_rgba(15,35,70,0.03)] overflow-hidden ${
+                          isExpanded
+                            ? 'border-[#2563EB] dark:border-blue-700 ring-1 ring-blue-500/20'
+                            : 'border-[#D8E2EE] dark:border-slate-800 hover:border-[#BFD3EA]'
+                        }`}
+                      >
+                        {/* Question Header */}
+                        <div
+                          onClick={() => toggleExpand(faq.id)}
+                          className="w-full px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <span className="w-6 h-6 rounded-md bg-[#EFF5FF] dark:bg-blue-950/60 border border-[#D5E2FA] dark:border-blue-900/60 flex items-center justify-center text-[#1D5FD1] dark:text-blue-300 font-bold text-xs shrink-0">
+                              {faq.number}
+                            </span>
+                            <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] dark:text-white leading-snug">
+                              {faq.question}
+                            </h3>
+                          </div>
+
+                          <div
+                            className={`p-1 rounded-md shrink-0 transition-colors ${
+                              isExpanded
+                                ? 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300'
+                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            }`}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Animated Answer Body */}
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              key={`content-${faq.id}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.18, ease: 'easeOut' }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-5 pb-5 pt-3 border-t border-[#E5EBF3] dark:border-slate-800 bg-[#F9FBFE] dark:bg-[#090F1E]/50 space-y-3.5 text-xs sm:text-[13px] text-[#334155] dark:text-slate-300 leading-relaxed font-normal">
+                                {/* Lead Paragraph */}
+                                {faq.answerText && (
+                                  <p className="font-normal text-[#1E293B] dark:text-slate-200">
+                                    {faq.answerText}
+                                  </p>
+                                )}
+
+                                {/* Question 1: Fee Structure Table */}
+                                {faq.feeTable && (
+                                  <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-2">
+                                    <table className="w-full text-left border-collapse">
+                                      <thead>
+                                        <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
+                                          <th className="py-2.5 px-4">Fee Item</th>
+                                          <th className="py-2.5 px-4 text-right">Amount (BDT)</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
+                                        {faq.feeTable.map((row, idx) => (
+                                          <tr
+                                            key={idx}
+                                            className="hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors"
+                                          >
+                                            <td className="py-2.5 px-4 text-[#1E293B] dark:text-slate-200">
+                                              {row.fee}
+                                            </td>
+                                            <td className="py-2.5 px-4 font-bold text-[#1D5FD1] dark:text-blue-400 text-right">
+                                              ৳ {row.amount}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+
+                                {/* Question 9: Grading Scale Table */}
+                                {faq.gradeTable && (
+                                  <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-2">
+                                    <table className="w-full text-left border-collapse">
+                                      <thead>
+                                        <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
+                                          <th className="py-2.5 px-4">Marks</th>
+                                          <th className="py-2.5 px-4 text-center">Letter Grade</th>
+                                          <th className="py-2.5 px-4 text-right">Grade Point</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
+                                        {faq.gradeTable.map((row, idx) => {
+                                          const isFail = row.grade.includes('F');
+                                          const isTop = row.grade === 'A+';
+
+                                          return (
+                                            <tr
+                                              key={idx}
+                                              className={`transition-colors ${
+                                                isFail
+                                                  ? 'bg-rose-50/50 dark:bg-rose-950/20'
+                                                  : isTop
+                                                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20'
+                                                  : 'hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40'
+                                              }`}
+                                            >
+                                              <td className="py-2.5 px-4 text-[#1E293B] dark:text-slate-200">
+                                                {row.marks}
+                                              </td>
+                                              <td className="py-2.5 px-4 text-center">
+                                                <span
+                                                  className={`inline-block px-2.5 py-0.5 rounded-md font-bold text-xs ${
+                                                    isFail
+                                                      ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                                      : isTop
+                                                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                                      : 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300 border border-[#D5E2FA] dark:border-blue-900/60'
+                                                  }`}
+                                                >
+                                                  {row.grade}
+                                                </span>
+                                              </td>
+                                              <td className="py-2.5 px-4 font-bold text-[#0A2147] dark:text-white text-right">
+                                                {row.point}
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+
+                                {/* Bullet Points if available */}
+                                {faq.bullets && faq.bullets.length > 0 && (
+                                  <ul className="space-y-1.5 pl-4 list-disc marker:text-[#1D5FD1] dark:marker:text-blue-400">
+                                    {faq.bullets.map((bullet, idx) => (
+                                      <li key={idx} className="text-[#1E293B] dark:text-slate-200">
+                                        {bullet}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {/* Post Text */}
+                                {faq.postText && (
+                                  <p className="font-semibold text-rose-600 dark:text-rose-400 pt-1">
+                                    {faq.postText}
+                                  </p>
+                                )}
+
+                                {/* Italic Note */}
+                                {faq.italicNote && (
+                                  <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 rounded-lg text-xs text-amber-800 dark:text-amber-300 italic">
+                                    {faq.italicNote}
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs cursor-pointer"
-                >
-                  {editingFaq ? 'Save Changes' : 'Create FAQ'}
-                </button>
-              </div>
-            </form>
-          </div>
+            );
+          })}
         </div>
       )}
+
+      {/* Contact & Support Card */}
+      <div className="bg-[#F6F9FD] dark:bg-[#0F172A] rounded-xl p-5 border border-[#DCE5F0] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
+        <div className="space-y-1 text-center sm:text-left">
+          <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">Have additional questions?</h3>
+          <p className="text-xs text-[#52657C] dark:text-slate-400">
+            Contact the Department of Software Engineering office or consult with your Class Representative (CR).
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/faculty')}
+          className="px-4 py-2 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+        >
+          <span>Faculty Directory</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
   );
 };

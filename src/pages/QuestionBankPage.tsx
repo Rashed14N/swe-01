@@ -695,7 +695,15 @@ export const QuestionBankPage: React.FC = () => {
                               e.stopPropagation();
                               handleDownload(q.id);
                               if (q.fileUrl) {
-                                window.open(getInstantDownloadUrl(q.fileUrl), '_blank', 'noopener,noreferrer');
+                                const dlUrl = getInstantDownloadUrl(q.fileUrl);
+                                const anchor = document.createElement('a');
+                                anchor.href = dlUrl;
+                                anchor.target = '_blank';
+                                anchor.rel = 'noopener noreferrer';
+                                anchor.download = '';
+                                document.body.appendChild(anchor);
+                                anchor.click();
+                                document.body.removeChild(anchor);
                               }
                             }}
                             className="p-1.5 text-[#2563EB] hover:bg-[#EFF5FF] dark:hover:bg-blue-950/50 rounded-lg transition-colors inline-flex items-center justify-center cursor-pointer"

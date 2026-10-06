@@ -219,7 +219,7 @@ export function seedInitialData(): DBData {
     {
       id: 'fac-8',
       name: 'Syeda Sanjida Rahman',
-      shortName: 'SSR',
+      shortName: 'SSJ',
       designation: 'Lecturer',
       department: 'Department of Software Engineering',
       phone: '+8801783852026',
@@ -265,6 +265,26 @@ export function seedInitialData(): DBData {
       phone: '+8801716942150',
       email: 'tanya@metrouni.edu.bd',
       assignedCourses: [],
+    },
+    {
+      id: 'fac-cmw',
+      name: 'Chowdhury Mahir Wahid',
+      shortName: 'CMW',
+      designation: 'Lecturer',
+      department: 'Department of Software Engineering',
+      email: 'mahir.wahid@metrouni.edu.bd',
+      officeRoom: 'Exten-2',
+      assignedCourses: ['PHY-111'],
+    },
+    {
+      id: 'fac-ohr',
+      name: 'Obaidur Rahman',
+      shortName: 'OHR',
+      designation: 'Lecturer',
+      department: 'Department of Software Engineering',
+      email: 'obaidur@metrouni.edu.bd',
+      officeRoom: 'Room 301',
+      assignedCourses: ['SWE-230'],
     },
   ];
 
@@ -323,7 +343,7 @@ export function seedInitialData(): DBData {
       batchIds: ['batch-12'],
     },
 
-    // Semester 2 (11th Batch)
+    // Semester 2 (11th & 12th Batch)
     {
       id: 'course-sem2-swe-121',
       code: 'SWE-121',
@@ -332,7 +352,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 2,
-      batchIds: ['batch-11'],
+      assignedFacultyId: 'fac-6',
+      assignedFacultyName: 'Iffat Ahmed Chowdhury Nahid',
+      batchIds: ['batch-12', 'batch-1788449554669', 'batch-11'],
     },
     {
       id: 'course-sem2-swe-122',
@@ -342,7 +364,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 2,
-      batchIds: ['batch-11'],
+      assignedFacultyId: 'fac-6',
+      assignedFacultyName: 'Iffat Ahmed Chowdhury Nahid',
+      batchIds: ['batch-12', 'batch-1788449554669', 'batch-11'],
     },
     {
       id: 'course-sem2-mat-112',
@@ -352,7 +376,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 2,
-      batchIds: ['batch-11'],
+      assignedFacultyId: 'fac-3',
+      assignedFacultyName: 'Rina Paul',
+      batchIds: ['batch-12', 'batch-1788449554669', 'batch-11'],
     },
     {
       id: 'course-sem2-mat-113',
@@ -362,7 +388,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 2,
-      batchIds: ['batch-11'],
+      assignedFacultyId: 'fac-8',
+      assignedFacultyName: 'Syeda Sanjida Rahman',
+      batchIds: ['batch-12', 'batch-1788449554669', 'batch-11'],
     },
     {
       id: 'course-sem2-phy-111',
@@ -372,10 +400,12 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 2,
-      batchIds: ['batch-11'],
+      assignedFacultyId: 'fac-cmw',
+      assignedFacultyName: 'Chowdhury Mahir Wahid',
+      batchIds: ['batch-12', 'batch-1788449554669', 'batch-11'],
     },
 
-    // Semester 3 (10th Batch)
+    // Semester 3 (11th Batch)
     {
       id: 'course-sem3-swe-123',
       code: 'SWE-123',
@@ -384,7 +414,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 3,
-      batchIds: ['batch-10'],
+      assignedFacultyId: 'fac-6',
+      assignedFacultyName: 'Iffat Ahmed Chowdhury Nahid',
+      batchIds: ['batch-11'],
     },
     {
       id: 'course-sem3-swe-124',
@@ -394,7 +426,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 3,
-      batchIds: ['batch-10'],
+      assignedFacultyId: 'fac-6',
+      assignedFacultyName: 'Iffat Ahmed Chowdhury Nahid',
+      batchIds: ['batch-11'],
     },
     {
       id: 'course-sem3-swe-235',
@@ -404,7 +438,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 3,
-      batchIds: ['batch-10'],
+      assignedFacultyId: 'fac-5',
+      assignedFacultyName: 'Wadia Iqbal Chowdhury',
+      batchIds: ['batch-11'],
     },
     {
       id: 'course-sem3-swe-111',
@@ -414,7 +450,7 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 3,
-      batchIds: ['batch-10'],
+      batchIds: ['batch-11'],
     },
     {
       id: 'course-sem3-swe-112',
@@ -424,7 +460,7 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 3,
-      batchIds: ['batch-10'],
+      batchIds: ['batch-11'],
     },
     {
       id: 'course-sem3-swe-182',
@@ -434,10 +470,12 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'PROJECT',
       semester: 3,
-      batchIds: ['batch-10'],
+      assignedFacultyId: 'fac-4',
+      assignedFacultyName: 'Al Akram Chowdhury',
+      batchIds: ['batch-11'],
     },
 
-    // Semester 4 (9th Batch)
+    // Semester 4 (10th Batch)
     {
       id: 'course-sem4-swe-221',
       code: 'SWE-221',
@@ -446,7 +484,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 4,
-      batchIds: ['batch-9'],
+      assignedFacultyId: 'fac-4',
+      assignedFacultyName: 'Al Akram Chowdhury',
+      batchIds: ['batch-10'],
     },
     {
       id: 'course-sem4-swe-222',
@@ -456,7 +496,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 4,
-      batchIds: ['batch-9'],
+      assignedFacultyId: 'fac-4',
+      assignedFacultyName: 'Al Akram Chowdhury',
+      batchIds: ['batch-10'],
     },
     {
       id: 'course-sem4-swe-311',
@@ -466,7 +508,7 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 4,
-      batchIds: ['batch-9'],
+      batchIds: ['batch-10'],
     },
     {
       id: 'course-sem4-swe-225',
@@ -476,7 +518,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 4,
-      batchIds: ['batch-9'],
+      assignedFacultyId: 'fac-7',
+      assignedFacultyName: 'Nazia Hassan',
+      batchIds: ['batch-10'],
     },
     {
       id: 'course-sem4-swe-226',
@@ -486,7 +530,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 4,
-      batchIds: ['batch-9'],
+      assignedFacultyId: 'fac-7',
+      assignedFacultyName: 'Nazia Hassan',
+      batchIds: ['batch-10'],
     },
     {
       id: 'course-sem4-swe-231',
@@ -496,10 +542,12 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 4,
-      batchIds: ['batch-9'],
+      assignedFacultyId: 'fac-5',
+      assignedFacultyName: 'Wadia Iqbal Chowdhury',
+      batchIds: ['batch-10'],
     },
 
-    // Semester 5 (8th Batch)
+    // Semester 5 (8th & 9th Batch)
     {
       id: 'course-sem5-swe-211',
       code: 'SWE-211',
@@ -508,7 +556,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 5,
-      batchIds: ['batch-8'],
+      assignedFacultyId: 'fac-2',
+      assignedFacultyName: 'Nazia Sultana Chowdhury',
+      batchIds: ['batch-9', 'batch-8'],
     },
     {
       id: 'course-sem5-swe-223',
@@ -518,7 +568,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 5,
-      batchIds: ['batch-8'],
+      assignedFacultyId: 'fac-1',
+      assignedFacultyName: 'Fuad Ahmed',
+      batchIds: ['batch-9', 'batch-8'],
     },
     {
       id: 'course-sem5-swe-224',
@@ -528,7 +580,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 5,
-      batchIds: ['batch-8'],
+      assignedFacultyId: 'fac-1',
+      assignedFacultyName: 'Fuad Ahmed',
+      batchIds: ['batch-9', 'batch-8'],
     },
     {
       id: 'course-sem5-mat-211',
@@ -538,7 +592,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 5,
-      batchIds: ['batch-8'],
+      assignedFacultyId: 'fac-3',
+      assignedFacultyName: 'Rina Paul',
+      batchIds: ['batch-9', 'batch-8'],
     },
     {
       id: 'course-sem5-swe-230',
@@ -548,7 +604,9 @@ export function seedInitialData(): DBData {
       credits: 1.5,
       type: 'LAB',
       semester: 5,
-      batchIds: ['batch-8'],
+      assignedFacultyId: 'fac-ohr',
+      assignedFacultyName: 'Obaidur Rahman',
+      batchIds: ['batch-9', 'batch-8'],
     },
 
     // Semester 6 (7th Batch)
@@ -761,13 +819,13 @@ export function seedInitialData(): DBData {
         "day": "TUESDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-phy-111",
-        "courseCode": "PHY-111",
-        "courseTitle": "Basic Physics",
-        "courseShortName": "BP",
-        "teacherName": "Chowdhury Mahir Wahid",
-        "teacherShortName": "CMW",
-        "room": "Exten-4"
+        "courseId": "course-mat-113",
+        "courseCode": "MAT-113",
+        "courseTitle": "Discrete Mathematics",
+        "courseShortName": "DM",
+        "teacherName": "Syeda Sanjida Rahman",
+        "teacherShortName": "SSJ",
+        "room": "Exten-3"
     },
     {
         "id": "rout-batch-12-6",
@@ -775,13 +833,13 @@ export function seedInitialData(): DBData {
         "day": "TUESDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-mat-113",
-        "courseCode": "MAT-113",
-        "courseTitle": "Discrete Mathematics",
-        "courseShortName": "DM",
-        "teacherName": "Syeda Sanjida Rahman",
-        "teacherShortName": "SSJ",
-        "room": "Room 404"
+        "courseId": "course-phy-111",
+        "courseCode": "PHY-111",
+        "courseTitle": "Basic Physics",
+        "courseShortName": "BP",
+        "teacherName": "Chowdhury Mahir Wahid",
+        "teacherShortName": "CMW",
+        "room": "Exten-5"
     },
     {
         "id": "rout-batch-12-7",
@@ -795,7 +853,7 @@ export function seedInitialData(): DBData {
         "courseShortName": "LADE",
         "teacherName": "Rina Paul",
         "teacherShortName": "RP",
-        "room": "Room 501"
+        "room": "Room 408"
     },
     {
         "id": "rout-batch-12-8",
@@ -809,7 +867,7 @@ export function seedInitialData(): DBData {
         "courseShortName": "SP",
         "teacherName": "Iffat Ahmed Chowdhury Nahid",
         "teacherShortName": "IAC",
-        "room": "Room 501"
+        "room": "Room 507"
     },
     {
         "id": "rout-batch-12-9",
@@ -1008,169 +1066,181 @@ export function seedInitialData(): DBData {
         "room": "Room 405"
     },
     {
+    
         "id": "rout-batch-8-1",
         "batchId": "batch-8",
         "day": "SUNDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-234",
+        "courseId": "course-sem6-swe-234",
         "courseCode": "SWE-234",
-        "courseTitle": "Software Architecture and Design Patterns Lab",
         "courseShortName": "SADP Lab",
+        "courseTitle": "Software Architecture and Design Patterns Lab",
         "teacherName": "Nazia Sultana Chowdhury",
         "teacherShortName": "NSC",
         "room": "Room 301"
     },
     {
+    
         "id": "rout-batch-8-2",
         "batchId": "batch-8",
         "day": "SUNDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-234",
+        "courseId": "course-sem6-swe-234",
         "courseCode": "SWE-234",
-        "courseTitle": "Software Architecture and Design Patterns Lab",
         "courseShortName": "SADP Lab",
+        "courseTitle": "Software Architecture and Design Patterns Lab",
         "teacherName": "Nazia Sultana Chowdhury",
         "teacherShortName": "NSC",
         "room": "Room 301"
     },
     {
+    
         "id": "rout-batch-8-3",
         "batchId": "batch-8",
         "day": "SUNDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-111",
+        "courseId": "course-sem3-swe-111",
         "courseCode": "SWE-111",
-        "courseTitle": "Basic Electrical and Electronic Circuits",
         "courseShortName": "BEEC",
+        "courseTitle": "Basic Electrical and Electronic Circuits",
         "teacherName": "A.I. Rahman",
         "teacherShortName": "AIR",
         "room": "Exten-5"
     },
     {
+    
         "id": "rout-batch-8-4",
         "batchId": "batch-8",
         "day": "MONDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-111",
+        "courseId": "course-sem3-swe-111",
         "courseCode": "SWE-111",
-        "courseTitle": "Basic Electrical and Electronic Circuits",
         "courseShortName": "BEEC",
+        "courseTitle": "Basic Electrical and Electronic Circuits",
         "teacherName": "A.I. Rahman",
         "teacherShortName": "AIR",
-        "room": "Room 501"
+        "room": "Room 403"
     },
     {
+    
         "id": "rout-batch-8-5",
         "batchId": "batch-8",
         "day": "MONDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-282",
+        "courseId": "course-sem6-swe-282",
         "courseCode": "SWE-282",
-        "courseTitle": "Project on Java GUI Development Lab",
         "courseShortName": "JGD Lab",
+        "courseTitle": "Project on Java GUI Development Lab",
         "teacherName": "Fuad Ahmed",
         "teacherShortName": "FA",
-        "room": "Room 301"
+        "room": "Room 306"
     },
     {
+    
         "id": "rout-batch-8-6",
         "batchId": "batch-8",
         "day": "MONDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-282",
+        "courseId": "course-sem6-swe-282",
         "courseCode": "SWE-282",
-        "courseTitle": "Project on Java GUI Development Lab",
         "courseShortName": "JGD Lab",
+        "courseTitle": "Project on Java GUI Development Lab",
         "teacherName": "Fuad Ahmed",
         "teacherShortName": "FA",
-        "room": "Room 301"
+        "room": "Room 306"
     },
     {
+    
         "id": "rout-batch-8-7",
         "batchId": "batch-8",
         "day": "TUESDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-233",
+        "courseId": "course-sem6-swe-233",
         "courseCode": "SWE-233",
-        "courseTitle": "Software Architecture and Design Patterns",
         "courseShortName": "SADP",
+        "courseTitle": "Software Architecture and Design Patterns",
         "teacherName": "Nazia Sultana Chowdhury",
         "teacherShortName": "NSC",
         "room": "Room 403"
     },
     {
+    
         "id": "rout-batch-8-8",
         "batchId": "batch-8",
         "day": "TUESDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-228",
+        "courseId": "course-sem6-swe-228",
         "courseCode": "SWE-228",
-        "courseTitle": "Problem Solving with Competitive Programming Lab-2",
         "courseShortName": "CP Lab-2",
+        "courseTitle": "Problem Solving with Competitive Programming Lab-2",
         "teacherName": "Iffat Ahmed Chowdhury Nahid",
         "teacherShortName": "IAC",
         "room": "Room 405"
     },
     {
+    
         "id": "rout-batch-8-9",
         "batchId": "batch-8",
         "day": "TUESDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-228",
+        "courseId": "course-sem6-swe-228",
         "courseCode": "SWE-228",
-        "courseTitle": "Problem Solving with Competitive Programming Lab-2",
         "courseShortName": "CP Lab-2",
+        "courseTitle": "Problem Solving with Competitive Programming Lab-2",
         "teacherName": "Iffat Ahmed Chowdhury Nahid",
         "teacherShortName": "IAC",
         "room": "Room 405"
     },
     {
+    
         "id": "rout-batch-8-10",
         "batchId": "batch-8",
         "day": "THURSDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-233",
+        "courseId": "course-sem6-swe-233",
         "courseCode": "SWE-233",
-        "courseTitle": "Software Architecture and Design Patterns",
         "courseShortName": "SADP",
+        "courseTitle": "Software Architecture and Design Patterns",
         "teacherName": "Nazia Sultana Chowdhury",
         "teacherShortName": "NSC",
         "room": "Room 508"
     },
     {
+    
         "id": "rout-batch-8-11",
         "batchId": "batch-8",
         "day": "THURSDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-112",
+        "courseId": "course-sem3-swe-112",
         "courseCode": "SWE-112",
-        "courseTitle": "Basic Electrical and Electronic Circuits Lab",
         "courseShortName": "BEEC Lab",
+        "courseTitle": "Basic Electrical and Electronic Circuits Lab",
         "teacherName": "A.I. Rahman",
         "teacherShortName": "AIR",
         "room": "Room 109"
     },
     {
+    
         "id": "rout-batch-8-12",
         "batchId": "batch-8",
         "day": "THURSDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-112",
+        "courseId": "course-sem3-swe-112",
         "courseCode": "SWE-112",
-        "courseTitle": "Basic Electrical and Electronic Circuits Lab",
         "courseShortName": "BEEC Lab",
+        "courseTitle": "Basic Electrical and Electronic Circuits Lab",
         "teacherName": "A.I. Rahman",
         "teacherShortName": "AIR",
         "room": "Room 109"
@@ -1279,13 +1349,13 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-182",
-        "courseCode": "SWE-182",
-        "courseTitle": "Project on Python Development",
-        "courseShortName": "PPD Lab",
-        "teacherName": "Al Akram Chowdhury",
-        "teacherShortName": "AAC",
-        "room": "Room 309"
+        "courseId": "course-sem3-mat-211",
+        "courseCode": "MAT-211",
+        "courseTitle": "Numerical Analysis",
+        "courseShortName": "NA",
+        "teacherName": "Syeda Sanjida Rahman",
+        "teacherShortName": "SSJ",
+        "room": "Exten-3"
     },
     {
         "id": "rout-batch-11-9",
@@ -1293,7 +1363,7 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-182",
+        "courseId": "course-sem3-swe-182",
         "courseCode": "SWE-182",
         "courseTitle": "Project on Python Development",
         "courseShortName": "PPD Lab",
@@ -1307,21 +1377,49 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-mat-211",
-        "courseCode": "MAT-211",
-        "courseTitle": "Numerical Analysis",
-        "courseShortName": "NA",
-        "teacherName": "Syeda Sanjida Rahman",
-        "teacherShortName": "SSJ",
-        "room": "Exten-3"
+        "courseId": "course-sem3-swe-182",
+        "courseCode": "SWE-182",
+        "courseTitle": "Project on Python Development",
+        "courseShortName": "PPD Lab",
+        "teacherName": "Al Akram Chowdhury",
+        "teacherShortName": "AAC",
+        "room": "Room 309"
     },
     {
         "id": "rout-batch-9-1",
         "batchId": "batch-9",
+        "day": "MONDAY",
+        "startTime": "09:00 AM",
+        "endTime": "10:30 AM",
+        "courseId": "course-sem5-mat-211",
+        "courseCode": "MAT-211",
+        "courseTitle": "Numerical Analysis",
+        "courseShortName": "NA",
+        "teacherName": "Rina Paul",
+        "teacherShortName": "RP",
+        "room": "Exten-6"
+    },
+    {
+        "id": "rout-batch-9-2",
+        "batchId": "batch-9",
+        "day": "MONDAY",
+        "startTime": "10:30 AM",
+        "endTime": "12:00 PM",
+        "courseId": "course-sem5-swe-211",
+        "courseCode": "SWE-211",
+        "courseTitle": "Computer Architecture",
+        "courseShortName": "CA",
+        "teacherName": "Nazia Sultana Chowdhury",
+        "teacherShortName": "NSC",
+        "room": "Exten-3"
+    },
+    {
+        "id": "rout-batch-9-3",
+        "batchId": "batch-9",
         "day": "TUESDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-mat-211",
+        "courseId": "course-sem5-mat-211",
         "courseCode": "MAT-211",
         "courseTitle": "Numerical Analysis",
         "courseShortName": "NA",
@@ -1330,12 +1428,12 @@ export function seedInitialData(): DBData {
         "room": "Exten-2"
     },
     {
-        "id": "rout-batch-9-2",
+        "id": "rout-batch-9-4",
         "batchId": "batch-9",
         "day": "TUESDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-223",
+        "courseId": "course-sem5-swe-223",
         "courseCode": "SWE-223",
         "courseTitle": "Object Oriented Programming",
         "courseShortName": "OOP",
@@ -1344,60 +1442,32 @@ export function seedInitialData(): DBData {
         "room": "Exten-2"
     },
     {
-        "id": "rout-batch-9-3",
+        "id": "rout-batch-9-5",
         "batchId": "batch-9",
         "day": "WEDNESDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-224",
+        "courseId": "course-sem5-swe-224",
         "courseCode": "SWE-224",
         "courseTitle": "Object Oriented Programming Lab",
         "courseShortName": "OOP Lab",
         "teacherName": "Fuad Ahmed",
         "teacherShortName": "FA",
-        "room": "Room 310"
-    },
-    {
-        "id": "rout-batch-9-4",
-        "batchId": "batch-9",
-        "day": "WEDNESDAY",
-        "startTime": "10:30 AM",
-        "endTime": "12:00 PM",
-        "courseId": "course-swe-224",
-        "courseCode": "SWE-224",
-        "courseTitle": "Object Oriented Programming Lab",
-        "courseShortName": "OOP Lab",
-        "teacherName": "Fuad Ahmed",
-        "teacherShortName": "FA",
-        "room": "Room 310"
-    },
-    {
-        "id": "rout-batch-9-5",
-        "batchId": "batch-9",
-        "day": "WEDNESDAY",
-        "startTime": "12:00 PM",
-        "endTime": "01:30 PM",
-        "courseId": "course-mat-211",
-        "courseCode": "MAT-211",
-        "courseTitle": "Numerical Analysis",
-        "courseShortName": "NA",
-        "teacherName": "Rina Paul",
-        "teacherShortName": "RP",
-        "room": "Room 408"
+        "room": "Room 301"
     },
     {
         "id": "rout-batch-9-6",
         "batchId": "batch-9",
         "day": "WEDNESDAY",
-        "startTime": "01:30 PM",
-        "endTime": "03:00 PM",
-        "courseId": "course-swe-211",
-        "courseCode": "SWE-211",
-        "courseTitle": "Computer Architecture",
-        "courseShortName": "CA",
-        "teacherName": "Nazia Sultana Chowdhury",
-        "teacherShortName": "NSC",
-        "room": "Room 503"
+        "startTime": "10:30 AM",
+        "endTime": "12:00 PM",
+        "courseId": "course-sem5-swe-224",
+        "courseCode": "SWE-224",
+        "courseTitle": "Object Oriented Programming Lab",
+        "courseShortName": "OOP Lab",
+        "teacherName": "Fuad Ahmed",
+        "teacherShortName": "FA",
+        "room": "Room 301"
     },
     {
         "id": "rout-batch-9-7",
@@ -1405,7 +1475,7 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-223",
+        "courseId": "course-sem5-swe-223",
         "courseCode": "SWE-223",
         "courseTitle": "Object Oriented Programming",
         "courseShortName": "OOP",
@@ -1419,7 +1489,7 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-211",
+        "courseId": "course-sem5-swe-211",
         "courseCode": "SWE-211",
         "courseTitle": "Computer Architecture",
         "courseShortName": "CA",
@@ -1433,13 +1503,13 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-228",
-        "courseCode": "SWE-228",
+        "courseId": "course-sem5-swe-230",
+        "courseCode": "SWE-230",
         "courseTitle": "Problem Solving with Competitive Programming Lab-1",
         "courseShortName": "CP Lab-1",
         "teacherName": "Obaidur Rahman",
         "teacherShortName": "OHR",
-        "room": "Room 301"
+        "room": "Room 301 (Lab-1)"
     },
     {
         "id": "rout-batch-9-10",
@@ -1447,13 +1517,13 @@ export function seedInitialData(): DBData {
         "day": "THURSDAY",
         "startTime": "01:30 PM",
         "endTime": "03:00 PM",
-        "courseId": "course-swe-228",
-        "courseCode": "SWE-228",
+        "courseId": "course-sem5-swe-230",
+        "courseCode": "SWE-230",
         "courseTitle": "Problem Solving with Competitive Programming Lab-1",
         "courseShortName": "CP Lab-1",
         "teacherName": "Obaidur Rahman",
         "teacherShortName": "OHR",
-        "room": "Room 301"
+        "room": "Room 301 (Lab-1)"
     },
     {
         "id": "rout-batch-6-1",
@@ -1769,13 +1839,13 @@ export function seedInitialData(): DBData {
         "day": "MONDAY",
         "startTime": "12:00 PM",
         "endTime": "01:30 PM",
-        "courseId": "course-swe-231",
+        "courseId": "course-sem4-swe-231",
         "courseCode": "SWE-231",
         "courseTitle": "Software Requirement Engineering",
         "courseShortName": "SRE",
         "teacherName": "Wadia Iqbal Chowdhury",
         "teacherShortName": "WIC",
-        "room": "Room 408"
+        "room": "Room 403"
     },
     {
         "id": "rout-batch-10-6",
@@ -1783,13 +1853,13 @@ export function seedInitialData(): DBData {
         "day": "TUESDAY",
         "startTime": "09:00 AM",
         "endTime": "10:30 AM",
-        "courseId": "course-swe-221",
-        "courseCode": "SWE-221",
-        "courseTitle": "Algorithm",
-        "courseShortName": "ALGO",
-        "teacherName": "Al Akram Chowdhury",
-        "teacherShortName": "AAC",
-        "room": "Exten-3"
+        "courseId": "course-sem4-swe-225",
+        "courseCode": "SWE-225",
+        "courseTitle": "Database Management System",
+        "courseShortName": "DBMS",
+        "teacherName": "Nazia Hassan",
+        "teacherShortName": "NHN",
+        "room": "Room 403"
     },
     {
         "id": "rout-batch-10-7",
@@ -1797,13 +1867,13 @@ export function seedInitialData(): DBData {
         "day": "TUESDAY",
         "startTime": "10:30 AM",
         "endTime": "12:00 PM",
-        "courseId": "course-swe-225",
-        "courseCode": "SWE-225",
-        "courseTitle": "Database Management System",
-        "courseShortName": "DBMS",
-        "teacherName": "Nazia Hassan",
-        "teacherShortName": "NHN",
-        "room": "Room 403"
+        "courseId": "course-sem4-swe-221",
+        "courseCode": "SWE-221",
+        "courseTitle": "Algorithm",
+        "courseShortName": "ALGO",
+        "teacherName": "Al Akram Chowdhury",
+        "teacherShortName": "AAC",
+        "room": "Room 501"
     },
     {
         "id": "rout-batch-10-8",
@@ -2071,6 +2141,32 @@ export function seedInitialData(): DBData {
       downloadCount: 35,
       createdAt: '2026-07-22T09:00:00Z',
       verifiedAt: '2026-07-22T11:00:00Z',
+    },
+    {
+      id: 'res-sheet-24',
+      title: 'Software Requirement Engineering Final Exam Question 8th Batch',
+      type: 'QUESTION',
+      courseId: 'course-swe-231',
+      courseCode: 'SWE-231',
+      courseTitle: 'Software Requirement Engineering',
+      semester: 4,
+      academicYear: 2025,
+      examType: 'FINAL',
+      facultyName: 'Department Academic Faculty',
+      targetBatch: '1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch',
+      description: 'Official Metropolitan University Department Question Archive for Software Requirement Engineering (SWE-231) covering 8th Batch and junior batches. Direct Google Drive PDF download.',
+      fileUrl: 'https://drive.google.com/uc?export=download&id=1S8-aZpHfzrp0beMEtaoFBJwNShxWtlDn',
+      fileName: 'SWE-231_Final_Exam_SRE-1-2-3-4-5-8-9.pdf',
+      fileSize: '1.4 MB',
+      fileType: 'application/pdf',
+      uploaderId: 'user-admin-1',
+      uploaderStudentId: '252-ADMIN',
+      uploaderName: 'Department Academic Cell',
+      uploaderBatchName: 'SWE Department Archive',
+      status: 'APPROVED',
+      downloadCount: 114,
+      createdAt: '2026-07-25T10:00:00Z',
+      verifiedAt: '2026-07-25T11:00:00Z',
     },
     {
       id: 'res-6',

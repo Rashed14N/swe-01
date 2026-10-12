@@ -94,69 +94,58 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => {
     upcomingExams: [],
     currentCourses: [
     {
-      id: 'course-sem4-swe-221',
-      code: 'SWE-221',
-      shortName: 'ALGO',
-      title: 'Algorithm',
+      id: 'course-sem5-swe-211',
+      code: 'SWE-211',
+      shortName: 'CA',
+      title: 'Computer Architecture',
       credits: 3,
       type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Lukman Hussain Nakib',
+      semester: 5,
+      assignedFacultyName: 'Nazia Sultana Chowdhury',
       batchIds: [batchId],
     },
     {
-      id: 'course-sem4-swe-222',
-      code: 'SWE-222',
-      shortName: 'ALGO LAB',
-      title: 'Algorithm Lab',
+      id: 'course-sem5-swe-223',
+      code: 'SWE-223',
+      shortName: 'OOP',
+      title: 'Object Oriented Programming',
+      credits: 3,
+      type: 'THEORY',
+      semester: 5,
+      assignedFacultyName: 'Fuad Ahmed',
+      batchIds: [batchId],
+    },
+    {
+      id: 'course-sem5-swe-224',
+      code: 'SWE-224',
+      shortName: 'OOP LAB',
+      title: 'Object Oriented Programming Lab',
       credits: 1.5,
       type: 'LAB',
-      semester: 4,
-      assignedFacultyName: 'Lukman Hussain Nakib',
+      semester: 5,
+      assignedFacultyName: 'Fuad Ahmed',
       batchIds: [batchId],
     },
     {
-      id: 'course-sem4-swe-311',
-      code: 'SWE-311',
-      shortName: 'TOC',
-      title: 'Theory of Computation',
+      id: 'course-sem5-mat-211',
+      code: 'MAT-211',
+      shortName: 'NA',
+      title: 'Numerical Analysis',
       credits: 3,
       type: 'THEORY',
-      semester: 4,
+      semester: 5,
       assignedFacultyName: 'Rina Paul',
       batchIds: [batchId],
     },
     {
-      id: 'course-sem4-swe-225',
-      code: 'SWE-225',
-      shortName: 'DBMS',
-      title: 'Database Management System',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Nazia Sultana Chowdhury',
-      batchIds: [batchId],
-    },
-    {
-      id: 'course-sem4-swe-226',
-      code: 'SWE-226',
-      shortName: 'DBMS LAB',
-      title: 'Database Management System Lab',
+      id: 'course-sem5-swe-230',
+      code: 'SWE-230',
+      shortName: 'CP-I',
+      title: 'Problem Solving with Competitive Programming Lab-1',
       credits: 1.5,
       type: 'LAB',
-      semester: 4,
-      assignedFacultyName: 'Nazia Sultana Chowdhury',
-      batchIds: [batchId],
-    },
-    {
-      id: 'course-sem4-swe-231',
-      code: 'SWE-231',
-      shortName: 'SRE',
-      title: 'Software Requirement Engineering',
-      credits: 3,
-      type: 'THEORY',
-      semester: 4,
-      assignedFacultyName: 'Tasnim Ahmed',
+      semester: 5,
+      assignedFacultyName: 'Obaidur Rahman',
       batchIds: [batchId],
     },
   ],
@@ -237,7 +226,7 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => {
 };
 
 export const StudentDashboardPage: React.FC = () => {
-  const { user, token } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const currentDayName = getCurrentDayName();
@@ -251,6 +240,7 @@ export const StudentDashboardPage: React.FC = () => {
   const [isBackgroundRefreshing, setIsBackgroundRefreshing] = useState(false);
 
   const fetchSummary = async (isManualRefresh = false) => {
+    if (authLoading) return;
     if (isManualRefresh) {
       setIsBackgroundRefreshing(true);
     }
@@ -355,8 +345,10 @@ export const StudentDashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSummary();
-  }, [user?.batchId, user?.currentSemester, token]);
+    if (!authLoading) {
+      fetchSummary();
+    }
+  }, [user?.batchId, user?.currentSemester, token, authLoading]);
 
   return (
     <div className="space-y-6 max-w-[1500px] mx-auto pb-10">

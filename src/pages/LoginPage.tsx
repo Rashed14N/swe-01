@@ -24,8 +24,8 @@ import { UserRole, Batch } from '../types';
 import { formatStudentId } from '../utils/studentId';
 
 const FALLBACK_BATCHES: Batch[] = [
-  { id: 'batch-8', name: 'SWE 8th Batch', admissionYear: 2022, currentSemester: 5, academicSession: '2022-2023', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
-  { id: 'batch-9', name: 'SWE 9th Batch', admissionYear: 2023, currentSemester: 4, academicSession: '2023-2024', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-8', name: 'SWE 8th Batch', admissionYear: 2022, currentSemester: 6, academicSession: '2022-2023', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-9', name: 'SWE 9th Batch', admissionYear: 2023, currentSemester: 5, academicSession: '2023-2024', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
   { id: 'batch-10', name: 'SWE 10th Batch', admissionYear: 2024, currentSemester: 3, academicSession: '2024-2025', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
   { id: 'batch-11', name: 'SWE 11th Batch', admissionYear: 2025, currentSemester: 2, academicSession: '2025-2026', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
   { id: 'batch-12', name: 'SWE 12th Batch', admissionYear: 2026, currentSemester: 1, academicSession: '2026-2027', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
@@ -168,7 +168,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'LOGIN' }) =
       const chosenBatch = batches.find(b => b.id === selectedBatchId) || batches[0] || {
         id: 'batch-9',
         name: 'SWE 9th Batch',
-        currentSemester: 4,
+        currentSemester: 5,
       };
 
       const res = await signup({

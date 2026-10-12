@@ -195,7 +195,8 @@ router.post(['/', '/upload'], verifyAuthToken, async (req: AuthenticatedRequest,
 
   try {
     const isAdmin = req.user.role === 'ADMIN';
-    const initialStatus = isAdmin ? 'APPROVED' : 'PENDING';
+    const isCR = req.user.role === 'CR';
+    const initialStatus = (isAdmin || isCR) ? 'APPROVED' : 'PENDING';
 
     // Auto-resolve course if available
     const allCourses = await fetchAllCourses().catch(() => []);

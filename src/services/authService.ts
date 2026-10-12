@@ -29,7 +29,7 @@ export const DEMO_STUDENT_USER: User = {
   role: 'STUDENT',
   batchId: 'batch-9',
   batchName: 'SWE 9th Batch',
-  currentSemester: 4,
+  currentSemester: 5,
   profileImage: '/avatars/pangolin-cream-2.svg',
   status: 'ACTIVE',
   points: 150,
@@ -44,9 +44,9 @@ export const DEFAULT_ADMIN_USER: User = {
   email: 'admin@swe.metrouni.edu.bd',
   phone: '+8801700000000',
   role: 'ADMIN',
-  batchId: 'batch-9',
+  batchId: 'batch-admin',
   batchName: 'SWE Administration',
-  currentSemester: 8,
+  currentSemester: 0,
   profileImage: '/avatars/pangolin-cream-2.svg',
   status: 'ACTIVE',
   points: 1000,
@@ -80,7 +80,7 @@ export function mapDbUserToAppUser(row: any): User {
     role: (row.role as UserRole) || 'STUDENT',
     batchId: row.batch_id || row.batchId || 'batch-9',
     batchName: row.batch_name || row.batchName || 'SWE 9th Batch',
-    currentSemester: Number(row.current_semester || row.currentSemester || 4),
+    currentSemester: Number(row.current_semester || row.currentSemester || 5),
     profileImage: row.profile_image || row.profileImage || '/avatars/pangolin-cream-2.svg',
     status: (row.status as 'ACTIVE' | 'DISABLED') || 'ACTIVE',
     points: Number(row.points || 0),
@@ -112,7 +112,7 @@ class SupabaseAuthService {
     const cleanStudentId = normalizeStudentId(rawStudentId);
     const cleanName = params.name.trim();
     const password = params.password || '';
-    const assignedSemester = params.currentSemester || 4;
+    const assignedSemester = params.currentSemester || 5;
     const assignedBatchId = params.batchId || 'batch-9';
     const assignedBatchName = params.batchName || 'SWE 9th Batch';
 
@@ -446,7 +446,7 @@ class SupabaseAuthService {
         role: (authData.user.user_metadata?.role as UserRole) || 'STUDENT',
         batchId: authData.user.user_metadata?.batch_id || 'batch-9',
         batchName: authData.user.user_metadata?.batch_name || 'SWE 9th Batch',
-        currentSemester: Number(authData.user.user_metadata?.current_semester || 4),
+        currentSemester: Number(authData.user.user_metadata?.current_semester || 5),
         profileImage: authData.user.user_metadata?.profile_image || '/avatars/pangolin-cream-2.svg',
         status: 'ACTIVE',
         points: 0,

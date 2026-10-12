@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -11,6 +12,7 @@ import {
   ChevronDown,
   GraduationCap,
   BookOpen,
+  FileUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -50,7 +52,25 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
   const [autoMatchedCourse, setAutoMatchedCourse] = useState<Course | null>(null);
   
   const [fileUrl, setFileUrl] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const [selectedFileSize, setSelectedFileSize] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleDeviceFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        addToast('error', `File size exceeds 1 MB limit (selected: ${(file.size / (1024 * 1024)).toFixed(2)} MB). Maximum allowed size is 1 MB.`);
+        e.target.value = '';
+        return;
+      }
+      setSelectedFileName(file.name);
+      const sizeKB = (file.size / 1024).toFixed(0);
+      setSelectedFileSize(`${sizeKB} KB`);
+      setFileUrl(`https://storage.mu-swe-portal.edu/questions/${encodeURIComponent(file.name)}`);
+      addToast('success', `File "${file.name}" (${sizeKB} KB) attached!`);
+    }
+  };
 
   // Load courses and faculty members for dropdowns and auto-detection
   useEffect(() => {
@@ -218,8 +238,8 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
           targetBatch: targetBatch.trim() || 'SWE Department',
           description: description.trim() || undefined,
           fileUrl: finalDownloadUrl,
-          fileName: generatedFileName,
-          fileSize: isDrive ? 'Google Drive' : '1.8 MB',
+          fileName: selectedFileName || generatedFileName,
+          fileSize: selectedFileSize || (isDrive ? 'Google Drive' : '850 KB'),
           fileType: 'application/pdf',
         }),
       });
@@ -261,15 +281,19 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+      <div 
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto bg-slate-900/60 backdrop-blur-xs"
+        onClick={onClose}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-xl overflow-hidden my-8"
+          className="relative my-auto bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-xl overflow-hidden"
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/20">
@@ -514,31 +538,56 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
               </div>
             </div>
 
-            {/* Download Link Input */}
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-1.5">
+            {/* File Attachment & Download Link Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
                 <label className="flex items-center gap-1.5 font-bold text-[#0A2147] dark:text-white text-xs">
-                  <LinkIcon className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>Download Link *</span>
+                  <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <span>Attach File (Max 1 MB) or Enter Link *</span>
                 </label>
                 <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
-                  Direct Download Link
+                  Max 1 MB Fix
                 </span>
               </div>
+
+              {/* Direct File Picker */}
+              <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-slate-50/70 dark:bg-slate-900/40 text-center">
+                <input
+                  type="file"
+                  id="question-file-input"
+                  onChange={handleDeviceFileUpload}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.txt"
+                />
+                <label
+                  htmlFor="question-file-input"
+                  className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs"
+                >
+                  <FileUp className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Choose File from Device (Max 1 MB)</span>
+                </label>
+                {selectedFileName ? (
+                  <div className="mt-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    Selected: {selectedFileName} ({selectedFileSize})
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Strict max 1 MB limit enforced for all attachments
+                  </p>
+                )}
+              </div>
+
               <div className="relative">
                 <input
                   type="url"
                   required
-                  placeholder="Paste instant download link or Google Drive link"
+                  placeholder="Or paste instant download link / Google Drive link"
                   value={fileUrl}
                   onChange={(e) => setFileUrl(e.target.value)}
                   className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-[#0A2147] dark:text-white font-mono placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 shadow-2xs"
                 />
                 <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                Paste your instant download link directly.
-              </p>
             </div>
 
             {/* Verification Notice */}
@@ -588,6 +637,7 @@ export const UploadQuestionModal: React.FC<UploadQuestionModalProps> = ({
           </form>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

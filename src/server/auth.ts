@@ -21,6 +21,33 @@ export interface AuthenticatedRequest extends Request {
   user?: AuthUserPayload;
 }
 
+export function enrichUserWithBatchSemester(user: AuthUserPayload): AuthUserPayload {
+  if (!user) return user;
+  const batches = db.getData().batches || [];
+  const matchedBatch = batches.find(b => 
+    (user.batchId && b.id === user.batchId) || 
+    (user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase())
+  );
+  if (matchedBatch && matchedBatch.currentSemester) {
+    return {
+      ...user,
+      batchName: matchedBatch.name || user.batchName,
+      currentSemester: matchedBatch.currentSemester,
+    };
+  }
+  if (
+    (user.batchId === 'batch-9' || user.batchName?.includes('9th')) &&
+    (!user.currentSemester || user.currentSemester < 5)
+  ) {
+    return {
+      ...user,
+      batchName: 'SWE 9th Batch',
+      currentSemester: 5,
+    };
+  }
+  return user;
+}
+
 export function generateToken(user: User): string {
   const payload: AuthUserPayload = {
     id: user.id,
@@ -36,6 +63,14 @@ export function generateToken(user: User): string {
 }
 
 export async function verifyAuthToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const originalNext = next;
+  next = ((...args: any[]) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return (originalNext as any)(...args);
+  }) as NextFunction;
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -249,6 +284,14 @@ export async function verifyAuthToken(req: AuthenticatedRequest, res: Response, 
 }
 
 export function optionalAuthToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const originalNext = next;
+  next = ((...args: any[]) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return (originalNext as any)(...args);
+  }) as NextFunction;
+
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1]?.trim();

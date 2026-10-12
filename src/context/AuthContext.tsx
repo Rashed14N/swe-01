@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, Batch } from '../types';
 import { authService, SignupParams } from '../services/authService';
 import { getSupabase } from '../lib/supabase';
 
@@ -52,6 +52,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearAuthState();
   }, [clearAuthState]);
 
+  // Helper to ensure user semester matches their batch cohort
+  const normalizeUserSemester = (u: User | null): User | null => {
+    if (!u) return null;
+    if (u.role === 'ADMIN') {
+      return {
+        ...u,
+        batchName: 'SWE Administration',
+        currentSemester: 0,
+      };
+    }
+    const is9th = u.batchId === 'batch-9' || u.batchName?.toLowerCase().includes('9th');
+    if (is9th && (!u.currentSemester || u.currentSemester < 5)) {
+      return { ...u, currentSemester: 5, batchName: u.batchName || 'SWE 9th Batch' };
+    }
+    return u;
+  };
+
+  const syncWithBatch = async (u: User) => {
+    try {
+      const res = await fetch('/api/batches');
+      if (res.ok) {
+        const data = await res.json();
+        const batches: Batch[] = Array.isArray(data.batches) ? data.batches : [];
+        const match = batches.find(b => 
+          (u.batchId && b.id === u.batchId) || 
+          (u.batchName && b.name.toLowerCase() === u.batchName.toLowerCase())
+        );
+        if (match && match.currentSemester && match.currentSemester !== u.currentSemester) {
+          const synced = { ...u, currentSemester: match.currentSemester, batchName: match.name };
+          setCurrentUser(synced);
+          if (typeof window !== 'undefined') {
+            const storedDemo = localStorage.getItem('swe_portal_demo_session');
+            if (storedDemo) {
+              try {
+                const parsed = JSON.parse(storedDemo);
+                parsed.user = synced;
+                localStorage.setItem('swe_portal_demo_session', JSON.stringify(parsed));
+              } catch {}
+            }
+          }
+        }
+      }
+    } catch {}
+  };
+
   const refreshProfile = useCallback(async () => {
     const supabase = getSupabase();
     try {
@@ -60,9 +105,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const authUser = data.session.user;
         const profile = await authService.fetchUserProfile(authUser.id, authUser.email);
         if (profile && profile.status !== 'DISABLED') {
-          setCurrentUser(profile);
+          const normalized = normalizeUserSemester(profile);
+          setCurrentUser(normalized);
           setSession(data.session);
           setToken(data.session.access_token);
+          if (normalized) syncWithBatch(normalized);
         } else {
           await logout();
         }
@@ -89,10 +136,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const parsed = JSON.parse(storedDemo);
               if (parsed && parsed.user) {
                 if (isMounted) {
-                  setCurrentUser(parsed.user);
+                  const normalized = normalizeUserSemester(parsed.user);
+                  setCurrentUser(normalized);
                   setSession(parsed.session || { user: { id: parsed.user.id } });
                   setToken(parsed.token || 'demo_token');
                   setLoading(false);
+                  if (normalized) syncWithBatch(normalized);
                   return;
                 }
               }
@@ -110,9 +159,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (isMounted) {
             if (profile && profile.status !== 'DISABLED') {
               // Valid authenticated user with verified public.users profile
-              setCurrentUser(profile);
+              const normalized = normalizeUserSemester(profile);
+              setCurrentUser(normalized);
               setSession(data.session);
               setToken(data.session.access_token);
+              if (normalized) syncWithBatch(normalized);
             } else if (authUser.user_metadata && (authUser.user_metadata.name || authUser.user_metadata.full_name)) {
               // Construct and persist profile from auth metadata if table record was newly registered
               const meta = authUser.user_metadata;
@@ -125,16 +176,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: (meta.role as UserRole) || 'STUDENT',
                 batchId: meta.batch_id || meta.batchId || 'batch-9',
                 batchName: meta.batch_name || meta.batchName || 'SWE 9th Batch',
-                currentSemester: Number(meta.current_semester || 4),
+                currentSemester: Number(meta.current_semester || 5),
                 profileImage: meta.profile_image || '/avatars/pangolin-cream-2.svg',
                 status: 'ACTIVE',
                 points: 0,
                 createdAt: authUser.created_at || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               };
-              setCurrentUser(fallback);
+              const normalized = normalizeUserSemester(fallback);
+              setCurrentUser(normalized);
               setSession(data.session);
               setToken(data.session.access_token);
+              if (normalized) syncWithBatch(normalized);
 
               // Auto-sync missing row to public.users
               authService.updateUser(fallback).catch(() => {});
@@ -187,7 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: (meta.role as UserRole) || 'STUDENT',
                 batchId: meta.batch_id || 'batch-9',
                 batchName: meta.batch_name || 'SWE 9th Batch',
-                currentSemester: Number(meta.current_semester || 4),
+                currentSemester: Number(meta.current_semester || 5),
                 profileImage: meta.profile_image || '/avatars/pangolin-cream-2.svg',
                 status: 'ACTIVE',
                 points: 0,
@@ -228,17 +281,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const res = await authService.login(cleanIdentifier, cleanPassword);
     if (res.success && res.user && res.session) {
-      setCurrentUser(res.user);
+      const normalized = normalizeUserSemester(res.user);
+      setCurrentUser(normalized);
       setSession(res.session);
       setToken(res.token || res.session.access_token);
-      if (typeof window !== 'undefined' && (res.user.role === 'ADMIN' || res.user.studentId === '111111111' || res.token?.startsWith('demo_') || res.token?.startsWith('admin_'))) {
+      if (typeof window !== 'undefined' && ((normalized || res.user).role === 'ADMIN' || (normalized || res.user).studentId === '111111111' || res.token?.startsWith('demo_') || res.token?.startsWith('admin_'))) {
         localStorage.setItem('swe_portal_demo_session', JSON.stringify({
-          user: res.user,
+          user: normalized || res.user,
           session: res.session,
           token: res.token || res.session.access_token
         }));
       }
-      return { success: true, user: res.user };
+      if (normalized) syncWithBatch(normalized);
+      return { success: true, user: normalized || res.user };
     }
 
     return {

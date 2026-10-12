@@ -10,6 +10,7 @@ import { FilterBar } from '../components/common/FilterBar';
 import { Exam, ExamType } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { ALL_ROOMS } from '../constants/rooms';
+import { getEffectiveSemester } from '../utils/semester';
 
 export const ExamsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -178,7 +179,7 @@ export const ExamsPage: React.FC = () => {
             ? "Chronological examination schedule for your batch semester. Check dates, room venues, and deadlines."
             : "Historical record of past examinations, quizzes, and class tests. Automatically archived after exam dates pass."
         }
-        breadcrumb={`${user?.batchName} • Semester ${user?.currentSemester}`}
+        breadcrumb={`${user?.batchName || 'SWE 9th Batch'} • Semester ${getEffectiveSemester(user)}`}
         primaryAction={
           canManage
             ? {

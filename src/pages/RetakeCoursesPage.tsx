@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   RotateCcw, TrendingUp, Plus, Calendar, Clock, BookOpen,
   AlertTriangle, CheckCircle2, Trash2, Search,
@@ -93,7 +94,7 @@ export const RetakeCoursesPage: React.FC = () => {
     setFormError(null);
 
     if (!formData.courseId) {
-      setFormError('Please select a course from the department catalog.');
+      setFormError('Please search and select a course from the suggestions.');
       return;
     }
 
@@ -807,9 +808,15 @@ export const RetakeCoursesPage: React.FC = () => {
       )}
 
       {/* MODAL 1: ADD COURSE (SIMPLIFIED: NO BATCH, NO GRADES, NO NOTES) */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5">
+      {isAddModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setIsAddModalOpen(false)}
+        >
+          <div 
+            className="relative my-auto bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-5"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -884,34 +891,127 @@ export const RetakeCoursesPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Course Selection */}
+              {/* Course Selection via Live Search Suggestions */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Select Course
+                  Select Course *
                 </label>
-                <div className="relative mb-2">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by course code or title..."
-                    value={courseSearchQuery}
-                    onChange={(e) => setCourseSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
-                  />
-                </div>
-                <select
-                  value={formData.courseId}
-                  onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
-                >
-                  <option value="">-- Choose Course from Department Catalog --</option>
-                  {filteredCatalogCourses.map(course => (
-                    <option key={course.id} value={course.id}>
-                      {course.code} - {course.title} ({course.credits} Cr, Sem {course.semester})
-                    </option>
-                  ))}
-                </select>
+
+                {selectedCourseDetails ? (
+                  <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 flex items-center justify-between gap-2 shadow-2xs">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-xs text-blue-700 dark:text-blue-300">
+                          {selectedCourseDetails.code}
+                        </span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                          Sem {selectedCourseDetails.semester} • {selectedCourseDetails.credits} Cr • {selectedCourseDetails.type}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate mt-0.5">
+                        {selectedCourseDetails.title}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, courseId: '' });
+                        setCourseSearchQuery('');
+                      }}
+                      className="px-2 py-1 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-white dark:hover:bg-slate-800 text-xs font-bold transition-colors flex items-center gap-1 shrink-0"
+                      title="Change selected course"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Change</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search course code or title (e.g. SWE-221, OOP, DBMS)..."
+                        value={courseSearchQuery}
+                        onChange={(e) => setCourseSearchQuery(e.target.value)}
+                        autoFocus
+                        className="w-full pl-8 pr-8 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                      />
+                      {courseSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setCourseSearchQuery('')}
+                          className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Direct Search Matches & Related Suggestions */}
+                    <div className="mt-1 max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-blue-100 dark:border-slate-700 bg-white dark:bg-slate-800/95 shadow-md">
+                      {filteredCatalogCourses.length === 0 ? (
+                        <div className="p-3 text-center text-xs text-slate-400">
+                          No matching or related courses found for "{courseSearchQuery}"
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="px-2.5 py-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between">
+                            <span>
+                              {courseSearchQuery.trim()
+                                ? `Matching Suggestions (${filteredCatalogCourses.length})`
+                                : `Available Courses (${filteredCatalogCourses.length})`}
+                            </span>
+                            <span className="text-[9px] text-blue-600 dark:text-blue-400 font-semibold">
+                              Click to select
+                            </span>
+                          </div>
+                          {filteredCatalogCourses.slice(0, 10).map((course) => {
+                            const q = courseSearchQuery.trim().toLowerCase();
+                            const isExactCode = q && course.code.toLowerCase().includes(q);
+
+                            return (
+                              <button
+                                key={course.id}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({ ...formData, courseId: course.id });
+                                  setCourseSearchQuery('');
+                                }}
+                                className="w-full text-left p-2.5 hover:bg-blue-50/80 dark:hover:bg-slate-700/70 transition-colors flex items-center justify-between gap-2.5 cursor-pointer group"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-mono font-bold text-xs text-blue-700 dark:text-blue-300 group-hover:text-blue-600">
+                                      {course.code}
+                                    </span>
+                                    {isExactCode && (
+                                      <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold">
+                                        Match
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+                                      Sem {course.semester}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                      {course.credits} Cr • {course.type}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11.5px] font-medium text-slate-700 dark:text-slate-200 truncate mt-0.5 group-hover:text-blue-800 dark:group-hover:text-white">
+                                    {course.title}
+                                  </p>
+                                </div>
+                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 shrink-0 group-hover:translate-x-0.5 transition-transform bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800/60">
+                                  Select →
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Auto Sync & Resend Info Callout */}
@@ -943,13 +1043,20 @@ export const RetakeCoursesPage: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* MODAL 2: CONFIRM DELETE */}
-      {deletingItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-4">
+      {deletingItem && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setDeletingItem(null)}
+        >
+          <div 
+            className="relative my-auto bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
               <Trash2 className="w-5 h-5" />
             </div>
@@ -980,7 +1087,8 @@ export const RetakeCoursesPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

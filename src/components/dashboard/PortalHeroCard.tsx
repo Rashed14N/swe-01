@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpen, CalendarDays, ArrowUpRight, Terminal } from 'lucide-react';
 import { User } from '../../types';
 import { formatStudentId } from '../../utils/studentId';
+import { getEffectiveSemester, formatSemesterLabel } from '../../utils/semester';
 
 interface PortalHeroCardProps {
   user: User | null;
@@ -14,10 +15,12 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
   onNavigateToResources,
   onNavigateToRoutine,
 }) => {
-  const nameDisplay = user?.name || 'Student';
-  const batchDisplay = user?.batchName || 'SWE 9th Batch';
-  const studentIdDisplay = user?.studentId ? formatStudentId(user.studentId) : '21-XXXXX-1';
-  const semesterDisplay = user?.currentSemester ? `Semester ${user.currentSemester}` : 'Semester 4';
+  const isAdmin = user?.role === 'ADMIN';
+  const nameDisplay = user?.name || (isAdmin ? 'Department Administrator' : 'Student');
+  const batchDisplay = isAdmin ? 'SWE Administration' : (user?.batchName || 'SWE 9th Batch');
+  const studentIdDisplay = user?.studentId ? formatStudentId(user.studentId) : (isAdmin ? 'ADMIN' : '21-XXXXX-1');
+  const effectiveSemester = getEffectiveSemester(user);
+  const semesterDisplay = isAdmin ? '' : `Semester ${effectiveSemester}`;
 
   return (
     <div
@@ -137,6 +140,19 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
         <div className="w-full flex-1 flex flex-col justify-between lg:max-w-[620px]">
           {/* Portal Title & Accent Lines */}
           <div>
+            {/* Student Batch & Semester Tag Badge */}
+            <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white text-[#2348F5] shadow-xs border border-[#7891FF]/30">
+                <span className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-rose-500' : 'bg-emerald-500'} animate-pulse shrink-0`} />
+                {isAdmin ? 'SWE Administration • Central Portal' : `${batchDisplay} • ${semesterDisplay}`}
+              </span>
+              {user?.studentId && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#E4E9FF]/80 text-[#071B52] border border-[#7891FF]/20">
+                  ID: {studentIdDisplay}
+                </span>
+              )}
+            </div>
+
             {/* Top Blue Accent Line */}
             <div
               className="mb-2 sm:mb-3 h-[3px] sm:h-[3.5px] w-10 sm:w-14 rounded-full"
@@ -168,38 +184,38 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
             />
           </div>
 
-          {/* Action Cards: Exactly 2 Actions (Resources, Full Routine) */}
-          <div className="mt-4.5 sm:mt-6 lg:mt-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 items-stretch">
+          {/* Action Cards: 2 Actions (Resources, Full Routine) - 1 row on mobile, optimized width on PC */}
+          <div className="mt-4 sm:mt-5 lg:mt-6 grid grid-cols-2 sm:max-w-[490px] gap-2 sm:gap-3.5 items-stretch">
             {/* 1. Resources (Primary Action) */}
             <div
               id="hero-action-resources"
               onClick={onNavigateToResources}
-              className="group cursor-pointer rounded-[13px] sm:rounded-[14px] p-3 sm:py-3.5 sm:px-4 min-h-[74px] sm:min-h-[86px] flex items-center justify-between transition-all duration-[180ms] hover:-translate-y-[2px] active:scale-[0.99] select-none relative overflow-hidden"
+              className="group cursor-pointer rounded-[12px] sm:rounded-[14px] p-2.5 sm:py-3 sm:px-3.5 min-h-[62px] sm:min-h-[74px] flex items-center justify-between transition-all duration-[180ms] hover:-translate-y-[2px] active:scale-[0.99] select-none relative overflow-hidden"
               style={{
                 background: 'linear-gradient(135deg, #3155F5 0%, #1748EE 100%)',
                 boxShadow: '0 6px 18px rgba(23, 72, 238, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
               }}
             >
               {/* Subtle wave highlight inside card */}
-              <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none -mr-8 -mt-8" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none -mr-6 -mt-6" />
 
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 relative z-10">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] sm:rounded-xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0 text-white transition-transform duration-200 group-hover:scale-105">
-                  <BookOpen className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[2.2]" />
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 relative z-10">
+                <div className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-[8px] sm:rounded-xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0 text-white transition-transform duration-200 group-hover:scale-105">
+                  <BookOpen className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-[14.5px] sm:text-[16px] font-bold text-white tracking-tight leading-snug">
+                  <h4 className="text-[12.5px] sm:text-[14.5px] font-bold text-white tracking-tight leading-snug truncate">
                     Resources
                   </h4>
-                  <p className="text-[11.5px] sm:text-[12.5px] text-blue-100/90 font-medium tracking-tight mt-0.5 truncate">
+                  <p className="text-[10px] sm:text-[11.5px] text-blue-100/90 font-medium tracking-tight truncate">
                     Notes, PDFs & more
                   </p>
                 </div>
               </div>
 
               {/* Compact Arrow Button */}
-              <div className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-[8px] sm:rounded-[9px] bg-white/20 hover:bg-white/30 border border-white/30 flex items-center justify-center shrink-0 text-white transition-all duration-[180ms] group-hover:translate-x-[2px] ml-2 relative z-10">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[6px] sm:rounded-[8px] bg-white/20 hover:bg-white/30 border border-white/30 hidden min-[360px]:flex items-center justify-center shrink-0 text-white transition-all duration-[180ms] group-hover:translate-x-[2px] ml-1.5 relative z-10">
+                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
               </div>
             </div>
 
@@ -207,45 +223,45 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
             <div
               id="hero-action-routine"
               onClick={onNavigateToRoutine}
-              className="group cursor-pointer rounded-[13px] sm:rounded-[14px] p-3 sm:py-3.5 sm:px-4 min-h-[74px] sm:min-h-[86px] flex items-center justify-between transition-all duration-[180ms] hover:-translate-y-[2px] active:scale-[0.99] select-none border"
+              className="group cursor-pointer rounded-[12px] sm:rounded-[14px] p-2.5 sm:py-3 sm:px-3.5 min-h-[62px] sm:min-h-[74px] flex items-center justify-between transition-all duration-[180ms] hover:-translate-y-[2px] active:scale-[0.99] select-none border"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.82)',
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
                 borderColor: 'rgba(135, 155, 225, 0.32)',
                 boxShadow: '0 4px 14px rgba(40, 70, 150, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <div
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105"
+                  className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-[8px] sm:rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105"
                   style={{
                     backgroundColor: '#EAEAFF',
                     color: '#2552F3',
                     border: '1px solid #D8DEFA',
                   }}
                 >
-                  <CalendarDays className="w-4.5 h-4.5 sm:w-5 sm:h-5 stroke-[2.2]" />
+                  <CalendarDays className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-[14.5px] sm:text-[16px] font-bold text-[#071B52] tracking-tight leading-snug">
+                  <h4 className="text-[12.5px] sm:text-[14.5px] font-bold text-[#071B52] tracking-tight leading-snug truncate">
                     Full Routine
                   </h4>
-                  <p className="text-[11.5px] sm:text-[12.5px] text-[#556987] font-medium tracking-tight mt-0.5 truncate">
-                    View your full routine
+                  <p className="text-[10px] sm:text-[11.5px] text-[#556987] font-medium tracking-tight truncate">
+                    Daily class routine
                   </p>
                 </div>
               </div>
 
               {/* Compact Arrow Button */}
               <div
-                className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-[8px] sm:rounded-[9px] flex items-center justify-center shrink-0 transition-all duration-[180ms] group-hover:translate-x-[2px] ml-2 border"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-[6px] sm:rounded-[8px] hidden min-[360px]:flex items-center justify-center shrink-0 transition-all duration-[180ms] group-hover:translate-x-[2px] ml-1.5 border"
                 style={{
                   backgroundColor: '#EFF4FF',
                   borderColor: '#D4DCF5',
                   color: '#071B52',
                 }}
               >
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
               </div>
             </div>
           </div>
@@ -303,9 +319,15 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
                   <div className="pl-2.5 sm:pl-3 truncate">
                     <span className="text-sky-300">"studentId"</span>: <span className="text-amber-300">"{studentIdDisplay}"</span>,
                   </div>
-                  <div className="pl-2.5 sm:pl-3 truncate">
-                    <span className="text-sky-300">"semester"</span>: <span className="text-indigo-300">"{semesterDisplay}"</span>,
-                  </div>
+                  {isAdmin ? (
+                    <div className="pl-2.5 sm:pl-3 truncate">
+                      <span className="text-sky-300">"role"</span>: <span className="text-indigo-300">"ADMIN"</span>,
+                    </div>
+                  ) : (
+                    <div className="pl-2.5 sm:pl-3 truncate">
+                      <span className="text-sky-300">"semester"</span>: <span className="text-indigo-300">"{semesterDisplay}"</span>,
+                    </div>
+                  )}
                   <div className="pl-2.5 sm:pl-3 truncate">
                     <span className="text-sky-300">"status"</span>: <span className="text-emerald-400">"ONLINE_VERIFIED"</span>
                   </div>

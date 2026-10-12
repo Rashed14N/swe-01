@@ -27,6 +27,7 @@ import { FAQPage } from './pages/FAQPage';
 import { FacultyPage } from './pages/FacultyPage';
 import { NoticesPage } from './pages/NoticesPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { CGPAPage } from './pages/CGPAPage';
 
 // CR Management Pages
 import { CRDashboardPage } from './pages/cr/CRDashboardPage';
@@ -234,6 +235,18 @@ export const App: React.FC = () => {
                     <ProfilePage />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="/cgpa"
+                element={
+                  <ProtectedRoute>
+                    <CGPAPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-cgpa"
+                element={<Navigate to="/cgpa" replace />}
               />
 
               {/* ========================================================= */}

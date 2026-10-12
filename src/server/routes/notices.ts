@@ -26,7 +26,16 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
 
 // POST /api/notices (CENTRAL ADMIN ONLY)
 router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
-  const { title, content, category, isImportant, attachmentUrl } = req.body;
+  const {
+    title,
+    content,
+    category,
+    isImportant,
+    attachmentUrl,
+    attachmentFileName,
+    attachmentSize,
+    featuredImageUrl,
+  } = req.body;
 
   if (!title || !content || !category) {
     return res.status(400).json({ error: 'Title, content, and category are required' });
@@ -42,7 +51,10 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
       category,
       publishDate: todayStr,
       isImportant: Boolean(isImportant),
-      attachmentUrl,
+      attachmentUrl: attachmentUrl ? String(attachmentUrl).trim() : undefined,
+      attachmentFileName: attachmentFileName ? String(attachmentFileName).trim() : undefined,
+      attachmentSize: attachmentSize ? String(attachmentSize).trim() : undefined,
+      featuredImageUrl: featuredImageUrl ? String(featuredImageUrl).trim() : undefined,
       createdBy: req.user!.id,
       createdByName: req.user!.name,
       createdAt: new Date().toISOString(),

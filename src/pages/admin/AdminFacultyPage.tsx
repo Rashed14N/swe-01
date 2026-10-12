@@ -80,8 +80,8 @@ export const AdminFacultyPage: React.FC = () => {
       addToast('error', 'Please select a valid image file');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      addToast('error', 'Image size must be under 2 MB');
+    if (file.size > 1024 * 1024) {
+      addToast('error', 'Image size exceeds 1 MB limit (maximum 1 MB allowed)');
       return;
     }
 
@@ -101,8 +101,8 @@ export const AdminFacultyPage: React.FC = () => {
       addToast('error', 'Please select a valid image file');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      addToast('error', 'Image size must be under 2 MB');
+    if (file.size > 1024 * 1024) {
+      addToast('error', 'Image size exceeds 1 MB limit (maximum 1 MB allowed)');
       return;
     }
 

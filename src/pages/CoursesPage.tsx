@@ -11,6 +11,7 @@ import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { getUserAvatarUrl } from '../data/avatars';
 import { CRProfileData } from '../components/common/CRProfileModal';
+import { getEffectiveSemester } from '../utils/semester';
 
 export const CoursesPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -66,7 +67,7 @@ export const CoursesPage: React.FC = () => {
       <PageHeader
         title="Current Academic Courses"
         description="Registered courses for your batch semester. Select any course to access assigned question papers, notes, and lab manuals."
-        breadcrumb={`${user?.batchName || 'SWE Batch'} • Semester ${user?.currentSemester}`}
+        breadcrumb={`${user?.batchName || 'SWE 9th Batch'} • Semester ${getEffectiveSemester(user)}`}
       />
 
       {/* Retake & Improvement Quick Access Card */}
@@ -116,7 +117,7 @@ export const CoursesPage: React.FC = () => {
                 </span>
               </div>
               <span className="text-xs text-slate-500 font-medium">
-                {user?.batchName || 'SWE Batch'} • Semester {user?.currentSemester}
+                {user?.batchName || 'SWE 9th Batch'} • Semester {getEffectiveSemester(user)}
               </span>
             </div>
 

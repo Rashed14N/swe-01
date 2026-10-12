@@ -435,6 +435,13 @@ class AdminApiClient {
   async getAuditLogs(limit = 100): Promise<AuditLog[]> {
     return this.request<AuditLog[]>(`/audit-logs?limit=${limit}`);
   }
+
+  // ==========================================
+  // STUDENT BUG REPORTS
+  // ==========================================
+  async getBugReports(): Promise<any[]> {
+    return this.request<any[]>('/bug-reports');
+  }
 }
 
 export const adminApiClient = new AdminApiClient();

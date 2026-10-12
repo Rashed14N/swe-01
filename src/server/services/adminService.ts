@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { getServerSupabase } from '../supabaseSync';
 import { db } from '../db';
 import { sortFacultyByHierarchy } from '../../types';
+import { invalidateCache, uploadBase64ImageToStorage } from '../supabaseData';
 import type {
   User,
   Batch,
@@ -64,7 +65,9 @@ export async function getAdminStats() {
   }
 
   const [
-    usersRes,
+    usersTotalRes,
+    usersAdminRes,
+    usersCRRes,
     batchesRes,
     coursesRes,
     facultyRes,
@@ -72,33 +75,43 @@ export async function getAdminStats() {
     examsRes,
     announcementsRes,
     noticesRes,
-    resourcesRes,
+    resourcesTotalRes,
+    resourcesPendingRes,
     notificationsRes,
     auditLogsRes,
   ] = await Promise.all([
-    supabase.from('users').select('*', { count: 'exact', head: false }),
-    supabase.from('batches').select('*', { count: 'exact', head: false }),
-    supabase.from('courses').select('*', { count: 'exact', head: false }),
-    supabase.from('faculty').select('*', { count: 'exact', head: false }),
-    supabase.from('routine_slots').select('*', { count: 'exact', head: false }),
-    supabase.from('exams').select('*', { count: 'exact', head: false }),
-    supabase.from('announcements').select('*', { count: 'exact', head: false }),
-    supabase.from('department_notices').select('*', { count: 'exact', head: false }),
-    supabase.from('resources').select('*', { count: 'exact', head: false }),
-    supabase.from('notifications').select('*', { count: 'exact', head: false }),
-    supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(15),
+    supabase.from('users').select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'ADMIN'),
+    supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'CR'),
+    supabase.from('batches').select('*', { count: 'exact', head: true }),
+    supabase.from('courses').select('*', { count: 'exact', head: true }),
+    supabase.from('faculty').select('*', { count: 'exact', head: true }),
+    supabase.from('routine_slots').select('*', { count: 'exact', head: true }),
+    supabase.from('exams').select('*', { count: 'exact', head: true }),
+    supabase.from('announcements').select('*', { count: 'exact', head: true }),
+    supabase.from('department_notices').select('*', { count: 'exact', head: true }),
+    supabase.from('resources').select('*', { count: 'exact', head: true }),
+    supabase.from('resources').select('*', { count: 'exact', head: true }).eq('status', 'PENDING'),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }),
+    supabase.from('audit_logs').select('id, actor_id, actor_name, action, target, details, timestamp').order('timestamp', { ascending: false }).limit(15),
   ]);
 
-  const users = usersRes.data || [];
-  const batches = batchesRes.data || [];
-  const courses = coursesRes.data || [];
-  const faculty = facultyRes.data || [];
-  const routine = routineRes.data || [];
-  const exams = examsRes.data || [];
-  const announcements = announcementsRes.data || [];
-  const notices = noticesRes.data || [];
-  const resources = resourcesRes.data || [];
-  const notifications = notificationsRes.data || [];
+  const totalUsers = usersTotalRes.count ?? 0;
+  const totalAdmins = usersAdminRes.count ?? 0;
+  const totalCRs = usersCRRes.count ?? 0;
+  const totalStudents = Math.max(0, totalUsers - totalAdmins);
+  const totalBatches = batchesRes.count ?? 0;
+  const activeBatches = totalBatches;
+  const totalCourses = coursesRes.count ?? 0;
+  const totalFaculty = facultyRes.count ?? 0;
+  const totalRoutineSlots = routineRes.count ?? 0;
+  const totalExams = examsRes.count ?? 0;
+  const totalAnnouncements = announcementsRes.count ?? 0;
+  const totalNotices = noticesRes.count ?? 0;
+  const totalResources = resourcesTotalRes.count ?? 0;
+  const pendingResources = resourcesPendingRes.count ?? 0;
+  const totalNotifications = notificationsRes.count ?? 0;
+
   const recentAuditLogs = (auditLogsRes.data || []).map((row: any): AuditLog => ({
     id: row.id,
     actorId: row.actor_id,
@@ -109,28 +122,22 @@ export async function getAdminStats() {
     timestamp: row.timestamp || new Date().toISOString(),
   }));
 
-  const totalStudents = users.filter((u: any) => u.role === 'STUDENT' || u.role === 'CR').length;
-  const totalAdmins = users.filter((u: any) => u.role === 'ADMIN').length;
-  const totalCRs = users.filter((u: any) => u.role === 'CR').length;
-  const pendingResources = resources.filter((r: any) => r.status === 'PENDING').length;
-  const activeBatches = batches.length;
-
   return {
-    totalUsers: users.length,
+    totalUsers,
     totalStudents,
     totalCRs,
     totalAdmins,
-    totalBatches: batches.length,
+    totalBatches,
     activeBatches,
-    totalCourses: courses.length,
-    totalFaculty: faculty.length,
-    totalRoutineSlots: routine.length,
-    totalExams: exams.length,
-    totalAnnouncements: announcements.length,
-    totalNotices: notices.length,
-    totalResources: resources.length,
+    totalCourses,
+    totalFaculty,
+    totalRoutineSlots,
+    totalExams,
+    totalAnnouncements,
+    totalNotices,
+    totalResources,
     pendingResources,
-    totalNotifications: notifications.length,
+    totalNotifications,
     recentAuditLogs,
   };
 }
@@ -400,6 +407,7 @@ export async function getAllBatches(): Promise<Batch[]> {
 }
 
 export async function createBatch(batchData: Partial<Batch>, adminUser: { id: string; name: string }): Promise<Batch> {
+  invalidateCache('batches');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -454,6 +462,7 @@ export async function createBatch(batchData: Partial<Batch>, adminUser: { id: st
 }
 
 export async function updateBatch(id: string, updates: Partial<Batch>, adminUser: { id: string; name: string }): Promise<Batch> {
+  invalidateCache('batches');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -499,6 +508,7 @@ export async function updateBatch(id: string, updates: Partial<Batch>, adminUser
 }
 
 export async function deleteBatch(id: string, adminUser: { id: string; name: string }): Promise<void> {
+  invalidateCache('batches');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -551,6 +561,7 @@ export async function getAllCourses(): Promise<Course[]> {
 }
 
 export async function createCourse(courseData: Partial<Course>, adminUser: { id: string; name: string }): Promise<Course> {
+  invalidateCache('courses');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -612,6 +623,7 @@ export async function createCourse(courseData: Partial<Course>, adminUser: { id:
 }
 
 export async function updateCourse(id: string, updates: Partial<Course>, adminUser: { id: string; name: string }): Promise<Course> {
+  invalidateCache('courses');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -664,6 +676,7 @@ export async function updateCourse(id: string, updates: Partial<Course>, adminUs
 }
 
 export async function deleteCourse(id: string, adminUser: { id: string; name: string }): Promise<void> {
+  invalidateCache('courses');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -719,6 +732,7 @@ export async function getAllFaculty(): Promise<Faculty[]> {
 }
 
 export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { id: string; name: string }): Promise<Faculty> {
+  invalidateCache('faculty');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -729,6 +743,11 @@ export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { 
   const id = `fac_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const now = new Date().toISOString();
 
+  let photoUrl = facultyData.photoUrl || null;
+  if (photoUrl && photoUrl.startsWith('data:image/')) {
+    photoUrl = await uploadBase64ImageToStorage(photoUrl, 'faculty-photos', `fac_${id}`);
+  }
+
   const insertPayload = {
     id,
     name: facultyData.name.trim(),
@@ -738,7 +757,7 @@ export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { 
     email: facultyData.email.trim().toLowerCase(),
     phone: facultyData.phone ? facultyData.phone.trim() : null,
     office_room: facultyData.officeRoom ? facultyData.officeRoom.trim() : 'SWE Faculty Room',
-    photo_url: facultyData.photoUrl || null,
+    photo_url: photoUrl,
     specialization: facultyData.specialization ? facultyData.specialization.trim() : null,
     assigned_courses: Array.isArray(facultyData.assignedCourses) ? facultyData.assignedCourses : [],
     created_at: now,
@@ -782,8 +801,14 @@ export async function createFaculty(facultyData: Partial<Faculty>, adminUser: { 
 }
 
 export async function updateFaculty(id: string, updates: Partial<Faculty>, adminUser: { id: string; name: string }): Promise<Faculty> {
+  invalidateCache('faculty');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
+
+  let photoUrl = updates.photoUrl !== undefined ? updates.photoUrl : undefined;
+  if (photoUrl && photoUrl.startsWith('data:image/')) {
+    photoUrl = await uploadBase64ImageToStorage(photoUrl, 'faculty-photos', `fac_${id}`);
+  }
 
   const updatePayload: Record<string, any> = {};
   if (updates.name !== undefined) updatePayload.name = updates.name.trim();
@@ -793,7 +818,7 @@ export async function updateFaculty(id: string, updates: Partial<Faculty>, admin
   if (updates.email !== undefined) updatePayload.email = updates.email.trim().toLowerCase();
   if (updates.phone !== undefined) updatePayload.phone = updates.phone ? updates.phone.trim() : null;
   if (updates.officeRoom !== undefined) updatePayload.office_room = updates.officeRoom ? updates.officeRoom.trim() : null;
-  if (updates.photoUrl !== undefined) updatePayload.photo_url = updates.photoUrl || null;
+  if (photoUrl !== undefined) updatePayload.photo_url = photoUrl || null;
   if (updates.specialization !== undefined) updatePayload.specialization = updates.specialization ? updates.specialization.trim() : null;
   if (updates.assignedCourses !== undefined) updatePayload.assigned_courses = Array.isArray(updates.assignedCourses) ? updates.assignedCourses : [];
 
@@ -836,6 +861,7 @@ export async function updateFaculty(id: string, updates: Partial<Faculty>, admin
 }
 
 export async function deleteFaculty(id: string, adminUser: { id: string; name: string }): Promise<void> {
+  invalidateCache('faculty');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -902,6 +928,7 @@ export async function getAllRoutineSlots(batchId?: string): Promise<RoutineSlot[
 }
 
 export async function createRoutineSlot(slotData: Partial<RoutineSlot>, adminUser: { id: string; name: string }): Promise<RoutineSlot> {
+  invalidateCache('routines');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -959,6 +986,7 @@ export async function createRoutineSlot(slotData: Partial<RoutineSlot>, adminUse
 }
 
 export async function updateRoutineSlot(id: string, updates: Partial<RoutineSlot>, adminUser: { id: string; name: string }): Promise<RoutineSlot> {
+  invalidateCache('routines');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -1005,6 +1033,7 @@ export async function updateRoutineSlot(id: string, updates: Partial<RoutineSlot
 }
 
 export async function deleteRoutineSlot(id: string, adminUser: { id: string; name: string }): Promise<void> {
+  invalidateCache('routines');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
 
@@ -1028,6 +1057,7 @@ export async function bulkImportRoutines(
   mode: 'REPLACE' | 'APPEND',
   adminUser: { id: string; name: string }
 ): Promise<{ message: string; count: number }> {
+  invalidateCache('routines');
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
   if (!batchId) throw new Error('Batch ID is required');
@@ -1369,6 +1399,9 @@ export async function getAllNotices(): Promise<DepartmentNotice[]> {
     publishDate: row.publish_date,
     isImportant: Boolean(row.is_important),
     attachmentUrl: row.attachment_url || undefined,
+    attachmentFileName: row.attachment_file_name || undefined,
+    attachmentSize: row.attachment_size || undefined,
+    featuredImageUrl: row.featured_image_url || undefined,
     createdBy: row.created_by || 'admin',
     createdByName: row.created_by_name || 'Department Admin',
     createdAt: row.created_at || new Date().toISOString(),
@@ -1395,6 +1428,9 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
     publish_date: noticeData.publishDate || today,
     is_important: Boolean(noticeData.isImportant),
     attachment_url: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
+    attachment_file_name: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
+    attachment_size: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null,
+    featured_image_url: noticeData.featuredImageUrl ? noticeData.featuredImageUrl.trim() : null,
     created_by: adminUser.id,
     created_by_name: adminUser.name,
     created_at: now,
@@ -1419,6 +1455,9 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
     publishDate: data.publish_date,
     isImportant: Boolean(data.is_important),
     attachmentUrl: data.attachment_url || undefined,
+    attachmentFileName: data.attachment_file_name || undefined,
+    attachmentSize: data.attachment_size || undefined,
+    featuredImageUrl: data.featured_image_url || undefined,
     createdBy: data.created_by,
     createdByName: data.created_by_name,
     createdAt: data.created_at,
@@ -1436,6 +1475,9 @@ export async function updateNotice(id: string, updates: Partial<DepartmentNotice
   if (updates.publishDate !== undefined) updatePayload.publish_date = updates.publishDate;
   if (updates.isImportant !== undefined) updatePayload.is_important = Boolean(updates.isImportant);
   if (updates.attachmentUrl !== undefined) updatePayload.attachment_url = updates.attachmentUrl ? updates.attachmentUrl.trim() : null;
+  if (updates.attachmentFileName !== undefined) updatePayload.attachment_file_name = updates.attachmentFileName ? updates.attachmentFileName.trim() : null;
+  if (updates.attachmentSize !== undefined) updatePayload.attachment_size = updates.attachmentSize ? updates.attachmentSize.trim() : null;
+  if (updates.featuredImageUrl !== undefined) updatePayload.featured_image_url = updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null;
 
   const { data, error } = await supabase.from('department_notices').update(updatePayload).eq('id', id).select().single();
   if (error) throw new Error(`Failed to update notice: ${error.message}`);
@@ -1445,7 +1487,7 @@ export async function updateNotice(id: string, updates: Partial<DepartmentNotice
     adminUser.name,
     'NOTICE_UPDATED',
     `Notice: ${data.title}`,
-    `Updated fields: ${Object.keys(updatePayload).join(', ')}`
+    `Updated fields in notice`
   );
 
   return {
@@ -1456,6 +1498,9 @@ export async function updateNotice(id: string, updates: Partial<DepartmentNotice
     publishDate: data.publish_date,
     isImportant: Boolean(data.is_important),
     attachmentUrl: data.attachment_url || undefined,
+    attachmentFileName: data.attachment_file_name || undefined,
+    attachmentSize: data.attachment_size || undefined,
+    featuredImageUrl: data.featured_image_url || undefined,
     createdBy: data.created_by,
     createdByName: data.created_by_name,
     createdAt: data.created_at,

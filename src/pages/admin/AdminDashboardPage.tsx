@@ -29,20 +29,23 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
+  const [bugReports, setBugReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchDashboardData = async (showToast = false) => {
     try {
       if (showToast) setIsRefreshing(true);
-      const [statsData, logsData] = await Promise.all([
+      const [statsData, logsData, bugsData] = await Promise.all([
         adminApiClient.getStats(),
         adminApiClient.getAuditLogs(8),
+        adminApiClient.getBugReports().catch(() => []),
       ]);
       setStats(statsData);
       setRecentLogs(Array.isArray(logsData) ? logsData : (logsData as any)?.data || (logsData as any)?.logs || []);
+      setBugReports(Array.isArray(bugsData) ? bugsData : []);
       if (showToast) {
-        addToast('success', 'Admin dashboard refreshed from Supabase');
+        addToast('success', 'Admin dashboard refreshed');
       }
     } catch (err: any) {
       console.error('Failed to load admin dashboard stats:', err);
@@ -281,8 +284,97 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Audit Activity Log Feed */}
-        <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-4">
+        {/* Live Audit Activity Log Feed & Student Bug Reports */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Student Bug Reports Box */}
+          <div className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  Student Bug & Result Reports ({bugReports.length})
+                </h2>
+                <p className="text-[11px] text-slate-500">
+                  Issues reported directly by students from the MY CGPA & Academic Portal.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                {bugReports.filter(b => b.status === 'PENDING').length} Pending
+              </span>
+            </div>
+
+            {bugReports.length === 0 ? (
+              <div className="py-6 text-center text-xs text-slate-400">
+                No active bug reports submitted by students.
+              </div>
+            ) : (
+              <div className="space-y-2.5 max-h-72 overflow-y-auto custom-scrollbar">
+                {bugReports.map((b: any) => (
+                  <div
+                    key={b.id}
+                    className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900">{b.studentName}</span>
+                        <span className="font-mono text-[10px] text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                          {b.studentId}
+                        </span>
+                        <span className="text-[10px] text-blue-600 font-semibold">
+                          {b.batchName || 'Batch'} • Sem {b.currentSemester || 5}
+                        </span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        b.status === 'RESOLVED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {b.status}
+                      </span>
+                    </div>
+
+                    <p className="text-slate-700 font-medium whitespace-pre-line bg-white p-2 rounded-lg border border-slate-100">
+                      <strong className="text-blue-600 block text-[10px] font-bold uppercase mb-0.5">
+                        [{b.category}]
+                      </strong>
+                      {b.message}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                      <span>Submitted: {new Date(b.createdAt).toLocaleString()}</span>
+                      {b.status === 'PENDING' && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('auth_token') || localStorage.getItem('swe_admin_token') || localStorage.getItem('token');
+                              await fetch(`/api/admin/bug-reports/${b.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                                },
+                                body: JSON.stringify({ status: 'RESOLVED' }),
+                              });
+                              addToast('success', 'Marked report as resolved!');
+                              fetchDashboardData();
+                            } catch (e) {
+                              addToast('error', 'Failed to update report status');
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors"
+                        >
+                          Mark Resolved
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Live Audit Activity Log Feed */}
+          <div className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -332,6 +424,7 @@ export const AdminDashboardPage: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

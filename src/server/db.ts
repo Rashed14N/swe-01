@@ -4,10 +4,10 @@ import bcrypt from 'bcryptjs';
 import type {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest,
-  RetakeRegistration
+  RetakeRegistration, BugReport
 } from '../types';
 
-import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase, startAutoSync } from './supabaseSync';
+import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase } from './supabaseSync';
 
 export interface DBData {
   users: User[];
@@ -24,6 +24,11 @@ export interface DBData {
   notifications: NotificationItem[];
   auditLogs: AuditLog[];
   retakeRegistrations: RetakeRegistration[];
+  bugReports?: BugReport[];
+  studentGrades?: Record<string, Record<string, { grade: string; gradePoint: number; semester?: number; updatedAt?: string }>>;
+  studentDocuments?: Record<string, Array<{ id: string; fileName: string; fileUrl?: string; uploadedAt: string; notes?: string; fileSize?: string }>>;
+  studentCustomCourses?: Record<string, Course[]>;
+  studentExcludedCourses?: Record<string, string[]>;
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -88,7 +93,7 @@ export function seedInitialData(): DBData {
       id: 'batch-9',
       name: 'SWE 9th Batch',
       admissionYear: 2023,
-      currentSemester: 4,
+      currentSemester: 5,
       academicSession: '2023-2024',
       semesterMode: 'SEQUENCE',
       status: 'ACTIVE',
@@ -329,16 +334,6 @@ export function seedInitialData(): DBData {
       title: 'Bangladesh Studies',
       credits: 3,
       type: 'THEORY',
-      semester: 1,
-      batchIds: ['batch-12'],
-    },
-    {
-      id: 'course-sem1-acm',
-      code: 'ACM',
-      shortName: 'ACM',
-      title: 'ACM Workshop',
-      credits: 0,
-      type: 'LAB',
       semester: 1,
       batchIds: ['batch-12'],
     },
@@ -2367,6 +2362,7 @@ class JsonDB {
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
     if (!this.data.retakeRegistrations) this.data.retakeRegistrations = [];
+    if (!this.data.bugReports) this.data.bugReports = [];
 
     // Normalize and populate default batches with semesterMode and status
     const initialBatches = seedInitialData().batches;
@@ -2379,6 +2375,9 @@ class JsonDB {
 
     this.data.batches.forEach(b => {
       const lowerName = b.name.toLowerCase();
+      if (b.id === 'batch-9' || lowerName.includes('9th')) {
+        b.currentSemester = 5;
+      }
       if (!b.semesterMode) {
         if (lowerName.includes('5th') || lowerName.includes('6th') || lowerName.includes('7th')) {
           b.semesterMode = 'MANUAL';
@@ -2390,6 +2389,18 @@ class JsonDB {
         b.status = b.currentSemester > 8 ? 'GRADUATED' : 'ACTIVE';
       }
       if (!b.crIds) b.crIds = [];
+    });
+
+    // Ensure all students belonging to batches reflect their batch's currentSemester
+    this.data.users.forEach(u => {
+      const b = this.data.batches.find(batch => batch.id === u.batchId || (u.batchName && batch.name.toLowerCase() === u.batchName.toLowerCase()));
+      if (b) {
+        u.currentSemester = b.currentSemester;
+        u.batchId = b.id;
+        u.batchName = b.name;
+      } else if (u.batchId === 'batch-9' || u.batchName?.toLowerCase().includes('9th')) {
+        u.currentSemester = 5;
+      }
     });
 
     // Remove legacy demo users and any old hardcoded admin101 accounts
@@ -2433,10 +2444,8 @@ class JsonDB {
 
     this.save();
 
-    // Trigger Supabase initial data hydration in the background
+    // Trigger Supabase initial data hydration in the background on startup
     hydrateFromSupabase(this.data).catch(() => {});
-    // Continuous background sync
-    startAutoSync(() => this.data);
   }
 
   public save() {
@@ -2610,6 +2619,164 @@ class JsonDB {
       return true;
     }
     return false;
+  }
+
+  public getStudentGrades(studentId: string): Record<string, { grade: string; gradePoint: number; semester?: number; updatedAt?: string }> {
+    if (!this.data.studentGrades) {
+      this.data.studentGrades = {};
+    }
+    return this.data.studentGrades[studentId] || {};
+  }
+
+  public saveStudentGrades(studentId: string, grades: Record<string, { grade: string; gradePoint: number; semester?: number }>) {
+    if (!this.data.studentGrades) {
+      this.data.studentGrades = {};
+    }
+    const current = this.data.studentGrades[studentId] || {};
+    const now = new Date().toISOString();
+    for (const [code, info] of Object.entries(grades)) {
+      if (!info.grade || info.grade === 'N/A' || info.grade === 'NOT_PUBLISHED') {
+        delete current[code];
+      } else {
+        current[code] = {
+          grade: info.grade,
+          gradePoint: info.gradePoint,
+          semester: info.semester,
+          updatedAt: now,
+        };
+      }
+    }
+    this.data.studentGrades[studentId] = current;
+    this.save();
+    return current;
+  }
+
+  public getStudentCGPADocs(studentId: string): any[] {
+    if (!this.data.studentDocuments) {
+      this.data.studentDocuments = {};
+    }
+    return this.data.studentDocuments[studentId] || [];
+  }
+
+  public addStudentCGPADoc(studentId: string, doc: any) {
+    if (!this.data.studentDocuments) {
+      this.data.studentDocuments = {};
+    }
+    const list = this.data.studentDocuments[studentId] || [];
+    list.unshift(doc);
+    this.data.studentDocuments[studentId] = list;
+    this.save();
+    return list;
+  }
+
+  public getStudentCustomCourses(studentId: string): Course[] {
+    if (!this.data.studentCustomCourses) {
+      this.data.studentCustomCourses = {};
+    }
+    return this.data.studentCustomCourses[studentId] || [];
+  }
+
+  public saveStudentCustomCourse(studentId: string, course: Course): Course[] {
+    if (!this.data.studentCustomCourses) {
+      this.data.studentCustomCourses = {};
+    }
+    const list = this.data.studentCustomCourses[studentId] || [];
+    const idx = list.findIndex(c => c.id === course.id || c.code.toLowerCase() === course.code.toLowerCase());
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...course };
+    } else {
+      list.push(course);
+    }
+    this.data.studentCustomCourses[studentId] = list;
+    this.save();
+    return list;
+  }
+
+  public deleteStudentCustomCourse(studentId: string, courseIdOrCode: string): Course[] {
+    if (!this.data.studentCustomCourses) {
+      this.data.studentCustomCourses = {};
+    }
+    const target = courseIdOrCode.toLowerCase();
+    const list = (this.data.studentCustomCourses[studentId] || []).filter(
+      c => c.id.toLowerCase() !== target && c.code.toLowerCase() !== target
+    );
+    this.data.studentCustomCourses[studentId] = list;
+    this.save();
+    return list;
+  }
+
+  public getStudentExcludedCourses(studentId: string): string[] {
+    if (!this.data.studentExcludedCourses) {
+      this.data.studentExcludedCourses = {};
+    }
+    return this.data.studentExcludedCourses[studentId] || [];
+  }
+
+  public excludeCourseForStudent(studentId: string, courseCode: string): string[] {
+    if (!this.data.studentExcludedCourses) {
+      this.data.studentExcludedCourses = {};
+    }
+    const list = this.data.studentExcludedCourses[studentId] || [];
+    const normalized = courseCode.trim().toUpperCase();
+    if (!list.includes(normalized)) {
+      list.push(normalized);
+    }
+    this.data.studentExcludedCourses[studentId] = list;
+    this.save();
+    return list;
+  }
+
+  public unexcludeCourseForStudent(studentId: string, courseCode: string): string[] {
+    if (!this.data.studentExcludedCourses) {
+      this.data.studentExcludedCourses = {};
+    }
+    const list = this.data.studentExcludedCourses[studentId] || [];
+    const normalized = courseCode.trim().toUpperCase();
+    this.data.studentExcludedCourses[studentId] = list.filter(c => c !== normalized);
+    this.save();
+    return this.data.studentExcludedCourses[studentId];
+  }
+
+  public resetExcludedCoursesForStudent(studentId: string): void {
+    if (!this.data.studentExcludedCourses) {
+      this.data.studentExcludedCourses = {};
+    }
+    this.data.studentExcludedCourses[studentId] = [];
+    this.save();
+  }
+
+  public getNotifications(userId?: string): NotificationItem[] {
+    const all = this.data.notifications || [];
+    return userId ? all.filter(n => n.userId === userId) : all;
+  }
+
+  public addNotification(notif: NotificationItem): NotificationItem {
+    if (!this.data.notifications) this.data.notifications = [];
+    this.data.notifications.unshift(notif);
+    this.save();
+    return notif;
+  }
+
+  public getBugReports(): BugReport[] {
+    return this.data.bugReports || [];
+  }
+
+  public addBugReport(report: BugReport): BugReport {
+    if (!this.data.bugReports) {
+      this.data.bugReports = [];
+    }
+    this.data.bugReports.unshift(report);
+    this.save();
+    return report;
+  }
+
+  public updateBugReportStatus(reportId: string, status: 'PENDING' | 'RESOLVED' | 'REVIEWED'): BugReport | null {
+    if (!this.data.bugReports) return null;
+    const item = this.data.bugReports.find(b => b.id === reportId);
+    if (!item) return null;
+    item.status = status;
+    this.save();
+    return item;
   }
 }
 

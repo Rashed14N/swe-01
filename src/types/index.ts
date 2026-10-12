@@ -158,12 +158,28 @@ export interface DepartmentNotice {
   id: string;
   title: string;
   content: string;
-  category: 'GENERAL' | 'REGISTRATION' | 'EXAM' | 'SEMINAR' | 'HOLIDAY' | 'URGENT';
+  category: 'GENERAL' | 'REGISTRATION' | 'EXAM' | 'SEMINAR' | 'HOLIDAY' | 'URGENT' | 'ACADEMIC' | 'SCHOLARSHIP' | 'EVENT';
   publishDate: string;
   isImportant: boolean;
   attachmentUrl?: string;
+  attachmentFileName?: string;
+  attachmentSize?: string;
+  featuredImageUrl?: string;
   createdBy: string;
   createdByName: string;
+  createdAt: string;
+}
+
+export interface BugReport {
+  id: string;
+  studentId: string;
+  studentName: string;
+  studentEmail?: string;
+  batchName?: string;
+  currentSemester?: number;
+  category: string;
+  message: string;
+  status: 'PENDING' | 'RESOLVED' | 'REVIEWED';
   createdAt: string;
 }
 

@@ -38,8 +38,8 @@ export const FacultyCard: React.FC<FacultyCardProps> = ({ faculty, onPhotoUpdate
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      addToast('error', 'Faculty image size must be under 2 MB');
+    if (file.size > 1024 * 1024) {
+      addToast('error', 'Faculty image size must be under 1 MB');
       return;
     }
 

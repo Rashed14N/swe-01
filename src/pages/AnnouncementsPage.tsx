@@ -9,6 +9,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { BatchAnnouncement, AnnouncementPriority, Batch, Course } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { EmailAnnouncementPreview } from '../components/announcements/EmailAnnouncementPreview';
+import { getEffectiveSemester } from '../utils/semester';
 
 export const AnnouncementsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -216,7 +217,7 @@ export const AnnouncementsPage: React.FC = () => {
       <PageHeader
         title="Batch Announcements"
         description="Official notices published by Class Representatives and Department Head."
-        breadcrumb={`${user?.batchName} • Semester ${user?.currentSemester}`}
+        breadcrumb={`${user?.batchName || 'SWE 9th Batch'} • Semester ${getEffectiveSemester(user)}`}
         primaryAction={
           canManage
             ? {

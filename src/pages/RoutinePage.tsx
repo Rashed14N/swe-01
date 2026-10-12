@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -182,9 +183,15 @@ export const RoutinePage: React.FC = () => {
       )}
 
       {/* SLOT EDIT MODAL FOR CR AND ADMIN */}
-      {isSlotModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
+      {isSlotModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setIsSlotModalOpen(false)}
+        >
+          <div 
+            className="relative my-auto bg-white dark:bg-[#0F172A] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
             <h3 className="text-base font-bold text-slate-900">
               {editingSlot ? 'Edit Routine Class Slot' : 'Add Routine Class Slot'}
             </h3>
@@ -327,7 +334,8 @@ export const RoutinePage: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ROUTINE PNG EXPORT MODAL */}

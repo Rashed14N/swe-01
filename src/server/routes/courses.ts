@@ -12,6 +12,7 @@ import {
   deleteCourseFromDB,
   fetchAllFaculty,
   fetchAllResources,
+  fetchAllExams,
 } from '../supabaseData';
 
 const router = Router();
@@ -181,9 +182,29 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
 
     const faculty = allFaculty.find(f => f.id === course.assignedFacultyId);
 
+    // Fetch exams matching this course
+    const allExams = await fetchAllExams().catch(() => db.getExams?.() || []);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const courseExams = allExams
+      .filter(e => {
+        const eCode = normalizeCode(e.courseCode);
+        const eId = e.courseId;
+        return (eId && eId === course.id) || (eCode && (eCode === courseCodeNorm || eCode === courseShortNorm));
+      })
+      .map(e => {
+        const examDate = new Date(e.date);
+        const now = new Date(todayStr);
+        const diffTime = examDate.getTime() - now.getTime();
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const isArchived = e.date < todayStr;
+        return { ...e, daysLeft, isArchived };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     res.json({
       course,
       faculty,
+      exams: courseExams,
       resources: {
         questions,
         notes,

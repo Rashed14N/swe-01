@@ -12,6 +12,7 @@ import { getUserAvatarUrl, PRESET_AVATARS, DEFAULT_AVATAR_URL } from '../data/av
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
 import { parseGoogleDriveLink } from '../lib/driveUtils';
 import { formatStudentId } from '../utils/studentId';
+import { getEffectiveSemester, formatSemesterLabel } from '../utils/semester';
 import { fetchResourcesFromSupabase, saveResourceToSupabase } from '../services/supabaseDataService';
 
 export const ProfilePage: React.FC = () => {
@@ -494,8 +495,13 @@ export const ProfilePage: React.FC = () => {
                 {user?.name || 'Student Profile'}
               </h1>
               <span className="inline-flex items-center px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full border border-blue-200/80 dark:border-blue-800/80">
-                {user?.batchName || 'SWE 9th Batch'}
+                {user?.role === 'ADMIN' ? 'SWE Administration' : (user?.batchName || 'SWE 9th Batch')}
               </span>
+              {user?.role !== 'ADMIN' && (
+                <span className="inline-flex items-center px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-full border border-emerald-200/80 dark:border-emerald-800/80">
+                  {formatSemesterLabel(user, 'full')}
+                </span>
+              )}
               <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold rounded-md uppercase tracking-wider border border-slate-200 dark:border-slate-700">
                 {user?.role || 'STUDENT'}
               </span>
@@ -833,10 +839,12 @@ export const ProfilePage: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-                    Batch & Semester
+                    {user?.role === 'ADMIN' ? 'Role & Department' : 'Batch & Semester'}
                   </span>
                   <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate block">
-                    {user?.batchName || 'SWE Batch'} {user?.currentSemester ? `(Sem ${user.currentSemester})` : ''}
+                    {user?.role === 'ADMIN' 
+                      ? 'SWE Administration • System Administrator' 
+                      : `${user?.batchName || 'SWE 9th Batch'} (Sem ${getEffectiveSemester(user)})`}
                   </span>
                 </div>
               </div>

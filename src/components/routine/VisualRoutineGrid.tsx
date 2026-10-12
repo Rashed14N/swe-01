@@ -22,12 +22,12 @@ const DAYS: ('SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY')[] = [
   'THURSDAY',
 ];
 
-const DAY_CONFIG: Record<string, { short: string; label: string; dateStr: string }> = {
-  SUNDAY: { short: 'SUN', label: 'Sunday', dateStr: '18 May' },
-  MONDAY: { short: 'MON', label: 'Monday', dateStr: '19 May' },
-  TUESDAY: { short: 'TUE', label: 'Tuesday', dateStr: '20 May' },
-  WEDNESDAY: { short: 'WED', label: 'Wednesday', dateStr: '21 May' },
-  THURSDAY: { short: 'THU', label: 'Thursday', dateStr: '22 May' },
+const DAY_CONFIG: Record<string, { short: string; label: string }> = {
+  SUNDAY: { short: 'SUN', label: 'Sunday' },
+  MONDAY: { short: 'MON', label: 'Monday' },
+  TUESDAY: { short: 'TUE', label: 'Tuesday' },
+  WEDNESDAY: { short: 'WED', label: 'Wednesday' },
+  THURSDAY: { short: 'THU', label: 'Thursday' },
 };
 
 export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
@@ -115,22 +115,15 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
                       : 'bg-white hover:bg-[#F6FAFF] text-[#10213B] border border-[#D8E2EE]'
                   }`}
                 >
-                  <span className="text-[11px] sm:text-xs font-black tracking-wider block uppercase">
+                  <span className="text-xs sm:text-sm font-black tracking-wider block uppercase">
                     {config.short}
                   </span>
                   <span
-                    className={`text-[10px] sm:text-[11px] block mt-0.5 ${
-                      isSelected ? 'text-blue-100 font-medium' : 'text-slate-500'
-                    }`}
-                  >
-                    {config.dateStr}
-                  </span>
-                  <span
-                    className={`inline-block mt-1 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded ${
+                    className={`inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold rounded ${
                       isSelected ? 'bg-white/20 text-white' : 'bg-[#F6F9FD] text-slate-600 border border-[#D8E2EE]'
                     }`}
                   >
-                    {count} {count === 1 ? 'cls' : 'classes'}
+                    {count} {count === 1 ? 'class' : 'classes'}
                   </span>
                 </button>
               );
@@ -314,7 +307,7 @@ export const VisualRoutineGrid: React.FC<VisualRoutineGridProps> = ({
               >
                 <div className="bg-[#0A192F] text-white px-3 py-2.5 flex items-center justify-between">
                   <span className="font-extrabold text-xs uppercase tracking-wider">
-                    {DAY_CONFIG[day].short} ({DAY_CONFIG[day].dateStr})
+                    {DAY_CONFIG[day].label}
                   </span>
                   <span className="text-[10px] bg-white/10 text-slate-200 px-2 py-0.5 rounded font-mono font-bold">
                     {daySlots.length}

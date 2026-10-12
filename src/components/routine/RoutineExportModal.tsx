@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Download, Image as ImageIcon, X, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { toPng } from 'html-to-image';
@@ -169,9 +170,15 @@ export const RoutineExportModal: React.FC<RoutineExportModalProps> = ({
 
   const activeDays: DayOfWeek[] = DEFAULT_DAYS;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="relative my-auto bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+        onClick={e => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
         <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
@@ -447,6 +454,7 @@ export const RoutineExportModal: React.FC<RoutineExportModalProps> = ({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -19,6 +19,88 @@ import type {
 } from '../types';
 
 // ==============================================================================
+// IN-MEMORY CACHE (TTL: 60 SECONDS) TO MITIGATE SUPABASE EGRESS
+// ==============================================================================
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+const memoryCache: Map<string, CacheEntry<any>> = new Map();
+
+export function getCached<T>(key: string): T | null {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+export function setCached<T>(key: string, data: T): void {
+  memoryCache.set(key, {
+    data,
+    timestamp: Date.now(),
+  });
+}
+
+export function invalidateCache(keyPrefix?: string): void {
+  if (!keyPrefix) {
+    memoryCache.clear();
+    return;
+  }
+  for (const k of Array.from(memoryCache.keys())) {
+    if (k === keyPrefix || k.startsWith(`${keyPrefix}_`)) {
+      memoryCache.delete(k);
+    }
+  }
+}
+
+/**
+ * Automatically uploads raw Base64 data URLs to Supabase Storage and returns the public CDN URL.
+ * Prevents multi-megabyte image data from bloating PostgreSQL rows and ballooning network egress.
+ */
+export async function uploadBase64ImageToStorage(
+  base64Str: string,
+  bucket = 'faculty-photos',
+  filenamePrefix = 'photo'
+): Promise<string> {
+  if (!base64Str || !base64Str.startsWith('data:image/')) {
+    return base64Str;
+  }
+  const supabase = getServerSupabase();
+  if (!supabase) return base64Str;
+
+  try {
+    const match = base64Str.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (!match) return base64Str;
+
+    const subtype = match[1].toLowerCase();
+    const ext = subtype === 'jpeg' ? 'jpg' : subtype;
+    const buffer = Buffer.from(match[2], 'base64');
+    const filename = `${filenamePrefix}_${Date.now()}.${ext}`;
+
+    const { error: upErr } = await supabase.storage
+      .from(bucket)
+      .upload(filename, buffer, { contentType: `image/${subtype}`, upsert: true });
+
+    if (upErr) {
+      console.warn('[Storage upload warning]:', upErr.message);
+      return base64Str;
+    }
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filename);
+    return data.publicUrl;
+  } catch (err: any) {
+    console.warn('[Storage upload exception]:', err.message);
+    return base64Str;
+  }
+}
+
+// ==============================================================================
 // 1. COURSES
 // ==============================================================================
 
@@ -38,14 +120,23 @@ export function mapCourseFromSupabase(row: any): Course {
 }
 
 export function mapCourseToSupabase(course: Course): any {
+  let semNum = 1;
+  const rawSem = (course as any).semester;
+  if (typeof rawSem === 'number') {
+    semNum = rawSem;
+  } else if (typeof rawSem === 'string') {
+    const parsed = parseInt(rawSem.replace(/\D/g, ''), 10);
+    semNum = !isNaN(parsed) && parsed > 0 ? parsed : 1;
+  }
+
   return {
     id: course.id,
     code: course.code,
     short_name: course.shortName || null,
     title: course.title,
     credits: course.credits,
-    type: course.type,
-    semester: course.semester,
+    type: (course.type || 'THEORY').toUpperCase(),
+    semester: semNum,
     assigned_faculty_id: course.assignedFacultyId || null,
     assigned_faculty_name: course.assignedFacultyName || null,
     batch_ids: course.batchIds || [],
@@ -53,6 +144,9 @@ export function mapCourseToSupabase(course: Course): any {
 }
 
 export async function fetchAllCourses(): Promise<Course[]> {
+  const cached = getCached<Course[]>('courses');
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -62,6 +156,7 @@ export async function fetchAllCourses(): Promise<Course[]> {
         const courses = data.map(mapCourseFromSupabase);
         local.courses = courses;
         try { db.save(); } catch {}
+        setCached('courses', courses);
         return courses;
       }
       if (error) {
@@ -71,7 +166,9 @@ export async function fetchAllCourses(): Promise<Course[]> {
       console.warn('[Supabase fetchAllCourses Exception]: Falling back to local store.', e?.message || e);
     }
   }
-  return local.courses && local.courses.length > 0 ? local.courses : [];
+  const fallback = local.courses && local.courses.length > 0 ? local.courses : [];
+  if (fallback.length > 0) setCached('courses', fallback);
+  return fallback;
 }
 
 export async function fetchCourseById(id: string): Promise<Course | null> {
@@ -93,6 +190,7 @@ export async function fetchCourseById(id: string): Promise<Course | null> {
 }
 
 export async function createCourseInDB(course: Course): Promise<Course> {
+  invalidateCache('courses');
   const local = db.getData();
   if (!local.courses) local.courses = [];
   local.courses = local.courses.filter(c => c.id !== course.id);
@@ -121,6 +219,7 @@ export async function createCourseInDB(course: Course): Promise<Course> {
 }
 
 export async function updateCourseInDB(id: string, updates: Partial<Course>): Promise<Course> {
+  invalidateCache('courses');
   const local = db.getData();
   if (!local.courses) local.courses = [];
   let existing = local.courses.find(c => c.id === id);
@@ -165,6 +264,7 @@ export async function updateCourseInDB(id: string, updates: Partial<Course>): Pr
 }
 
 export async function deleteCourseFromDB(id: string): Promise<boolean> {
+  invalidateCache('courses');
   const local = db.getData();
   if (local.courses) {
     local.courses = local.courses.filter(c => c.id !== id);
@@ -204,19 +304,31 @@ export function mapBatchFromSupabase(row: any): Batch {
 }
 
 export function mapBatchToSupabase(batch: Batch): any {
+  let semNum = 1;
+  const rawSem = (batch as any).currentSemester;
+  if (typeof rawSem === 'number') {
+    semNum = rawSem;
+  } else if (typeof rawSem === 'string') {
+    const parsed = parseInt(rawSem.replace(/\D/g, ''), 10);
+    semNum = !isNaN(parsed) && parsed > 0 ? parsed : 1;
+  }
+
   // Only send columns that physically exist in the Supabase 'batches' table schema
   return {
     id: batch.id,
     name: batch.name,
-    admission_year: batch.admissionYear,
-    current_semester: batch.currentSemester,
-    academic_session: batch.academicSession,
+    admission_year: batch.admissionYear || new Date().getFullYear(),
+    current_semester: semNum,
+    academic_session: batch.academicSession || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
     cr_ids: batch.crIds || [],
     created_at: batch.createdAt || new Date().toISOString(),
   };
 }
 
 export async function fetchAllBatches(): Promise<Batch[]> {
+  const cached = getCached<Batch[]>('batches');
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -226,6 +338,7 @@ export async function fetchAllBatches(): Promise<Batch[]> {
         const batches = data.map(mapBatchFromSupabase);
         local.batches = batches;
         try { db.save(); } catch {}
+        setCached('batches', batches);
         return batches;
       }
       if (error) console.warn('[Supabase fetchAllBatches Note]: Falling back to local store.', error.message || error);
@@ -233,7 +346,9 @@ export async function fetchAllBatches(): Promise<Batch[]> {
       console.warn('[Supabase fetchAllBatches Exception]: Falling back to local store.', e?.message || e);
     }
   }
-  return local.batches && local.batches.length > 0 ? local.batches : [];
+  const fallback = local.batches && local.batches.length > 0 ? local.batches : [];
+  if (fallback.length > 0) setCached('batches', fallback);
+  return fallback;
 }
 
 export async function fetchBatchById(id: string): Promise<Batch | null> {
@@ -250,6 +365,7 @@ export async function fetchBatchById(id: string): Promise<Batch | null> {
 }
 
 export async function createBatchInDB(batch: Batch): Promise<Batch> {
+  invalidateCache('batches');
   const local = db.getData();
   if (!local.batches) local.batches = [];
   local.batches = local.batches.filter(b => b.id !== batch.id);
@@ -278,6 +394,7 @@ export async function createBatchInDB(batch: Batch): Promise<Batch> {
 }
 
 export async function updateBatchInDB(id: string, updates: Partial<Batch>): Promise<Batch> {
+  invalidateCache('batches');
   const local = db.getData();
   if (!local.batches) local.batches = [];
   let existing = local.batches.find(b => b.id === id);
@@ -323,6 +440,7 @@ export async function updateBatchInDB(id: string, updates: Partial<Batch>): Prom
 }
 
 export async function deleteBatchFromDB(id: string): Promise<boolean> {
+  invalidateCache('batches');
   const local = db.getData();
   if (local.batches) {
     local.batches = local.batches.filter(b => b.id !== id);
@@ -378,6 +496,9 @@ export function mapFacultyToSupabase(faculty: Faculty): any {
 }
 
 export async function fetchAllFaculty(): Promise<Faculty[]> {
+  const cached = getCached<Faculty[]>('faculty');
+  if (cached) return cached;
+
   try {
     const local = db.getData();
     const supabase = getServerSupabase();
@@ -392,6 +513,7 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
             local.faculty = faculty;
             try { db.save(); } catch {}
           }
+          setCached('faculty', faculty);
           return faculty;
         }
       } catch (e: any) {
@@ -399,7 +521,9 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
       }
     }
     const fallback = (local && Array.isArray(local.faculty) && local.faculty.length > 0) ? local.faculty : [];
-    return sortFacultyByHierarchy(fallback);
+    const sorted = sortFacultyByHierarchy(fallback);
+    if (sorted.length > 0) setCached('faculty', sorted);
+    return sorted;
   } catch (err: any) {
     console.warn('[Faculty fallback error]:', err?.message || err);
     return sortFacultyByHierarchy((db.getData()?.faculty) || []);
@@ -407,6 +531,11 @@ export async function fetchAllFaculty(): Promise<Faculty[]> {
 }
 
 export async function createFacultyInDB(faculty: Faculty): Promise<Faculty> {
+  invalidateCache('faculty');
+  if (faculty.photoUrl && faculty.photoUrl.startsWith('data:image/')) {
+    faculty.photoUrl = await uploadBase64ImageToStorage(faculty.photoUrl, 'faculty-photos', `fac_${faculty.id}`);
+  }
+
   const local = db.getData();
   if (!local.faculty) local.faculty = [];
   local.faculty = local.faculty.filter(f => f.id !== faculty.id);
@@ -435,6 +564,11 @@ export async function createFacultyInDB(faculty: Faculty): Promise<Faculty> {
 }
 
 export async function updateFacultyInDB(id: string, updates: Partial<Faculty>): Promise<Faculty> {
+  invalidateCache('faculty');
+  if (updates.photoUrl && updates.photoUrl.startsWith('data:image/')) {
+    updates.photoUrl = await uploadBase64ImageToStorage(updates.photoUrl, 'faculty-photos', `fac_${id}`);
+  }
+
   const local = db.getData();
   if (!local.faculty) local.faculty = [];
   let existing = local.faculty.find(f => f.id === id);
@@ -479,6 +613,7 @@ export async function updateFacultyInDB(id: string, updates: Partial<Faculty>): 
 }
 
 export async function deleteFacultyFromDB(id: string): Promise<boolean> {
+  invalidateCache('faculty');
   const local = db.getData();
   if (local.faculty) {
     local.faculty = local.faculty.filter(f => f.id !== id);
@@ -511,7 +646,9 @@ export function mapUserFromSupabase(row: any): User {
     role: row.role || 'STUDENT',
     batchId: row.batch_id || undefined,
     batchName: row.batch_name || undefined,
-    currentSemester: Number(row.current_semester || 1),
+    currentSemester: (row.batch_id === 'batch-9' || (row.batch_name && String(row.batch_name).toLowerCase().includes('9th'))) 
+      ? Math.max(5, Number(row.current_semester || 5)) 
+      : Number(row.current_semester || 1),
     profileImage: row.profile_image || undefined,
     status: row.status || 'ACTIVE',
     points: Number(row.points || 0),
@@ -720,6 +857,10 @@ export function mapRoutineSlotToSupabase(slot: RoutineSlot): any {
 }
 
 export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlot[]> {
+  const cacheKey = batchId ? `routines_${batchId.trim().toLowerCase()}` : 'routines_all';
+  const cached = getCached<RoutineSlot[]>(cacheKey);
+  if (cached) return cached;
+
   const supabase = getServerSupabase();
   const normalizedBatchId = batchId ? batchId.trim().toLowerCase().replace(/th$|st$|nd$|rd$/i, '') : undefined;
   const batchCandidates = batchId ? [
@@ -739,7 +880,9 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
       const { data, error } = await query;
       if (!error && data) {
         const slots = data.map(mapRoutineSlotFromSupabase);
-        return deduplicateAndMergeRoutineSlots(slots);
+        const deduplicated = deduplicateAndMergeRoutineSlots(slots);
+        setCached(cacheKey, deduplicated);
+        return deduplicated;
       }
       if (error) console.warn('[Supabase fetchAllRoutineSlots Note]: Falling back to local store.', error.message || error);
     } catch (e: any) {
@@ -748,10 +891,13 @@ export async function fetchAllRoutineSlots(batchId?: string): Promise<RoutineSlo
   }
   const local = db.getData().routines || [];
   const filtered = batchId ? local.filter(s => batchCandidates.includes(s.batchId)) : local;
-  return deduplicateAndMergeRoutineSlots(filtered);
+  const fallback = deduplicateAndMergeRoutineSlots(filtered);
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 
 export async function createRoutineSlotInDB(slot: RoutineSlot): Promise<RoutineSlot> {
+  invalidateCache('routines');
   const local = db.getData();
   if (!local.routines) local.routines = [];
   local.routines = local.routines.filter(s => s.id !== slot.id);
@@ -780,6 +926,7 @@ export async function createRoutineSlotInDB(slot: RoutineSlot): Promise<RoutineS
 }
 
 export async function updateRoutineSlotInDB(id: string, updates: Partial<RoutineSlot>): Promise<RoutineSlot> {
+  invalidateCache('routines');
   const local = db.getData();
   if (!local.routines) local.routines = [];
   let existing = local.routines.find(s => s.id === id);
@@ -826,6 +973,7 @@ export async function updateRoutineSlotInDB(id: string, updates: Partial<Routine
 }
 
 export async function deleteRoutineSlotFromDB(id: string): Promise<boolean> {
+  invalidateCache('routines');
   const local = db.getData();
   if (local.routines) {
     local.routines = local.routines.filter(s => s.id !== id);
@@ -887,6 +1035,10 @@ export function mapExamToSupabase(exam: Exam): any {
 }
 
 export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
+  const cacheKey = batchId ? `exams_${batchId.trim().toLowerCase()}` : 'exams_all';
+  const cached = getCached<Exam[]>(cacheKey);
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -896,6 +1048,7 @@ export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
       const { data, error } = await query;
       if (!error && data && data.length > 0) {
         const exams = data.map(mapExamFromSupabase);
+        setCached(cacheKey, exams);
         return exams;
       }
       if (error) console.warn('[Supabase fetchAllExams Note]: Falling back to local store.', error.message || error);
@@ -904,10 +1057,13 @@ export async function fetchAllExams(batchId?: string): Promise<Exam[]> {
     }
   }
   const exams = local.exams || [];
-  return batchId ? exams.filter(e => e.batchId === batchId) : exams;
+  const fallback = batchId ? exams.filter(e => e.batchId === batchId) : exams;
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 
 export async function createExamInDB(exam: Exam): Promise<Exam> {
+  invalidateCache('exams');
   const local = db.getData();
   if (!local.exams) local.exams = [];
   local.exams = local.exams.filter(e => e.id !== exam.id);
@@ -936,6 +1092,7 @@ export async function createExamInDB(exam: Exam): Promise<Exam> {
 }
 
 export async function updateExamInDB(id: string, updates: Partial<Exam>): Promise<Exam> {
+  invalidateCache('exams');
   const local = db.getData();
   if (!local.exams) local.exams = [];
   let existing = local.exams.find(e => e.id === id);
@@ -983,6 +1140,7 @@ export async function updateExamInDB(id: string, updates: Partial<Exam>): Promis
 }
 
 export async function deleteExamFromDB(id: string): Promise<boolean> {
+  invalidateCache('exams');
   const local = db.getData();
   if (local.exams) {
     local.exams = local.exams.filter(e => e.id !== id);
@@ -1039,6 +1197,10 @@ export function mapAnnouncementToSupabase(ann: BatchAnnouncement): any {
 }
 
 export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnnouncement[]> {
+  const cacheKey = batchId ? `announcements_${batchId.trim().toLowerCase()}` : 'announcements_all';
+  const cached = getCached<BatchAnnouncement[]>(cacheKey);
+  if (cached) return cached;
+
   const supabase = getServerSupabase();
   if (supabase) {
     try {
@@ -1048,7 +1210,9 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
       }
       const { data, error } = await query;
       if (!error && data) {
-        return data.map(mapAnnouncementFromSupabase);
+        const list = data.map(mapAnnouncementFromSupabase);
+        setCached(cacheKey, list);
+        return list;
       }
       if (error) console.warn('[Supabase fetchAllAnnouncements Note]: Falling back to local store.', error.message || error);
     } catch (e: any) {
@@ -1056,12 +1220,15 @@ export async function fetchAllAnnouncements(batchId?: string): Promise<BatchAnno
     }
   }
   const local = db.getData().announcements || [];
-  return (batchId && batchId !== 'ALL')
+  const fallback = (batchId && batchId !== 'ALL')
     ? local.filter(a => a.batchId === batchId || a.batchId === 'ALL' || !a.batchId)
     : local;
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 
 export async function createAnnouncementInDB(ann: BatchAnnouncement): Promise<BatchAnnouncement> {
+  invalidateCache('announcements');
   const local = db.getData();
   if (!local.announcements) local.announcements = [];
   local.announcements = local.announcements.filter(a => a.id !== ann.id);
@@ -1090,6 +1257,7 @@ export async function createAnnouncementInDB(ann: BatchAnnouncement): Promise<Ba
 }
 
 export async function deleteAnnouncementFromDB(id: string): Promise<boolean> {
+  invalidateCache('announcements');
   const local = db.getData();
   if (local.announcements) {
     local.announcements = local.announcements.filter(a => a.id !== id);
@@ -1121,6 +1289,9 @@ export function mapNoticeFromSupabase(row: any): DepartmentNotice {
     publishDate: row.publish_date || new Date().toISOString().split('T')[0],
     isImportant: Boolean(row.is_important),
     attachmentUrl: row.attachment_url || undefined,
+    attachmentFileName: row.attachment_file_name || row.attachmentFileName || undefined,
+    attachmentSize: row.attachment_size || row.attachmentSize || undefined,
+    featuredImageUrl: row.featured_image_url || row.featuredImageUrl || undefined,
     createdBy: row.created_by || 'Admin',
     createdByName: row.created_by_name || 'Department Admin',
     createdAt: row.created_at || new Date().toISOString(),
@@ -1130,7 +1301,7 @@ export function mapNoticeFromSupabase(row: any): DepartmentNotice {
 export function mapNoticeToSupabase(notice: DepartmentNotice): any {
   const rawCat = (notice.category || 'GENERAL').toUpperCase();
   let category = 'GENERAL';
-  if (['EXAM', 'HOLIDAY', 'URGENT', 'GENERAL'].includes(rawCat)) {
+  if (['EXAM', 'HOLIDAY', 'URGENT', 'GENERAL', 'ACADEMIC', 'SCHOLARSHIP', 'EVENT', 'REGISTRATION'].includes(rawCat)) {
     category = rawCat;
   }
 
@@ -1142,6 +1313,9 @@ export function mapNoticeToSupabase(notice: DepartmentNotice): any {
     publish_date: notice.publishDate,
     is_important: notice.isImportant,
     attachment_url: notice.attachmentUrl || null,
+    attachment_file_name: notice.attachmentFileName || null,
+    attachment_size: notice.attachmentSize || null,
+    featured_image_url: notice.featuredImageUrl || null,
     created_by: notice.createdBy,
     created_by_name: notice.createdByName,
     created_at: notice.createdAt || new Date().toISOString(),
@@ -1149,6 +1323,9 @@ export function mapNoticeToSupabase(notice: DepartmentNotice): any {
 }
 
 export async function fetchAllNotices(): Promise<DepartmentNotice[]> {
+  const cached = getCached<DepartmentNotice[]>('notices');
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -1158,6 +1335,7 @@ export async function fetchAllNotices(): Promise<DepartmentNotice[]> {
         const notices = data.map(mapNoticeFromSupabase);
         local.departmentNotices = notices;
         try { db.save(); } catch {}
+        setCached('notices', notices);
         return notices;
       }
       if (error) console.warn('[Supabase fetchAllNotices Note]: Falling back to local store.', error.message || error);
@@ -1165,10 +1343,13 @@ export async function fetchAllNotices(): Promise<DepartmentNotice[]> {
       console.warn('[Supabase fetchAllNotices Exception]: Falling back to local store.', e?.message || e);
     }
   }
-  return local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
+  const fallback = local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
+  if (fallback.length > 0) setCached('notices', fallback);
+  return fallback;
 }
 
 export async function createNoticeInDB(notice: DepartmentNotice): Promise<DepartmentNotice> {
+  invalidateCache('notices');
   const local = db.getData();
   if (!local.departmentNotices) local.departmentNotices = [];
   local.departmentNotices = local.departmentNotices.filter(n => n.id !== notice.id);
@@ -1197,6 +1378,7 @@ export async function createNoticeInDB(notice: DepartmentNotice): Promise<Depart
 }
 
 export async function deleteNoticeFromDB(id: string): Promise<boolean> {
+  invalidateCache('notices');
   const local = db.getData();
   if (local.departmentNotices) {
     local.departmentNotices = local.departmentNotices.filter(n => n.id !== id);
@@ -1282,6 +1464,9 @@ export function mapResourceToSupabase(res: Resource): any {
 }
 
 export async function fetchAllResources(): Promise<Resource[]> {
+  const cached = getCached<Resource[]>('resources');
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -1291,6 +1476,7 @@ export async function fetchAllResources(): Promise<Resource[]> {
         const resources = data.map(mapResourceFromSupabase);
         local.resources = resources;
         try { db.save(); } catch {}
+        setCached('resources', resources);
         return resources;
       }
       if (error) console.warn('[Supabase fetchAllResources Note]: Falling back to local store.', error.message || error);
@@ -1298,10 +1484,13 @@ export async function fetchAllResources(): Promise<Resource[]> {
       console.warn('[Supabase fetchAllResources Exception]: Falling back to local store.', e?.message || e);
     }
   }
-  return local.resources && local.resources.length > 0 ? local.resources : [];
+  const fallback = local.resources && local.resources.length > 0 ? local.resources : [];
+  if (fallback.length > 0) setCached('resources', fallback);
+  return fallback;
 }
 
 export async function createResourceInDB(res: Resource): Promise<Resource> {
+  invalidateCache('resources');
   const local = db.getData();
   if (!local.resources) local.resources = [];
   local.resources = local.resources.filter(r => r.id !== res.id);
@@ -1330,6 +1519,7 @@ export async function createResourceInDB(res: Resource): Promise<Resource> {
 }
 
 export async function updateResourceInDB(id: string, updates: Partial<Resource>): Promise<Resource> {
+  invalidateCache('resources');
   const local = db.getData();
   if (!local.resources) local.resources = [];
   let existing = local.resources.find(r => r.id === id);
@@ -1385,6 +1575,7 @@ export async function updateResourceInDB(id: string, updates: Partial<Resource>)
 }
 
 export async function deleteResourceFromDB(id: string): Promise<boolean> {
+  invalidateCache('resources');
   const local = db.getData();
   if (local.resources) {
     local.resources = local.resources.filter(r => r.id !== id);

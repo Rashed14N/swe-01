@@ -7,6 +7,7 @@ import {
   fetchUserByIdOrStudentId,
   createUserInDB,
   updateUserInDB,
+  fetchAllBatches,
 } from '../supabaseData';
 
 const router = Router();
@@ -50,7 +51,11 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid Password. Please check your password.' });
     }
 
-    const token = generateToken(user);
+    const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+    const userBatch = allBatches.find(b => b.id === user.batchId || (user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()));
+    const activeSemester = userBatch ? userBatch.currentSemester : (user.currentSemester || 5);
+
+    const token = generateToken({ ...user, currentSemester: activeSemester });
 
     res.json({
       token,
@@ -62,8 +67,8 @@ router.post('/login', async (req: Request, res: Response) => {
         phone: user.phone,
         role: user.role,
         batchId: user.batchId,
-        batchName: user.batchName,
-        currentSemester: user.currentSemester,
+        batchName: userBatch?.name || user.batchName,
+        currentSemester: activeSemester,
         profileImage: user.profileImage,
         status: user.status,
         points: user.points || 0,
@@ -102,7 +107,7 @@ router.post(['/register', '/signup'], async (req: Request, res: Response) => {
       role: 'STUDENT' as const,
       batchId: batchId || 'batch-9',
       batchName: batchName || 'SWE 9th Batch',
-      currentSemester: currentSemester || 4,
+      currentSemester: currentSemester || 5,
       status: 'ACTIVE' as const,
       points: 0,
       profileImage: '/avatars/pangolin-cream-2.svg',
@@ -136,7 +141,31 @@ router.get('/me', verifyAuthToken, async (req: AuthenticatedRequest, res: Respon
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    let activeSemester = user.currentSemester || 5;
+    let batchName = user.batchName;
+
+    if (user.role === 'ADMIN') {
+      activeSemester = 0;
+      batchName = 'SWE Administration';
+    } else {
+      const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+      const userBatch = allBatches.find(b => b.id === user.batchId || (user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()));
+      if (userBatch) {
+        activeSemester = userBatch.currentSemester;
+        batchName = userBatch.name;
+      } else if (user.batchId === 'batch-9' || user.batchName?.toLowerCase().includes('9th')) {
+        activeSemester = 5;
+        batchName = 'SWE 9th Batch';
+      }
+    }
+
+    res.json({
+      user: {
+        ...user,
+        currentSemester: activeSemester,
+        batchName,
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to fetch user profile' });
   }
@@ -201,7 +230,7 @@ router.post('/sync-local-user', async (req: Request, res: Response) => {
           role: u.role || 'STUDENT',
           batchId: u.batchId || 'batch-9',
           batchName: u.batchName || 'SWE 9th Batch',
-          currentSemester: u.currentSemester || 4,
+          currentSemester: u.currentSemester || 5,
           status: (u.status || 'ACTIVE') as 'ACTIVE' | 'DISABLED',
           points: u.points || 0,
           profileImage: u.profileImage || '/avatars/pangolin-cream-2.svg',

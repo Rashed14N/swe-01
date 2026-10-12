@@ -5,10 +5,11 @@ import {
   HelpCircle, FileText, FolderGit2, Bell, Users,
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
-  History, GraduationCap, SlidersHorizontal, RotateCcw
+  History, GraduationCap, SlidersHorizontal, RotateCcw, Award
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { useAuth } from '../../context/AuthContext';
+import { getEffectiveSemester } from '../../utils/semester';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -271,10 +272,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ACCOUNT
               </span>
             )}
-            <NavLink to="/profile" className={navLinkClass} onClick={onCloseMobile}>
-              <Settings strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-              {!isCollapsed && <span>Profile & Settings</span>}
-            </NavLink>
+            <div className="space-y-1">
+              <NavLink to="/profile" className={navLinkClass} onClick={onCloseMobile}>
+                <Settings strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                {!isCollapsed && <span>Profile & Settings</span>}
+              </NavLink>
+              <NavLink to="/cgpa" className={navLinkClass} onClick={onCloseMobile}>
+                <Award strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#2563EB] dark:text-blue-400" />
+                {!isCollapsed && <span>My CGPA</span>}
+              </NavLink>
+            </div>
           </div>
         </div>
 
@@ -284,13 +291,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="rounded-xl p-3 bg-[#F8FAFC] dark:bg-slate-800/60 border border-[#E2E8F0] dark:border-slate-700/60 text-xs flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase block font-semibold">
-                  Current Batch
+                  {user?.role === 'ADMIN' ? 'System Role' : 'Current Batch'}
                 </span>
                 <span className="font-bold text-[#0B2348] dark:text-white block mt-0.5">
-                  {user?.batchName || 'SWE 9th Batch'}
+                  {user?.role === 'ADMIN' ? 'SWE Administration' : (user?.batchName || 'SWE 9th Batch')}
                 </span>
                 <span className="text-[11px] text-[#2563EB] dark:text-blue-400 font-medium">
-                  Semester {user?.currentSemester || 4}
+                  {user?.role === 'ADMIN' ? 'Central Administration' : `Semester ${getEffectiveSemester(user)}`}
                 </span>
               </div>
               <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 flex items-center justify-center">

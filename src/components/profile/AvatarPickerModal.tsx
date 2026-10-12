@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Check, UserCircle, Search, Upload, AlertCircle } from 'lucide-react';
 import { PRESET_AVATARS, DEFAULT_AVATAR_URL } from '../../data/avatars';
 
@@ -74,10 +75,13 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
   const selectedAvatarObj = PRESET_AVATARS.find(a => a.url === previewUrl || a.id === previewUrl);
   const isCustomUploaded = previewUrl.startsWith('data:image/');
 
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in"
+      onClick={onClose}
+    >
       <div 
-        className="bg-white dark:bg-[#0F172A] w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative my-auto bg-white dark:bg-[#0F172A] w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -273,6 +277,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

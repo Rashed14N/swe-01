@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import * as adminService from '../services/adminService';
+import { db } from '../db';
 
 const router = Router();
 
@@ -569,6 +570,30 @@ router.get('/audit-logs', async (req: AuthenticatedRequest, res: Response) => {
     return sendSuccess(res, logs);
   } catch (err: any) {
     return sendError(res, err, 'AUDIT_LOGS_FETCH_ERROR');
+  }
+});
+
+// ==============================================================================
+// 13. STUDENT BUG & RESULT DISCREPANCY REPORTS
+// ==============================================================================
+router.get('/bug-reports', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const reports = db.getBugReports();
+    return sendSuccess(res, reports);
+  } catch (err: any) {
+    return sendError(res, err, 'BUG_REPORTS_FETCH_ERROR');
+  }
+});
+
+router.put('/bug-reports/:id', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, error: 'Status is required' });
+    const updated = db.updateBugReportStatus(req.params.id, status);
+    if (!updated) return res.status(404).json({ success: false, error: 'Bug report not found' });
+    return sendSuccess(res, updated);
+  } catch (err: any) {
+    return sendError(res, err, 'BUG_REPORT_UPDATE_ERROR');
   }
 });
 

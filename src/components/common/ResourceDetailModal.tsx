@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Download,
@@ -202,9 +203,9 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-5 md:p-6 bg-[#0B1528]/50 backdrop-blur-xs transition-opacity duration-180 select-none"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3.5 sm:p-5 md:p-6 bg-[#0B1528]/50 backdrop-blur-xs transition-opacity duration-180 select-none overflow-y-auto"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -214,7 +215,7 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[94%] sm:max-w-[88%] md:max-w-[740px] lg:max-w-[760px] max-h-[88vh] sm:max-h-[86vh] bg-white dark:bg-[#0F172A] rounded-2xl sm:rounded-[20px] shadow-[0_16px_48px_rgba(10,33,71,0.16)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.6)] border border-[#D8E2EE] dark:border-slate-800 overflow-hidden flex flex-col transform animate-modal-entry select-text"
+        className="relative my-auto w-full max-w-[94%] sm:max-w-[88%] md:max-w-[740px] lg:max-w-[760px] max-h-[88vh] sm:max-h-[86vh] bg-white dark:bg-[#0F172A] rounded-2xl sm:rounded-[20px] shadow-[0_16px_48px_rgba(10,33,71,0.16)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.6)] border border-[#D8E2EE] dark:border-slate-800 overflow-hidden flex flex-col transform animate-modal-entry select-text"
       >
         {/* Scrollable Modal Content */}
         <div className="overflow-y-auto p-5 sm:p-6 md:p-7 space-y-4 sm:space-y-5">
@@ -420,6 +421,7 @@ export const ResourceDetailModal: React.FC<ResourceDetailModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

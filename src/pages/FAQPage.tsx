@@ -232,7 +232,7 @@ export const FAQPage: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div className="space-y-6 max-w-[1400px] pb-12 animate-fade-in">
+    <div className="space-y-2.5 max-w-[960px] pb-4 animate-fade-in">
       <PageHeader
         title="Software Engineering FAQ"
         description="Official Metropolitan University department guidelines covering post-admission fee structure, tuition installments, grading scales, credit transfers, and academic policies."
@@ -247,25 +247,25 @@ export const FAQPage: React.FC = () => {
 
       {/* Question Counter Bar */}
       <div className="flex items-center justify-between px-1 text-xs text-[#52657C] dark:text-slate-400">
-        <span className="font-semibold">
+        <span className="font-semibold text-[11px] sm:text-xs">
           Showing {filteredFAQs.length} questions
         </span>
         {openFaqId && (
           <button
             type="button"
             onClick={() => setOpenFaqId(null)}
-            className="font-semibold text-[#1D5FD1] hover:underline cursor-pointer"
+            className="font-semibold text-[11px] sm:text-xs text-[#1D5FD1] hover:underline cursor-pointer"
           >
             Collapse Active Question
           </button>
         )}
       </div>
 
-      {/* FAQ Sections */}
+      {/* FAQ Unified List (No Section Division, Compact Padding/Margins) */}
       {filteredFAQs.length === 0 ? (
-        <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-10 text-center space-y-3">
-          <AlertCircle className="w-10 h-10 text-slate-400 mx-auto" />
-          <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">
+        <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-6 text-center space-y-2">
+          <AlertCircle className="w-7 h-7 text-slate-400 mx-auto" />
+          <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] dark:text-white">
             No matching questions found
           </h3>
           <p className="text-xs text-[#52657C] dark:text-slate-400 max-w-sm mx-auto">
@@ -274,209 +274,184 @@ export const FAQPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setSearchQuery('')}
-            className="px-4 py-2 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+            className="px-3 py-1.5 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
             Reset Search
           </button>
         </div>
       ) : (
-        <div className="space-y-6">
-          {SECTIONS.map((sectionName) => {
-            const sectionItems = filteredFAQs.filter(
-              (item) => item.section === sectionName
-            );
-            if (sectionItems.length === 0) return null;
+        <div className="space-y-1.5">
+          {filteredFAQs.map((faq) => {
+            const isExpanded = openFaqId === faq.id;
 
             return (
-              <div key={sectionName} className="space-y-3">
-                {/* Section Title */}
-                <div className="flex items-center gap-2 pb-1.5 border-b border-[#DDE5F0] dark:border-slate-800">
-                  <span className="w-2 h-2 rounded-full bg-[#1D5FD1]" />
-                  <h2 className="text-sm md:text-base font-extrabold text-[#0A2147] dark:text-white tracking-tight">
-                    {sectionName}
-                  </h2>
-                  <span className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
-                    ({sectionItems.length} {sectionItems.length === 1 ? 'question' : 'questions'})
-                  </span>
+              <div
+                key={faq.id}
+                className={`bg-white dark:bg-[#0F172A] rounded-xl border transition-all shadow-2xs overflow-hidden ${
+                  isExpanded
+                    ? 'border-[#2563EB] dark:border-blue-700 ring-1 ring-blue-500/20'
+                    : 'border-[#D8E2EE] dark:border-slate-800 hover:border-[#BFD3EA]'
+                }`}
+              >
+                {/* Question Header */}
+                <div
+                  onClick={() => toggleExpand(faq.id)}
+                  className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 flex items-center justify-between gap-2 hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors cursor-pointer select-none"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-5 h-5 rounded bg-[#EFF5FF] dark:bg-blue-950/60 border border-[#D5E2FA] dark:border-blue-900/60 flex items-center justify-center text-[#1D5FD1] dark:text-blue-300 font-bold text-[10.5px] sm:text-[11px] shrink-0">
+                      {faq.number}
+                    </span>
+                    <h3 className="text-xs sm:text-[12.5px] font-bold text-[#0A2147] dark:text-white leading-snug">
+                      {faq.question}
+                    </h3>
+                  </div>
+
+                  <div
+                    className={`p-1 rounded-md shrink-0 transition-colors ${
+                      isExpanded
+                        ? 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    {isExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </div>
                 </div>
 
-                {/* Section Questions Accordion */}
-                <div className="space-y-2.5">
-                  {sectionItems.map((faq) => {
-                    const isExpanded = openFaqId === faq.id;
+                {/* Animated Answer Body */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      key={`content-${faq.id}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.14, ease: 'easeOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 sm:px-3.5 pb-3 pt-1.5 border-t border-[#E5EBF3] dark:border-slate-800 bg-[#F9FBFE] dark:bg-[#090F1E]/50 space-y-2 text-xs text-[#334155] dark:text-slate-300 leading-relaxed font-normal">
+                        {/* Lead Paragraph */}
+                        {faq.answerText && (
+                          <p className="font-normal text-[#1E293B] dark:text-slate-200">
+                            {faq.answerText}
+                          </p>
+                        )}
 
-                    return (
-                      <div
-                        key={faq.id}
-                        className={`bg-white dark:bg-[#0F172A] rounded-xl border transition-all shadow-[0_1px_3px_rgba(15,35,70,0.03)] overflow-hidden ${
-                          isExpanded
-                            ? 'border-[#2563EB] dark:border-blue-700 ring-1 ring-blue-500/20'
-                            : 'border-[#D8E2EE] dark:border-slate-800 hover:border-[#BFD3EA]'
-                        }`}
-                      >
-                        {/* Question Header */}
-                        <div
-                          onClick={() => toggleExpand(faq.id)}
-                          className="w-full px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors cursor-pointer select-none"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <span className="w-6 h-6 rounded-md bg-[#EFF5FF] dark:bg-blue-950/60 border border-[#D5E2FA] dark:border-blue-900/60 flex items-center justify-center text-[#1D5FD1] dark:text-blue-300 font-bold text-xs shrink-0">
-                              {faq.number}
-                            </span>
-                            <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] dark:text-white leading-snug">
-                              {faq.question}
-                            </h3>
+                        {/* Question 1: Fee Structure Table */}
+                        {faq.feeTable && (
+                          <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-1">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[10px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
+                                  <th className="py-1.5 px-2.5">Fee Item</th>
+                                  <th className="py-1.5 px-2.5 text-right">Amount (BDT)</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
+                                {faq.feeTable.map((row, idx) => (
+                                  <tr
+                                    key={idx}
+                                    className="hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors"
+                                  >
+                                    <td className="py-1.5 px-2.5 text-[#1E293B] dark:text-slate-200">
+                                      {row.fee}
+                                    </td>
+                                    <td className="py-1.5 px-2.5 font-bold text-[#1D5FD1] dark:text-blue-400 text-right">
+                                      ৳ {row.amount}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
+                        )}
 
-                          <div
-                            className={`p-1 rounded-md shrink-0 transition-colors ${
-                              isExpanded
-                                ? 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300'
-                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                            }`}
-                          >
-                            {isExpanded ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
+                        {/* Question 9: Grading Scale Table */}
+                        {faq.gradeTable && (
+                          <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-1">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[10px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
+                                  <th className="py-1.5 px-2.5">Marks</th>
+                                  <th className="py-1.5 px-2.5 text-center">Letter Grade</th>
+                                  <th className="py-1.5 px-2.5 text-right">Grade Point</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
+                                {faq.gradeTable.map((row, idx) => {
+                                  const isFail = row.grade.includes('F');
+                                  const isTop = row.grade === 'A+';
+
+                                  return (
+                                    <tr
+                                      key={idx}
+                                      className={`transition-colors ${
+                                        isFail
+                                          ? 'bg-rose-50/50 dark:bg-rose-950/20'
+                                          : isTop
+                                          ? 'bg-emerald-50/40 dark:bg-emerald-950/20'
+                                          : 'hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40'
+                                      }`}
+                                    >
+                                      <td className="py-1.5 px-2.5 text-[#1E293B] dark:text-slate-200">
+                                        {row.marks}
+                                      </td>
+                                      <td className="py-1.5 px-2.5 text-center">
+                                        <span
+                                          className={`inline-block px-1.5 py-0.5 rounded-md font-bold text-xs ${
+                                            isFail
+                                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                              : isTop
+                                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                              : 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300 border border-[#D5E2FA] dark:border-blue-900/60'
+                                          }`}
+                                        >
+                                          {row.grade}
+                                        </span>
+                                      </td>
+                                      <td className="py-1.5 px-2.5 font-bold text-[#0A2147] dark:text-white text-right">
+                                        {row.point}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Animated Answer Body */}
-                        <AnimatePresence initial={false}>
-                          {isExpanded && (
-                            <motion.div
-                              key={`content-${faq.id}`}
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.18, ease: 'easeOut' }}
-                              className="overflow-hidden"
-                            >
-                              <div className="px-5 pb-5 pt-3 border-t border-[#E5EBF3] dark:border-slate-800 bg-[#F9FBFE] dark:bg-[#090F1E]/50 space-y-3.5 text-xs sm:text-[13px] text-[#334155] dark:text-slate-300 leading-relaxed font-normal">
-                                {/* Lead Paragraph */}
-                                {faq.answerText && (
-                                  <p className="font-normal text-[#1E293B] dark:text-slate-200">
-                                    {faq.answerText}
-                                  </p>
-                                )}
+                        {/* Bullet Points if available */}
+                        {faq.bullets && faq.bullets.length > 0 && (
+                          <ul className="space-y-0.5 pl-4 list-disc marker:text-[#1D5FD1] dark:marker:text-blue-400">
+                            {faq.bullets.map((bullet, idx) => (
+                              <li key={idx} className="text-[#1E293B] dark:text-slate-200">
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
 
-                                {/* Question 1: Fee Structure Table */}
-                                {faq.feeTable && (
-                                  <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-2">
-                                    <table className="w-full text-left border-collapse">
-                                      <thead>
-                                        <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
-                                          <th className="py-2.5 px-4">Fee Item</th>
-                                          <th className="py-2.5 px-4 text-right">Amount (BDT)</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
-                                        {faq.feeTable.map((row, idx) => (
-                                          <tr
-                                            key={idx}
-                                            className="hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40 transition-colors"
-                                          >
-                                            <td className="py-2.5 px-4 text-[#1E293B] dark:text-slate-200">
-                                              {row.fee}
-                                            </td>
-                                            <td className="py-2.5 px-4 font-bold text-[#1D5FD1] dark:text-blue-400 text-right">
-                                              ৳ {row.amount}
-                                            </td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                )}
+                        {/* Post Text */}
+                        {faq.postText && (
+                          <p className="font-semibold text-rose-600 dark:text-rose-400 pt-0.5">
+                            {faq.postText}
+                          </p>
+                        )}
 
-                                {/* Question 9: Grading Scale Table */}
-                                {faq.gradeTable && (
-                                  <div className="overflow-x-auto rounded-lg border border-[#D8E2EE] dark:border-slate-800 my-2">
-                                    <table className="w-full text-left border-collapse">
-                                      <thead>
-                                        <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
-                                          <th className="py-2.5 px-4">Marks</th>
-                                          <th className="py-2.5 px-4 text-center">Letter Grade</th>
-                                          <th className="py-2.5 px-4 text-right">Grade Point</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 bg-white dark:bg-[#0F172A] font-medium text-xs">
-                                        {faq.gradeTable.map((row, idx) => {
-                                          const isFail = row.grade.includes('F');
-                                          const isTop = row.grade === 'A+';
-
-                                          return (
-                                            <tr
-                                              key={idx}
-                                              className={`transition-colors ${
-                                                isFail
-                                                  ? 'bg-rose-50/50 dark:bg-rose-950/20'
-                                                  : isTop
-                                                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20'
-                                                  : 'hover:bg-[#F8FBFF] dark:hover:bg-slate-800/40'
-                                              }`}
-                                            >
-                                              <td className="py-2.5 px-4 text-[#1E293B] dark:text-slate-200">
-                                                {row.marks}
-                                              </td>
-                                              <td className="py-2.5 px-4 text-center">
-                                                <span
-                                                  className={`inline-block px-2.5 py-0.5 rounded-md font-bold text-xs ${
-                                                    isFail
-                                                      ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                                                      : isTop
-                                                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                                                      : 'bg-[#EFF5FF] text-[#1D5FD1] dark:bg-blue-950/60 dark:text-blue-300 border border-[#D5E2FA] dark:border-blue-900/60'
-                                                  }`}
-                                                >
-                                                  {row.grade}
-                                                </span>
-                                              </td>
-                                              <td className="py-2.5 px-4 font-bold text-[#0A2147] dark:text-white text-right">
-                                                {row.point}
-                                              </td>
-                                            </tr>
-                                          );
-                                        })}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                )}
-
-                                {/* Bullet Points if available */}
-                                {faq.bullets && faq.bullets.length > 0 && (
-                                  <ul className="space-y-1.5 pl-4 list-disc marker:text-[#1D5FD1] dark:marker:text-blue-400">
-                                    {faq.bullets.map((bullet, idx) => (
-                                      <li key={idx} className="text-[#1E293B] dark:text-slate-200">
-                                        {bullet}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-
-                                {/* Post Text */}
-                                {faq.postText && (
-                                  <p className="font-semibold text-rose-600 dark:text-rose-400 pt-1">
-                                    {faq.postText}
-                                  </p>
-                                )}
-
-                                {/* Italic Note */}
-                                {faq.italicNote && (
-                                  <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 rounded-lg text-xs text-amber-800 dark:text-amber-300 italic">
-                                    {faq.italicNote}
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        {/* Italic Note */}
+                        {faq.italicNote && (
+                          <div className="p-2 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 rounded-lg text-[11px] text-amber-800 dark:text-amber-300 italic">
+                            {faq.italicNote}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
@@ -484,17 +459,17 @@ export const FAQPage: React.FC = () => {
       )}
 
       {/* Contact & Support Card */}
-      <div className="bg-[#F6F9FD] dark:bg-[#0F172A] rounded-xl p-5 border border-[#DCE5F0] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
-        <div className="space-y-1 text-center sm:text-left">
-          <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">Have additional questions?</h3>
-          <p className="text-xs text-[#52657C] dark:text-slate-400">
+      <div className="bg-[#F6F9FD] dark:bg-[#0F172A] rounded-xl p-3 border border-[#DCE5F0] dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 mt-2.5">
+        <div className="space-y-0.5 text-center sm:text-left">
+          <h3 className="text-xs font-bold text-[#0A2147] dark:text-white">Have additional questions?</h3>
+          <p className="text-[11px] text-[#52657C] dark:text-slate-400">
             Contact the Department of Software Engineering office or consult with your Class Representative (CR).
           </p>
         </div>
         <button
           type="button"
           onClick={() => navigate('/faculty')}
-          className="px-4 py-2 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+          className="px-3 py-1.5 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
         >
           <span>Faculty Directory</span>
           <ArrowRight className="w-3.5 h-3.5" />

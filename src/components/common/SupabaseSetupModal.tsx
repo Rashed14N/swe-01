@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Database,
   CheckCircle2,
@@ -157,9 +158,15 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="relative my-auto bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-5 bg-gradient-to-r from-[#031B3F] to-[#0A3C78] text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -380,6 +387,7 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({ isOpen, 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

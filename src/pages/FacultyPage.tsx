@@ -23,7 +23,10 @@ export const FacultyPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchFaculty();
+    const timer = setTimeout(() => {
+      fetchFaculty();
+    }, 300);
+    return () => clearTimeout(timer);
   }, [search]);
 
   return (

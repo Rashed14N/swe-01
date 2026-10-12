@@ -39,10 +39,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
     checkStatus();
     const handleConfigured = () => setSupabaseLive(true);
     window.addEventListener('supabase-configured', handleConfigured);
-    const interval = setInterval(checkStatus, 10000);
     return () => {
       window.removeEventListener('supabase-configured', handleConfigured);
-      clearInterval(interval);
     };
   }, [isSupabaseModalOpen]);
 
@@ -70,6 +68,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
     if (path.includes('/notices')) return 'Department Notices';
     if (path.includes('/faculty')) return 'Faculty Directory';
     if (path.includes('/profile')) return 'Profile & Settings';
+    if (path.includes('/cgpa')) return 'My Academic CGPA & Results';
     if (path.includes('/cr')) return 'CR Dashboard';
     if (path.includes('/admin')) return 'Admin Dashboard';
     return 'Student Dashboard';

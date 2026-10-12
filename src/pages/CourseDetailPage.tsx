@@ -9,15 +9,22 @@ import {
   ArrowLeft,
   Plus,
   Calendar,
+  Clock,
+  MapPin,
   User,
   CheckCircle2,
   Trash2,
+  GraduationCap,
+  Paperclip,
+  FileUp,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Course, Faculty, Resource } from '../types';
+import { Course, Faculty, Resource, Exam } from '../types';
 import { ResourceDetailModal } from '../components/common/ResourceDetailModal';
 import { UploadQuestionModal } from '../components/resources/UploadQuestionModal';
+import { ScheduleCourseExamModal } from '../components/courses/ScheduleCourseExamModal';
+import { UploadTeacherFileModal } from '../components/courses/UploadTeacherFileModal';
 
 export const CourseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,8 +32,11 @@ export const CourseDetailPage: React.FC = () => {
   const { addToast } = useNotifications();
   const navigate = useNavigate();
 
+  const isCR = user?.role === 'ADMIN' || user?.role === 'CR' || (user as any)?.isCR;
+
   const [course, setCourse] = useState<Course | null>(null);
   const [faculty, setFaculty] = useState<Faculty | null>(null);
+  const [courseExams, setCourseExams] = useState<Exam[]>([]);
   const [resources, setResources] = useState<{
     questions: Resource[];
     notes: Resource[];
@@ -36,6 +46,8 @@ export const CourseDetailPage: React.FC = () => {
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isScheduleExamModalOpen, setIsScheduleExamModalOpen] = useState(false);
+  const [isTeacherFileModalOpen, setIsTeacherFileModalOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>('ALL');
 
   const fetchCourseDetails = useCallback(() => {
@@ -49,6 +61,7 @@ export const CourseDetailPage: React.FC = () => {
       .then((data) => {
         setCourse(data.course);
         setFaculty(data.faculty);
+        setCourseExams(data.exams || []);
         setResources(data.resources || { questions: [], notes: [], labs: [] });
       })
       .catch(console.error)
@@ -90,6 +103,27 @@ export const CourseDetailPage: React.FC = () => {
       fetchCourseDetails();
     } catch (err: any) {
       addToast('error', err.message || 'Error deleting question');
+    }
+  };
+
+  const handleDeleteExam = async (examId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm('Delete this scheduled exam date? It will be removed for all batch students.')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/exams/${examId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || 'Failed to delete exam');
+      }
+      addToast('success', 'Exam date removed successfully');
+      fetchCourseDetails();
+    } catch (err: any) {
+      addToast('error', err.message || 'Error deleting exam');
     }
   };
 
@@ -145,6 +179,140 @@ export const CourseDetailPage: React.FC = () => {
             <span className="text-[10px] font-bold text-[#64748B] dark:text-slate-400 uppercase block">Course Weight</span>
             <span className="text-sm font-bold text-[#0A2147] dark:text-white">{course.credits} Credits</span>
           </div>
+        </div>
+      </div>
+
+      {/* Upcoming Exam Schedule Section (Coming Exam Date for this Course) */}
+      <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-blue-200/80 dark:border-slate-800 p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">
+                  Upcoming Exam Schedule
+                </h3>
+                {courseExams.filter((e) => !e.isArchived).length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    {courseExams.filter((e) => !e.isArchived).length} Scheduled
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Official coming exam dates, timings, test topics, and room arrangement for {course.code}.
+              </p>
+            </div>
+          </div>
+
+          {isCR && (
+            <button
+              type="button"
+              onClick={() => setIsScheduleExamModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Set Coming Exam Date (CR)</span>
+            </button>
+          )}
+        </div>
+
+        {/* Exams List */}
+        <div className="mt-3.5">
+          {courseExams.filter((e) => !e.isArchived).length === 0 ? (
+            <div className="py-6 px-4 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                No upcoming exam date currently announced for this course.
+              </p>
+              {isCR ? (
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleExamModalOpen(true)}
+                  className="mt-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Set coming exam date now
+                </button>
+              ) : (
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Class Representative (CR) will post exam dates once announced by the course teacher.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {courseExams
+                .filter((e) => !e.isArchived)
+                .map((exam) => (
+                  <div
+                    key={exam.id}
+                    className="p-3.5 rounded-xl border border-blue-100 dark:border-slate-700 bg-gradient-to-br from-blue-50/30 via-white to-white dark:from-slate-800/60 dark:via-slate-800/40 dark:to-slate-800/30 flex flex-col justify-between shadow-2xs"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-300 font-bold text-[10px] rounded uppercase border border-blue-200 dark:border-blue-800">
+                          {exam.type}
+                        </span>
+                        {exam.daysLeft !== undefined && (
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              exam.daysLeft <= 1
+                                ? 'bg-rose-100 text-rose-700 border border-rose-200 animate-pulse'
+                                : exam.daysLeft <= 3
+                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            }`}
+                          >
+                            {exam.daysLeft === 0
+                              ? '🚨 Today!'
+                              : exam.daysLeft === 1
+                              ? '⚠️ Tomorrow'
+                              : `⏳ in ${exam.daysLeft} days`}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                        {exam.title}
+                      </h4>
+
+                      <div className="mt-2 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-blue-500 shrink-0" />
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{exam.date}</span>
+                          {exam.startTime && <span>• {exam.startTime}</span>}
+                        </div>
+                        {exam.room && (
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
+                            <span>{exam.room}</span>
+                          </div>
+                        )}
+                        {exam.description && (
+                          <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 italic line-clamp-2">
+                            "{exam.description}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
+                      <span>By {exam.createdByName || 'CR'}</span>
+                      {isCR && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteExam(exam.id, e)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded transition-colors"
+                          title="Delete Exam"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -262,17 +430,38 @@ export const CourseDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Lecture Notes Column */}
+        {/* Lecture Notes Column (with Teacher Attached File by CR) */}
         <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-[#EBF1F8] dark:border-slate-800 mb-4">
             <FileText className="w-5 h-5 text-[#2563EB]" />
-            <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">Lecture Notes</h3>
-            <span className="ml-auto text-xs font-bold text-[#64748B] dark:text-slate-400">({resources.notes.length})</span>
+            <h3 className="text-sm font-bold text-[#0A2147] dark:text-white">Lecture Notes & Teacher Files</h3>
+            <span className="text-xs font-bold text-[#64748B] dark:text-slate-400">({resources.notes.length})</span>
+            {isCR && (
+              <button
+                type="button"
+                onClick={() => setIsTeacherFileModalOpen(true)}
+                className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition-colors shrink-0"
+                title="Attach file provided by teacher (CR)"
+              >
+                <Plus className="w-3.5 h-3.5" /> Attach File (CR)
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
             {resources.notes.length === 0 ? (
-              <p className="text-xs text-slate-400 italic py-4 text-center">No notes uploaded yet.</p>
+              <div className="py-6 text-center">
+                <p className="text-xs text-slate-400 italic">No notes uploaded yet.</p>
+                {isCR && (
+                  <button
+                    type="button"
+                    onClick={() => setIsTeacherFileModalOpen(true)}
+                    className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Attach teacher's handout now
+                  </button>
+                )}
+              </div>
             ) : (
               resources.notes.map((n) => (
                 <div
@@ -280,6 +469,16 @@ export const CourseDetailPage: React.FC = () => {
                   onClick={() => setSelectedResource(n)}
                   className="p-3.5 bg-[#F8FAFD] dark:bg-slate-800/40 hover:bg-[#EFF5FF] dark:hover:bg-slate-800 rounded-xl border border-[#DCE5F0] dark:border-slate-700 hover:border-[#A3C0EE] hover:-translate-y-0.5 hover:shadow-xs cursor-pointer transition-all duration-150 group"
                 >
+                  {n.facultyName && (
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-[9.5px] rounded border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3" /> Teacher Attached File
+                      </span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        {n.facultyName}
+                      </span>
+                    </div>
+                  )}
                   <h4 className="text-xs font-bold text-[#0A2147] dark:text-white group-hover:text-[#2563EB] transition-colors leading-snug line-clamp-2">
                     {n.title}
                   </h4>
@@ -348,6 +547,24 @@ export const CourseDetailPage: React.FC = () => {
         initialCourseCode={course?.code}
         initialCourseTitle={course?.title}
       />
+
+      {course && (
+        <>
+          <ScheduleCourseExamModal
+            isOpen={isScheduleExamModalOpen}
+            onClose={() => setIsScheduleExamModalOpen(false)}
+            onSuccess={fetchCourseDetails}
+            course={course}
+          />
+
+          <UploadTeacherFileModal
+            isOpen={isTeacherFileModalOpen}
+            onClose={() => setIsTeacherFileModalOpen(false)}
+            onSuccess={fetchCourseDetails}
+            course={course}
+          />
+        </>
+      )}
     </div>
   );
 };

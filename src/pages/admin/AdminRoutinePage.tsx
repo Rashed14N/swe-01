@@ -267,6 +267,12 @@ export const AdminRoutinePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 1024 * 1024) {
+      addToast('error', `File size exceeds 1 MB limit (selected: ${(file.size / (1024 * 1024)).toFixed(2)} MB). Maximum 1 MB allowed.`);
+      e.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = event => {
       const content = event.target?.result as string;

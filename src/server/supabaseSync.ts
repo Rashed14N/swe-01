@@ -774,19 +774,10 @@ export async function fetchUserFromSupabase(identifier: string): Promise<any | n
 }
 
 /**
- * Starts continuous background 15-second sync between local DB and Supabase
+ * Background auto-sync interval is deactivated to eliminate ~9.8 GB/day of unnecessary Supabase egress.
+ * Supabase PostgreSQL remains the single source of truth. Writes sync on demand via syncToSupabase().
  */
-export function startAutoSync(getDbData: () => DBData, intervalMs = 15000) {
-  const timer = setInterval(async () => {
-    if (serverSupabase) {
-      try {
-        const dbData = getDbData();
-        await hydrateFromSupabase(dbData);
-      } catch {}
-    }
-  }, intervalMs);
-  if (timer && typeof timer.unref === 'function') {
-    timer.unref();
-  }
-  return timer;
+export function startAutoSync(getDbData: () => DBData, intervalMs = 15000): NodeJS.Timeout | null {
+  console.log('[Supabase Sync] Periodic 15-second background polling deactivated to preserve bandwidth. Using on-demand mutation sync.');
+  return null;
 }

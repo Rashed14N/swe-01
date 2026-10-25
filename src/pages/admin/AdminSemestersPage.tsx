@@ -9,7 +9,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { adminApiClient } from '../../services/adminApiClient';
 import type { Course, Faculty, Batch } from '../../types';
 
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 export const AdminSemestersPage: React.FC = () => {
   const { addToast } = useNotifications();
@@ -85,7 +85,7 @@ export const AdminSemestersPage: React.FC = () => {
     });
 
     courses.forEach((c) => {
-      const sem = c.semester >= 1 && c.semester <= 8 ? c.semester : 1;
+      const sem = c.semester >= 1 && c.semester <= 12 ? c.semester : 1;
       if (!map[sem]) map[sem] = [];
       map[sem].push(c);
     });
@@ -451,13 +451,13 @@ export const AdminSemestersPage: React.FC = () => {
                         Semester {semester}
                       </span>
                       <h2 className="text-base font-extrabold text-slate-900">
-                        {semester <= 2
-                          ? `1st Year (${semester === 1 ? '1st' : '2nd'} Term)`
-                          : semester <= 4
-                          ? `2nd Year (${semester === 3 ? '1st' : '2nd'} Term)`
-                          : semester <= 6
-                          ? `3rd Year (${semester === 5 ? '1st' : '2nd'} Term)`
-                          : `4th Year (${semester === 7 ? '1st' : '2nd'} Term)`}
+                        {(() => {
+                          const year = Math.ceil(semester / 3);
+                          const term = ((semester - 1) % 3) + 1;
+                          const termName = term === 1 ? '1st' : term === 2 ? '2nd' : '3rd';
+                          const yearName = year === 1 ? '1st' : year === 2 ? '2nd' : year === 3 ? '3rd' : '4th';
+                          return `${yearName} Year (${termName} Term)`;
+                        })()}
                       </h2>
 
                       {/* Active Batches Chip */}

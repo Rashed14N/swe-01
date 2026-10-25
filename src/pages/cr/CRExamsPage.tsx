@@ -117,10 +117,7 @@ export const CRExamsPage: React.FC = () => {
           <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-wider mb-1">
             <Calendar className="w-4 h-4" /> Class Representative Tool
           </div>
-          <h1 className="text-xl font-extrabold text-slate-900">Manage Upcoming Assessments</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Set exam dates, quizzes, viva, and assignment deadlines for <strong className="text-slate-800">{user?.batchName}</strong>. Automatic notification is sent on change.
-          </p>
+          <h1 className="text-xl font-extrabold text-slate-900">Manage Exams Schedules</h1>
         </div>
 
         <button
@@ -131,8 +128,8 @@ export const CRExamsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
+      {/* Tabs */}
+      <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('UPCOMING')}
@@ -142,7 +139,7 @@ export const CRExamsPage: React.FC = () => {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Upcoming Exams ({upcomingExams.length})
+            Exams Schedules ({upcomingExams.length})
           </button>
           <button
             onClick={() => setActiveTab('PAST')}
@@ -154,17 +151,6 @@ export const CRExamsPage: React.FC = () => {
           >
             Past Exam History ({pastExams.length})
           </button>
-        </div>
-
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search exams..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
-          />
         </div>
       </div>
 

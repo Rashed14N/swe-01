@@ -9,7 +9,6 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { PageHeader } from '../components/common/PageHeader';
-import { FilterBar } from '../components/common/FilterBar';
 
 interface FeeRow {
   fee: string;
@@ -190,7 +189,6 @@ export const FAQPage: React.FC = () => {
     }
   }, []);
 
-  const [searchQuery, setSearchQuery] = useState('');
   // Single active expanded FAQ ID: opening one closes all other questions automatically
   const [openFaqId, setOpenFaqId] = useState<string | null>('faq-1');
 
@@ -199,50 +197,13 @@ export const FAQPage: React.FC = () => {
     setOpenFaqId((prev) => (prev === id ? null : id));
   };
 
-  const filteredFAQs = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return SWE_FAQ_DATA;
-
-    return SWE_FAQ_DATA.filter((item) => {
-      const matchQuestion = item.question.toLowerCase().includes(q);
-      const matchSection = item.section.toLowerCase().includes(q);
-      const matchAnswer = item.answerText?.toLowerCase().includes(q);
-      const matchPost = item.postText?.toLowerCase().includes(q);
-      const matchBullets = item.bullets?.some((b) => b.toLowerCase().includes(q));
-      const matchFee = item.feeTable?.some(
-        (f) => f.fee.toLowerCase().includes(q) || f.amount.includes(q)
-      );
-      const matchGrade = item.gradeTable?.some(
-        (g) =>
-          g.marks.toLowerCase().includes(q) ||
-          g.grade.toLowerCase().includes(q) ||
-          g.point.includes(q)
-      );
-
-      return (
-        matchQuestion ||
-        matchSection ||
-        matchAnswer ||
-        matchPost ||
-        matchBullets ||
-        matchFee ||
-        matchGrade
-      );
-    });
-  }, [searchQuery]);
+  const filteredFAQs = SWE_FAQ_DATA;
 
   return (
     <div className="space-y-2.5 max-w-[960px] pb-4 animate-fade-in">
       <PageHeader
         title="Software Engineering FAQ"
-        description="Official Metropolitan University department guidelines covering post-admission fee structure, tuition installments, grading scales, credit transfers, and academic policies."
         breadcrumb="OFFICIAL ACADEMIC KNOWLEDGE BASE"
-      />
-
-      <FilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search topics (e.g. fees, tuition, grading, scholarship, forum)..."
       />
 
       {/* Question Counter Bar */}
@@ -261,23 +222,13 @@ export const FAQPage: React.FC = () => {
         )}
       </div>
 
-      {/* FAQ Unified List (No Section Division, Compact Padding/Margins) */}
+      {/* FAQ Unified List */}
       {filteredFAQs.length === 0 ? (
         <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-6 text-center space-y-2">
           <AlertCircle className="w-7 h-7 text-slate-400 mx-auto" />
           <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] dark:text-white">
-            No matching questions found
+            No questions available
           </h3>
-          <p className="text-xs text-[#52657C] dark:text-slate-400 max-w-sm mx-auto">
-            Try searching for other terms such as "admission", "fees", "grading", or "tuition".
-          </p>
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            className="px-3 py-1.5 bg-[#1769E8] hover:bg-[#1158C8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-          >
-            Reset Search
-          </button>
         </div>
       ) : (
         <div className="space-y-1.5">

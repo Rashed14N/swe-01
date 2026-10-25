@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import type {
   User, Batch, Course, RoutineSlot, Exam, BatchAnnouncement,
   DepartmentNotice, Resource, Faculty, NotificationItem, AuditLog, RoutineRequest,
-  RetakeRegistration, BugReport
+  RetakeRegistration, BugReport, ClassTopic, ClassTask
 } from '../types';
 
 import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase } from './supabaseSync';
@@ -29,6 +29,8 @@ export interface DBData {
   studentDocuments?: Record<string, Array<{ id: string; fileName: string; fileUrl?: string; uploadedAt: string; notes?: string; fileSize?: string }>>;
   studentCustomCourses?: Record<string, Course[]>;
   studentExcludedCourses?: Record<string, string[]>;
+  classTopics?: any[];
+  classTasks?: ClassTask[];
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -748,6 +750,164 @@ export function seedInitialData(): DBData {
       type: 'THEORY',
       semester: 8,
       batchIds: ['batch-5'],
+    },
+
+    // Semester 9
+    {
+      id: 'course-sem9-swe-411',
+      code: 'SWE-411',
+      shortName: 'SA',
+      title: 'Software Architecture & Enterprise Design',
+      credits: 3,
+      type: 'THEORY',
+      semester: 9,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem9-swe-412',
+      code: 'SWE-412',
+      shortName: 'SAL',
+      title: 'Software Architecture & Enterprise Design Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 9,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem9-swe-431',
+      code: 'SWE-431',
+      shortName: 'ML',
+      title: 'Machine Learning & Predictive Systems',
+      credits: 3,
+      type: 'THEORY',
+      semester: 9,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem9-swe-400a',
+      code: 'SWE-400A',
+      shortName: 'CP1',
+      title: 'Capstone Project / Thesis (Phase-I)',
+      credits: 2,
+      type: 'PROJECT',
+      semester: 9,
+      batchIds: [],
+    },
+
+    // Semester 10
+    {
+      id: 'course-sem10-swe-441',
+      code: 'SWE-441',
+      shortName: 'CC',
+      title: 'Cloud Computing & DevOps Engineering',
+      credits: 3,
+      type: 'THEORY',
+      semester: 10,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem10-swe-442',
+      code: 'SWE-442',
+      shortName: 'CCL',
+      title: 'Cloud Computing & DevOps Practice Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 10,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem10-swe-451',
+      code: 'SWE-451',
+      shortName: 'DS',
+      title: 'Distributed Systems & Microservices',
+      credits: 3,
+      type: 'THEORY',
+      semester: 10,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem10-swe-400b',
+      code: 'SWE-400B',
+      shortName: 'CP2',
+      title: 'Capstone Project / Thesis (Phase-II)',
+      credits: 2,
+      type: 'PROJECT',
+      semester: 10,
+      batchIds: [],
+    },
+
+    // Semester 11
+    {
+      id: 'course-sem11-swe-471',
+      code: 'SWE-471',
+      shortName: 'BDA',
+      title: 'Big Data Analytics & Data Engineering',
+      credits: 3,
+      type: 'THEORY',
+      semester: 11,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem11-swe-472',
+      code: 'SWE-472',
+      shortName: 'BDAL',
+      title: 'Big Data Analytics Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 11,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem11-swe-481',
+      code: 'SWE-481',
+      shortName: 'CS',
+      title: 'Cyber Security, Privacy & Secure Coding',
+      credits: 3,
+      type: 'THEORY',
+      semester: 11,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem11-swe-400c',
+      code: 'SWE-400C',
+      shortName: 'CP3',
+      title: 'Capstone Project / Thesis (Phase-III)',
+      credits: 2,
+      type: 'PROJECT',
+      semester: 11,
+      batchIds: [],
+    },
+
+    // Semester 12
+    {
+      id: 'course-sem12-swe-490',
+      code: 'SWE-490',
+      shortName: 'INT',
+      title: 'Industrial Internship / Professional Attachment',
+      credits: 6,
+      type: 'PROJECT',
+      semester: 12,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem12-swe-499',
+      code: 'SWE-499',
+      shortName: 'VIV',
+      title: 'Comprehensive Viva & Senior Defense',
+      credits: 3,
+      type: 'THEORY',
+      semester: 12,
+      batchIds: [],
+    },
+    {
+      id: 'course-sem12-ged-404',
+      code: 'GED-404',
+      shortName: 'PEL',
+      title: 'Professional Ethics, Law & Leadership',
+      credits: 3,
+      type: 'THEORY',
+      semester: 12,
+      batchIds: [],
     },
   ];
 
@@ -2386,7 +2546,7 @@ class JsonDB {
         }
       }
       if (!b.status) {
-        b.status = b.currentSemester > 8 ? 'GRADUATED' : 'ACTIVE';
+        b.status = b.currentSemester > 12 ? 'GRADUATED' : 'ACTIVE';
       }
       if (!b.crIds) b.crIds = [];
     });
@@ -2621,18 +2781,23 @@ class JsonDB {
     return false;
   }
 
-  public getStudentGrades(studentId: string): Record<string, { grade: string; gradePoint: number; semester?: number; updatedAt?: string }> {
+  public getStudentGrades(studentId: string, alternateId?: string): Record<string, { grade: string; gradePoint: number; semester?: number; updatedAt?: string }> {
     if (!this.data.studentGrades) {
       this.data.studentGrades = {};
     }
-    return this.data.studentGrades[studentId] || {};
+    const primary = this.data.studentGrades[studentId];
+    if (primary && Object.keys(primary).length > 0) return primary;
+    if (alternateId && this.data.studentGrades[alternateId]) {
+      return this.data.studentGrades[alternateId];
+    }
+    return primary || {};
   }
 
-  public saveStudentGrades(studentId: string, grades: Record<string, { grade: string; gradePoint: number; semester?: number }>) {
+  public saveStudentGrades(studentId: string, grades: Record<string, { grade: string; gradePoint: number; semester?: number }>, alternateId?: string) {
     if (!this.data.studentGrades) {
       this.data.studentGrades = {};
     }
-    const current = this.data.studentGrades[studentId] || {};
+    const current = { ...(this.data.studentGrades[studentId] || (alternateId ? this.data.studentGrades[alternateId] : null) || {}) };
     const now = new Date().toISOString();
     for (const [code, info] of Object.entries(grades)) {
       if (!info.grade || info.grade === 'N/A' || info.grade === 'NOT_PUBLISHED') {
@@ -2647,8 +2812,66 @@ class JsonDB {
       }
     }
     this.data.studentGrades[studentId] = current;
+    if (alternateId && alternateId !== studentId) {
+      this.data.studentGrades[alternateId] = current;
+    }
+
+    // Update user.cgpa on the user record in local database
+    let totalQualityPoints = 0;
+    let totalGradedCredits = 0;
+    for (const item of Object.values(current)) {
+      if (item && typeof item.gradePoint === 'number' && item.gradePoint >= 0) {
+        const cred = 3.0; // standard estimation if credits not attached directly
+        totalQualityPoints += cred * item.gradePoint;
+        totalGradedCredits += cred;
+      }
+    }
+    const computedCgpa = totalGradedCredits > 0 ? Number((totalQualityPoints / totalGradedCredits).toFixed(2)) : 0.00;
+
+    const matchedUser = this.data.users.find(u => u.id === studentId || (alternateId && (u.id === alternateId || u.studentId === alternateId)) || u.studentId === studentId);
+    if (matchedUser) {
+      matchedUser.cgpa = computedCgpa;
+    }
+
     this.save();
     return current;
+  }
+
+  public getStudentCGPA(studentId: string, alternateId?: string): number {
+    const grades = this.getStudentGrades(studentId, alternateId);
+    let totalQualityPoints = 0;
+    let totalGradedCredits = 0;
+    for (const item of Object.values(grades)) {
+      if (item && typeof item.gradePoint === 'number' && item.gradePoint >= 0) {
+        const cred = 3.0;
+        totalQualityPoints += cred * item.gradePoint;
+        totalGradedCredits += cred;
+      }
+    }
+    if (totalGradedCredits === 0) {
+      const u = this.data.users.find(usr => usr.id === studentId || usr.studentId === studentId || (alternateId && (usr.id === alternateId || usr.studentId === alternateId)));
+      return u?.cgpa || 0;
+    }
+    return Number((totalQualityPoints / totalGradedCredits).toFixed(2));
+  }
+
+  public setStudentCGPA(studentId: string, cgpa: number, alternateId?: string): void {
+    const matchedUser = this.data.users.find(u => u.id === studentId || u.studentId === studentId || (alternateId && (u.id === alternateId || u.studentId === alternateId)));
+    if (matchedUser) {
+      matchedUser.cgpa = cgpa;
+      this.save();
+    }
+  }
+
+  public resetStudentGrades(studentId: string, alternateId?: string): void {
+    if (!this.data.studentGrades) this.data.studentGrades = {};
+    this.data.studentGrades[studentId] = {};
+    if (alternateId) this.data.studentGrades[alternateId] = {};
+    const matchedUser = this.data.users.find(u => u.id === studentId || u.studentId === studentId || (alternateId && (u.id === alternateId || u.studentId === alternateId)));
+    if (matchedUser) {
+      matchedUser.cgpa = 0;
+    }
+    this.save();
   }
 
   public getStudentCGPADocs(studentId: string): any[] {
@@ -2777,6 +3000,85 @@ class JsonDB {
     item.status = status;
     this.save();
     return item;
+  }
+
+  public getClassTasks(): ClassTask[] {
+    if (!this.data.classTasks) {
+      if (this.data.classTopics && Array.isArray(this.data.classTopics) && this.data.classTopics.length > 0) {
+        this.data.classTasks = this.data.classTopics.map((t: any) => ({
+          id: t.id,
+          courseId: t.courseId,
+          courseCode: t.courseCode,
+          courseTitle: t.courseTitle,
+          semester: t.semester,
+          batchId: t.batchId,
+          date: t.date,
+          dueDate: t.homework ? t.date : undefined,
+          title: t.topic || t.title || 'Class Task',
+          description: t.description || t.homework || '',
+          type: 'TASK' as const,
+          priority: 'NORMAL' as const,
+          facultyName: t.facultyName,
+          attachmentUrl: t.attachmentUrl,
+          attachmentName: t.attachmentName,
+          createdBy: t.createdBy,
+          createdByName: t.createdByName,
+          createdAt: t.createdAt,
+        }));
+      } else {
+        this.data.classTasks = [];
+      }
+    }
+    return this.data.classTasks;
+  }
+
+  public addClassTask(task: ClassTask): ClassTask {
+    if (!this.data.classTasks) {
+      this.data.classTasks = [];
+    }
+    this.data.classTasks.unshift(task);
+    this.save();
+    return task;
+  }
+
+  public updateClassTask(id: string, updates: Partial<ClassTask>): ClassTask | null {
+    if (!this.data.classTasks) return null;
+    const idx = this.data.classTasks.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+    this.data.classTasks[idx] = {
+      ...this.data.classTasks[idx],
+      ...updates,
+    };
+    this.save();
+    return this.data.classTasks[idx];
+  }
+
+  public deleteClassTask(id: string): boolean {
+    if (!this.data.classTasks) return false;
+    const initialLen = this.data.classTasks.length;
+    this.data.classTasks = this.data.classTasks.filter(t => t.id !== id);
+    if (this.data.classTasks.length !== initialLen) {
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  // Backwards compatibility methods
+  public getClassTopics(): any[] {
+    return this.getClassTasks();
+  }
+
+  public addClassTopic(topic: any): any {
+    return this.addClassTask(topic);
+  }
+
+  public updateClassTopic(id: string, updates: any): any {
+    return this.updateClassTask(id, updates);
+  }
+
+  public deleteClassTopic(id: string): boolean {
+    return this.deleteClassTask(id);
   }
 }
 

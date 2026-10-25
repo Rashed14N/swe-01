@@ -1164,14 +1164,35 @@ export async function deleteExamFromDB(id: string): Promise<boolean> {
 // ==============================================================================
 
 export function mapAnnouncementFromSupabase(row: any): BatchAnnouncement {
+  let featuredImageUrl = row.featured_image_url || row.featuredImageUrl || undefined;
+  let description = row.description || row.content || '';
+
+  // Extract embedded feature image if present
+  if (typeof description === 'string' && description.startsWith('<!--IMG:')) {
+    const endIdx = description.indexOf('-->');
+    if (endIdx > 8) {
+      if (!featuredImageUrl) {
+        featuredImageUrl = description.substring(8, endIdx);
+      }
+      description = description.substring(endIdx + 3).trimStart();
+    }
+  }
+
+  // Fallback to local database if available
+  const local = db.getData().announcements?.find(a => a.id === row.id);
+  if (!featuredImageUrl && local?.featuredImageUrl) {
+    featuredImageUrl = local.featuredImageUrl;
+  }
+
   return {
     id: row.id,
     batchId: row.batch_id || '',
     title: row.title || '',
-    description: row.description || row.content || '',
+    description,
     publishDate: row.publish_date || new Date().toISOString().split('T')[0],
     expiryDate: row.expiry_date || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
     priority: row.priority || 'NORMAL',
+    featuredImageUrl,
     createdBy: row.created_by || row.author_id || '',
     createdByName: row.created_by_name || row.author_name || 'CR',
     createdAt: row.created_at || new Date().toISOString(),
@@ -1182,11 +1203,16 @@ export function mapAnnouncementToSupabase(ann: BatchAnnouncement): any {
   const rawPriority = (ann.priority || 'NORMAL').toUpperCase();
   const priority = (rawPriority === 'URGENT' || rawPriority === 'HIGH') ? 'URGENT' : 'NORMAL';
 
+  let description = ann.description || '';
+  if (ann.featuredImageUrl) {
+    description = `<!--IMG:${ann.featuredImageUrl}-->\n${description}`;
+  }
+
   return {
     id: ann.id,
     batch_id: ann.batchId,
     title: ann.title,
-    description: ann.description,
+    description,
     publish_date: ann.publishDate,
     expiry_date: ann.expiryDate,
     priority,
@@ -1281,6 +1307,34 @@ export async function deleteAnnouncementFromDB(id: string): Promise<boolean> {
 // ==============================================================================
 
 export function mapNoticeFromSupabase(row: any): DepartmentNotice {
+  let featuredImageUrl = row.featured_image_url || undefined;
+  let attachmentUrl = row.attachment_url || undefined;
+  let attachmentFileName = row.attachment_file_name || row.attachmentFileName || undefined;
+  let attachmentSize = row.attachment_size || row.attachmentSize || undefined;
+  let attachedPhotos: string[] = [];
+
+  if (row.attachment_url && typeof row.attachment_url === 'string' && row.attachment_url.trim().startsWith('{')) {
+    try {
+      const meta = JSON.parse(row.attachment_url);
+      if (meta.featuredImageUrl) featuredImageUrl = meta.featuredImageUrl;
+      if (meta.attachmentUrl) attachmentUrl = meta.attachmentUrl;
+      if (meta.attachmentFileName) attachmentFileName = meta.attachmentFileName;
+      if (meta.attachmentSize) attachmentSize = meta.attachmentSize;
+      if (Array.isArray(meta.attachedPhotos)) attachedPhotos = meta.attachedPhotos;
+    } catch {
+      // not JSON
+    }
+  }
+
+  const local = db.getData().departmentNotices?.find(n => n.id === row.id);
+  if (local) {
+    if (!featuredImageUrl && local.featuredImageUrl) featuredImageUrl = local.featuredImageUrl;
+    if (!attachmentUrl && local.attachmentUrl) attachmentUrl = local.attachmentUrl;
+    if (!attachmentFileName && local.attachmentFileName) attachmentFileName = local.attachmentFileName;
+    if (!attachmentSize && local.attachmentSize) attachmentSize = local.attachmentSize;
+    if (attachedPhotos.length === 0 && local.attachedPhotos) attachedPhotos = local.attachedPhotos;
+  }
+
   return {
     id: row.id,
     title: row.title || '',
@@ -1288,10 +1342,11 @@ export function mapNoticeFromSupabase(row: any): DepartmentNotice {
     category: row.category || 'GENERAL',
     publishDate: row.publish_date || new Date().toISOString().split('T')[0],
     isImportant: Boolean(row.is_important),
-    attachmentUrl: row.attachment_url || undefined,
-    attachmentFileName: row.attachment_file_name || row.attachmentFileName || undefined,
-    attachmentSize: row.attachment_size || row.attachmentSize || undefined,
-    featuredImageUrl: row.featured_image_url || row.featuredImageUrl || undefined,
+    attachmentUrl,
+    attachmentFileName,
+    attachmentSize,
+    featuredImageUrl,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : undefined,
     createdBy: row.created_by || 'Admin',
     createdByName: row.created_by_name || 'Department Admin',
     createdAt: row.created_at || new Date().toISOString(),
@@ -1305,6 +1360,17 @@ export function mapNoticeToSupabase(notice: DepartmentNotice): any {
     category = rawCat;
   }
 
+  let finalAttachmentUrl = notice.attachmentUrl || null;
+  if (notice.featuredImageUrl || (notice.attachedPhotos && notice.attachedPhotos.length > 0) || notice.attachmentFileName) {
+    finalAttachmentUrl = JSON.stringify({
+      featuredImageUrl: notice.featuredImageUrl || null,
+      attachedPhotos: notice.attachedPhotos || [],
+      attachmentUrl: notice.attachmentUrl || null,
+      attachmentFileName: notice.attachmentFileName || null,
+      attachmentSize: notice.attachmentSize || null,
+    });
+  }
+
   return {
     id: notice.id,
     title: notice.title,
@@ -1312,10 +1378,7 @@ export function mapNoticeToSupabase(notice: DepartmentNotice): any {
     category,
     publish_date: notice.publishDate,
     is_important: notice.isImportant,
-    attachment_url: notice.attachmentUrl || null,
-    attachment_file_name: notice.attachmentFileName || null,
-    attachment_size: notice.attachmentSize || null,
-    featured_image_url: notice.featuredImageUrl || null,
+    attachment_url: finalAttachmentUrl,
     created_by: notice.createdBy,
     created_by_name: notice.createdByName,
     created_at: notice.createdAt || new Date().toISOString(),

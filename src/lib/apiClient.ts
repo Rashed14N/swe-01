@@ -15,6 +15,16 @@ export async function safeParseJson<T = any>(response: Response, retriesLeft: nu
       // ignore
     }
 
+    // Attempt to parse as JSON first in case Content-Type was missing or sent as text/plain
+    if (rawText && (rawText.trim().startsWith('{') || rawText.trim().startsWith('['))) {
+      try {
+        const parsed = JSON.parse(rawText);
+        return parsed as T;
+      } catch {
+        // Not valid JSON, proceed to HTML/server startup inspection
+      }
+    }
+
     const isStartingServer =
       rawText.includes('Starting Server') ||
       rawText.includes('starting the dev server') ||

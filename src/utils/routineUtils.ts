@@ -30,10 +30,11 @@ export function normalizeCourseCode(val?: string): string {
  * Fixes alphabetical sort bugs where "01:30 PM" came before "09:00 AM".
  */
 export function sortRoutineSlots(slots: RoutineSlot[]): RoutineSlot[] {
+  if (!Array.isArray(slots) || slots.length === 0) return [];
   return [...slots].sort((a, b) => {
-    const diff = parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime);
+    const diff = parseTimeToMinutes(a?.startTime) - parseTimeToMinutes(b?.startTime);
     if (diff !== 0) return diff;
-    return parseTimeToMinutes(a.endTime) - parseTimeToMinutes(b.endTime);
+    return parseTimeToMinutes(a?.endTime) - parseTimeToMinutes(b?.endTime);
   });
 }
 

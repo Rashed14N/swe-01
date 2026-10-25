@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   User as UserIcon, Upload, CheckCircle2, Clock, XCircle, FileText, 
   Award, ShieldCheck, Mail, Phone, Hash, GraduationCap, Save, 
@@ -30,6 +31,21 @@ export const ProfilePage: React.FC = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [cgpaSummary, setCgpaSummary] = useState<{ cgpa: number; academicStanding: string; totalGradedCredits: number } | null>(null);
+
+  // Fetch student CGPA for profile
+  useEffect(() => {
+    if (token && user?.role !== 'ADMIN') {
+      fetch('/api/cgpa', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(d => {
+          if (d?.success && d?.cgpaSummary) {
+            setCgpaSummary(d.cgpaSummary);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [token, user?.role]);
 
   // Synchronize state when user changes
   useEffect(() => {
@@ -812,8 +828,8 @@ export const ProfilePage: React.FC = () => {
               </div>
             </form>
 
-            {/* Bottom Compact Information Cards: Student ID & Batch/Semester */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+            {/* Bottom Compact Information Cards: Student ID & Batch/Semester & CGPA */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/80">
               <div className="p-3 bg-slate-50/70 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-4 h-4" />
@@ -848,6 +864,29 @@ export const ProfilePage: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {user?.role !== 'ADMIN' && (
+                <Link
+                  to="/cgpa"
+                  className="p-3 bg-slate-50/70 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-300 dark:hover:border-blue-700 flex items-center justify-between gap-3 transition-all group"
+                  title="View full Academic Results and CGPA breakdown"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                        Academic CGPA
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 font-mono truncate block">
+                        {cgpaSummary && cgpaSummary.totalGradedCredits > 0 ? `${cgpaSummary.cgpa.toFixed(2)} / 4.00` : (user?.cgpa && user.cgpa > 0 ? `${user.cgpa.toFixed(2)} / 4.00` : 'No Grades Yet')}
+                      </span>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                </Link>
+              )}
             </div>
           </div>
         </div>

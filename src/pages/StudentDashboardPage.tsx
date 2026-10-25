@@ -7,7 +7,7 @@ import {
   FileText, Shield, ExternalLink, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { DashboardSummary, Course, RoutineSlot } from '../types';
+import { DashboardSummary, Course, RoutineSlot, BatchAnnouncement } from '../types';
 import {
   fetchRoutinesFromSupabase,
   fetchExamsFromSupabase,
@@ -233,7 +233,6 @@ export const StudentDashboardPage: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string>(currentDayName);
   const [allRoutines, setAllRoutines] = useState<RoutineSlot[]>([]);
 
-  // Instant render with memory cache or default summary (0ms delay)
   const [summary, setSummary] = useState<DashboardSummary>(() => {
     return cachedDashboardSummary || getDefaultSummary(user?.batchId || 'batch-9');
   });
@@ -395,10 +394,10 @@ export const StudentDashboardPage: React.FC = () => {
 
         <DashboardSummaryCard
           id="summary-card-upcoming-exams"
-          title="Upcoming Exams"
+          title="Exams Schedules"
           count={summary.upcomingExamsCount}
           icon={ClipboardList}
-          actionLabel="View Exams"
+          actionLabel="View Schedules"
           onClick={() => navigate('/exams')}
           accent={{
             iconBg: '#FFF3E4',
@@ -433,10 +432,14 @@ export const StudentDashboardPage: React.FC = () => {
           {/* Today's Schedule Card */}
           {(() => {
             const isViewingToday = selectedDay === currentDayName;
-            const currentPool = allRoutines.length > 0 ? allRoutines : (isViewingToday ? summary.todaysRoutine : []);
+            const currentPool = allRoutines.length > 0 ? allRoutines : (isViewingToday ? (summary?.todaysRoutine || []) : []);
             const displayedSlots = sortRoutineSlots(
-              deduplicateAndMergeRoutineSlots(currentPool.filter(r => r.day?.toUpperCase() === selectedDay))
+              deduplicateAndMergeRoutineSlots((currentPool || []).filter(r => Boolean(r && r.day && r.day.toUpperCase() === selectedDay)))
             );
+
+            const dayTitle = isViewingToday
+              ? "Today's Class Schedule"
+              : `${(selectedDay ? selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase() : 'Daily')} Schedule`;
 
             return (
               <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] overflow-hidden transition-all">
@@ -467,7 +470,7 @@ export const StudentDashboardPage: React.FC = () => {
                   <div className="relative z-10 flex items-center gap-2 sm:gap-2.5 flex-wrap">
                     <Calendar className="w-5 h-5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.4} />
                     <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
-                      {isViewingToday ? "Today's Class Schedule" : `${selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase()} Schedule`}
+                      {dayTitle}
                     </h2>
                     <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-[#1D4ED8] dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/50">
                       {displayedSlots.length} {displayedSlots.length === 1 ? 'Class' : 'Classes'}
@@ -520,8 +523,8 @@ export const StudentDashboardPage: React.FC = () => {
                   <div className="py-9 px-4 text-center">
                     <p className="text-xs font-semibold text-[#475569] dark:text-slate-300">
                       {isViewingToday
-                        ? `No classes scheduled for today (${currentDayName.charAt(0) + currentDayName.slice(1).toLowerCase()})!`
-                        : `No classes scheduled for ${selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase()}!`}
+                        ? `No classes scheduled for today (${currentDayName ? currentDayName.charAt(0) + currentDayName.slice(1).toLowerCase() : 'Today'})!`
+                        : `No classes scheduled for ${selectedDay ? selectedDay.charAt(0) + selectedDay.slice(1).toLowerCase() : 'this day'}!`}
                     </p>
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                       {currentDayName === 'FRIDAY' || currentDayName === 'SATURDAY'
@@ -671,21 +674,30 @@ export const StudentDashboardPage: React.FC = () => {
                       className="p-4 sm:p-[16px_20px] bg-white dark:bg-[#0F172A] hover:bg-[#F7FAFF] dark:hover:bg-slate-800/40 transition-colors flex flex-col justify-between gap-2 cursor-pointer group"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-sm sm:text-[15px] font-semibold text-[#0F172A] dark:text-white leading-snug group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">
-                          {ann.title}
-                        </h3>
-                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border uppercase tracking-wider shrink-0 ${priorityStyle}`}>
-                          {ann.priority}
-                        </span>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {ann.featuredImageUrl && (
+                            <img
+                              src={ann.featuredImageUrl}
+                              alt="thumb"
+                              className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                            />
+                          )}
+                          <h3 className="text-sm sm:text-[15px] font-semibold text-[#0F172A] dark:text-white leading-snug group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                            {ann.title}
+                          </h3>
+                        </div>
+                        {ann.priority !== 'NORMAL' && (
+                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border uppercase tracking-wider shrink-0 ${priorityStyle}`}>
+                            {ann.priority}
+                          </span>
+                        )}
                       </div>
 
                       <p className="text-xs sm:text-[13px] text-[#475569] dark:text-slate-400 line-clamp-2 leading-relaxed">
                         {ann.description}
                       </p>
 
-                      <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-slate-500 font-normal mt-0.5">
-                        <span>{ann.createdByName || 'Batch Representative'}</span>
-                        <span>•</span>
+                      <div className="flex items-center text-xs text-[#64748B] dark:text-slate-500 font-normal mt-0.5">
                         <span>{ann.publishDate}</span>
                       </div>
                     </div>

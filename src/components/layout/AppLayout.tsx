@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 import { ToastContainer } from '../common/ToastContainer';
@@ -10,6 +10,14 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleCloseSidebar = () => {
+      setIsMobileOpen(false);
+    };
+    window.addEventListener('close-mobile-sidebar', handleCloseSidebar);
+    return () => window.removeEventListener('close-mobile-sidebar', handleCloseSidebar);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#EEF3F9] dark:bg-[#090F1E] text-[#0F172A] dark:text-[#F8FAFC] flex font-sans antialiased relative transition-colors duration-200">

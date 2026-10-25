@@ -63,20 +63,29 @@ export const RecentAnnouncementsCard: React.FC<RecentAnnouncementsCardProps> = (
               >
                 <div className="flex items-center justify-between gap-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    {pStyle.icon}
+                    {ann.featuredImageUrl ? (
+                      <img
+                        src={ann.featuredImageUrl}
+                        alt="thumb"
+                        className="w-5 h-5 rounded object-cover border border-slate-200 shrink-0"
+                      />
+                    ) : (
+                      pStyle.icon
+                    )}
                     <h4 className="text-xs font-bold text-[#10213B] truncate">{ann.title}</h4>
                   </div>
-                  <span className={`px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded border shrink-0 ${pStyle.badge}`}>
-                    {ann.priority}
-                  </span>
+                  {ann.priority && ann.priority !== 'NORMAL' && (
+                    <span className={`px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold rounded border shrink-0 ${pStyle.badge}`}>
+                      {ann.priority}
+                    </span>
+                  )}
                 </div>
 
                 <p className="text-[10px] sm:text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
                   {ann.description}
                 </p>
 
-                <div className="pt-1 flex items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-medium border-t border-[#E5EBF3] mt-1">
-                  <span>By: {ann.createdByName}</span>
+                <div className="pt-1 flex items-center justify-end text-[9px] sm:text-[10px] text-slate-400 font-medium border-t border-[#E5EBF3] mt-1">
                   <span>{ann.publishDate}</span>
                 </div>
               </div>

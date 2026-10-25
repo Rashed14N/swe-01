@@ -171,6 +171,105 @@ export async function getAllUsers(): Promise<User[]> {
   }));
 }
 
+export interface GetPaginatedUsersOptions {
+  search?: string;
+  batchId?: string;
+  role?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedUsersResult {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Promise<PaginatedUsersResult> {
+  const supabase = getServerSupabase();
+  const page = Math.max(1, options.page || 1);
+  const limit = Math.min(100, Math.max(1, options.limit || 20));
+  const offset = (page - 1) * limit;
+
+  if (supabase) {
+    try {
+      let query = supabase.from('users').select('*', { count: 'exact' });
+
+      if (options.role) {
+        query = query.eq('role', options.role);
+      }
+      if (options.batchId) {
+        query = query.eq('batch_id', options.batchId);
+      }
+      if (options.search && options.search.trim()) {
+        const s = options.search.trim();
+        query = query.or(`name.ilike.%${s}%,student_id.ilike.%${s}%,email.ilike.%${s}%`);
+      }
+
+      query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+      const { data, count, error } = await query;
+      if (!error && data) {
+        const users = data.map((row: any): User => ({
+          id: row.id,
+          studentId: row.student_id,
+          name: row.name,
+          email: row.email || undefined,
+          phone: row.phone || undefined,
+          role: row.role as UserRole,
+          batchId: row.batch_id || undefined,
+          batchName: row.batch_name || undefined,
+          currentSemester: Number(row.current_semester || 1),
+          profileImage: row.profile_image || undefined,
+          status: row.status as 'ACTIVE' | 'DISABLED',
+          points: Number(row.points || 0),
+          cgpa: db.getStudentCGPA(row.id, row.student_id),
+          createdAt: row.created_at || new Date().toISOString(),
+          updatedAt: row.updated_at || new Date().toISOString(),
+        }));
+        const total = count ?? users.length;
+        return {
+          users,
+          total,
+          page,
+          limit,
+          totalPages: Math.max(1, Math.ceil(total / limit)),
+        };
+      }
+    } catch (e) {
+      console.warn('[getPaginatedUsers Supabase error, falling back to local store]:', e);
+    }
+  }
+
+  // Fallback to local store
+  const allUsers = (db.getData().users || []) as User[];
+  let filtered = allUsers;
+  if (options.role) filtered = filtered.filter(u => u.role === options.role);
+  if (options.batchId) filtered = filtered.filter(u => u.batchId === options.batchId);
+  if (options.search && options.search.trim()) {
+    const s = options.search.toLowerCase().trim();
+    filtered = filtered.filter(u =>
+      u.name?.toLowerCase().includes(s) ||
+      u.studentId?.toLowerCase().includes(s) ||
+      u.email?.toLowerCase().includes(s)
+    );
+  }
+  const total = filtered.length;
+  const paginated = filtered.slice(offset, offset + limit).map(u => ({
+    ...u,
+    cgpa: db.getStudentCGPA(u.id, u.studentId),
+  }));
+  return {
+    users: paginated,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
 export async function createUser(userData: Partial<User>, adminUser: { id: string; name: string }): Promise<User> {
   const supabase = getServerSupabase();
   if (!supabase) throw new Error('Supabase client unavailable');
@@ -1391,21 +1490,52 @@ export async function getAllNotices(): Promise<DepartmentNotice[]> {
   const { data, error } = await supabase.from('department_notices').select('*').order('publish_date', { ascending: false });
   if (error) throw new Error(`Supabase error: ${error.message}`);
 
-  return (data || []).map((row: any): DepartmentNotice => ({
-    id: row.id,
-    title: row.title,
-    content: row.content,
-    category: row.category || 'GENERAL',
-    publishDate: row.publish_date,
-    isImportant: Boolean(row.is_important),
-    attachmentUrl: row.attachment_url || undefined,
-    attachmentFileName: row.attachment_file_name || undefined,
-    attachmentSize: row.attachment_size || undefined,
-    featuredImageUrl: row.featured_image_url || undefined,
-    createdBy: row.created_by || 'admin',
-    createdByName: row.created_by_name || 'Department Admin',
-    createdAt: row.created_at || new Date().toISOString(),
-  }));
+  const localNotices = db.getData().departmentNotices || [];
+
+  return (data || []).map((row: any): DepartmentNotice => {
+    let featuredImageUrl: string | undefined = row.featured_image_url || undefined;
+    let attachmentUrl: string | undefined = row.attachment_url || undefined;
+    let attachmentFileName: string | undefined = row.attachment_file_name || undefined;
+    let attachmentSize: string | undefined = row.attachment_size || undefined;
+    let attachedPhotos: string[] = [];
+
+    if (row.attachment_url && typeof row.attachment_url === 'string' && row.attachment_url.trim().startsWith('{')) {
+      try {
+        const meta = JSON.parse(row.attachment_url);
+        if (meta.featuredImageUrl) featuredImageUrl = meta.featuredImageUrl;
+        if (meta.attachmentUrl) attachmentUrl = meta.attachmentUrl;
+        if (meta.attachmentFileName) attachmentFileName = meta.attachmentFileName;
+        if (meta.attachmentSize) attachmentSize = meta.attachmentSize;
+        if (Array.isArray(meta.attachedPhotos)) attachedPhotos = meta.attachedPhotos;
+      } catch {}
+    }
+
+    const localMatch = localNotices.find(n => n.id === row.id);
+    if (localMatch) {
+      if (!featuredImageUrl && localMatch.featuredImageUrl) featuredImageUrl = localMatch.featuredImageUrl;
+      if (!attachmentUrl && localMatch.attachmentUrl) attachmentUrl = localMatch.attachmentUrl;
+      if (!attachmentFileName && localMatch.attachmentFileName) attachmentFileName = localMatch.attachmentFileName;
+      if (!attachmentSize && localMatch.attachmentSize) attachmentSize = localMatch.attachmentSize;
+      if (attachedPhotos.length === 0 && localMatch.attachedPhotos) attachedPhotos = localMatch.attachedPhotos;
+    }
+
+    return {
+      id: row.id,
+      title: row.title,
+      content: row.content,
+      category: row.category || 'GENERAL',
+      publishDate: row.publish_date,
+      isImportant: Boolean(row.is_important),
+      attachmentUrl,
+      attachmentFileName,
+      attachmentSize,
+      featuredImageUrl,
+      attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : undefined,
+      createdBy: row.created_by || 'admin',
+      createdByName: row.created_by_name || 'Department Admin',
+      createdAt: row.created_at || new Date().toISOString(),
+    };
+  });
 }
 
 export async function createNotice(noticeData: Partial<DepartmentNotice>, adminUser: { id: string; name: string }): Promise<DepartmentNotice> {
@@ -1420,6 +1550,19 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
   const now = new Date().toISOString();
   const today = now.split('T')[0];
 
+  const attachedPhotos = Array.isArray(noticeData.attachedPhotos) ? noticeData.attachedPhotos : [];
+  let finalAttachmentUrl = noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null;
+
+  if (noticeData.featuredImageUrl || attachedPhotos.length > 0 || noticeData.attachmentFileName || noticeData.attachmentSize) {
+    finalAttachmentUrl = JSON.stringify({
+      featuredImageUrl: noticeData.featuredImageUrl?.trim() || null,
+      attachedPhotos,
+      attachmentUrl: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
+      attachmentFileName: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
+      attachmentSize: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null,
+    });
+  }
+
   const insertPayload = {
     id,
     title: noticeData.title.trim(),
@@ -1427,10 +1570,7 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
     category: noticeData.category || 'GENERAL',
     publish_date: noticeData.publishDate || today,
     is_important: Boolean(noticeData.isImportant),
-    attachment_url: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
-    attachment_file_name: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
-    attachment_size: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null,
-    featured_image_url: noticeData.featuredImageUrl ? noticeData.featuredImageUrl.trim() : null,
+    attachment_url: finalAttachmentUrl,
     created_by: adminUser.id,
     created_by_name: adminUser.name,
     created_at: now,
@@ -1438,6 +1578,28 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
 
   const { data, error } = await supabase.from('department_notices').insert(insertPayload).select().single();
   if (error) throw new Error(`Failed to create notice: ${error.message}`);
+
+  const createdNotice: DepartmentNotice = {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    category: data.category,
+    publishDate: data.publish_date,
+    isImportant: Boolean(data.is_important),
+    attachmentUrl: noticeData.attachmentUrl?.trim() || undefined,
+    attachmentFileName: noticeData.attachmentFileName?.trim() || undefined,
+    attachmentSize: noticeData.attachmentSize?.trim() || undefined,
+    featuredImageUrl: noticeData.featuredImageUrl?.trim() || undefined,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : undefined,
+    createdBy: data.created_by,
+    createdByName: data.created_by_name,
+    createdAt: data.created_at,
+  };
+
+  const local = db.getData();
+  if (!local.departmentNotices) local.departmentNotices = [];
+  local.departmentNotices.unshift(createdNotice);
+  try { db.save(); } catch {}
 
   await createAuditLog(
     adminUser.id,
@@ -1447,21 +1609,7 @@ export async function createNotice(noticeData: Partial<DepartmentNotice>, adminU
     `Category: ${data.category}, Important: ${data.is_important}`
   );
 
-  return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    category: data.category,
-    publishDate: data.publish_date,
-    isImportant: Boolean(data.is_important),
-    attachmentUrl: data.attachment_url || undefined,
-    attachmentFileName: data.attachment_file_name || undefined,
-    attachmentSize: data.attachment_size || undefined,
-    featuredImageUrl: data.featured_image_url || undefined,
-    createdBy: data.created_by,
-    createdByName: data.created_by_name,
-    createdAt: data.created_at,
-  };
+  return createdNotice;
 }
 
 export async function updateNotice(id: string, updates: Partial<DepartmentNotice>, adminUser: { id: string; name: string }): Promise<DepartmentNotice> {
@@ -1474,13 +1622,44 @@ export async function updateNotice(id: string, updates: Partial<DepartmentNotice
   if (updates.category !== undefined) updatePayload.category = updates.category;
   if (updates.publishDate !== undefined) updatePayload.publish_date = updates.publishDate;
   if (updates.isImportant !== undefined) updatePayload.is_important = Boolean(updates.isImportant);
-  if (updates.attachmentUrl !== undefined) updatePayload.attachment_url = updates.attachmentUrl ? updates.attachmentUrl.trim() : null;
-  if (updates.attachmentFileName !== undefined) updatePayload.attachment_file_name = updates.attachmentFileName ? updates.attachmentFileName.trim() : null;
-  if (updates.attachmentSize !== undefined) updatePayload.attachment_size = updates.attachmentSize ? updates.attachmentSize.trim() : null;
-  if (updates.featuredImageUrl !== undefined) updatePayload.featured_image_url = updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null;
+
+  const attachedPhotos = Array.isArray(updates.attachedPhotos) ? updates.attachedPhotos : [];
+  if (updates.featuredImageUrl !== undefined || updates.attachedPhotos !== undefined || updates.attachmentUrl !== undefined || updates.attachmentFileName !== undefined) {
+    updatePayload.attachment_url = JSON.stringify({
+      featuredImageUrl: updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null,
+      attachedPhotos,
+      attachmentUrl: updates.attachmentUrl ? updates.attachmentUrl.trim() : null,
+      attachmentFileName: updates.attachmentFileName ? updates.attachmentFileName.trim() : null,
+      attachmentSize: updates.attachmentSize ? updates.attachmentSize.trim() : null,
+    });
+  }
 
   const { data, error } = await supabase.from('department_notices').update(updatePayload).eq('id', id).select().single();
   if (error) throw new Error(`Failed to update notice: ${error.message}`);
+
+  const updatedNotice: DepartmentNotice = {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    category: data.category,
+    publishDate: data.publish_date,
+    isImportant: Boolean(data.is_important),
+    attachmentUrl: updates.attachmentUrl?.trim() || undefined,
+    attachmentFileName: updates.attachmentFileName?.trim() || undefined,
+    attachmentSize: updates.attachmentSize?.trim() || undefined,
+    featuredImageUrl: updates.featuredImageUrl?.trim() || undefined,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : undefined,
+    createdBy: data.created_by,
+    createdByName: data.created_by_name,
+    createdAt: data.created_at,
+  };
+
+  const local = db.getData();
+  if (local.departmentNotices) {
+    const idx = local.departmentNotices.findIndex(n => n.id === id);
+    if (idx >= 0) local.departmentNotices[idx] = { ...local.departmentNotices[idx], ...updatedNotice };
+    try { db.save(); } catch {}
+  }
 
   await createAuditLog(
     adminUser.id,
@@ -1490,21 +1669,7 @@ export async function updateNotice(id: string, updates: Partial<DepartmentNotice
     `Updated fields in notice`
   );
 
-  return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    category: data.category,
-    publishDate: data.publish_date,
-    isImportant: Boolean(data.is_important),
-    attachmentUrl: data.attachment_url || undefined,
-    attachmentFileName: data.attachment_file_name || undefined,
-    attachmentSize: data.attachment_size || undefined,
-    featuredImageUrl: data.featured_image_url || undefined,
-    createdBy: data.created_by,
-    createdByName: data.created_by_name,
-    createdAt: data.created_at,
-  };
+  return updatedNotice;
 }
 
 export async function deleteNotice(id: string, adminUser: { id: string; name: string }): Promise<void> {

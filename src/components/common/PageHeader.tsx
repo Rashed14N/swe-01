@@ -32,11 +32,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <h1 className="text-xl md:text-2xl font-black text-[#0A2147] tracking-tight flex items-center gap-2">
           {title}
         </h1>
-        {description && (
-          <p className="text-xs text-[#52657C] mt-0.5 leading-relaxed font-medium">
-            {description}
-          </p>
-        )}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">

@@ -119,7 +119,7 @@ function calculateMetrics(
     isPublished: boolean;
   }> = {};
 
-  for (let s = 1; s <= 8; s++) {
+  for (let s = 1; s <= 12; s++) {
     const semName = s === 1 ? '1st Semester' : s === 2 ? '2nd Semester' : s === 3 ? '3rd Semester' : `${s}th Semester`;
     semesterMap[s] = {
       semester: s,
@@ -164,13 +164,21 @@ function calculateMetrics(
 
   const completedSemestersCount = Object.values(semesterMap).filter(s => s.gradedCredits > 0).length;
 
+  let runningQualityPoints = 0;
+  let runningGradedCredits = 0;
+
   const semesterBreakdown = Object.values(semesterMap)
     .sort((a, b) => a.semester - b.semester)
     .map(sem => {
       const sgpa = sem.gradedCredits > 0 ? Number((sem.qualityPoints / sem.gradedCredits).toFixed(2)) : null;
+      runningQualityPoints += sem.qualityPoints;
+      runningGradedCredits += sem.gradedCredits;
+      const cumulativeCgpa = runningGradedCredits > 0 ? Number((runningQualityPoints / runningGradedCredits).toFixed(2)) : null;
+
       return {
         ...sem,
         sgpa,
+        cumulativeCgpa,
         isPublished: sem.gradedCredits > 0,
         totalCredits: Number(sem.totalCredits.toFixed(1)),
         completedCredits: Number(sem.completedCredits.toFixed(1)),
@@ -226,12 +234,16 @@ router.get('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Response
 
   try {
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const allCourses = await getFullCoursesForStudent(studentId);
     // Student's personal saved grades only
-    const savedGrades = db.getStudentGrades(studentId) || {};
+    const savedGrades = db.getStudentGrades(studentId, rollNo) || {};
     const currentSemester = req.user.currentSemester || 5;
 
     const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    if (metrics.cgpa > 0) {
+      db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
+    }
     const documents = db.getStudentCGPADocs(studentId);
     const excludedCount = (db.getStudentExcludedCourses(studentId) || []).length;
 
@@ -274,6 +286,7 @@ router.post('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Respons
     }
 
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const allCourses = await getFullCoursesForStudent(studentId);
     const formatted: Record<string, { grade: string; gradePoint: number; semester?: number }> = {};
 
@@ -292,9 +305,10 @@ router.post('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Respons
       }
     }
 
-    const updated = db.saveStudentGrades(studentId, formatted);
+    const updated = db.saveStudentGrades(studentId, formatted, rollNo);
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, updated, currentSemester);
+    db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
 
     return res.json({
       success: true,
@@ -509,12 +523,13 @@ router.post('/paste-results', verifyAuthToken, async (req: AuthenticatedRequest,
     }
 
     if (Object.keys(formatted).length > 0) {
-      db.saveStudentGrades(studentId, formatted);
+      db.saveStudentGrades(studentId, formatted, req.user.studentId);
     }
 
-    const currentGrades = db.getStudentGrades(studentId) || {};
+    const currentGrades = db.getStudentGrades(studentId, req.user.studentId) || {};
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, currentGrades, currentSemester);
+    db.setStudentCGPA(studentId, metrics.cgpa, req.user.studentId);
 
     return res.json({
       success: true,
@@ -546,11 +561,8 @@ router.post('/reset', verifyAuthToken, async (req: AuthenticatedRequest, res: Re
 
   try {
     const studentId = req.user.id;
-    db.saveStudentGrades(studentId, {});
-    if (db['data']?.studentGrades) {
-      db['data'].studentGrades[studentId] = {};
-      db.save();
-    }
+    const rollNo = req.user.studentId;
+    db.resetStudentGrades(studentId, rollNo);
 
     const allCourses = await getFullCoursesForStudent(studentId);
     const currentSemester = req.user.currentSemester || 5;

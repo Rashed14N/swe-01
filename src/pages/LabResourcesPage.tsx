@@ -18,7 +18,6 @@ export const LabResourcesPage: React.FC = () => {
   const fetchLabs = () => {
     setIsLoading(true);
     const params = new URLSearchParams({ type: 'LAB' });
-    if (search) params.append('search', search);
     if (category) params.append('category', category);
 
     fetch(`/api/resources?${params.toString()}`)
@@ -32,7 +31,17 @@ export const LabResourcesPage: React.FC = () => {
 
   useEffect(() => {
     fetchLabs();
-  }, [search, category]);
+  }, [category]);
+
+  // Client-side filtering: 0 API calls when typing or clearing search
+  const filteredLabs = labs.filter(
+    (l) =>
+      !search.trim() ||
+      l.title?.toLowerCase().includes(search.toLowerCase()) ||
+      l.courseCode?.toLowerCase().includes(search.toLowerCase()) ||
+      l.courseTitle?.toLowerCase().includes(search.toLowerCase()) ||
+      l.description?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleDownload = (resourceId: string) => {
     fetch(`/api/resources/${resourceId}/download`, {
@@ -62,7 +71,6 @@ export const LabResourcesPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Software Engineering Lab Resources"
-        description="Packet Tracer topologies, database schema SQL files, architecture diagrams, and viva question sets."
         breadcrumb="LAB RESOURCES"
       />
 
@@ -97,12 +105,12 @@ export const LabResourcesPage: React.FC = () => {
       <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] p-4 divide-y divide-[#E5EBF3] dark:divide-slate-800">
         {isLoading ? (
           <div className="py-12 text-center text-xs text-slate-400">Loading lab files...</div>
-        ) : labs.length === 0 ? (
+        ) : filteredLabs.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No lab files found matching your search.
           </div>
         ) : (
-          labs.map((l) => (
+          filteredLabs.map((l) => (
             <div
               key={l.id}
               onClick={() => setSelectedResource(l)}

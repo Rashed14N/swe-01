@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Faculty, sortFacultyByHierarchy } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
@@ -7,15 +7,16 @@ import { FacultyCard } from '../components/faculty/FacultyCard';
 import { FacultyGridSkeleton } from '../components/faculty/FacultyCardSkeleton';
 
 export const FacultyPage: React.FC = () => {
-  const [faculty, setFaculty] = useState<Faculty[]>([]);
+  const [allFaculty, setAllFaculty] = useState<Faculty[]>([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch all faculty records once on mount
   const fetchFaculty = () => {
     setIsLoading(true);
-    fetch(`/api/faculty?search=${encodeURIComponent(search)}`)
+    fetch('/api/faculty')
       .then((res) => safeParseJson(res))
-      .then((data) => setFaculty(sortFacultyByHierarchy(data.faculty || [])))
+      .then((data) => setAllFaculty(sortFacultyByHierarchy(data.faculty || [])))
       .catch((err) => {
         console.warn('Could not fetch faculty:', err);
       })
@@ -23,17 +24,37 @@ export const FacultyPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchFaculty();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    fetchFaculty();
+  }, []);
+
+  // Client-side filtering: 0 additional API requests when searching or clearing
+  const filteredFaculty = useMemo(() => {
+    if (!search.trim()) return allFaculty;
+    const q = search.toLowerCase().trim();
+    return allFaculty.filter((fac) => {
+      const matchName = fac.name?.toLowerCase().includes(q);
+      const matchShortName = fac.shortName?.toLowerCase().includes(q);
+      const matchDesignation = fac.designation?.toLowerCase().includes(q);
+      const matchEmail = fac.email?.toLowerCase().includes(q);
+      const matchPhone = fac.phone?.toLowerCase().includes(q);
+      const matchDept = fac.department?.toLowerCase().includes(q);
+      const matchRoom = fac.officeRoom?.toLowerCase().includes(q);
+      return (
+        matchName ||
+        matchShortName ||
+        matchDesignation ||
+        matchEmail ||
+        matchPhone ||
+        matchDept ||
+        matchRoom
+      );
+    });
+  }, [allFaculty, search]);
 
   return (
     <div className="space-y-5 max-w-[1550px]">
       <PageHeader
         title="Faculty & Academic Staff Directory"
-        description="Official list of Software Engineering department faculty members, academic designations, short codes, and direct contact numbers."
         breadcrumb="SOFTWARE ENGINEERING FACULTY"
       />
 
@@ -45,13 +66,13 @@ export const FacultyPage: React.FC = () => {
 
       {isLoading ? (
         <FacultyGridSkeleton count={8} />
-      ) : faculty.length === 0 ? (
+      ) : filteredFaculty.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 border border-[#E2E8F0] dark:border-slate-800 text-center text-xs text-slate-500">
           No faculty members found matching search.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4.5">
-          {faculty.map((fac) => (
+          {filteredFaculty.map((fac) => (
             <FacultyCard key={fac.id} faculty={fac} onPhotoUpdated={fetchFaculty} />
           ))}
         </div>

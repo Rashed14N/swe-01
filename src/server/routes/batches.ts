@@ -34,7 +34,7 @@ router.get('/progression-preview', verifyAuthToken, requireRole('ADMIN'), async 
 
     allBatches.forEach(b => {
       const isSequence = (b.semesterMode || 'SEQUENCE') === 'SEQUENCE';
-      const status = b.status || (b.currentSemester > 8 ? 'GRADUATED' : 'ACTIVE');
+      const status = b.status || (b.currentSemester > 12 ? 'GRADUATED' : 'ACTIVE');
       const studentsCount = allUsers.filter(u => u.batchId === b.id).length;
       
       if (b.lastProgressedAt) {
@@ -46,7 +46,7 @@ router.get('/progression-preview', verifyAuthToken, requireRole('ADMIN'), async 
       if (isSequence) {
         const isEligible = status === 'ACTIVE';
         const nextSem = b.currentSemester + 1;
-        const willGraduate = nextSem > 8;
+        const willGraduate = nextSem > 12;
 
         sequenceBatches.push({
           id: b.id,
@@ -157,7 +157,7 @@ router.post('/advance-sequence', verifyAuthToken, requireRole('ADMIN'), async (r
         const prevSemester = batch.currentSemester;
         const nextSemester = prevSemester + 1;
 
-        const updatedStatus = nextSemester > 8 ? 'GRADUATED' : 'ACTIVE';
+        const updatedStatus = nextSemester > 12 ? 'GRADUATED' : 'ACTIVE';
 
         await updateBatchInDB(batch.id, {
           currentSemester: nextSemester,

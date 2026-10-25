@@ -398,7 +398,7 @@ export const AdminBatchesPage: React.FC = () => {
                     <div>
                       <span className="text-slate-400 text-[10px] uppercase font-bold block">Current Semester</span>
                       <span className="font-black text-slate-900 text-sm">
-                        {b.currentSemester > 8 ? `Graduated (${b.currentSemester}th)` : `Semester ${b.currentSemester}`}
+                        {b.currentSemester > 12 ? `Graduated (${b.currentSemester}th)` : `Semester ${b.currentSemester}`}
                       </span>
                     </div>
                     <div>

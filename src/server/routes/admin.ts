@@ -49,6 +49,17 @@ router.get(['/stats', '/overview'], async (req: AuthenticatedRequest, res: Respo
 // ==============================================================================
 router.get(['/users', '/students'], async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const { page, limit, search, batchId, role } = req.query;
+    if (page !== undefined || limit !== undefined || search !== undefined || batchId !== undefined || role !== undefined) {
+      const result = await adminService.getPaginatedUsers({
+        page: page ? Number(page) : 1,
+        limit: limit ? Number(limit) : 20,
+        search: search ? String(search) : undefined,
+        batchId: batchId ? String(batchId) : undefined,
+        role: role ? String(role) : undefined,
+      });
+      return sendSuccess(res, result);
+    }
     const users = await adminService.getAllUsers();
     return sendSuccess(res, users);
   } catch (err: any) {

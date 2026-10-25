@@ -20,11 +20,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Course, Faculty, Resource, Exam } from '../types';
+import { Course, Faculty, Resource, Exam, ClassTask } from '../types';
 import { ResourceDetailModal } from '../components/common/ResourceDetailModal';
 import { UploadQuestionModal } from '../components/resources/UploadQuestionModal';
 import { ScheduleCourseExamModal } from '../components/courses/ScheduleCourseExamModal';
 import { UploadTeacherFileModal } from '../components/courses/UploadTeacherFileModal';
+import { ClassTasksSection } from '../components/courses/ClassTasksSection';
+import { PostClassTaskModal } from '../components/courses/PostClassTaskModal';
 
 export const CourseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,25 +46,36 @@ export const CourseDetailPage: React.FC = () => {
   }>({ questions: [], notes: [], labs: [] });
 
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [classTasks, setClassTasks] = useState<ClassTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isScheduleExamModalOpen, setIsScheduleExamModalOpen] = useState(false);
   const [isTeacherFileModalOpen, setIsTeacherFileModalOpen] = useState(false);
+  const [isPostTaskModalOpen, setIsPostTaskModalOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>('ALL');
 
   const fetchCourseDetails = useCallback(() => {
     if (!token || !id) return;
     setIsLoading(true);
 
-    fetch(`/api/courses/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setCourse(data.course);
-        setFaculty(data.faculty);
-        setCourseExams(data.exams || []);
-        setResources(data.resources || { questions: [], notes: [], labs: [] });
+    Promise.all([
+      fetch(`/api/courses/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json()),
+      fetch(`/api/class-tasks?courseId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json()).catch(() => ({ tasks: [] }))
+    ])
+      .then(([courseData, tasksData]) => {
+        setCourse(courseData.course);
+        setFaculty(courseData.faculty);
+        setCourseExams(courseData.exams || []);
+        setResources(courseData.resources || { questions: [], notes: [], labs: [] });
+        if (tasksData?.tasks) {
+          setClassTasks(tasksData.tasks);
+        } else if (tasksData?.topics) {
+          setClassTasks(tasksData.topics);
+        }
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -316,6 +329,15 @@ export const CourseDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Class Tasks & Updates for this Course */}
+      <ClassTasksSection
+        tasks={classTasks}
+        courses={course ? [course] : []}
+        filterCourseId={course?.code || course?.id}
+        onAddTaskClick={() => setIsPostTaskModalOpen(true)}
+        onTaskDeleted={(deletedId) => setClassTasks((prev) => prev.filter((t) => t.id !== deletedId))}
+      />
+
       {/* Resource Sections */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Questions Column */}
@@ -562,6 +584,17 @@ export const CourseDetailPage: React.FC = () => {
             onClose={() => setIsTeacherFileModalOpen(false)}
             onSuccess={fetchCourseDetails}
             course={course}
+          />
+
+          <PostClassTaskModal
+            isOpen={isPostTaskModalOpen}
+            onClose={() => setIsPostTaskModalOpen(false)}
+            courses={[course]}
+            preselectedCourseId={course.id}
+            onTaskAdded={(newTask) => {
+              setClassTasks((prev) => [newTask, ...prev]);
+              addToast('success', 'Class task posted for this course');
+            }}
           />
         </>
       )}

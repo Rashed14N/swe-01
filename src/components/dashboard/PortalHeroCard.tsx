@@ -140,19 +140,6 @@ export const PortalHeroCard: React.FC<PortalHeroCardProps> = ({
         <div className="w-full flex-1 flex flex-col justify-between lg:max-w-[620px]">
           {/* Portal Title & Accent Lines */}
           <div>
-            {/* Student Batch & Semester Tag Badge */}
-            <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white text-[#2348F5] shadow-xs border border-[#7891FF]/30">
-                <span className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-rose-500' : 'bg-emerald-500'} animate-pulse shrink-0`} />
-                {isAdmin ? 'SWE Administration • Central Portal' : `${batchDisplay} • ${semesterDisplay}`}
-              </span>
-              {user?.studentId && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#E4E9FF]/80 text-[#071B52] border border-[#7891FF]/20">
-                  ID: {studentIdDisplay}
-                </span>
-              )}
-            </div>
-
             {/* Top Blue Accent Line */}
             <div
               className="mb-2 sm:mb-3 h-[3px] sm:h-[3.5px] w-10 sm:w-14 rounded-full"

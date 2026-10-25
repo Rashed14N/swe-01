@@ -19,7 +19,6 @@ export const NotesPage: React.FC = () => {
   const fetchNotes = () => {
     setIsLoading(true);
     const params = new URLSearchParams({ type: 'NOTE' });
-    if (search) params.append('search', search);
     if (semester) params.append('semester', semester);
 
     fetch(`/api/resources?${params.toString()}`)
@@ -33,7 +32,18 @@ export const NotesPage: React.FC = () => {
 
   useEffect(() => {
     fetchNotes();
-  }, [search, semester]);
+  }, [semester]);
+
+  // Client-side filtering: 0 API calls when typing or clearing search
+  const filteredNotes = notes.filter(
+    (n) =>
+      !search.trim() ||
+      n.title?.toLowerCase().includes(search.toLowerCase()) ||
+      n.courseCode?.toLowerCase().includes(search.toLowerCase()) ||
+      n.courseTitle?.toLowerCase().includes(search.toLowerCase()) ||
+      n.uploaderName?.toLowerCase().includes(search.toLowerCase()) ||
+      n.description?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleDownload = (resourceId: string) => {
     fetch(`/api/resources/${resourceId}/download`, {
@@ -48,7 +58,6 @@ export const NotesPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Class Notes & Handouts Repository"
-        description="Digitized handwritten lecture notes, slides, and summary handouts contributed by students and CRs."
         breadcrumb="LECTURE NOTES"
       />
 
@@ -64,7 +73,7 @@ export const NotesPage: React.FC = () => {
             label: 'All Semesters',
             value: semester,
             onChange: setSemester,
-            options: [1, 2, 3, 4, 5, 6, 7, 8].map((s) => ({
+            options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((s) => ({
               label: `Semester ${s}`,
               value: String(s),
             })),
@@ -81,12 +90,12 @@ export const NotesPage: React.FC = () => {
       <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] p-4 divide-y divide-[#E5EBF3] dark:divide-slate-800">
         {isLoading ? (
           <div className="py-12 text-center text-xs text-slate-400">Loading notes repository...</div>
-        ) : notes.length === 0 ? (
+        ) : filteredNotes.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No lecture notes match your search criteria.
           </div>
         ) : (
-          notes.map((n) => (
+          filteredNotes.map((n) => (
             <div
               key={n.id}
               onClick={() => setSelectedResource(n)}

@@ -636,21 +636,6 @@ async function hydrateFromSupabase(dbData) {
     console.error("[Supabase Hydrate Error]:", err.message);
   }
 }
-function startAutoSync(getDbData, intervalMs = 15e3) {
-  const timer = setInterval(async () => {
-    if (serverSupabase) {
-      try {
-        const dbData = getDbData();
-        await hydrateFromSupabase(dbData);
-      } catch {
-      }
-    }
-  }, intervalMs);
-  if (timer && typeof timer.unref === "function") {
-    timer.unref();
-  }
-  return timer;
-}
 
 // src/server/db.ts
 var DATA_DIR = path.join(process.cwd(), "data");
@@ -711,7 +696,7 @@ function seedInitialData() {
       id: "batch-9",
       name: "SWE 9th Batch",
       admissionYear: 2023,
-      currentSemester: 4,
+      currentSemester: 5,
       academicSession: "2023-2024",
       semesterMode: "SEQUENCE",
       status: "ACTIVE",
@@ -2946,6 +2931,7 @@ var JsonDB = class {
     if (!this.data.notifications) this.data.notifications = [];
     if (!this.data.auditLogs) this.data.auditLogs = [];
     if (!this.data.retakeRegistrations) this.data.retakeRegistrations = [];
+    if (!this.data.bugReports) this.data.bugReports = [];
     const initialBatches = seedInitialData().batches;
     initialBatches.forEach((seedBatch) => {
       const existing = this.data.batches.find((b) => b.id === seedBatch.id || b.name.toLowerCase() === seedBatch.name.toLowerCase());
@@ -2955,6 +2941,9 @@ var JsonDB = class {
     });
     this.data.batches.forEach((b) => {
       const lowerName = b.name.toLowerCase();
+      if (b.id === "batch-9" || lowerName.includes("9th")) {
+        b.currentSemester = 5;
+      }
       if (!b.semesterMode) {
         if (lowerName.includes("5th") || lowerName.includes("6th") || lowerName.includes("7th")) {
           b.semesterMode = "MANUAL";
@@ -2966,6 +2955,16 @@ var JsonDB = class {
         b.status = b.currentSemester > 8 ? "GRADUATED" : "ACTIVE";
       }
       if (!b.crIds) b.crIds = [];
+    });
+    this.data.users.forEach((u) => {
+      const b = this.data.batches.find((batch) => batch.id === u.batchId || u.batchName && batch.name.toLowerCase() === u.batchName.toLowerCase());
+      if (b) {
+        u.currentSemester = b.currentSemester;
+        u.batchId = b.id;
+        u.batchName = b.name;
+      } else if (u.batchId === "batch-9" || u.batchName?.toLowerCase().includes("9th")) {
+        u.currentSemester = 5;
+      }
     });
     this.data.users = this.data.users.filter((u) => {
       const sid = (u.studentId || "").toLowerCase();
@@ -3004,7 +3003,6 @@ var JsonDB = class {
     this.save();
     hydrateFromSupabase(this.data).catch(() => {
     });
-    startAutoSync(() => this.data);
   }
   save() {
     try {
@@ -3266,12 +3264,63 @@ var JsonDB = class {
     this.data.studentExcludedCourses[studentId] = [];
     this.save();
   }
+  getNotifications(userId) {
+    const all = this.data.notifications || [];
+    return userId ? all.filter((n) => n.userId === userId) : all;
+  }
+  addNotification(notif) {
+    if (!this.data.notifications) this.data.notifications = [];
+    this.data.notifications.unshift(notif);
+    this.save();
+    return notif;
+  }
+  getBugReports() {
+    return this.data.bugReports || [];
+  }
+  addBugReport(report) {
+    if (!this.data.bugReports) {
+      this.data.bugReports = [];
+    }
+    this.data.bugReports.unshift(report);
+    this.save();
+    return report;
+  }
+  updateBugReportStatus(reportId, status) {
+    if (!this.data.bugReports) return null;
+    const item = this.data.bugReports.find((b) => b.id === reportId);
+    if (!item) return null;
+    item.status = status;
+    this.save();
+    return item;
+  }
 };
 var db = new JsonDB();
 
 // src/server/auth.ts
 import jwt from "jsonwebtoken";
 var JWT_SECRET = process.env.JWT_SECRET || "swe-portal-secret-key-2026";
+function enrichUserWithBatchSemester(user) {
+  if (!user) return user;
+  const batches = db.getData().batches || [];
+  const matchedBatch = batches.find(
+    (b) => user.batchId && b.id === user.batchId || user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()
+  );
+  if (matchedBatch && matchedBatch.currentSemester) {
+    return {
+      ...user,
+      batchName: matchedBatch.name || user.batchName,
+      currentSemester: matchedBatch.currentSemester
+    };
+  }
+  if ((user.batchId === "batch-9" || user.batchName?.includes("9th")) && (!user.currentSemester || user.currentSemester < 5)) {
+    return {
+      ...user,
+      batchName: "SWE 9th Batch",
+      currentSemester: 5
+    };
+  }
+  return user;
+}
 function generateToken(user) {
   const payload = {
     id: user.id,
@@ -3286,6 +3335,13 @@ function generateToken(user) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 }
 async function verifyAuthToken(req, res, next) {
+  const originalNext = next;
+  next = ((...args) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return originalNext(...args);
+  });
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
@@ -3452,6 +3508,13 @@ async function verifyAuthToken(req, res, next) {
   });
 }
 function optionalAuthToken(req, res, next) {
+  const originalNext = next;
+  next = ((...args) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return originalNext(...args);
+  });
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.split(" ")[1]?.trim();
@@ -3619,6 +3682,59 @@ function deduplicateAndMergeRoutineSlots(slots) {
 }
 
 // src/server/supabaseData.ts
+var CACHE_TTL_MS = 60 * 1e3;
+var memoryCache = /* @__PURE__ */ new Map();
+function getCached(key) {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+function setCached(key, data) {
+  memoryCache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+}
+function invalidateCache(keyPrefix) {
+  if (!keyPrefix) {
+    memoryCache.clear();
+    return;
+  }
+  for (const k of Array.from(memoryCache.keys())) {
+    if (k === keyPrefix || k.startsWith(`${keyPrefix}_`)) {
+      memoryCache.delete(k);
+    }
+  }
+}
+async function uploadBase64ImageToStorage(base64Str, bucket = "faculty-photos", filenamePrefix = "photo") {
+  if (!base64Str || !base64Str.startsWith("data:image/")) {
+    return base64Str;
+  }
+  const supabase = getServerSupabase();
+  if (!supabase) return base64Str;
+  try {
+    const match = base64Str.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (!match) return base64Str;
+    const subtype = match[1].toLowerCase();
+    const ext = subtype === "jpeg" ? "jpg" : subtype;
+    const buffer = Buffer.from(match[2], "base64");
+    const filename = `${filenamePrefix}_${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from(bucket).upload(filename, buffer, { contentType: `image/${subtype}`, upsert: true });
+    if (upErr) {
+      console.warn("[Storage upload warning]:", upErr.message);
+      return base64Str;
+    }
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filename);
+    return data.publicUrl;
+  } catch (err) {
+    console.warn("[Storage upload exception]:", err.message);
+    return base64Str;
+  }
+}
 function mapCourseFromSupabase(row) {
   return {
     id: row.id,
@@ -3634,20 +3750,30 @@ function mapCourseFromSupabase(row) {
   };
 }
 function mapCourseToSupabase(course) {
+  let semNum = 1;
+  const rawSem = course.semester;
+  if (typeof rawSem === "number") {
+    semNum = rawSem;
+  } else if (typeof rawSem === "string") {
+    const parsed = parseInt(rawSem.replace(/\D/g, ""), 10);
+    semNum = !isNaN(parsed) && parsed > 0 ? parsed : 1;
+  }
   return {
     id: course.id,
     code: course.code,
     short_name: course.shortName || null,
     title: course.title,
     credits: course.credits,
-    type: course.type,
-    semester: course.semester,
+    type: (course.type || "THEORY").toUpperCase(),
+    semester: semNum,
     assigned_faculty_id: course.assignedFacultyId || null,
     assigned_faculty_name: course.assignedFacultyName || null,
     batch_ids: course.batchIds || []
   };
 }
 async function fetchAllCourses() {
+  const cached = getCached("courses");
+  if (cached) return cached;
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -3660,6 +3786,7 @@ async function fetchAllCourses() {
           db.save();
         } catch {
         }
+        setCached("courses", courses);
         return courses;
       }
       if (error) {
@@ -3669,7 +3796,9 @@ async function fetchAllCourses() {
       console.warn("[Supabase fetchAllCourses Exception]: Falling back to local store.", e?.message || e);
     }
   }
-  return local.courses && local.courses.length > 0 ? local.courses : [];
+  const fallback = local.courses && local.courses.length > 0 ? local.courses : [];
+  if (fallback.length > 0) setCached("courses", fallback);
+  return fallback;
 }
 async function fetchCourseById(id) {
   const supabase = getServerSupabase();
@@ -3689,6 +3818,7 @@ async function fetchCourseById(id) {
   return course || null;
 }
 async function createCourseInDB(course) {
+  invalidateCache("courses");
   const local = db.getData();
   if (!local.courses) local.courses = [];
   local.courses = local.courses.filter((c) => c.id !== course.id);
@@ -3715,6 +3845,7 @@ async function createCourseInDB(course) {
   return course;
 }
 async function updateCourseInDB(id, updates) {
+  invalidateCache("courses");
   const local = db.getData();
   if (!local.courses) local.courses = [];
   let existing = local.courses.find((c) => c.id === id);
@@ -3756,6 +3887,7 @@ async function updateCourseInDB(id, updates) {
   return updated;
 }
 async function deleteCourseFromDB(id) {
+  invalidateCache("courses");
   const local = db.getData();
   if (local.courses) {
     local.courses = local.courses.filter((c) => c.id !== id);
@@ -3788,17 +3920,27 @@ function mapBatchFromSupabase(row) {
   };
 }
 function mapBatchToSupabase(batch) {
+  let semNum = 1;
+  const rawSem = batch.currentSemester;
+  if (typeof rawSem === "number") {
+    semNum = rawSem;
+  } else if (typeof rawSem === "string") {
+    const parsed = parseInt(rawSem.replace(/\D/g, ""), 10);
+    semNum = !isNaN(parsed) && parsed > 0 ? parsed : 1;
+  }
   return {
     id: batch.id,
     name: batch.name,
-    admission_year: batch.admissionYear,
-    current_semester: batch.currentSemester,
-    academic_session: batch.academicSession,
+    admission_year: batch.admissionYear || (/* @__PURE__ */ new Date()).getFullYear(),
+    current_semester: semNum,
+    academic_session: batch.academicSession || `${(/* @__PURE__ */ new Date()).getFullYear()}-${(/* @__PURE__ */ new Date()).getFullYear() + 1}`,
     cr_ids: batch.crIds || [],
     created_at: batch.createdAt || (/* @__PURE__ */ new Date()).toISOString()
   };
 }
 async function fetchAllBatches() {
+  const cached = getCached("batches");
+  if (cached) return cached;
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -3811,6 +3953,7 @@ async function fetchAllBatches() {
           db.save();
         } catch {
         }
+        setCached("batches", batches);
         return batches;
       }
       if (error) console.warn("[Supabase fetchAllBatches Note]: Falling back to local store.", error.message || error);
@@ -3818,7 +3961,9 @@ async function fetchAllBatches() {
       console.warn("[Supabase fetchAllBatches Exception]: Falling back to local store.", e?.message || e);
     }
   }
-  return local.batches && local.batches.length > 0 ? local.batches : [];
+  const fallback = local.batches && local.batches.length > 0 ? local.batches : [];
+  if (fallback.length > 0) setCached("batches", fallback);
+  return fallback;
 }
 async function fetchBatchById(id) {
   const supabase = getServerSupabase();
@@ -3833,6 +3978,7 @@ async function fetchBatchById(id) {
   return (db.getData().batches || []).find((b) => b.id === id) || null;
 }
 async function createBatchInDB(batch) {
+  invalidateCache("batches");
   const local = db.getData();
   if (!local.batches) local.batches = [];
   local.batches = local.batches.filter((b) => b.id !== batch.id);
@@ -3859,6 +4005,7 @@ async function createBatchInDB(batch) {
   return batch;
 }
 async function updateBatchInDB(id, updates) {
+  invalidateCache("batches");
   const local = db.getData();
   if (!local.batches) local.batches = [];
   let existing = local.batches.find((b) => b.id === id);
@@ -3931,6 +4078,8 @@ function mapFacultyToSupabase(faculty) {
   };
 }
 async function fetchAllFaculty() {
+  const cached = getCached("faculty");
+  if (cached) return cached;
   try {
     const local = db.getData();
     const supabase = getServerSupabase();
@@ -3948,6 +4097,7 @@ async function fetchAllFaculty() {
             } catch {
             }
           }
+          setCached("faculty", faculty);
           return faculty;
         }
       } catch (e) {
@@ -3955,13 +4105,19 @@ async function fetchAllFaculty() {
       }
     }
     const fallback = local && Array.isArray(local.faculty) && local.faculty.length > 0 ? local.faculty : [];
-    return sortFacultyByHierarchy(fallback);
+    const sorted = sortFacultyByHierarchy(fallback);
+    if (sorted.length > 0) setCached("faculty", sorted);
+    return sorted;
   } catch (err) {
     console.warn("[Faculty fallback error]:", err?.message || err);
     return sortFacultyByHierarchy(db.getData()?.faculty || []);
   }
 }
 async function createFacultyInDB(faculty) {
+  invalidateCache("faculty");
+  if (faculty.photoUrl && faculty.photoUrl.startsWith("data:image/")) {
+    faculty.photoUrl = await uploadBase64ImageToStorage(faculty.photoUrl, "faculty-photos", `fac_${faculty.id}`);
+  }
   const local = db.getData();
   if (!local.faculty) local.faculty = [];
   local.faculty = local.faculty.filter((f) => f.id !== faculty.id);
@@ -3988,6 +4144,10 @@ async function createFacultyInDB(faculty) {
   return faculty;
 }
 async function updateFacultyInDB(id, updates) {
+  invalidateCache("faculty");
+  if (updates.photoUrl && updates.photoUrl.startsWith("data:image/")) {
+    updates.photoUrl = await uploadBase64ImageToStorage(updates.photoUrl, "faculty-photos", `fac_${id}`);
+  }
   const local = db.getData();
   if (!local.faculty) local.faculty = [];
   let existing = local.faculty.find((f) => f.id === id);
@@ -4029,6 +4189,7 @@ async function updateFacultyInDB(id, updates) {
   return updated;
 }
 async function deleteFacultyFromDB(id) {
+  invalidateCache("faculty");
   const local = db.getData();
   if (local.faculty) {
     local.faculty = local.faculty.filter((f) => f.id !== id);
@@ -4055,7 +4216,7 @@ function mapUserFromSupabase(row) {
     role: row.role || "STUDENT",
     batchId: row.batch_id || void 0,
     batchName: row.batch_name || void 0,
-    currentSemester: Number(row.current_semester || 1),
+    currentSemester: row.batch_id === "batch-9" || row.batch_name && String(row.batch_name).toLowerCase().includes("9th") ? Math.max(5, Number(row.current_semester || 5)) : Number(row.current_semester || 1),
     profileImage: row.profile_image || void 0,
     status: row.status || "ACTIVE",
     points: Number(row.points || 0),
@@ -4230,6 +4391,9 @@ function mapRoutineSlotToSupabase(slot) {
   };
 }
 async function fetchAllRoutineSlots(batchId) {
+  const cacheKey = batchId ? `routines_${batchId.trim().toLowerCase()}` : "routines_all";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
   const supabase = getServerSupabase();
   const normalizedBatchId = batchId ? batchId.trim().toLowerCase().replace(/th$|st$|nd$|rd$/i, "") : void 0;
   const batchCandidates = batchId ? [
@@ -4248,7 +4412,9 @@ async function fetchAllRoutineSlots(batchId) {
       const { data, error } = await query;
       if (!error && data) {
         const slots = data.map(mapRoutineSlotFromSupabase);
-        return deduplicateAndMergeRoutineSlots(slots);
+        const deduplicated = deduplicateAndMergeRoutineSlots(slots);
+        setCached(cacheKey, deduplicated);
+        return deduplicated;
       }
       if (error) console.warn("[Supabase fetchAllRoutineSlots Note]: Falling back to local store.", error.message || error);
     } catch (e) {
@@ -4257,9 +4423,12 @@ async function fetchAllRoutineSlots(batchId) {
   }
   const local = db.getData().routines || [];
   const filtered = batchId ? local.filter((s) => batchCandidates.includes(s.batchId)) : local;
-  return deduplicateAndMergeRoutineSlots(filtered);
+  const fallback = deduplicateAndMergeRoutineSlots(filtered);
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 async function createRoutineSlotInDB(slot) {
+  invalidateCache("routines");
   const local = db.getData();
   if (!local.routines) local.routines = [];
   local.routines = local.routines.filter((s) => s.id !== slot.id);
@@ -4286,6 +4455,7 @@ async function createRoutineSlotInDB(slot) {
   return slot;
 }
 async function updateRoutineSlotInDB(id, updates) {
+  invalidateCache("routines");
   const local = db.getData();
   if (!local.routines) local.routines = [];
   let existing = local.routines.find((s) => s.id === id);
@@ -4329,6 +4499,7 @@ async function updateRoutineSlotInDB(id, updates) {
   return updated;
 }
 async function deleteRoutineSlotFromDB(id) {
+  invalidateCache("routines");
   const local = db.getData();
   if (local.routines) {
     local.routines = local.routines.filter((s) => s.id !== id);
@@ -4382,6 +4553,9 @@ function mapExamToSupabase(exam) {
   };
 }
 async function fetchAllExams(batchId) {
+  const cacheKey = batchId ? `exams_${batchId.trim().toLowerCase()}` : "exams_all";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -4391,6 +4565,7 @@ async function fetchAllExams(batchId) {
       const { data, error } = await query;
       if (!error && data && data.length > 0) {
         const exams2 = data.map(mapExamFromSupabase);
+        setCached(cacheKey, exams2);
         return exams2;
       }
       if (error) console.warn("[Supabase fetchAllExams Note]: Falling back to local store.", error.message || error);
@@ -4399,9 +4574,12 @@ async function fetchAllExams(batchId) {
     }
   }
   const exams = local.exams || [];
-  return batchId ? exams.filter((e) => e.batchId === batchId) : exams;
+  const fallback = batchId ? exams.filter((e) => e.batchId === batchId) : exams;
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 async function createExamInDB(exam) {
+  invalidateCache("exams");
   const local = db.getData();
   if (!local.exams) local.exams = [];
   local.exams = local.exams.filter((e) => e.id !== exam.id);
@@ -4428,6 +4606,7 @@ async function createExamInDB(exam) {
   return exam;
 }
 async function updateExamInDB(id, updates) {
+  invalidateCache("exams");
   const local = db.getData();
   if (!local.exams) local.exams = [];
   let existing = local.exams.find((e) => e.id === id);
@@ -4472,6 +4651,7 @@ async function updateExamInDB(id, updates) {
   return updated;
 }
 async function deleteExamFromDB(id) {
+  invalidateCache("exams");
   const local = db.getData();
   if (local.exams) {
     local.exams = local.exams.filter((e) => e.id !== id);
@@ -4519,6 +4699,9 @@ function mapAnnouncementToSupabase(ann) {
   };
 }
 async function fetchAllAnnouncements(batchId) {
+  const cacheKey = batchId ? `announcements_${batchId.trim().toLowerCase()}` : "announcements_all";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
   const supabase = getServerSupabase();
   if (supabase) {
     try {
@@ -4528,7 +4711,9 @@ async function fetchAllAnnouncements(batchId) {
       }
       const { data, error } = await query;
       if (!error && data) {
-        return data.map(mapAnnouncementFromSupabase);
+        const list = data.map(mapAnnouncementFromSupabase);
+        setCached(cacheKey, list);
+        return list;
       }
       if (error) console.warn("[Supabase fetchAllAnnouncements Note]: Falling back to local store.", error.message || error);
     } catch (e) {
@@ -4536,9 +4721,12 @@ async function fetchAllAnnouncements(batchId) {
     }
   }
   const local = db.getData().announcements || [];
-  return batchId && batchId !== "ALL" ? local.filter((a) => a.batchId === batchId || a.batchId === "ALL" || !a.batchId) : local;
+  const fallback = batchId && batchId !== "ALL" ? local.filter((a) => a.batchId === batchId || a.batchId === "ALL" || !a.batchId) : local;
+  if (fallback.length > 0) setCached(cacheKey, fallback);
+  return fallback;
 }
 async function createAnnouncementInDB(ann) {
+  invalidateCache("announcements");
   const local = db.getData();
   if (!local.announcements) local.announcements = [];
   local.announcements = local.announcements.filter((a) => a.id !== ann.id);
@@ -4565,6 +4753,7 @@ async function createAnnouncementInDB(ann) {
   return ann;
 }
 async function deleteAnnouncementFromDB(id) {
+  invalidateCache("announcements");
   const local = db.getData();
   if (local.announcements) {
     local.announcements = local.announcements.filter((a) => a.id !== id);
@@ -4590,6 +4779,9 @@ function mapNoticeFromSupabase(row) {
     publishDate: row.publish_date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
     isImportant: Boolean(row.is_important),
     attachmentUrl: row.attachment_url || void 0,
+    attachmentFileName: row.attachment_file_name || row.attachmentFileName || void 0,
+    attachmentSize: row.attachment_size || row.attachmentSize || void 0,
+    featuredImageUrl: row.featured_image_url || row.featuredImageUrl || void 0,
     createdBy: row.created_by || "Admin",
     createdByName: row.created_by_name || "Department Admin",
     createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
@@ -4598,7 +4790,7 @@ function mapNoticeFromSupabase(row) {
 function mapNoticeToSupabase(notice) {
   const rawCat = (notice.category || "GENERAL").toUpperCase();
   let category = "GENERAL";
-  if (["EXAM", "HOLIDAY", "URGENT", "GENERAL"].includes(rawCat)) {
+  if (["EXAM", "HOLIDAY", "URGENT", "GENERAL", "ACADEMIC", "SCHOLARSHIP", "EVENT", "REGISTRATION"].includes(rawCat)) {
     category = rawCat;
   }
   return {
@@ -4609,12 +4801,17 @@ function mapNoticeToSupabase(notice) {
     publish_date: notice.publishDate,
     is_important: notice.isImportant,
     attachment_url: notice.attachmentUrl || null,
+    attachment_file_name: notice.attachmentFileName || null,
+    attachment_size: notice.attachmentSize || null,
+    featured_image_url: notice.featuredImageUrl || null,
     created_by: notice.createdBy,
     created_by_name: notice.createdByName,
     created_at: notice.createdAt || (/* @__PURE__ */ new Date()).toISOString()
   };
 }
 async function fetchAllNotices() {
+  const cached = getCached("notices");
+  if (cached) return cached;
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -4627,6 +4824,7 @@ async function fetchAllNotices() {
           db.save();
         } catch {
         }
+        setCached("notices", notices);
         return notices;
       }
       if (error) console.warn("[Supabase fetchAllNotices Note]: Falling back to local store.", error.message || error);
@@ -4634,9 +4832,12 @@ async function fetchAllNotices() {
       console.warn("[Supabase fetchAllNotices Exception]: Falling back to local store.", e?.message || e);
     }
   }
-  return local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
+  const fallback = local.departmentNotices && local.departmentNotices.length > 0 ? local.departmentNotices : [];
+  if (fallback.length > 0) setCached("notices", fallback);
+  return fallback;
 }
 async function createNoticeInDB(notice) {
+  invalidateCache("notices");
   const local = db.getData();
   if (!local.departmentNotices) local.departmentNotices = [];
   local.departmentNotices = local.departmentNotices.filter((n) => n.id !== notice.id);
@@ -4663,6 +4864,7 @@ async function createNoticeInDB(notice) {
   return notice;
 }
 async function deleteNoticeFromDB(id) {
+  invalidateCache("notices");
   const local = db.getData();
   if (local.departmentNotices) {
     local.departmentNotices = local.departmentNotices.filter((n) => n.id !== id);
@@ -4740,6 +4942,8 @@ function mapResourceToSupabase(res) {
   };
 }
 async function fetchAllResources() {
+  const cached = getCached("resources");
+  if (cached) return cached;
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -4752,6 +4956,7 @@ async function fetchAllResources() {
           db.save();
         } catch {
         }
+        setCached("resources", resources);
         return resources;
       }
       if (error) console.warn("[Supabase fetchAllResources Note]: Falling back to local store.", error.message || error);
@@ -4759,9 +4964,12 @@ async function fetchAllResources() {
       console.warn("[Supabase fetchAllResources Exception]: Falling back to local store.", e?.message || e);
     }
   }
-  return local.resources && local.resources.length > 0 ? local.resources : [];
+  const fallback = local.resources && local.resources.length > 0 ? local.resources : [];
+  if (fallback.length > 0) setCached("resources", fallback);
+  return fallback;
 }
 async function createResourceInDB(res) {
+  invalidateCache("resources");
   const local = db.getData();
   if (!local.resources) local.resources = [];
   local.resources = local.resources.filter((r) => r.id !== res.id);
@@ -4788,6 +4996,7 @@ async function createResourceInDB(res) {
   return res;
 }
 async function updateResourceInDB(id, updates) {
+  invalidateCache("resources");
   const local = db.getData();
   if (!local.resources) local.resources = [];
   let existing = local.resources.find((r) => r.id === id);
@@ -4840,6 +5049,7 @@ async function updateResourceInDB(id, updates) {
   return updated;
 }
 async function deleteResourceFromDB(id) {
+  invalidateCache("resources");
   const local = db.getData();
   if (local.resources) {
     local.resources = local.resources.filter((r) => r.id !== id);
@@ -5003,7 +5213,10 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid Password. Please check your password." });
     }
-    const token = generateToken(user);
+    const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+    const userBatch = allBatches.find((b) => b.id === user.batchId || user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase());
+    const activeSemester = userBatch ? userBatch.currentSemester : user.currentSemester || 5;
+    const token = generateToken({ ...user, currentSemester: activeSemester });
     res.json({
       token,
       user: {
@@ -5014,8 +5227,8 @@ router.post("/login", async (req, res) => {
         phone: user.phone,
         role: user.role,
         batchId: user.batchId,
-        batchName: user.batchName,
-        currentSemester: user.currentSemester,
+        batchName: userBatch?.name || user.batchName,
+        currentSemester: activeSemester,
         profileImage: user.profileImage,
         status: user.status,
         points: user.points || 0
@@ -5048,7 +5261,7 @@ router.post(["/register", "/signup"], async (req, res) => {
       role: "STUDENT",
       batchId: batchId || "batch-9",
       batchName: batchName || "SWE 9th Batch",
-      currentSemester: currentSemester || 4,
+      currentSemester: currentSemester || 5,
       status: "ACTIVE",
       points: 0,
       profileImage: "/avatars/pangolin-cream-2.svg",
@@ -5075,7 +5288,29 @@ router.get("/me", verifyAuthToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ user });
+    let activeSemester = user.currentSemester || 5;
+    let batchName = user.batchName;
+    if (user.role === "ADMIN") {
+      activeSemester = 0;
+      batchName = "SWE Administration";
+    } else {
+      const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+      const userBatch = allBatches.find((b) => b.id === user.batchId || user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase());
+      if (userBatch) {
+        activeSemester = userBatch.currentSemester;
+        batchName = userBatch.name;
+      } else if (user.batchId === "batch-9" || user.batchName?.toLowerCase().includes("9th")) {
+        activeSemester = 5;
+        batchName = "SWE 9th Batch";
+      }
+    }
+    res.json({
+      user: {
+        ...user,
+        currentSemester: activeSemester,
+        batchName
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch user profile" });
   }
@@ -5123,7 +5358,7 @@ router.post("/sync-local-user", async (req, res) => {
           role: u.role || "STUDENT",
           batchId: u.batchId || "batch-9",
           batchName: u.batchName || "SWE 9th Batch",
-          currentSemester: u.currentSemester || 4,
+          currentSemester: u.currentSemester || 5,
           status: u.status || "ACTIVE",
           points: u.points || 0,
           profileImage: u.profileImage || "/avatars/pangolin-cream-2.svg",
@@ -6045,7 +6280,7 @@ router5.get("/", optionalAuthToken, async (req, res) => {
     } else if (semesterQuery) {
       courses = courses.filter((c) => c.semester === semesterQuery);
     }
-    if (req.user && req.user.role === "STUDENT" && !isAllRequested) {
+    if (req.user && req.user.role === "STUDENT") {
       try {
         const userRetakes = (db.getRetakes?.() || []).filter((r) => r.studentId === req.user.id && r.status !== "DROPPED");
         if (userRetakes.length > 0) {
@@ -6146,9 +6381,24 @@ router5.get("/:id", optionalAuthToken, async (req, res) => {
     const notes = matchedResources.filter((r) => r.type === "NOTE").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
     const labs = matchedResources.filter((r) => r.type === "LAB").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
     const faculty = allFaculty.find((f) => f.id === course.assignedFacultyId);
+    const allExams = await fetchAllExams().catch(() => db.getExams?.() || []);
+    const todayStr = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const courseExams = allExams.filter((e) => {
+      const eCode = normalizeCode(e.courseCode);
+      const eId = e.courseId;
+      return eId && eId === course.id || eCode && (eCode === courseCodeNorm || eCode === courseShortNorm);
+    }).map((e) => {
+      const examDate = new Date(e.date);
+      const now = new Date(todayStr);
+      const diffTime = examDate.getTime() - now.getTime();
+      const daysLeft = Math.ceil(diffTime / (1e3 * 60 * 60 * 24));
+      const isArchived = e.date < todayStr;
+      return { ...e, daysLeft, isArchived };
+    }).sort((a, b) => a.date.localeCompare(b.date));
     res.json({
       course,
       faculty,
+      exams: courseExams,
       resources: {
         questions,
         notes,
@@ -7146,7 +7396,16 @@ router8.get("/", optionalAuthToken, async (req, res) => {
   }
 });
 router8.post("/", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
-  const { title, content, category, isImportant, attachmentUrl } = req.body;
+  const {
+    title,
+    content,
+    category,
+    isImportant,
+    attachmentUrl,
+    attachmentFileName,
+    attachmentSize,
+    featuredImageUrl
+  } = req.body;
   if (!title || !content || !category) {
     return res.status(400).json({ error: "Title, content, and category are required" });
   }
@@ -7159,7 +7418,10 @@ router8.post("/", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
       category,
       publishDate: todayStr,
       isImportant: Boolean(isImportant),
-      attachmentUrl,
+      attachmentUrl: attachmentUrl ? String(attachmentUrl).trim() : void 0,
+      attachmentFileName: attachmentFileName ? String(attachmentFileName).trim() : void 0,
+      attachmentSize: attachmentSize ? String(attachmentSize).trim() : void 0,
+      featuredImageUrl: featuredImageUrl ? String(featuredImageUrl).trim() : void 0,
       createdBy: req.user.id,
       createdByName: req.user.name,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
@@ -7209,7 +7471,7 @@ import { Router as Router9 } from "express";
 var router9 = Router9();
 router9.get("/", optionalAuthToken, async (req, res) => {
   try {
-    const { type, semester, courseCode, examType, year, search, category } = req.query;
+    const { type, semester, courseCode, courseId, examType, year, search, category, page, limit } = req.query;
     const allResources = await fetchAllResources();
     let list = allResources.filter((r) => r.status === "APPROVED");
     if (type) {
@@ -7217,6 +7479,9 @@ router9.get("/", optionalAuthToken, async (req, res) => {
     }
     if (semester) {
       list = list.filter((r) => r.semester === Number(semester));
+    }
+    if (courseId) {
+      list = list.filter((r) => r.courseId === courseId);
     }
     if (courseCode) {
       const normQuery = courseCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -7226,7 +7491,7 @@ router9.get("/", optionalAuthToken, async (req, res) => {
       });
     }
     if (examType) {
-      list = list.filter((r) => r.examType === examType);
+      list = list.filter((r) => r.examType?.toLowerCase() === examType.toLowerCase());
     }
     if (year) {
       list = list.filter((r) => r.academicYear === Number(year));
@@ -7237,11 +7502,30 @@ router9.get("/", optionalAuthToken, async (req, res) => {
     if (search) {
       const query = search.toLowerCase().trim();
       list = list.filter(
-        (r) => r.title.toLowerCase().includes(query) || r.courseTitle.toLowerCase().includes(query) || r.courseCode.toLowerCase().includes(query) || r.description && r.description.toLowerCase().includes(query) || r.uploaderName.toLowerCase().includes(query)
+        (r) => r.title?.toLowerCase().includes(query) || r.courseTitle?.toLowerCase().includes(query) || r.courseCode?.toLowerCase().includes(query) || r.facultyName && r.facultyName.toLowerCase().includes(query) || r.description && r.description.toLowerCase().includes(query) || r.uploaderName && r.uploaderName.toLowerCase().includes(query) || r.targetBatch && r.targetBatch.toLowerCase().includes(query) || String(r.academicYear).includes(query)
       );
     }
-    list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    res.json({ resources: list });
+    list.sort((a, b) => {
+      const yearDiff = (Number(b.academicYear) || 0) - (Number(a.academicYear) || 0);
+      if (yearDiff !== 0) return yearDiff;
+      return (b.createdAt || "").localeCompare(a.createdAt || "");
+    });
+    const total = list.length;
+    if (page !== void 0 || limit !== void 0) {
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const totalPages = Math.max(1, Math.ceil(total / limitNum));
+      const startIndex = (pageNum - 1) * limitNum;
+      const paginated = list.slice(startIndex, startIndex + limitNum);
+      return res.json({
+        resources: paginated,
+        total,
+        page: pageNum,
+        pageSize: limitNum,
+        totalPages
+      });
+    }
+    res.json({ resources: list, total });
   } catch (err) {
     console.error("[Resources API GET / Error]:", err);
     res.status(500).json({ error: "Failed to fetch resources" });
@@ -7360,7 +7644,8 @@ router9.post(["/", "/upload"], verifyAuthToken, async (req, res) => {
   }
   try {
     const isAdmin = req.user.role === "ADMIN";
-    const initialStatus = isAdmin ? "APPROVED" : "PENDING";
+    const isCR = req.user.role === "CR";
+    const initialStatus = isAdmin || isCR ? "APPROVED" : "PENDING";
     const allCourses = await fetchAllCourses().catch(() => []);
     const normalize = (val) => (val || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     const queryCodeNorm = normalize(courseCode);
@@ -7552,7 +7837,9 @@ async function getAdminStats() {
     throw new Error("Supabase client is not available on server.");
   }
   const [
-    usersRes,
+    usersTotalRes,
+    usersAdminRes,
+    usersCRRes,
     batchesRes,
     coursesRes,
     facultyRes,
@@ -7560,32 +7847,41 @@ async function getAdminStats() {
     examsRes,
     announcementsRes,
     noticesRes,
-    resourcesRes,
+    resourcesTotalRes,
+    resourcesPendingRes,
     notificationsRes,
     auditLogsRes
   ] = await Promise.all([
-    supabase.from("users").select("*", { count: "exact", head: false }),
-    supabase.from("batches").select("*", { count: "exact", head: false }),
-    supabase.from("courses").select("*", { count: "exact", head: false }),
-    supabase.from("faculty").select("*", { count: "exact", head: false }),
-    supabase.from("routine_slots").select("*", { count: "exact", head: false }),
-    supabase.from("exams").select("*", { count: "exact", head: false }),
-    supabase.from("announcements").select("*", { count: "exact", head: false }),
-    supabase.from("department_notices").select("*", { count: "exact", head: false }),
-    supabase.from("resources").select("*", { count: "exact", head: false }),
-    supabase.from("notifications").select("*", { count: "exact", head: false }),
-    supabase.from("audit_logs").select("*").order("timestamp", { ascending: false }).limit(15)
+    supabase.from("users").select("*", { count: "exact", head: true }),
+    supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "ADMIN"),
+    supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "CR"),
+    supabase.from("batches").select("*", { count: "exact", head: true }),
+    supabase.from("courses").select("*", { count: "exact", head: true }),
+    supabase.from("faculty").select("*", { count: "exact", head: true }),
+    supabase.from("routine_slots").select("*", { count: "exact", head: true }),
+    supabase.from("exams").select("*", { count: "exact", head: true }),
+    supabase.from("announcements").select("*", { count: "exact", head: true }),
+    supabase.from("department_notices").select("*", { count: "exact", head: true }),
+    supabase.from("resources").select("*", { count: "exact", head: true }),
+    supabase.from("resources").select("*", { count: "exact", head: true }).eq("status", "PENDING"),
+    supabase.from("notifications").select("*", { count: "exact", head: true }),
+    supabase.from("audit_logs").select("id, actor_id, actor_name, action, target, details, timestamp").order("timestamp", { ascending: false }).limit(15)
   ]);
-  const users = usersRes.data || [];
-  const batches = batchesRes.data || [];
-  const courses = coursesRes.data || [];
-  const faculty = facultyRes.data || [];
-  const routine = routineRes.data || [];
-  const exams = examsRes.data || [];
-  const announcements = announcementsRes.data || [];
-  const notices = noticesRes.data || [];
-  const resources = resourcesRes.data || [];
-  const notifications = notificationsRes.data || [];
+  const totalUsers = usersTotalRes.count ?? 0;
+  const totalAdmins = usersAdminRes.count ?? 0;
+  const totalCRs = usersCRRes.count ?? 0;
+  const totalStudents = Math.max(0, totalUsers - totalAdmins);
+  const totalBatches = batchesRes.count ?? 0;
+  const activeBatches = totalBatches;
+  const totalCourses = coursesRes.count ?? 0;
+  const totalFaculty = facultyRes.count ?? 0;
+  const totalRoutineSlots = routineRes.count ?? 0;
+  const totalExams = examsRes.count ?? 0;
+  const totalAnnouncements = announcementsRes.count ?? 0;
+  const totalNotices = noticesRes.count ?? 0;
+  const totalResources = resourcesTotalRes.count ?? 0;
+  const pendingResources = resourcesPendingRes.count ?? 0;
+  const totalNotifications = notificationsRes.count ?? 0;
   const recentAuditLogs = (auditLogsRes.data || []).map((row) => ({
     id: row.id,
     actorId: row.actor_id,
@@ -7595,27 +7891,22 @@ async function getAdminStats() {
     details: row.details || void 0,
     timestamp: row.timestamp || (/* @__PURE__ */ new Date()).toISOString()
   }));
-  const totalStudents = users.filter((u) => u.role === "STUDENT" || u.role === "CR").length;
-  const totalAdmins = users.filter((u) => u.role === "ADMIN").length;
-  const totalCRs = users.filter((u) => u.role === "CR").length;
-  const pendingResources = resources.filter((r) => r.status === "PENDING").length;
-  const activeBatches = batches.length;
   return {
-    totalUsers: users.length,
+    totalUsers,
     totalStudents,
     totalCRs,
     totalAdmins,
-    totalBatches: batches.length,
+    totalBatches,
     activeBatches,
-    totalCourses: courses.length,
-    totalFaculty: faculty.length,
-    totalRoutineSlots: routine.length,
-    totalExams: exams.length,
-    totalAnnouncements: announcements.length,
-    totalNotices: notices.length,
-    totalResources: resources.length,
+    totalCourses,
+    totalFaculty,
+    totalRoutineSlots,
+    totalExams,
+    totalAnnouncements,
+    totalNotices,
+    totalResources,
     pendingResources,
-    totalNotifications: notifications.length,
+    totalNotifications,
     recentAuditLogs
   };
 }
@@ -7640,6 +7931,76 @@ async function getAllUsers() {
     createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString(),
     updatedAt: row.updated_at || (/* @__PURE__ */ new Date()).toISOString()
   }));
+}
+async function getPaginatedUsers(options) {
+  const supabase = getServerSupabase();
+  const page = Math.max(1, options.page || 1);
+  const limit = Math.min(100, Math.max(1, options.limit || 20));
+  const offset = (page - 1) * limit;
+  if (supabase) {
+    try {
+      let query = supabase.from("users").select("*", { count: "exact" });
+      if (options.role) {
+        query = query.eq("role", options.role);
+      }
+      if (options.batchId) {
+        query = query.eq("batch_id", options.batchId);
+      }
+      if (options.search && options.search.trim()) {
+        const s = options.search.trim();
+        query = query.or(`name.ilike.%${s}%,student_id.ilike.%${s}%,email.ilike.%${s}%`);
+      }
+      query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+      const { data, count, error } = await query;
+      if (!error && data) {
+        const users = data.map((row) => ({
+          id: row.id,
+          studentId: row.student_id,
+          name: row.name,
+          email: row.email || void 0,
+          phone: row.phone || void 0,
+          role: row.role,
+          batchId: row.batch_id || void 0,
+          batchName: row.batch_name || void 0,
+          currentSemester: Number(row.current_semester || 1),
+          profileImage: row.profile_image || void 0,
+          status: row.status,
+          points: Number(row.points || 0),
+          createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString(),
+          updatedAt: row.updated_at || (/* @__PURE__ */ new Date()).toISOString()
+        }));
+        const total2 = count ?? users.length;
+        return {
+          users,
+          total: total2,
+          page,
+          limit,
+          totalPages: Math.max(1, Math.ceil(total2 / limit))
+        };
+      }
+    } catch (e) {
+      console.warn("[getPaginatedUsers Supabase error, falling back to local store]:", e);
+    }
+  }
+  const allUsers = db.getData().users || [];
+  let filtered = allUsers;
+  if (options.role) filtered = filtered.filter((u) => u.role === options.role);
+  if (options.batchId) filtered = filtered.filter((u) => u.batchId === options.batchId);
+  if (options.search && options.search.trim()) {
+    const s = options.search.toLowerCase().trim();
+    filtered = filtered.filter(
+      (u) => u.name?.toLowerCase().includes(s) || u.studentId?.toLowerCase().includes(s) || u.email?.toLowerCase().includes(s)
+    );
+  }
+  const total = filtered.length;
+  const paginated = filtered.slice(offset, offset + limit);
+  return {
+    users: paginated,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit))
+  };
 }
 async function createUser(userData, adminUser) {
   const supabase = getServerSupabase();
@@ -7829,6 +8190,7 @@ async function getAllBatches() {
   }));
 }
 async function createBatch(batchData, adminUser) {
+  invalidateCache("batches");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   if (!batchData.name || !batchData.admissionYear || !batchData.academicSession) {
@@ -7877,6 +8239,7 @@ async function createBatch(batchData, adminUser) {
   return createdBatch;
 }
 async function updateBatch(id, updates, adminUser) {
+  invalidateCache("batches");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const updatePayload = {};
@@ -7918,6 +8281,7 @@ async function updateBatch(id, updates, adminUser) {
   return updatedBatch;
 }
 async function deleteBatch(id, adminUser) {
+  invalidateCache("batches");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: existing } = await supabase.from("batches").select("name").eq("id", id).maybeSingle();
@@ -7961,6 +8325,7 @@ async function getAllCourses() {
   }));
 }
 async function createCourse(courseData, adminUser) {
+  invalidateCache("courses");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   if (!courseData.code || !courseData.title) {
@@ -8016,6 +8381,7 @@ async function createCourse(courseData, adminUser) {
   return createdCourse;
 }
 async function updateCourse(id, updates, adminUser) {
+  invalidateCache("courses");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const updatePayload = {};
@@ -8064,6 +8430,7 @@ async function updateCourse(id, updates, adminUser) {
   return updatedCourse;
 }
 async function deleteCourse(id, adminUser) {
+  invalidateCache("courses");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: existing } = await supabase.from("courses").select("code, title").eq("id", id).maybeSingle();
@@ -8109,6 +8476,7 @@ async function getAllFaculty() {
   return sortFacultyByHierarchy(mapped);
 }
 async function createFaculty(facultyData, adminUser) {
+  invalidateCache("faculty");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   if (!facultyData.name || !facultyData.designation || !facultyData.email) {
@@ -8116,6 +8484,10 @@ async function createFaculty(facultyData, adminUser) {
   }
   const id = `fac_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const now = (/* @__PURE__ */ new Date()).toISOString();
+  let photoUrl = facultyData.photoUrl || null;
+  if (photoUrl && photoUrl.startsWith("data:image/")) {
+    photoUrl = await uploadBase64ImageToStorage(photoUrl, "faculty-photos", `fac_${id}`);
+  }
   const insertPayload = {
     id,
     name: facultyData.name.trim(),
@@ -8125,7 +8497,7 @@ async function createFaculty(facultyData, adminUser) {
     email: facultyData.email.trim().toLowerCase(),
     phone: facultyData.phone ? facultyData.phone.trim() : null,
     office_room: facultyData.officeRoom ? facultyData.officeRoom.trim() : "SWE Faculty Room",
-    photo_url: facultyData.photoUrl || null,
+    photo_url: photoUrl,
     specialization: facultyData.specialization ? facultyData.specialization.trim() : null,
     assigned_courses: Array.isArray(facultyData.assignedCourses) ? facultyData.assignedCourses : [],
     created_at: now
@@ -8166,8 +8538,13 @@ async function createFaculty(facultyData, adminUser) {
   return createdFaculty;
 }
 async function updateFaculty(id, updates, adminUser) {
+  invalidateCache("faculty");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
+  let photoUrl = updates.photoUrl !== void 0 ? updates.photoUrl : void 0;
+  if (photoUrl && photoUrl.startsWith("data:image/")) {
+    photoUrl = await uploadBase64ImageToStorage(photoUrl, "faculty-photos", `fac_${id}`);
+  }
   const updatePayload = {};
   if (updates.name !== void 0) updatePayload.name = updates.name.trim();
   if (updates.shortName !== void 0) updatePayload.short_name = updates.shortName ? updates.shortName.trim() : null;
@@ -8176,7 +8553,7 @@ async function updateFaculty(id, updates, adminUser) {
   if (updates.email !== void 0) updatePayload.email = updates.email.trim().toLowerCase();
   if (updates.phone !== void 0) updatePayload.phone = updates.phone ? updates.phone.trim() : null;
   if (updates.officeRoom !== void 0) updatePayload.office_room = updates.officeRoom ? updates.officeRoom.trim() : null;
-  if (updates.photoUrl !== void 0) updatePayload.photo_url = updates.photoUrl || null;
+  if (photoUrl !== void 0) updatePayload.photo_url = photoUrl || null;
   if (updates.specialization !== void 0) updatePayload.specialization = updates.specialization ? updates.specialization.trim() : null;
   if (updates.assignedCourses !== void 0) updatePayload.assigned_courses = Array.isArray(updates.assignedCourses) ? updates.assignedCourses : [];
   const { data, error } = await supabase.from("faculty").update(updatePayload).eq("id", id).select().maybeSingle();
@@ -8216,6 +8593,7 @@ async function updateFaculty(id, updates, adminUser) {
   return updatedFaculty;
 }
 async function deleteFaculty(id, adminUser) {
+  invalidateCache("faculty");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: existing } = await supabase.from("faculty").select("name, designation").eq("id", id).maybeSingle();
@@ -8273,6 +8651,7 @@ async function getAllRoutineSlots(batchId) {
   }));
 }
 async function createRoutineSlot(slotData, adminUser) {
+  invalidateCache("routines");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   if (!slotData.batchId || !slotData.day || !slotData.startTime || !slotData.endTime || !slotData.courseTitle || !slotData.room) {
@@ -8321,6 +8700,7 @@ async function createRoutineSlot(slotData, adminUser) {
   };
 }
 async function updateRoutineSlot(id, updates, adminUser) {
+  invalidateCache("routines");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const updatePayload = {};
@@ -8362,6 +8742,7 @@ async function updateRoutineSlot(id, updates, adminUser) {
   };
 }
 async function deleteRoutineSlot(id, adminUser) {
+  invalidateCache("routines");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data: existing } = await supabase.from("routine_slots").select("course_code, day").eq("id", id).single();
@@ -8376,6 +8757,7 @@ async function deleteRoutineSlot(id, adminUser) {
   );
 }
 async function bulkImportRoutines(batchId, slots, mode, adminUser) {
+  invalidateCache("routines");
   const supabase = getServerSupabase();
   if (!supabase) throw new Error("Supabase client unavailable");
   if (!batchId) throw new Error("Batch ID is required");
@@ -8660,6 +9042,9 @@ async function getAllNotices() {
     publishDate: row.publish_date,
     isImportant: Boolean(row.is_important),
     attachmentUrl: row.attachment_url || void 0,
+    attachmentFileName: row.attachment_file_name || void 0,
+    attachmentSize: row.attachment_size || void 0,
+    featuredImageUrl: row.featured_image_url || void 0,
     createdBy: row.created_by || "admin",
     createdByName: row.created_by_name || "Department Admin",
     createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
@@ -8682,6 +9067,9 @@ async function createNotice(noticeData, adminUser) {
     publish_date: noticeData.publishDate || today,
     is_important: Boolean(noticeData.isImportant),
     attachment_url: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
+    attachment_file_name: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
+    attachment_size: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null,
+    featured_image_url: noticeData.featuredImageUrl ? noticeData.featuredImageUrl.trim() : null,
     created_by: adminUser.id,
     created_by_name: adminUser.name,
     created_at: now
@@ -8703,6 +9091,9 @@ async function createNotice(noticeData, adminUser) {
     publishDate: data.publish_date,
     isImportant: Boolean(data.is_important),
     attachmentUrl: data.attachment_url || void 0,
+    attachmentFileName: data.attachment_file_name || void 0,
+    attachmentSize: data.attachment_size || void 0,
+    featuredImageUrl: data.featured_image_url || void 0,
     createdBy: data.created_by,
     createdByName: data.created_by_name,
     createdAt: data.created_at
@@ -8718,6 +9109,9 @@ async function updateNotice(id, updates, adminUser) {
   if (updates.publishDate !== void 0) updatePayload.publish_date = updates.publishDate;
   if (updates.isImportant !== void 0) updatePayload.is_important = Boolean(updates.isImportant);
   if (updates.attachmentUrl !== void 0) updatePayload.attachment_url = updates.attachmentUrl ? updates.attachmentUrl.trim() : null;
+  if (updates.attachmentFileName !== void 0) updatePayload.attachment_file_name = updates.attachmentFileName ? updates.attachmentFileName.trim() : null;
+  if (updates.attachmentSize !== void 0) updatePayload.attachment_size = updates.attachmentSize ? updates.attachmentSize.trim() : null;
+  if (updates.featuredImageUrl !== void 0) updatePayload.featured_image_url = updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null;
   const { data, error } = await supabase.from("department_notices").update(updatePayload).eq("id", id).select().single();
   if (error) throw new Error(`Failed to update notice: ${error.message}`);
   await createAuditLog(
@@ -8725,7 +9119,7 @@ async function updateNotice(id, updates, adminUser) {
     adminUser.name,
     "NOTICE_UPDATED",
     `Notice: ${data.title}`,
-    `Updated fields: ${Object.keys(updatePayload).join(", ")}`
+    `Updated fields in notice`
   );
   return {
     id: data.id,
@@ -8735,6 +9129,9 @@ async function updateNotice(id, updates, adminUser) {
     publishDate: data.publish_date,
     isImportant: Boolean(data.is_important),
     attachmentUrl: data.attachment_url || void 0,
+    attachmentFileName: data.attachment_file_name || void 0,
+    attachmentSize: data.attachment_size || void 0,
+    featuredImageUrl: data.featured_image_url || void 0,
     createdBy: data.created_by,
     createdByName: data.created_by_name,
     createdAt: data.created_at
@@ -9125,6 +9522,17 @@ router10.get(["/stats", "/overview"], async (req, res) => {
 });
 router10.get(["/users", "/students"], async (req, res) => {
   try {
+    const { page, limit, search, batchId, role } = req.query;
+    if (page !== void 0 || limit !== void 0 || search !== void 0 || batchId !== void 0 || role !== void 0) {
+      const result = await getPaginatedUsers({
+        page: page ? Number(page) : 1,
+        limit: limit ? Number(limit) : 20,
+        search: search ? String(search) : void 0,
+        batchId: batchId ? String(batchId) : void 0,
+        role: role ? String(role) : void 0
+      });
+      return sendSuccess(res, result);
+    }
     const users = await getAllUsers();
     return sendSuccess(res, users);
   } catch (err) {
@@ -9570,6 +9978,25 @@ router10.get("/audit-logs", async (req, res) => {
     return sendSuccess(res, logs);
   } catch (err) {
     return sendError(res, err, "AUDIT_LOGS_FETCH_ERROR");
+  }
+});
+router10.get("/bug-reports", async (req, res) => {
+  try {
+    const reports = db.getBugReports();
+    return sendSuccess(res, reports);
+  } catch (err) {
+    return sendError(res, err, "BUG_REPORTS_FETCH_ERROR");
+  }
+});
+router10.put("/bug-reports/:id", async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, error: "Status is required" });
+    const updated = db.updateBugReportStatus(req.params.id, status);
+    if (!updated) return res.status(404).json({ success: false, error: "Bug report not found" });
+    return sendSuccess(res, updated);
+  } catch (err) {
+    return sendError(res, err, "BUG_REPORT_UPDATE_ERROR");
   }
 });
 var admin_default = router10;
@@ -10438,7 +10865,10 @@ function lookupGradePoint(gradeStr) {
   return found ? found.gradePoint : 0;
 }
 function calculateMetrics(courses, studentGrades, currentSemester) {
-  const sorted = [...courses].sort((a, b) => {
+  const academicCourses = courses.filter(
+    (c) => c.code.toUpperCase() !== "ACM" && !c.code.toUpperCase().startsWith("ACM-") && !c.code.toUpperCase().includes("ACM") && !c.title.toUpperCase().includes("ACM")
+  );
+  const sorted = [...academicCourses].sort((a, b) => {
     if (a.semester !== b.semester) return a.semester - b.semester;
     return a.code.localeCompare(b.code);
   });
@@ -10565,7 +10995,10 @@ function calculateMetrics(courses, studentGrades, currentSemester) {
   };
 }
 async function getFullCoursesForStudent(studentId) {
-  const baseCourses = await fetchAllCourses();
+  const rawCourses = await fetchAllCourses();
+  const baseCourses = rawCourses.filter(
+    (c) => c.code.toUpperCase() !== "ACM" && !c.code.toUpperCase().startsWith("ACM-") && !c.code.toUpperCase().includes("ACM") && !c.title.toUpperCase().includes("ACM")
+  );
   const excludedCodes = (db.getStudentExcludedCourses(studentId) || []).map((c) => c.toUpperCase());
   const customCourses = db.getStudentCustomCourses(studentId) || [];
   const courseMap = /* @__PURE__ */ new Map();
@@ -10808,6 +11241,9 @@ router16.post("/paste-results", verifyAuthToken, async (req, res) => {
     const allCourses = await getFullCoursesForStudent(studentId);
     const formatted = {};
     for (const [courseCode, gradeRaw] of Object.entries(results)) {
+      if (courseCode.toUpperCase() === "ACM" || courseCode.toUpperCase().startsWith("ACM-") || courseCode.toUpperCase().includes("ACM")) {
+        continue;
+      }
       const grade = String(gradeRaw).trim().toUpperCase();
       if (grade && grade !== "N/A") {
         const gp = lookupGradePoint(grade);
@@ -10881,6 +11317,48 @@ router16.post("/reset", verifyAuthToken, async (req, res) => {
   } catch (err) {
     console.error("[CGPA Reset Error]:", err);
     return res.status(500).json({ success: false, error: "Failed to reset grades" });
+  }
+});
+router16.post("/report-bug", verifyAuthToken, async (req, res) => {
+  if (!req.user) return res.status(401).json({ success: false, error: "Unauthorized" });
+  const { category, message } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ success: false, error: "Bug report message is required" });
+  }
+  try {
+    const report = {
+      id: `bug-${Date.now()}`,
+      studentId: req.user.studentId || req.user.id,
+      studentName: req.user.name,
+      studentEmail: req.user.email,
+      batchName: req.user.batchName || "SWE Batch",
+      currentSemester: req.user.currentSemester || 5,
+      category: category?.trim() || "General Bug",
+      message: message.trim(),
+      status: "PENDING",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    db.addBugReport(report);
+    const adminUser = db.getUsers().find((u) => u.role === "ADMIN");
+    if (adminUser) {
+      db.addNotification({
+        id: `notif-bug-${Date.now()}`,
+        userId: adminUser.id,
+        title: `Bug Report: ${report.category}`,
+        message: `${report.studentName} (${report.studentId}) reported: "${report.message.slice(0, 100)}..."`,
+        type: "NOTICE",
+        read: false,
+        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+    }
+    return res.json({
+      success: true,
+      message: "Bug report received! The Department Admin has been notified.",
+      report
+    });
+  } catch (err) {
+    console.error("[Bug Report Submission Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to submit bug report" });
   }
 });
 var cgpa_default = router16;

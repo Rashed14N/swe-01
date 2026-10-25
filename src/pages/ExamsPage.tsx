@@ -31,8 +31,7 @@ export const ExamsPage: React.FC = () => {
     }
   };
 
-  // Filter & Search states
-  const [searchQuery, setSearchQuery] = useState('');
+  // Filter state
   const [typeFilter, setTypeFilter] = useState('');
 
   // Modal State
@@ -162,23 +161,13 @@ export const ExamsPage: React.FC = () => {
   const currentTabExams = activeTab === 'upcoming' ? upcomingExams : archivedExams;
 
   const filteredExams = currentTabExams.filter((ex) => {
-    const matchesSearch =
-      ex.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ex.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ex.courseTitle.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = !typeFilter || ex.type === typeFilter;
-    return matchesSearch && matchesType;
+    return !typeFilter || ex.type === typeFilter;
   });
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title={activeTab === 'upcoming' ? "Upcoming Exams & Assessment Schedule" : "Archived Exams & Assessment History"}
-        description={
-          activeTab === 'upcoming'
-            ? "Chronological examination schedule for your batch semester. Check dates, room venues, and deadlines."
-            : "Historical record of past examinations, quizzes, and class tests. Automatically archived after exam dates pass."
-        }
+        title={activeTab === 'upcoming' ? "Exams Schedules" : "Archived Exams & Assessment History"}
         breadcrumb={`${user?.batchName || 'SWE 9th Batch'} • Semester ${getEffectiveSemester(user)}`}
         primaryAction={
           canManage
@@ -203,7 +192,7 @@ export const ExamsPage: React.FC = () => {
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>Upcoming Exams</span>
+          <span>Exams Schedules</span>
           <span
             className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
               activeTab === 'upcoming'
@@ -257,9 +246,6 @@ export const ExamsPage: React.FC = () => {
       )}
 
       <FilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search exams by title or course code..."
         filters={[
           {
             id: 'type',
@@ -278,10 +264,9 @@ export const ExamsPage: React.FC = () => {
           },
         ]}
         onReset={() => {
-          setSearchQuery('');
           setTypeFilter('');
         }}
-        isFiltered={Boolean(searchQuery || typeFilter)}
+        isFiltered={Boolean(typeFilter)}
       />
 
       {/* Structured Exam View (Mobile Cards + Desktop Table) */}
@@ -292,13 +277,12 @@ export const ExamsPage: React.FC = () => {
             <div className="py-8 text-center text-slate-400 text-xs">Loading exam schedule...</div>
           ) : filteredExams.length === 0 ? (
             <div className="py-12 px-4 text-center flex flex-col items-center justify-center">
-              {searchQuery || typeFilter ? (
+              {typeFilter ? (
                 <>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">No exams match your search filters.</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">No exams match your selected filter.</p>
                   <button
                     type="button"
                     onClick={() => {
-                      setSearchQuery('');
                       setTypeFilter('');
                     }}
                     className="mt-2 text-xs font-semibold text-blue-600 hover:underline"
@@ -450,13 +434,12 @@ export const ExamsPage: React.FC = () => {
                 <tr>
                   <td colSpan={canManage ? 7 : 6} className="px-5 py-14 text-center">
                     <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
-                      {searchQuery || typeFilter ? (
+                      {typeFilter ? (
                         <>
                           <p className="text-xs text-slate-500 dark:text-slate-400">No scheduled assessments match your active filter.</p>
                           <button
                             type="button"
                             onClick={() => {
-                              setSearchQuery('');
                               setTypeFilter('');
                             }}
                             className="mt-2 text-xs font-semibold text-blue-600 hover:underline"

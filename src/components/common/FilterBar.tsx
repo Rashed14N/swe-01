@@ -30,8 +30,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   return (
     <div className="bg-[#F6F9FD] p-3 sm:p-3.5 rounded-xl border border-[#DCE5F0] shadow-[0_1px_2px_rgba(15,35,70,0.04)] mb-5 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex-1 min-w-[220px] max-w-md relative">
-        {onSearchChange && (
+      {onSearchChange && (
+        <div className="flex-1 min-w-[220px] max-w-md relative">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -42,8 +42,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               className="w-full bg-white border border-[#D8E2EE] rounded-lg pl-9 pr-3 py-2 text-xs text-[#10213B] placeholder-slate-400 focus:outline-none focus:border-[#2563EB] focus:ring-3 focus:ring-blue-500/10 transition-all h-[38px]"
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {filters.map((f) => (

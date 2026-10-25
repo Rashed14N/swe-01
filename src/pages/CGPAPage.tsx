@@ -5,15 +5,15 @@ import {
   Edit3, Check, X, ChevronDown, ChevronUp, FileText,
   Printer, RefreshCw, AlertCircle, Plus,
   Search, Info, Trash2, RotateCcw,
-  Send, MessageSquareWarning, Eye, CheckCircle2,
-  GraduationCap,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { safeParseJson } from '../lib/apiClient';
+import { safeParseJson, safeFetchJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { SweLogo } from '../components/common/SweLogo';
 import { getEffectiveSemester } from '../utils/semester';
+import { AcademicResultGraph } from '../components/cgpa/AcademicResultGraph';
 
 export interface EnrichedCourse {
   id: string;
@@ -37,6 +37,7 @@ export interface SemesterData {
   completedCredits: number;
   gradedCredits: number;
   sgpa: number | null;
+  cumulativeCgpa?: number | null;
   isPublished: boolean;
 }
 
@@ -70,6 +71,14 @@ const MU_GRADE_OPTIONS = [
   { grade: 'N/A', gradePoint: 0.00, label: 'Not Published / Clear Grade' },
 ];
 
+// Safe helper to identify and exclude non-academic ACM items
+const isAcmCourse = (c?: EnrichedCourse | null): boolean => {
+  if (!c) return false;
+  const code = (c.code || '').toUpperCase();
+  const title = (c.title || '').toUpperCase();
+  return code === 'ACM' || code.startsWith('ACM-') || code.includes('ACM') || title.includes('ACM');
+};
+
 export const CGPAPage: React.FC = () => {
   const { token, user } = useAuth();
   const { addToast } = useNotifications();
@@ -95,11 +104,6 @@ export const CGPAPage: React.FC = () => {
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
 
-  // Bug Report to Admin State
-  const [bugCategory, setBugCategory] = useState('Result Discrepancy');
-  const [bugMessage, setBugMessage] = useState('');
-  const [isSubmittingBug, setIsSubmittingBug] = useState(false);
-  const [bugSubmittedSuccess, setBugSubmittedSuccess] = useState(false);
 
   // Form State for Add Course
   const [courseForm, setCourseForm] = useState({
@@ -133,22 +137,18 @@ export const CGPAPage: React.FC = () => {
     };
   }, [anyModalOpen]);
 
+
   // Fetch CGPA Data
   const fetchCGPAData = async () => {
     if (!token) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/cgpa', {
+      const data = await safeFetchJson('/api/cgpa', {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await safeParseJson(res);
+      }, 3);
+
       if (data?.success) {
         setSummary(data.cgpaSummary);
-        const isAcmCourse = (c: EnrichedCourse) => 
-          c.code.toUpperCase() === 'ACM' || 
-          c.code.toUpperCase().startsWith('ACM-') || 
-          c.code.toUpperCase().includes('ACM') || 
-          (c.title && c.title.toUpperCase().includes('ACM'));
 
         const validCourses = (data.courses || []).filter(
           (c: EnrichedCourse) => !isAcmCourse(c)
@@ -164,7 +164,9 @@ export const CGPAPage: React.FC = () => {
 
         const initGrades: Record<string, string> = {};
         validCourses.forEach((c: EnrichedCourse) => {
-          initGrades[c.code] = c.isPublished ? c.grade : 'N/A';
+          if (c && c.code) {
+            initGrades[c.code] = c.isPublished ? c.grade : 'N/A';
+          }
         });
         setEditingGrades(initGrades);
       } else {
@@ -195,27 +197,25 @@ export const CGPAPage: React.FC = () => {
     let result = [...semesters];
 
     if (selectedSemesterTab !== 'ALL') {
-      result = result.filter(s => s.semester === selectedSemesterTab);
+      result = result.filter(s => s && s.semester === selectedSemesterTab);
     }
 
     return result.map(s => {
-      let filteredCourses = (s.courses || []).filter(
-        c => c.code.toUpperCase() !== 'ACM' && !c.code.toUpperCase().startsWith('ACM-') && !c.code.toUpperCase().includes('ACM') && !c.title.toUpperCase().includes('ACM')
-      );
+      let filteredCourses = (s?.courses || []).filter(c => !isAcmCourse(c));
 
       if (statusFilter === 'GRADED') {
-        filteredCourses = filteredCourses.filter(c => c.isPublished);
+        filteredCourses = filteredCourses.filter(c => Boolean(c && c.isPublished));
       } else if (statusFilter === 'PENDING') {
-        filteredCourses = filteredCourses.filter(c => !c.isPublished);
+        filteredCourses = filteredCourses.filter(c => Boolean(c && !c.isPublished));
       }
 
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         filteredCourses = filteredCourses.filter(
           c =>
-            c.code.toLowerCase().includes(query) ||
-            c.title.toLowerCase().includes(query) ||
-            (c.shortName && c.shortName.toLowerCase().includes(query))
+            Boolean(c?.code && c.code.toLowerCase().includes(query)) ||
+            Boolean(c?.title && c.title.toLowerCase().includes(query)) ||
+            Boolean(c?.shortName && c.shortName.toLowerCase().includes(query))
         );
       }
 
@@ -223,21 +223,19 @@ export const CGPAPage: React.FC = () => {
         ...s,
         courses: filteredCourses,
       };
-    }).filter(s => s.courses.length > 0 || selectedSemesterTab === s.semester);
+    }).filter(s => (s.courses && s.courses.length > 0) || selectedSemesterTab === s.semester);
   }, [semesters, selectedSemesterTab, statusFilter, searchQuery]);
 
   // Courses to Print: only semesters up to student's current batch semester or with published results
   const printableSemesters = useMemo(() => {
     const activeBatchSem = effectiveSemester;
     return semesters
-      .filter(s => s.semester <= activeBatchSem || s.isPublished)
+      .filter(s => s && (s.semester <= activeBatchSem || s.isPublished))
       .map(s => ({
         ...s,
-        courses: (s.courses || []).filter(
-          c => c.code.toUpperCase() !== 'ACM' && !c.code.toUpperCase().startsWith('ACM-') && !c.code.toUpperCase().includes('ACM') && !c.title.toUpperCase().includes('ACM')
-        ),
+        courses: (s?.courses || []).filter(c => !isAcmCourse(c)),
       }));
-  }, [semesters, user]);
+  }, [semesters, user, effectiveSemester]);
 
   // Save Single Course Grade
   const handleSaveSingleGrade = async (courseCode: string, newGrade: string) => {
@@ -488,76 +486,16 @@ export const CGPAPage: React.FC = () => {
     }
   };
 
-  // Submit Text Bug Report to Admin
-  const handleBugReportSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token) {
-      addToast('error', 'Please log in to report a bug to admin.');
-      return;
-    }
-    if (!bugMessage.trim()) {
-      addToast('error', 'Please describe the bug or issue in text.');
-      return;
-    }
-
-    setIsSubmittingBug(true);
-    try {
-      const res = await fetch('/api/cgpa/report-bug', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          category: bugCategory,
-          message: bugMessage.trim(),
-        }),
-      });
-
-      const data = await safeParseJson(res);
-      if (data?.success) {
-        addToast('success', 'Bug report delivered directly to Department Admin!');
-        setBugMessage('');
-        setBugSubmittedSuccess(true);
-        setTimeout(() => setBugSubmittedSuccess(false), 5000);
-      } else {
-        addToast('error', data?.error || 'Failed to submit bug report');
-      }
-    } catch (err: any) {
-      addToast('error', 'Network error submitting bug report');
-    } finally {
-      setIsSubmittingBug(false);
-    }
-  };
 
   return (
     <div className="space-y-3.5 max-w-[1260px] print:max-w-none print:m-0 print:p-0">
       {/* 1. Header Bar: Responsive Academic Look */}
-      <div className="bg-white dark:bg-[#0F172A] rounded-2xl p-4 sm:p-5 border border-[#D8E2EE] dark:border-slate-800 shadow-2xs space-y-3 print:hidden">
+      <div className="bg-white dark:bg-[#0F172A] rounded-2xl p-4 sm:p-5 border border-[#D8E2EE] dark:border-slate-800 shadow-2xs print:hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5 min-w-0">
-            {/* Academic Badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 border border-blue-200 dark:border-blue-800/80">
-                <GraduationCap className="w-3.5 h-3.5" />
-                {user?.batchName || 'SWE 9th Batch'}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80">
-                Semester {effectiveSemester}
-              </span>
-              {user?.studentId && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-700">
-                  ID: {user.studentId}
-                </span>
-              )}
-            </div>
-
+          <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#0B2348] dark:text-white tracking-tight">
               My CGPA & Academic Results
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-              Official curriculum courses, semester GPA (SGPA), cumulative CGPA, and registered grades.
-            </p>
           </div>
 
           {/* Action Buttons: Responsive Wrap */}
@@ -826,100 +764,14 @@ export const CGPAPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Report Bug or Result Issue to Admin (Direct Section Below MY CGPA) */}
-      <div className="bg-white dark:bg-[#0F172A] rounded-2xl p-4 sm:p-5 border border-[#D8E2EE] dark:border-slate-800 shadow-2xs space-y-3.5 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h3 className="text-sm sm:text-base font-bold text-[#0B2348] dark:text-white flex items-center gap-2">
-              <MessageSquareWarning className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>Report Bug or Result Discrepancy to Admin</span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Found a missing course, incorrect grade point, or result calculation bug? Submit your report directly in plain text to Department Administration.
-            </p>
-          </div>
-          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800 self-start sm:self-auto shrink-0 uppercase tracking-wider">
-            Direct Admin Inbox
-          </span>
-        </div>
-
-        {bugSubmittedSuccess && (
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-200 animate-fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Thank you! Your bug report has been forwarded to Department Admin for review and resolution.</span>
-          </div>
-        )}
-
-        <form onSubmit={handleBugReportSubmit} className="space-y-3 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Issue Category *
-              </label>
-              <select
-                value={bugCategory}
-                onChange={e => setBugCategory(e.target.value)}
-                className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-[#D8E2EE] dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40"
-              >
-                <option value="Result Discrepancy">Result / Grade Discrepancy</option>
-                <option value="Course Mismatch">Missing or Wrong Semester Course</option>
-                <option value="CGPA Calculation Issue">CGPA / SGPA Calculation Issue</option>
-                <option value="Transcript Print Issue">Transcript or Print Issue</option>
-                <option value="General Bug">General Portal Bug</option>
-                <option value="Other">Other Query</option>
-              </select>
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Submitting Student Account
-              </label>
-              <div className="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-600 dark:text-slate-300 font-mono text-[11px] flex items-center justify-between">
-                <span>{user?.name || 'Student'} ({user?.studentId || 'ID'})</span>
-                <span className="text-slate-400 font-sans">{user?.batchName || 'SWE 9th Batch'} • Sem {effectiveSemester}</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Bug Report / Message Description in Plain Text *
-            </label>
-            <textarea
-              required
-              rows={3}
-              maxLength={1000}
-              placeholder="Explain the issue clearly (e.g. 'My SWE-223 grade was published as A- on notice board but shows B+ in portal', or 'Course SWE-211 has incorrect credits')..."
-              value={bugMessage}
-              onChange={e => setBugMessage(e.target.value)}
-              className="w-full bg-[#F8FAFC] dark:bg-slate-900 border border-[#D8E2EE] dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/40 leading-relaxed"
-            />
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-[11px] text-slate-400">
-              {bugMessage.length}/1000 characters
-            </span>
-            <button
-              type="submit"
-              disabled={isSubmittingBug || !bugMessage.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-all cursor-pointer active:scale-98"
-            >
-              {isSubmittingBug ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Submitting Report...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Send Report to Admin</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+      {/* 4. ACADEMIC RESULTS GRAPH & ANALYTICS VISUALIZER (All 12 Semesters) */}
+      <AcademicResultGraph
+        semesters={semesters}
+        courses={courses}
+        summary={summary}
+        currentSemester={effectiveSemester}
+        onSelectSemester={(sem) => setSelectedSemesterTab(sem)}
+      />
 
       {/* 5. Filter Toolbar */}
       <div className="bg-white dark:bg-[#0F172A] rounded-xl p-2.5 sm:p-3 border border-[#D8E2EE] dark:border-slate-800 shadow-2xs space-y-2 print:hidden">
@@ -933,10 +785,10 @@ export const CGPAPage: React.FC = () => {
                 : 'bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
-            All Semesters (1–8)
+            All Semesters (1–12)
           </button>
 
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((sem) => {
             const semInfo = semesters.find(s => s.semester === sem);
             const isGraded = semInfo && semInfo.isPublished;
             return (
@@ -1242,47 +1094,6 @@ export const CGPAPage: React.FC = () => {
         </div>
       )}
 
-      {/* 6. Metropolitan University Grading Scale Reference (Compact) */}
-      <div className="bg-white dark:bg-[#0F172A] rounded-xl p-3 border border-[#D8E2EE] dark:border-slate-800 shadow-2xs space-y-1.5 print:hidden">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-[#0B2348] dark:text-white uppercase tracking-wider">
-            Metropolitan University Grading Policy
-          </span>
-          <span className="text-[10px] text-slate-400">
-            UGC Standard 4.00 Scale
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-xs">
-          {MU_GRADE_OPTIONS.filter(g => g.grade !== 'N/A').map((item) => (
-            <div
-              key={item.grade}
-              className="p-1.5 rounded-lg bg-[#F8FAFC] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-800 flex items-center justify-between"
-            >
-              <div>
-                <span className="font-bold text-slate-900 dark:text-white block text-xs">
-                  {item.grade}
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {item.gradePoint.toFixed(2)}
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium">
-                {item.grade === 'A+' && '80%+'}
-                {item.grade === 'A' && '75%'}
-                {item.grade === 'A-' && '70%'}
-                {item.grade === 'B+' && '65%'}
-                {item.grade === 'B' && '60%'}
-                {item.grade === 'B-' && '55%'}
-                {item.grade === 'C+' && '50%'}
-                {item.grade === 'C' && '45%'}
-                {item.grade === 'D' && '40%'}
-                {item.grade === 'F' && '<40%'}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ========================================================= */}
       {/* POPUP 1: Paste Course Results Modal (Centered, Portal)    */}
@@ -1449,7 +1260,7 @@ export const CGPAPage: React.FC = () => {
                     onChange={e => setCourseForm(p => ({ ...p, semester: Number(e.target.value) }))}
                     className="w-full bg-[#F8FAFC] dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(s => (
                       <option key={s} value={s}>
                         Sem {s}
                       </option>
@@ -1654,7 +1465,7 @@ export const CGPAPage: React.FC = () => {
               >
                 All
               </button>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((s) => (
                 <button
                   key={s}
                   onClick={() => setEditSemesterFilter(s)}

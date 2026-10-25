@@ -35,6 +35,7 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
     attachmentFileName,
     attachmentSize,
     featuredImageUrl,
+    attachedPhotos,
   } = req.body;
 
   if (!title || !content || !category) {
@@ -55,6 +56,7 @@ router.post('/', verifyAuthToken, requireRole('ADMIN'), async (req: Authenticate
       attachmentFileName: attachmentFileName ? String(attachmentFileName).trim() : undefined,
       attachmentSize: attachmentSize ? String(attachmentSize).trim() : undefined,
       featuredImageUrl: featuredImageUrl ? String(featuredImageUrl).trim() : undefined,
+      attachedPhotos: Array.isArray(attachedPhotos) ? attachedPhotos : undefined,
       createdBy: req.user!.id,
       createdByName: req.user!.name,
       createdAt: new Date().toISOString(),

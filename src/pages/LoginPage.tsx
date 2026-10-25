@@ -29,9 +29,9 @@ const FALLBACK_BATCHES: Batch[] = [
   { id: 'batch-10', name: 'SWE 10th Batch', admissionYear: 2024, currentSemester: 3, academicSession: '2024-2025', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
   { id: 'batch-11', name: 'SWE 11th Batch', admissionYear: 2025, currentSemester: 2, academicSession: '2025-2026', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
   { id: 'batch-12', name: 'SWE 12th Batch', admissionYear: 2026, currentSemester: 1, academicSession: '2026-2027', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
-  { id: 'batch-7', name: 'SWE 7th Batch', admissionYear: 2021, currentSemester: 8, academicSession: '2021-2022', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
-  { id: 'batch-6', name: 'SWE 6th Batch', admissionYear: 2020, currentSemester: 8, academicSession: '2020-2021', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
-  { id: 'batch-5', name: 'SWE 5th Batch', admissionYear: 2019, currentSemester: 8, academicSession: '2019-2020', semesterMode: 'MANUAL', status: 'GRADUATED', crIds: [], createdAt: '' },
+  { id: 'batch-7', name: 'SWE 7th Batch', admissionYear: 2021, currentSemester: 7, academicSession: '2021-2022', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-6', name: 'SWE 6th Batch', admissionYear: 2020, currentSemester: 8, academicSession: '2020-2021', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
+  { id: 'batch-5', name: 'SWE 5th Batch', admissionYear: 2019, currentSemester: 8, academicSession: '2019-2020', semesterMode: 'SEQUENCE', status: 'ACTIVE', crIds: [], createdAt: '' },
 ];
 
 interface LoginPageProps {

@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, BookOpen, Clock, Megaphone,
   HelpCircle, FileText, FolderGit2, Bell, Users,
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
-  History, GraduationCap, SlidersHorizontal, RotateCcw, Award
+  History, GraduationCap, SlidersHorizontal, RotateCcw, Award,
+  Bug
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
+import { ReportBugModal } from '../common/ReportBugModal';
 import { useAuth } from '../../context/AuthContext';
 import { getEffectiveSemester } from '../../utils/semester';
 
@@ -25,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { user } = useAuth();
+  const [isReportBugModalOpen, setIsReportBugModalOpen] = useState(false);
 
   const isRole = (role: string) => user?.role === role;
 
@@ -218,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </NavLink>
               <NavLink to="/exams" className={navLinkClass} onClick={onCloseMobile}>
                 <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Upcoming Exams</span>}
+                {!isCollapsed && <span>Exams Schedules</span>}
               </NavLink>
               <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
                 <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
@@ -283,30 +286,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </NavLink>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Batch Panel: Clean Academic Card */}
-        {!isCollapsed && (
-          <div className="p-3 border-t border-[#E2E8F0] dark:border-slate-800 shrink-0">
-            <div className="rounded-xl p-3 bg-[#F8FAFC] dark:bg-slate-800/60 border border-[#E2E8F0] dark:border-slate-700/60 text-xs flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-[#64748B] dark:text-slate-400 uppercase block font-semibold">
-                  {user?.role === 'ADMIN' ? 'System Role' : 'Current Batch'}
-                </span>
-                <span className="font-bold text-[#0B2348] dark:text-white block mt-0.5">
-                  {user?.role === 'ADMIN' ? 'SWE Administration' : (user?.batchName || 'SWE 9th Batch')}
-                </span>
-                <span className="text-[11px] text-[#2563EB] dark:text-blue-400 font-medium">
-                  {user?.role === 'ADMIN' ? 'Central Administration' : `Semester ${getEffectiveSemester(user)}`}
-                </span>
-              </div>
-              <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 flex items-center justify-center">
-                <ChevronDown strokeWidth={2.5} className="w-4 h-4" />
-              </div>
+          {/* REPORT BAR */}
+          <div>
+            {!isCollapsed && (
+              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
+                REPORT BAR
+              </span>
+            )}
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportBugModalOpen(true);
+                  onCloseMobile();
+                }}
+                className={`w-full flex items-center gap-3 ${
+                  isCollapsed ? 'justify-center px-0' : 'px-3'
+                } py-2.5 rounded-xl text-xs font-sans tracking-tight transition-all duration-150 ease-out active:scale-[0.98] text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium group cursor-pointer text-left [&>svg]:stroke-[2.4px]`}
+                title={isCollapsed ? 'Report Bug' : undefined}
+              >
+                <Bug strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#64748B] dark:text-slate-400 group-hover:text-[#0F172A] dark:group-hover:text-slate-100 transition-colors" />
+                {!isCollapsed && <span>Report Bug</span>}
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </aside>
+
+      {/* Global Quick Bug Report Modal */}
+      <ReportBugModal
+        isOpen={isReportBugModalOpen}
+        onClose={() => setIsReportBugModalOpen(false)}
+      />
     </>
   );
 };
+

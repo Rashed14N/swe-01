@@ -138,7 +138,7 @@ export const UpcomingExamsCard: React.FC<UpcomingExamsCardProps> = ({
         <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
           <GraduationCap className="w-5 h-5 text-[#2563EB] dark:text-blue-400 shrink-0" strokeWidth={2.4} />
           <h2 className="text-[15px] sm:text-[16px] font-bold text-[#0A2147] dark:text-white tracking-tight leading-snug">
-            Upcoming Exams
+            Exams Schedules
           </h2>
         </div>
         <button

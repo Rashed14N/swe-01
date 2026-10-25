@@ -133,7 +133,6 @@ export const CRRetakesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader
           title="Retake & Improvement Students"
-          description={`View and communicate with all students enrolled in retake or improvement courses running in ${crBatch?.name || user?.batchName || 'your batch'}.`}
           breadcrumb={`${crBatch?.name || 'My Batch'} • Class Representative Desk`}
         />
 

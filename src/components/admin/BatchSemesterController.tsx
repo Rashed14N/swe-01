@@ -68,10 +68,10 @@ export const BatchSemesterController: React.FC<BatchSemesterControllerProps> = (
   const [syncStudents, setSyncStudents] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Group courses by semester (1-8)
+  // Group courses by semester (1-12)
   const coursesBySemester = useMemo(() => {
     const map: Record<number, Course[]> = {};
-    for (let sem = 1; sem <= 8; sem++) {
+    for (let sem = 1; sem <= 12; sem++) {
       map[sem] = courses.filter(c => c.semester === sem);
     }
     return map;
@@ -216,15 +216,15 @@ export const BatchSemesterController: React.FC<BatchSemesterControllerProps> = (
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                Select Academic Semester to Enroll (1st - 8th)
+                Select Academic Semester to Enroll (1st - 12th)
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 Click any semester to preview its syllabus and enroll
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => {
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(sem => {
                 const isSelectedTarget = targetSemester === sem;
                 const isBatchCurrent = selectedBatch.currentSemester === sem;
                 const courseCount = (coursesBySemester[sem] || []).length;

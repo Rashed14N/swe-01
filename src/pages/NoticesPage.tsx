@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Download, Paperclip, Image as ImageIcon, X, ExternalLink } from 'lucide-react';
+import { ShieldCheck, Download, Paperclip, Image as ImageIcon, X, ExternalLink, Images, Eye } from 'lucide-react';
 import { DepartmentNotice } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
@@ -35,7 +35,6 @@ export const NoticesPage: React.FC = () => {
     <div className="space-y-6 max-w-[1400px]">
       <PageHeader
         title="Department Circulars & Academic Notices"
-        description="Published directly by Department Administration, Head of Department, and Examination Committee."
         breadcrumb="Official Department Desk"
       />
 
@@ -81,17 +80,19 @@ export const NoticesPage: React.FC = () => {
                 className="bg-white dark:bg-[#0F172A] p-5 sm:p-6 rounded-2xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] hover:border-[#A3C0EE] transition-all space-y-3.5"
               >
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className="px-2.5 py-0.5 bg-[#EFF5FF] text-[#2563EB] text-[10px] font-bold rounded-md border border-[#DBEAFE] uppercase">
-                    {notice.category}
-                  </span>
+                  {notice.category && notice.category !== 'GENERAL' ? (
+                    <span className="px-2.5 py-0.5 bg-[#EFF5FF] text-[#2563EB] text-[10px] font-bold rounded-md border border-[#DBEAFE] uppercase">
+                      {notice.category}
+                    </span>
+                  ) : <span />}
                   <span className="text-xs font-medium text-slate-400">{notice.publishDate}</span>
                 </div>
 
                 {/* Featured Photo Banner if present */}
                 {notice.featuredImageUrl && (
                   <div
-                    onClick={() => setPreviewImage({ url: notice.featuredImageUrl!, title: notice.title })}
-                    className="relative cursor-pointer group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-80 bg-slate-100 dark:bg-slate-900"
+                    onClick={() => setPreviewImage({ url: notice.featuredImageUrl!, title: `${notice.title} (Feature Photo)` })}
+                    className="relative cursor-pointer group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-80 bg-slate-100 dark:bg-slate-900 shadow-2xs"
                   >
                     <img
                       src={notice.featuredImageUrl}
@@ -99,8 +100,11 @@ export const NoticesPage: React.FC = () => {
                       className="w-full h-48 sm:h-64 object-cover group-hover:scale-102 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-2xs">
-                      <ImageIcon className="w-4 h-4" /> Click to view full image
+                    <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-black/60 backdrop-blur-xs text-white rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                      <ImageIcon className="w-3 h-3 text-blue-400" /> Feature Photo
+                    </div>
+                    <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-2xs">
+                      <Eye className="w-4 h-4" /> Click to view full image
                     </div>
                   </div>
                 )}
@@ -111,6 +115,38 @@ export const NoticesPage: React.FC = () => {
                 <p className="text-xs text-[#334155] dark:text-slate-300 leading-relaxed whitespace-pre-line">
                   {notice.content}
                 </p>
+
+                {/* Attached Photos Gallery if present */}
+                {notice.attachedPhotos && notice.attachedPhotos.length > 0 && (
+                  <div className="pt-2 space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <Images className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>Attached Photos ({notice.attachedPhotos.length})</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                      {notice.attachedPhotos.map((photoUrl, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => setPreviewImage({ url: photoUrl, title: `${notice.title} (Attached Photo ${idx + 1})` })}
+                          className="group relative aspect-4/3 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-pointer shadow-2xs hover:shadow-md hover:border-blue-500 transition-all"
+                        >
+                          <img
+                            src={photoUrl}
+                            alt={`Attached photo ${idx + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1 backdrop-blur-2xs">
+                            <Eye className="w-3.5 h-3.5" /> View Photo
+                          </div>
+                          <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">
+                            #{idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* File Attachment Pill */}
                 {notice.attachmentUrl && (
@@ -133,10 +169,7 @@ export const NoticesPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-[#E5EBF3] dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>
-                    Published by: <strong className="text-[#0F172A] dark:text-slate-200">{notice.createdByName}</strong>
-                  </span>
+                <div className="pt-2 border-t border-[#E5EBF3] dark:border-slate-800 flex items-center justify-end text-[11px] text-slate-500">
                   <span className="text-blue-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" /> Department Verified
                   </span>

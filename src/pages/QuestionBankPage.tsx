@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -15,6 +15,8 @@ import {
   Layers,
   CheckCircle2,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -37,6 +39,7 @@ export const QuestionBankPage: React.FC = () => {
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string | null>(null);
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [examType, setExamType] = useState<string>(searchParams.get('examType') || '');
   const [year, setYear] = useState<string>(searchParams.get('year') || '');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -44,7 +47,28 @@ export const QuestionBankPage: React.FC = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
+  // Pagination State (20 items per page from Supabase)
+  const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Request counter ref to prevent race conditions / stale results
+  const reqIdRef = useRef(0);
+
   const isAdmin = user?.role === 'ADMIN';
+
+  // 400ms debounce for search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset to page 1 whenever debouncedSearch, examType, year, or course filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, examType, year, selectedCourseFilter]);
 
   // Fetch enrolled courses & retakes for the student
   useEffect(() => {
@@ -61,28 +85,48 @@ export const QuestionBankPage: React.FC = () => {
       });
   }, [token, user]);
 
-  // Fetch base resource list from backend API
+  // Fetch 20 records per page from server with search and filtering
   const fetchQuestions = () => {
+    const currentReq = ++reqIdRef.current;
     setIsLoading(true);
-    const params = new URLSearchParams({ type: 'QUESTION' });
+    const params = new URLSearchParams({
+      type: 'QUESTION',
+      page: String(page),
+      limit: '20',
+    });
+    if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
     if (examType) params.append('examType', examType);
     if (year) params.append('year', year);
+    if (selectedCourseFilter) {
+      const targetCourse = myCourses.find((c) => c.id === selectedCourseFilter);
+      if (targetCourse) {
+        params.append('courseCode', targetCourse.code);
+      }
+    }
 
     fetch(`/api/resources?${params.toString()}`)
       .then((res) => safeParseJson(res))
       .then((data) => {
-        const list: Resource[] = data.resources || [];
-        setQuestions(list);
+        if (currentReq !== reqIdRef.current) return;
+        setQuestions(data.resources || []);
+        setTotalRecords(data.total ?? (data.resources || []).length);
+        setTotalPages(data.totalPages ?? 1);
       })
       .catch((err) => {
-        console.warn('Could not fetch questions:', err);
+        if (currentReq === reqIdRef.current) {
+          console.warn('Could not fetch questions:', err);
+        }
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (currentReq === reqIdRef.current) {
+          setIsLoading(false);
+        }
+      });
   };
 
   useEffect(() => {
     fetchQuestions();
-  }, [examType, year]);
+  }, [debouncedSearch, examType, year, selectedCourseFilter, page]);
 
   // Sync state with URL params
   useEffect(() => {
@@ -90,8 +134,9 @@ export const QuestionBankPage: React.FC = () => {
     if (search) nextParams.set('search', search);
     if (examType) nextParams.set('examType', examType);
     if (year) nextParams.set('year', year);
+    if (page > 1) nextParams.set('page', String(page));
     setSearchParams(nextParams, { replace: true });
-  }, [search, examType, year, setSearchParams]);
+  }, [search, examType, year, page, setSearchParams]);
 
   // Normalization helper for accurate matching
   const normalize = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -122,157 +167,7 @@ export const QuestionBankPage: React.FC = () => {
   // -------------------------------------------------------------
   // INTELLIGENT FILTERING & PRIORITIZATION ALGORITHM
   // -------------------------------------------------------------
-  const processedQuestions = useMemo(() => {
-    let result = [...questions];
-    const query = search.toLowerCase().trim();
-
-    // Filter by selected course if a chip in the enrolled courses bar was clicked
-    if (selectedCourseFilter) {
-      const targetCourse = myCourses.find((c) => c.id === selectedCourseFilter);
-      if (targetCourse) {
-        result = result.filter((q) => isCourseMatch(targetCourse, q));
-      }
-    }
-
-    if (!query) {
-      // DEFAULT SORTING ALGORITHM:
-      // Priority 1: Retake & Enrolled courses of the student are placed FIRST!
-      // Priority 2: Academic year descending & creation timestamp
-      return result.sort((a, b) => {
-        const aIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, a)) ? 1 : 0;
-        const bIsRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
-        if (aIsRetake !== bIsRetake) return bIsRetake - aIsRetake;
-
-        const aIsEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, a)) ? 1 : 0;
-        const bIsEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, b)) ? 1 : 0;
-        if (aIsEnrolled !== bIsEnrolled) return bIsEnrolled - aIsEnrolled;
-
-        // Then by academic year descending
-        const yearDiff = (b.academicYear || 0) - (a.academicYear || 0);
-        if (yearDiff !== 0) return yearDiff;
-        // Then by creation timestamp
-        return (b.createdAt || '').localeCompare(a.createdAt || '');
-      });
-    }
-
-    // SEARCH RANKING ALGORITHM with Enrolled & Retake course boost
-    const searchTokens = query.split(/\s+/).filter(Boolean);
-
-    interface ScoredResource {
-      resource: Resource;
-      score: number;
-    }
-
-    const scored: ScoredResource[] = [];
-
-    for (const q of result) {
-      let score = 0;
-      const titleLower = (q.title || '').toLowerCase();
-      const courseTitleLower = (q.courseTitle || '').toLowerCase();
-      const courseCodeLower = (q.courseCode || '').toLowerCase().replace(/\s+/g, '');
-      const facultyLower = (q.facultyName || '').toLowerCase();
-      const uploaderLower = (q.uploaderName || '').toLowerCase();
-      const descLower = (q.description || '').toLowerCase();
-      const examTypeLower = (q.examType || '').toLowerCase();
-      const yearStr = String(q.academicYear || '');
-      const semStr = `sem${q.semester} semester${q.semester} ${q.semester}`;
-
-      const queryNormalized = query.replace(/\s+/g, '');
-
-      // 1. Exact or partial course code matches
-      if (courseCodeLower === queryNormalized) {
-        score += 160;
-      } else if (courseCodeLower.includes(queryNormalized)) {
-        score += 90;
-      }
-
-      // 2. Full Title Match
-      if (titleLower.includes(query)) {
-        score += 100;
-      }
-
-      // 3. Course Title Match
-      if (courseTitleLower.includes(query)) {
-        score += 70;
-      }
-
-      // 4. Token-by-Token Match
-      let allTokensMatch = true;
-      for (const token of searchTokens) {
-        const tokenNorm = token.replace(/\s+/g, '');
-        let tokenFound = false;
-
-        if (titleLower.includes(token)) {
-          score += 30;
-          tokenFound = true;
-        }
-        if (courseCodeLower.includes(tokenNorm)) {
-          score += 40;
-          tokenFound = true;
-        }
-        if (courseTitleLower.includes(token)) {
-          score += 25;
-          tokenFound = true;
-        }
-        if (facultyLower.includes(token)) {
-          score += 20;
-          tokenFound = true;
-        }
-        if (uploaderLower.includes(token)) {
-          score += 15;
-          tokenFound = true;
-        }
-        if (descLower.includes(token)) {
-          score += 10;
-          tokenFound = true;
-        }
-        if (
-          examTypeLower.includes(token) ||
-          (token === 'quiz' && q.examType === 'QUIZ') ||
-          (token === 'final' && q.examType === 'FINAL') ||
-          (token === 'supple' && (q.examType === 'SUPPLE' || titleLower.includes('supple'))) ||
-          (token === 'ct' && (q.examType === 'CLASS_TEST' || titleLower.includes('ct'))) ||
-          (token === 'test' && q.examType === 'CLASS_TEST')
-        ) {
-          score += 35;
-          tokenFound = true;
-        }
-        if (yearStr === token) {
-          score += 20;
-          tokenFound = true;
-        }
-        if (semStr.includes(token)) {
-          score += 25;
-          tokenFound = true;
-        }
-
-        if (!tokenFound) {
-          allTokensMatch = false;
-        }
-      }
-
-      if (allTokensMatch) {
-        score += 40;
-      }
-
-      // Priority boost for student's enrolled courses and retakes
-      const isRetake = myCourses.some((c) => c.isRetakeCourse && isCourseMatch(c, q));
-      const isEnrolled = myCourses.some((c) => !c.isRetakeCourse && isCourseMatch(c, q));
-      if (isRetake) score += 60;
-      if (isEnrolled) score += 50;
-
-      if (q.academicYear) {
-        score += Math.max(0, (q.academicYear - 2020) * 2);
-      }
-
-      if (score > 0) {
-        scored.push({ resource: q, score });
-      }
-    }
-
-    scored.sort((a, b) => b.score - a.score);
-    return scored.map((item) => item.resource);
-  }, [questions, search, myCourses, selectedCourseFilter]);
+  const processedQuestions = questions;
 
   const handleDownload = (resourceId: string) => {
     fetch(`/api/resources/${resourceId}/download`, {
@@ -299,6 +194,7 @@ export const QuestionBankPage: React.FC = () => {
       }
       addToast('success', 'Question deleted permanently from Supabase database!');
       setQuestions((prev) => prev.filter((item) => item.id !== q.id));
+      fetchQuestions();
     } catch (err: any) {
       addToast('error', err.message || 'Failed to delete question');
     }
@@ -318,7 +214,6 @@ export const QuestionBankPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Department Question Paper Repository"
-        description="Searchable document library of official quiz, final exam, supple exam, and class test question papers."
         breadcrumb="QUESTION BANK"
         primaryAction={{
           label: isAdmin ? 'Add Question Paper' : 'Upload Question',
@@ -492,8 +387,8 @@ export const QuestionBankPage: React.FC = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="text-xs font-semibold text-[#64748B] dark:text-slate-400 flex items-center gap-1.5 flex-wrap">
           <span>Showing</span>
-          <span className="text-[#0A2147] dark:text-white font-bold">{processedQuestions.length}</span>
-          <span>question papers</span>
+          <span className="text-[#0A2147] dark:text-white font-bold">{totalRecords === 0 ? 0 : (page - 1) * 20 + 1}-{Math.min(page * 20, totalRecords)}</span>
+          <span>of {totalRecords} question papers (Page {page} of {totalPages})</span>
           {selectedCourseFilter && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
               <span>Filtered: {myCourses.find((c) => c.id === selectedCourseFilter)?.code}</span>
@@ -731,6 +626,38 @@ export const QuestionBankPage: React.FC = () => {
               })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+      {/* Server-Side Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0F172A] p-3.5 sm:p-4 rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-2xs mt-4">
+          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Showing Page <span className="font-bold text-slate-900 dark:text-white">{page}</span> of{" "}
+            <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span> ({totalRecords} total question papers)
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1 || isLoading}
+              className="px-3.5 py-1.5 rounded-lg border border-[#D8E2EE] dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Previous</span>
+            </button>
+            <span className="text-xs font-mono font-bold px-2 text-slate-700 dark:text-slate-300">
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages || isLoading}
+              className="px-3.5 py-1.5 rounded-lg border border-[#D8E2EE] dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       )}

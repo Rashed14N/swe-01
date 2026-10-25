@@ -306,7 +306,7 @@ export const CRDashboardPage: React.FC = () => {
 
         <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Upcoming Exams</span>
+            <span className="text-xs font-medium text-slate-500">Exams Schedules</span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
@@ -379,7 +379,7 @@ export const CRDashboardPage: React.FC = () => {
                   <Clock className="w-4 h-4" />
                 </div>
                 <h3 className="text-xs sm:text-sm font-bold text-[#0A2147] tracking-tight">
-                  Upcoming Exams & Deadlines
+                  Exams Schedules
                 </h3>
               </div>
               <button

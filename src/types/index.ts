@@ -13,6 +13,7 @@ export interface User {
   profileImage?: string;
   status: 'ACTIVE' | 'DISABLED';
   points?: number;
+  cgpa?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,6 +89,32 @@ export interface Course {
   retakeBatchName?: string;
 }
 
+export type ClassTaskType = 'TASK' | 'ASSIGNMENT' | 'CLASS_UPDATE' | 'HOMEWORK' | 'LAB_REPORT' | 'PROJECT';
+
+export interface ClassTask {
+  id: string;
+  courseId: string;
+  courseCode: string;
+  courseTitle: string;
+  semester?: number;
+  batchId?: string;
+  date: string; // Date of class update / post (YYYY-MM-DD)
+  dueDate?: string; // Optional deadline (YYYY-MM-DD)
+  title: string; // Task or update headline
+  description: string; // Detailed post instructions from CR
+  type?: ClassTaskType;
+  priority?: 'NORMAL' | 'IMPORTANT' | 'URGENT';
+  facultyName?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: string;
+}
+
+// Deprecated alias for backwards-compatibility
+export type ClassTopic = ClassTask;
+
 export interface RoutineSlot {
   id: string;
   batchId: string;
@@ -149,6 +176,8 @@ export interface BatchAnnouncement {
   publishDate: string; // YYYY-MM-DD
   expiryDate: string;  // YYYY-MM-DD
   priority: AnnouncementPriority;
+  featuredImageUrl?: string;
+  eventDate?: string;
   createdBy: string;
   createdByName: string;
   createdAt: string;
@@ -165,6 +194,7 @@ export interface DepartmentNotice {
   attachmentFileName?: string;
   attachmentSize?: string;
   featuredImageUrl?: string;
+  attachedPhotos?: string[];
   createdBy: string;
   createdByName: string;
   createdAt: string;

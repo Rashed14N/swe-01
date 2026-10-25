@@ -61,7 +61,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
     if (path.includes('/dashboard')) return 'Student Dashboard';
     if (path.includes('/routine')) return 'Class Routine';
     if (path.includes('/courses')) return 'Enrolled Courses';
-    if (path.includes('/exams')) return 'Upcoming Exams';
+    if (path.includes('/exams')) return 'Exams Schedules';
     if (path.includes('/announcements')) return 'Announcements';
     if (path.includes('/resources/questions')) return 'Question Bank';
     if (path.includes('/faq')) return 'Frequently Asked Questions (FAQ)';
@@ -136,12 +136,9 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onOpenMobileMenu }) => {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div className="hidden sm:flex flex-col text-left">
+            <div className="hidden sm:flex items-center text-left">
               <span className="text-xs font-bold text-[#0B2348] dark:text-slate-100 leading-tight">
                 {user?.name || 'Rashed Ahmed'}
-              </span>
-              <span className="text-[10px] text-[#64748B] dark:text-slate-400">
-                {user?.batchName || 'SWE 9th Batch'}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:inline-block" />

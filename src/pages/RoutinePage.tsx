@@ -149,7 +149,6 @@ export const RoutinePage: React.FC = () => {
     <div className="space-y-6 max-w-[1400px]">
       <PageHeader
         title="Class Timetable & Visual Routine"
-        description={`Interactive visual timetable and schedule slots. ${canEdit ? 'You have class edit access for this batch.' : ''}`}
         breadcrumb={`${user?.batchName || 'SWE Batch'} • Semester ${user?.currentSemester} Timetable`}
         primaryAction={
           canEdit

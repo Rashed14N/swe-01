@@ -60,7 +60,6 @@ export const BatchCRPage: React.FC = () => {
     <div className="space-y-6 max-w-[1200px]">
       <PageHeader
         title="Class Representative (CR) Profile"
-        description={`Official representative and academic student coordinator for ${batchInfo?.name || user?.batchName || 'your batch'}.`}
         breadcrumb={`${batchInfo?.name || 'My Batch'} • Leadership`}
       />
 
@@ -74,9 +73,6 @@ export const BatchCRPage: React.FC = () => {
             <h4 className="text-xs sm:text-sm font-bold text-[#0B2348] dark:text-white">
               Official Class Representative Information
             </h4>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-              Your Class Representative coordinates with departmental faculties, publishes Class Test & Quiz dates, submits routine room adjustments, and supports students with academic notices.
-            </p>
           </div>
         </div>
       </div>

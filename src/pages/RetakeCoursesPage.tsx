@@ -202,8 +202,6 @@ export const RetakeCoursesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader
           title="Retake & Improvement Management"
-          description="Register retake or improvement courses. Routine, exam updates from CRs, and notices are auto-synced with live email alerts via Resend."
-          breadcrumb={`${user?.batchName || 'My Batch'} • Academic Retake Desk`}
         />
 
         <div className="flex items-center gap-2.5 shrink-0">
@@ -245,9 +243,6 @@ export const RetakeCoursesPage: React.FC = () => {
                 <Check className="w-3 h-3" /> Auto-Synced
               </span>
             </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-              When a junior batch CR schedules or edits an upcoming exam, class test, or course announcement for your enrolled courses, you will immediately see the updated status here and receive an instant email notification.
-            </p>
           </div>
         </div>
       </div>
@@ -307,7 +302,7 @@ export const RetakeCoursesPage: React.FC = () => {
         <div className="bg-white dark:bg-[#0F172A] p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Upcoming Exams
+              Exams Schedules
             </span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Clock strokeWidth={2.5} className="w-4 h-4" />
@@ -402,7 +397,7 @@ export const RetakeCoursesPage: React.FC = () => {
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>Upcoming Exams</span>
+          <span>Exams Schedules</span>
           {data?.upcomingExams && data.upcomingExams.length > 0 && (
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>

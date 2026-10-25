@@ -14,10 +14,10 @@ import {
 
 const router = Router();
 
-// GET /api/resources (APPROVED ONLY for general users, with filtering by type, semester, course, year, search)
+// GET /api/resources (APPROVED ONLY for general users, with filtering by type, semester, course, year, search, pagination)
 router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { type, semester, courseCode, examType, year, search, category } = req.query;
+    const { type, semester, courseCode, courseId, examType, year, search, category, page, limit } = req.query;
 
     const allResources = await fetchAllResources();
     let list = allResources.filter(r => r.status === 'APPROVED');
@@ -30,6 +30,10 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       list = list.filter(r => r.semester === Number(semester));
     }
 
+    if (courseId) {
+      list = list.filter(r => r.courseId === courseId);
+    }
+
     if (courseCode) {
       const normQuery = (courseCode as string).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       list = list.filter(r => {
@@ -39,7 +43,7 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
     }
 
     if (examType) {
-      list = list.filter(r => r.examType === examType);
+      list = list.filter(r => r.examType?.toLowerCase() === (examType as string).toLowerCase());
     }
 
     if (year) {
@@ -54,17 +58,42 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       const query = (search as string).toLowerCase().trim();
       list = list.filter(
         r =>
-          r.title.toLowerCase().includes(query) ||
-          r.courseTitle.toLowerCase().includes(query) ||
-          r.courseCode.toLowerCase().includes(query) ||
+          r.title?.toLowerCase().includes(query) ||
+          r.courseTitle?.toLowerCase().includes(query) ||
+          r.courseCode?.toLowerCase().includes(query) ||
+          (r.facultyName && r.facultyName.toLowerCase().includes(query)) ||
           (r.description && r.description.toLowerCase().includes(query)) ||
-          r.uploaderName.toLowerCase().includes(query)
+          (r.uploaderName && r.uploaderName.toLowerCase().includes(query)) ||
+          (r.targetBatch && r.targetBatch.toLowerCase().includes(query)) ||
+          String(r.academicYear).includes(query)
       );
     }
 
-    list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    list.sort((a, b) => {
+      const yearDiff = (Number(b.academicYear) || 0) - (Number(a.academicYear) || 0);
+      if (yearDiff !== 0) return yearDiff;
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
 
-    res.json({ resources: list });
+    const total = list.length;
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 20));
+      const totalPages = Math.max(1, Math.ceil(total / limitNum));
+      const startIndex = (pageNum - 1) * limitNum;
+      const paginated = list.slice(startIndex, startIndex + limitNum);
+
+      return res.json({
+        resources: paginated,
+        total,
+        page: pageNum,
+        pageSize: limitNum,
+        totalPages,
+      });
+    }
+
+    res.json({ resources: list, total });
   } catch (err: any) {
     console.error('[Resources API GET / Error]:', err);
     res.status(500).json({ error: 'Failed to fetch resources' });

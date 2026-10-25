@@ -17,6 +17,31 @@ import {
 
 const router = Router();
 
+/**
+ * Explicit response allowlist for Course objects to ensure no internal/admin
+ * fields, secrets, or sensitive DB attributes leak to public or student clients.
+ */
+function sanitizeCourse(c: Course): Course {
+  return {
+    id: c.id,
+    code: c.code,
+    title: c.title,
+    shortName: c.shortName,
+    credits: c.credits,
+    type: c.type,
+    semester: c.semester,
+    assignedFacultyId: c.assignedFacultyId,
+    assignedFacultyName: c.assignedFacultyName,
+    batchIds: Array.isArray(c.batchIds) ? c.batchIds : [],
+    ...(c.isRetakeCourse ? {
+      isRetakeCourse: true,
+      retakeType: c.retakeType,
+      retakeBatchId: c.retakeBatchId,
+      retakeBatchName: c.retakeBatchName,
+    } : {}),
+  };
+}
+
 // GET /api/courses (List courses for student batch/semester or all if Admin/Public)
 router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -47,8 +72,8 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       courses = courses.filter(c => c.semester === semesterQuery);
     }
 
-    // Include registered retake courses for student users
-    if (req.user && req.user.role === 'STUDENT' && !isAllRequested) {
+    // Include registered retake courses for authenticated student/CR users (isolated to requesting user)
+    if (req.user && (req.user.role === 'STUDENT' || req.user.role === 'CR')) {
       try {
         const userRetakes = (db.getRetakes?.() || []).filter(r => r.studentId === req.user!.id && r.status !== 'DROPPED');
         if (userRetakes.length > 0) {
@@ -105,7 +130,8 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       }
     }
 
-    return res.json({ courses });
+    // Return courses through explicit field allowlist
+    return res.json({ courses: courses.map(sanitizeCourse) });
   } catch (err: any) {
     console.error({
       route: '/api/courses',
@@ -114,7 +140,7 @@ router.get('/', optionalAuthToken, async (req: AuthenticatedRequest, res: Respon
       supabaseError: err?.supabaseError || err?.details || null,
     });
     const fallbackList = db.getData()?.courses || [];
-    return res.status(200).json({ courses: fallbackList });
+    return res.status(200).json({ courses: fallbackList.map(sanitizeCourse) });
   }
 });
 
@@ -160,8 +186,40 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
       return false;
     };
 
-    // Filter resources matching the course code across ALL years and ALL batches (not rejected)
-    const matchedResources = allResources.filter(r => isMatch(r) && r.status !== 'REJECTED');
+    // Authorization & Visibility Filter:
+    // Only ADMIN or CR or the resource's owner can see non-approved resources.
+    // General students and public visitors only receive APPROVED resources.
+    const isAdminOrCR = req.user && (req.user.role === 'ADMIN' || req.user.role === 'CR');
+    const matchedResources = allResources.filter(r => {
+      if (!isMatch(r)) return false;
+      if (isAdminOrCR) return r.status !== 'REJECTED';
+      if (req.user && r.uploaderId === req.user.id) return r.status !== 'REJECTED';
+      return r.status === 'APPROVED';
+    });
+
+    const sanitizeResourceItem = (r: Resource) => ({
+      id: r.id,
+      title: r.title,
+      type: r.type,
+      courseId: r.courseId,
+      courseCode: r.courseCode,
+      courseTitle: r.courseTitle,
+      semester: r.semester,
+      academicYear: r.academicYear,
+      examType: r.examType,
+      facultyName: r.facultyName,
+      targetBatch: r.targetBatch,
+      labCategory: r.labCategory,
+      description: r.description,
+      fileUrl: r.fileUrl,
+      fileName: r.fileName,
+      fileSize: r.fileSize,
+      fileType: r.fileType,
+      uploaderName: r.uploaderName,
+      status: r.status,
+      downloadCount: r.downloadCount || 0,
+      createdAt: r.createdAt,
+    });
 
     // Sort questions by academic year descending (newest year first, e.g. 2026, 2025, 2024...)
     const questions = matchedResources
@@ -170,17 +228,31 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
         const yearDiff = (Number(b.academicYear) || 0) - (Number(a.academicYear) || 0);
         if (yearDiff !== 0) return yearDiff;
         return (b.createdAt || '').localeCompare(a.createdAt || '');
-      });
+      })
+      .map(sanitizeResourceItem);
 
     const notes = matchedResources
       .filter(r => r.type === 'NOTE')
-      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+      .map(sanitizeResourceItem);
 
     const labs = matchedResources
       .filter(r => r.type === 'LAB')
-      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+      .map(sanitizeResourceItem);
 
     const faculty = allFaculty.find(f => f.id === course.assignedFacultyId);
+    const sanitizedFaculty = faculty ? {
+      id: faculty.id,
+      name: faculty.name,
+      shortName: faculty.shortName,
+      designation: faculty.designation,
+      department: faculty.department,
+      email: faculty.email,
+      phone: faculty.phone,
+      officeRoom: faculty.officeRoom,
+      photoUrl: faculty.photoUrl,
+    } : null;
 
     // Fetch exams matching this course
     const allExams = await fetchAllExams().catch(() => db.getExams?.() || []);
@@ -197,19 +269,42 @@ router.get('/:id', optionalAuthToken, async (req: AuthenticatedRequest, res: Res
         const diffTime = examDate.getTime() - now.getTime();
         const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const isArchived = e.date < todayStr;
-        return { ...e, daysLeft, isArchived };
+        return {
+          id: e.id,
+          title: e.title,
+          courseId: e.courseId,
+          courseCode: e.courseCode,
+          courseTitle: e.courseTitle,
+          batchId: e.batchId,
+          batchName: e.batchName,
+          type: e.type,
+          date: e.date,
+          startTime: e.startTime,
+          room: e.room,
+          description: e.description,
+          daysLeft,
+          isArchived,
+        };
       })
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    const courseCodeClean = (course.code || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const classTasks = (db.getClassTasks() || [])
+      .filter(t => t.courseId === course.id || t.courseCode.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === courseCodeClean)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     res.json({
-      course,
-      faculty,
+      course: sanitizeCourse(course),
+      faculty: sanitizedFaculty,
       exams: courseExams,
       resources: {
         questions,
         notes,
         labs,
       },
+      classTasks,
+      tasks: classTasks,
+      classTopics: classTasks,
     });
   } catch (err: any) {
     console.error(`[Courses API GET /:id Error]:`, err);

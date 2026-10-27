@@ -1,0 +1,727 @@
+{
+  "university": "Metropolitan University",
+  "term": "Autumn Term",
+  "year": 2026,
+  "department": "SWE",
+  "source": "Autumn Term Central Class Routine 2026",
+  "time_slots": [
+    {
+      "slot": 1,
+      "time": "09:00-10:30"
+    },
+    {
+      "slot": 2,
+      "time": "10:30-12:00"
+    },
+    {
+      "slot": 3,
+      "time": "12:00-13:30"
+    },
+    {
+      "slot": 4,
+      "time": "13:30-15:00"
+    },
+    {
+      "slot": 5,
+      "time": "15:00-16:30"
+    },
+    {
+      "slot": 6,
+      "time": "16:30-18:00"
+    }
+  ],
+  "batches": {
+    "5th": {
+      "batch": "5th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "12:00-13:30",
+            "course": "NA",
+            "room": "E3",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "NN&DL",
+            "room": "E6",
+            "faculty_short_form": "AAC"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "CP Lab-2",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "CP Lab-2",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "12:00-13:30",
+            "course": "ACM",
+            "room": "301",
+            "faculty_short_form": "ACM"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "ACM",
+            "room": "301",
+            "faculty_short_form": "ACM"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "13:30-15:00",
+            "course": "NA",
+            "room": "E1",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "NN&DL",
+            "room": "E1",
+            "faculty_short_form": "AAC"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "NN&DL Lab",
+            "room": "310",
+            "faculty_short_form": "AAC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "NN&DL Lab",
+            "room": "310",
+            "faculty_short_form": "AAC"
+          }
+        ],
+        "Thursday": []
+      }
+    },
+    "6th": {
+      "batch": "6th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "13:30-15:00",
+            "course": "IC",
+            "room": "306",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "MDP Lab",
+            "room": "301",
+            "faculty_short_form": "MZUK"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "MDP Lab",
+            "room": "301",
+            "faculty_short_form": "MZUK"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "15:00-16:30",
+            "course": "ML Lab",
+            "room": "301",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "ML Lab",
+            "room": "301",
+            "faculty_short_form": "NHN"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "ML",
+            "room": "E3",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "IC",
+            "room": "E4",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "ED",
+            "room": "504",
+            "faculty_short_form": "WIC"
+          }
+        ],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "time": "09:00-10:30",
+            "course": "ML",
+            "room": "E2",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "ED",
+            "room": "E2",
+            "faculty_short_form": "WIC"
+          }
+        ]
+      }
+    },
+    "7th": {
+      "batch": "7th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "09:00-10:30",
+            "course": "CN",
+            "room": "E1",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "WP Lab",
+            "room": "301",
+            "faculty_short_form": "LN"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "WP Lab",
+            "room": "301",
+            "faculty_short_form": "LN"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "09:00-10:30",
+            "course": "SVT",
+            "room": "E6",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "CN",
+            "room": "E6",
+            "faculty_short_form": "NHN"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "12:00-13:30",
+            "course": "SVT Lab",
+            "room": "301",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "SVT Lab",
+            "room": "301",
+            "faculty_short_form": "NSC"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "12:00-13:30",
+            "course": "SVT",
+            "room": "E1",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "DMT Lab",
+            "room": "301",
+            "faculty_short_form": "MKB"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "DMT Lab",
+            "room": "301",
+            "faculty_short_form": "MKB"
+          }
+        ],
+        "Thursday": [
+          {
+            "time": "12:00-13:30",
+            "course": "CN Lab",
+            "room": "405",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "CN Lab",
+            "room": "405",
+            "faculty_short_form": "NHN"
+          }
+        ]
+      }
+    },
+    "8th": {
+      "batch": "8th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "09:00-10:30",
+            "course": "SADP Lab",
+            "room": "301",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "SADP Lab",
+            "room": "301",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "BEEC",
+            "room": "E5",
+            "faculty_short_form": "AIR"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "10:30-12:00",
+            "course": "BEEC",
+            "room": "403",
+            "faculty_short_form": "AIR"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "JGD Lab",
+            "room": "306",
+            "faculty_short_form": "FA"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "JGD Lab",
+            "room": "306",
+            "faculty_short_form": "FA"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "SADP",
+            "room": "403",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "CP Lab-2",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "CP Lab-2",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          }
+        ],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "time": "12:00-13:30",
+            "course": "SADP",
+            "room": "508",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "BEEC Lab",
+            "room": "109",
+            "faculty_short_form": "AIR"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "BEEC Lab",
+            "room": "109",
+            "faculty_short_form": "AIR"
+          }
+        ]
+      }
+    },
+    "9th": {
+      "batch": "9th",
+      "schedule": {
+        "Sunday": [],
+        "Monday": [
+          {
+            "time": "13:30-15:00",
+            "course": "NA",
+            "room": "E6",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "CA",
+            "room": "E3",
+            "faculty_short_form": "NSC"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "NA",
+            "room": "E2",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "OOP",
+            "room": "E2",
+            "faculty_short_form": "FA"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "OOP Lab",
+            "room": "301",
+            "faculty_short_form": "FA"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "OOP Lab",
+            "room": "301",
+            "faculty_short_form": "FA"
+          }
+        ],
+        "Thursday": [
+          {
+            "time": "09:00-10:30",
+            "course": "OOP",
+            "room": "506",
+            "faculty_short_form": "FA"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "CA",
+            "room": "506",
+            "faculty_short_form": "NSC"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "CP Lab-1",
+            "room": "301",
+            "faculty_short_form": "OHR"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "CP Lab-1",
+            "room": "301",
+            "faculty_short_form": "OHR"
+          }
+        ]
+      }
+    },
+    "10th": {
+      "batch": "10th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "13:30-15:00",
+            "course": "DBMS",
+            "room": "504",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "ALGO",
+            "room": "504",
+            "faculty_short_form": "AAC"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "09:00-10:30",
+            "course": "ALGO Lab",
+            "room": "301",
+            "faculty_short_form": "AAC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "ALGO Lab",
+            "room": "301",
+            "faculty_short_form": "AAC"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "SRE",
+            "room": "403",
+            "faculty_short_form": "WIC"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "12:00-13:30",
+            "course": "DBMS",
+            "room": "403",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "ALGO",
+            "room": "501",
+            "faculty_short_form": "AAC"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "10:30-12:00",
+            "course": "NA",
+            "room": "E4",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "DBMS Lab",
+            "room": "301",
+            "faculty_short_form": "NHN"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "DBMS Lab",
+            "room": "301",
+            "faculty_short_form": "NHN"
+          }
+        ],
+        "Thursday": [
+          {
+            "time": "09:00-10:30",
+            "course": "SRE",
+            "room": "403",
+            "faculty_short_form": "WIC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "NA",
+            "room": "403",
+            "faculty_short_form": "SSJ"
+          }
+        ]
+      }
+    },
+    "11th": {
+      "batch": "11th",
+      "schedule": {
+        "Sunday": [],
+        "Monday": [
+          {
+            "time": "15:00-16:30",
+            "course": "DS Lab",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "DS Lab",
+            "room": "405",
+            "faculty_short_form": "IAC"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "DS",
+            "room": "E5",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "MIS",
+            "room": "E3",
+            "faculty_short_form": "WIC"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "09:00-10:30",
+            "course": "NA",
+            "room": "502",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "DS",
+            "room": "502",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "MIS",
+            "room": "E3",
+            "faculty_short_form": "WIC"
+          }
+        ],
+        "Thursday": [
+          {
+            "time": "13:30-15:00",
+            "course": "NA",
+            "room": "E3",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "PPD Lab",
+            "room": "309",
+            "faculty_short_form": "AAC"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "PPD Lab",
+            "room": "309",
+            "faculty_short_form": "AAC"
+          }
+        ]
+      }
+    },
+    "12th": {
+      "batch": "12th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "09:00-10:30",
+            "course": "DM",
+            "room": "505",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "SP",
+            "room": "505",
+            "faculty_short_form": "IAC"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "09:00-10:30",
+            "course": "BP",
+            "room": "E2",
+            "faculty_short_form": "CMW"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "LADE",
+            "room": "E2",
+            "faculty_short_form": "RP"
+          }
+        ],
+        "Tuesday": [
+          {
+            "time": "13:30-15:00",
+            "course": "DM",
+            "room": "E3",
+            "faculty_short_form": "SSJ"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "BP",
+            "room": "E5",
+            "faculty_short_form": "CMW"
+          }
+        ],
+        "Wednesday": [
+          {
+            "time": "12:00-13:30",
+            "course": "LADE",
+            "room": "408",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "SP",
+            "room": "507",
+            "faculty_short_form": "IAC"
+          }
+        ],
+        "Thursday": [
+          {
+            "time": "09:00-10:30",
+            "course": "SP Lab",
+            "room": "301",
+            "faculty_short_form": "IAC"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "SP Lab",
+            "room": "301",
+            "faculty_short_form": "IAC"
+          }
+        ]
+      }
+    },
+    "13th": {
+      "batch": "13th",
+      "schedule": {
+        "Sunday": [
+          {
+            "time": "09:00-10:30",
+            "course": "DIC",
+            "room": "E5",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "12:00-13:30",
+            "course": "CEL-I",
+            "room": "E6",
+            "faculty_short_form": "SAM"
+          },
+          {
+            "time": "13:30-15:00",
+            "course": "BS",
+            "room": "402",
+            "faculty_short_form": "RP"
+          }
+        ],
+        "Monday": [
+          {
+            "time": "09:00-10:30",
+            "course": "CEL-I",
+            "room": "E1",
+            "faculty_short_form": "SAM"
+          },
+          {
+            "time": "10:30-12:00",
+            "course": "ISE",
+            "room": "E1",
+            "faculty_short_form": "WIC"
+          }
+        ],
+        "Tuesday": [],
+        "Wednesday": [
+          {
+            "time": "13:30-15:00",
+            "course": "DIC",
+            "room": "E6",
+            "faculty_short_form": "RP"
+          },
+          {
+            "time": "15:00-16:30",
+            "course": "ISE",
+            "room": "505",
+            "faculty_short_form": "WIC"
+          },
+          {
+            "time": "16:30-18:00",
+            "course": "BS",
+            "room": "505",
+            "faculty_short_form": "RP"
+          }
+        ],
+        "Thursday": []
+      }
+    }
+  }
+}

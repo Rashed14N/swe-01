@@ -160,6 +160,7 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
       result = result.filter(
         (t) =>
           t.courseId === filterCourseId ||
+          (courses.length > 0 && courses.some((c) => c.id === t.courseId)) ||
           t.courseCode.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === codeClean
       );
     } else if (selectedCourseFilter !== 'ALL') {
@@ -193,11 +194,11 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
     }
 
     return result;
-  }, [tasks, filterCourseId, selectedCourseFilter, statusFilter, searchQuery, completedTaskIds]);
+  }, [tasks, filterCourseId, courses, selectedCourseFilter, statusFilter, searchQuery, completedTaskIds]);
 
   const completedCount = useMemo(() => {
-    return tasks.filter((t) => completedTaskIds[t.id]).length;
-  }, [tasks, completedTaskIds]);
+    return filteredTasks.filter((t) => completedTaskIds[t.id]).length;
+  }, [filteredTasks, completedTaskIds]);
 
   const handleDelete = async (taskId: string, taskTitle: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -232,7 +233,7 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
             {filterCourseId ? `Class Tasks & Updates (${filterCourseId})` : 'Class Tasks & Updates'}
           </h3>
           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
-            {tasks.length} {tasks.length === 1 ? 'Task' : 'Tasks'}
+            {filteredTasks.length} {filteredTasks.length === 1 ? 'Task' : 'Tasks'}
           </span>
           {completedCount > 0 && (
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">

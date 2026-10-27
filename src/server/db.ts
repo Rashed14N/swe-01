@@ -2169,44 +2169,7 @@ export function seedInitialData(): DBData {
     },
   ];
 
-  const announcements: BatchAnnouncement[] = [
-    {
-      id: 'ann-1',
-      batchId: 'batch-9',
-      title: 'Database Assignment Submission Deadline Extended',
-      description: 'Nazia Sultana Chowdhury has extended the Database ER-Diagram assignment submission till Sunday 18th August. Submit via portal or offline hardcopy.',
-      publishDate: '2026-08-10',
-      expiryDate: '2026-08-25',
-      priority: 'IMPORTANT',
-      createdBy: 'user-cr-1',
-      createdByName: 'Mahmudul Hasan (CR)',
-      createdAt: '2026-08-10T08:00:00Z',
-    },
-    {
-      id: 'ann-2',
-      batchId: 'batch-9',
-      title: 'Software Engineering Makeup Class on Friday',
-      description: 'Extra class for SWE 307 scheduled for Friday 10:00 AM at Room 401. Attendance will be recorded.',
-      publishDate: '2026-08-11',
-      expiryDate: '2026-08-16',
-      priority: 'URGENT',
-      createdBy: 'user-cr-1',
-      createdByName: 'Mahmudul Hasan (CR)',
-      createdAt: '2026-08-11T14:00:00Z',
-    },
-    {
-      id: 'ann-3',
-      batchId: 'batch-9',
-      title: 'Lab Manual for Computer Networks Uploaded',
-      description: 'Check the Lab Resources section for Cisco Packet Tracer lab manual 3.',
-      publishDate: '2026-08-01',
-      expiryDate: '2026-08-05', // Expired announcement to test archive
-      priority: 'NORMAL',
-      createdBy: 'user-cr-1',
-      createdByName: 'Mahmudul Hasan (CR)',
-      createdAt: '2026-08-01T09:00:00Z',
-    },
-  ];
+  const announcements: BatchAnnouncement[] = [];
 
   const departmentNotices: DepartmentNotice[] = [
     {

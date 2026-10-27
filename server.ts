@@ -1,15 +1,46 @@
+import http from 'http';
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { app } from './src/server/app';
 
+// Ignore HMR and WebSocket errors per runtime environment constraints
+process.on('uncaughtException', (err: any) => {
+  if (
+    (err?.code === 'EADDRINUSE' && (err?.port === 24678 || err?.message?.includes('24678'))) ||
+    err?.message?.includes('WebSocket') ||
+    err?.message?.includes('ws')
+  ) {
+    console.warn('Ignored transient WebSocket/HMR error:', err?.message || err);
+    return;
+  }
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  console.warn('Unhandled Rejection:', reason);
+});
+
 async function startServer() {
-  const PORT = 3000;
+  const args = process.argv.slice(2);
+  const portIndex = args.indexOf('--port');
+  const cliPort = portIndex !== -1 && args[portIndex + 1] ? Number(args[portIndex + 1]) : null;
+  const hostIndex = args.indexOf('--host');
+  const cliHost = hostIndex !== -1 && args[hostIndex + 1] ? args[hostIndex + 1] : null;
+
+  const PORT = cliPort || Number(process.env.PORT) || 3000;
+  const HOST = cliHost || process.env.HOST || '0.0.0.0';
+
+  const httpServer = http.createServer(app);
 
   // Vite middleware for development vs static serve for production
   if (process.env.NODE_ENV !== 'production') {
+    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: isHmrDisabled ? false : { server: httpServer },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -21,11 +52,12 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 SWE Portal Server running on http://0.0.0.0:${PORT}`);
+  httpServer.listen(PORT, HOST, () => {
+    console.log(`🚀 SWE Portal Server running on http://${HOST}:${PORT}`);
   });
 }
 
 startServer().catch(err => {
   console.error('Failed to start server:', err);
 });
+

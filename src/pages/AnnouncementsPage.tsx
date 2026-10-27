@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Megaphone, Plus, Archive, Trash2, Mail, Calendar, Clock, Sparkles, Eye, ArrowLeft, Image, FileUp, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Megaphone, Plus, Archive, Trash2, Mail, Calendar, Clock, Sparkles, Eye, ArrowLeft, Image, FileUp, X, ChevronDown, ChevronUp, BellOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Modal } from '../components/common/Modal';
@@ -361,10 +361,21 @@ export const AnnouncementsPage: React.FC = () => {
           {isLoading ? (
             <div className="py-12 text-center text-xs text-slate-400">Loading announcements...</div>
           ) : filteredAnnouncements.length === 0 ? (
-            <div className="bg-white dark:bg-[#0F172A] p-12 text-center rounded-2xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)]">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                {showArchive ? 'No archived notices found.' : 'No active announcements right now.'}
-              </p>
+            <div className="bg-white dark:bg-[#0F172A] p-10 sm:p-14 text-center rounded-2xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] space-y-3.5">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-black tracking-wide shadow-sm">
+                <BellOff className="w-3.5 h-3.5" />
+                <span>NO UPDATES AVAILABLE</span>
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base sm:text-lg font-black text-black dark:text-white tracking-tight">
+                  {showArchive ? 'No Archived Announcements' : 'No Announcements Available Right Now'}
+                </h3>
+                <p className="text-xs sm:text-sm font-semibold text-black dark:text-slate-300 max-w-md mx-auto leading-relaxed">
+                  {showArchive
+                    ? 'No past or archived announcements found for this batch.'
+                    : 'There are currently no active announcements or updates. New notices published by Class Representatives or Department Faculty will appear here.'}
+                </p>
+              </div>
             </div>
           ) : (
             filteredAnnouncements.map((ann) => {
@@ -453,8 +464,18 @@ export const AnnouncementsPage: React.FC = () => {
             {isLoading ? (
               <div className="py-8 text-center text-slate-400 text-xs">Loading announcements...</div>
             ) : filteredAnnouncements.length === 0 ? (
-              <div className="py-8 text-center text-slate-400 text-xs">
-                {showArchive ? 'No archived announcements.' : 'No active announcements.'}
+              <div className="py-12 px-4 text-center space-y-3">
+                <div className="w-11 h-11 mx-auto rounded-full bg-black text-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                  <BellOff className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-black dark:text-white">
+                    {showArchive ? 'No Archived Announcements' : 'No Announcements Available Right Now'}
+                  </p>
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-400 mt-1">
+                    {showArchive ? 'No archived notices in this batch.' : 'Click "New Announcement" above to publish your first announcement.'}
+                  </p>
+                </div>
               </div>
             ) : (
               filteredAnnouncements.map((ann) => (
@@ -508,8 +529,18 @@ export const AnnouncementsPage: React.FC = () => {
                   </tr>
                 ) : filteredAnnouncements.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-5 py-10 text-center text-slate-400">
-                      {showArchive ? 'No archived announcements.' : 'No active announcements.'}
+                    <td colSpan={4} className="px-5 py-12 text-center">
+                      <div className="space-y-2 max-w-md mx-auto">
+                        <div className="w-11 h-11 mx-auto rounded-full bg-black text-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                          <BellOff className="w-5 h-5" />
+                        </div>
+                        <p className="text-sm font-extrabold text-black dark:text-white">
+                          {showArchive ? 'No Archived Announcements' : 'No Announcements Available Right Now'}
+                        </p>
+                        <p className="text-xs font-medium text-slate-700 dark:text-slate-400">
+                          {showArchive ? 'No archived notices found.' : 'Click "+ New Announcement" above to publish a notice for your batch.'}
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 ) : (

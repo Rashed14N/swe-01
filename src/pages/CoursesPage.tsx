@@ -10,8 +10,6 @@ import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 import { getEffectiveSemester } from '../utils/semester';
-import { ClassTasksSection } from '../components/courses/ClassTasksSection';
-import { PostClassTaskModal } from '../components/courses/PostClassTaskModal';
 
 export const CoursesPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -27,7 +25,6 @@ export const CoursesPage: React.FC = () => {
   // By default: student/CR sees their enrolled courses ('my-batch')
   const [semesterFilter, setSemesterFilter] = useState<string>('my-batch');
   const [isLoading, setIsLoading] = useState(true);
-  const [isPostTaskModalOpen, setIsPostTaskModalOpen] = useState(false);
 
   // Sync to enrolled courses when user loads
   useEffect(() => {
@@ -53,7 +50,7 @@ export const CoursesPage: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [token]);
 
-  // Fetch class tasks posted by CR
+  // Fetch class tasks to show count on course cards
   const fetchClassTasks = () => {
     if (!token) return;
     fetch('/api/class-tasks', {
@@ -112,20 +109,6 @@ export const CoursesPage: React.FC = () => {
     return result;
   }, [allCourses, semesterFilter, searchQuery, user, effectiveSemester]);
 
-  // Enrolled courses list for passing into ClassTasksSection
-  const enrolledCoursesList = useMemo(() => {
-    const list = allCourses.filter(isCourseEnrolled);
-    return list.length > 0 ? list : allCourses.slice(0, 8);
-  }, [allCourses, user, effectiveSemester]);
-
-  const handleTaskAdded = (newTask: ClassTask) => {
-    setClassTasks((prev) => [newTask, ...prev]);
-  };
-
-  const handleTaskDeleted = (deletedId: string) => {
-    setClassTasks((prev) => prev.filter((t) => t.id !== deletedId));
-  };
-
   return (
     <div className="space-y-6 max-w-[1400px]">
       {/* 1. Header with Title */}
@@ -133,15 +116,7 @@ export const CoursesPage: React.FC = () => {
         title="Current Academic Courses"
       />
 
-      {/* 2. Class Tasks (CR Posts with Date) */}
-      <ClassTasksSection
-        tasks={classTasks}
-        courses={enrolledCoursesList}
-        onAddTaskClick={() => setIsPostTaskModalOpen(true)}
-        onTaskDeleted={handleTaskDeleted}
-      />
-
-      {/* 3. Retake & Improvement Quick Access Card */}
+      {/* 2. Retake & Improvement Quick Access Card */}
       <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200/80 dark:border-amber-900/40 rounded-2xl p-3.5 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -383,7 +358,7 @@ export const CoursesPage: React.FC = () => {
                       </div>
 
                       <div className="mt-5 pt-3.5 border-t border-amber-100 dark:border-amber-950 flex items-center justify-between text-xs font-bold text-amber-700 dark:text-amber-400 group-hover:underline">
-                        <span>View Course Materials</span>
+                        <span>View Tasks & Course Materials</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
@@ -393,14 +368,6 @@ export const CoursesPage: React.FC = () => {
           )}
         </div>
       )}
-
-      {/* Post Class Task Modal for CR/Admin */}
-      <PostClassTaskModal
-        isOpen={isPostTaskModalOpen}
-        onClose={() => setIsPostTaskModalOpen(false)}
-        courses={enrolledCoursesList}
-        onTaskAdded={handleTaskAdded}
-      />
     </div>
   );
 };

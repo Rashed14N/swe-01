@@ -62,7 +62,7 @@ export const CourseDetailPage: React.FC = () => {
       fetch(`/api/courses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => res.json()),
-      fetch(`/api/class-tasks?courseId=${id}`, {
+      fetch('/api/class-tasks', {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => res.json()).catch(() => ({ tasks: [] }))
     ])

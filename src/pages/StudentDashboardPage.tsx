@@ -89,7 +89,7 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => {
     todaysClassesCount: todaysRoutine.length,
     currentCoursesCount: 6,
     upcomingExamsCount: 0,
-    newAnnouncementsCount: 3,
+    newAnnouncementsCount: 0,
     todaysRoutine,
     upcomingExams: [],
     currentCourses: [
@@ -149,44 +149,7 @@ const getDefaultSummary = (batchId: string = 'batch-9'): DashboardSummary => {
       batchIds: [batchId],
     },
   ],
-  recentAnnouncements: [
-    {
-      id: 'ann_1',
-      batchId,
-      title: 'Department Seminar on AI & ML',
-      description: 'Keynote lecture on Modern Generative AI applications in Software Engineering.',
-      publishDate: 'May 22, 2025',
-      expiryDate: '2026-09-01',
-      priority: 'IMPORTANT',
-      createdBy: 'usr_fac_1',
-      createdByName: 'Dr. Mahbubur Rahman',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'ann_2',
-      batchId,
-      title: 'Lab Maintenance Notice',
-      description: 'Software Lab 3 will undergo routine operating system updates this Thursday.',
-      publishDate: 'May 20, 2025',
-      expiryDate: '2026-09-01',
-      priority: 'NORMAL',
-      createdBy: 'usr_admin_1',
-      createdByName: 'Lab Admin',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'ann_3',
-      batchId,
-      title: 'Class Test Schedule Update',
-      description: 'Database Management Systems quiz timing adjusted to 10:00 AM in Lab 3.',
-      publishDate: 'May 18, 2025',
-      expiryDate: '2026-09-01',
-      priority: 'IMPORTANT',
-      createdBy: 'usr_fac_2',
-      createdByName: 'Engr. Nazmul Islam',
-      createdAt: new Date().toISOString(),
-    },
-  ],
+  recentAnnouncements: [],
   recentNotices: [
     {
       id: 'not_1',
@@ -317,7 +280,7 @@ export const StudentDashboardPage: React.FC = () => {
       );
       const todaysRoutine = cleanedAllRoutines.length > 0 ? currentDaySlots : fallback.todaysRoutine;
 
-      const recentAnnouncements = announcements && announcements.length > 0 ? announcements.slice(0, 3) : fallback.recentAnnouncements;
+      const recentAnnouncements = announcements && announcements.length > 0 ? announcements.slice(0, 3) : [];
       const recentNotices = notices && notices.length > 0 ? notices.slice(0, 3) : fallback.recentNotices;
       const finalCurrentCourses = enrolledCourses && enrolledCourses.length > 0 ? enrolledCourses : fallback.currentCourses;
 
@@ -654,8 +617,13 @@ export const StudentDashboardPage: React.FC = () => {
 
             {/* Internal Rows */}
             {summary.recentAnnouncements.length === 0 ? (
-              <div className="py-10 text-center text-xs text-[#475569] dark:text-slate-400">
-                No recent batch announcements.
+              <div className="py-8 px-4 text-center space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-black tracking-wide shadow-sm">
+                  No Updates Available
+                </div>
+                <p className="text-xs font-semibold text-black dark:text-slate-200">
+                  There are currently no active announcements or updates for your batch.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-[#E5EBF3] dark:divide-slate-800">

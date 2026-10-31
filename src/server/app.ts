@@ -47,7 +47,7 @@ export function createExpressApp() {
   });
 
   // Health check & status endpoints
-  app.get(['/api', '/api/', '/api/health', '/api/status'], (req, res) => {
+  app.get(['/api/health', '/api/status'], (req, res) => {
     try {
       res.json({
         success: true,

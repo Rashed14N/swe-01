@@ -63,7 +63,7 @@ router.put('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Response
     const user = await fetchUserByIdOrStudentId(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const { email, phone, profileImage } = req.body;
+    const { email, phone, profileImage, name, batchId } = req.body;
 
     // Enforce 100KB limit for profile image
     if (profileImage && typeof profileImage === 'string') {
@@ -81,9 +81,24 @@ router.put('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Response
     }
 
     const updates: any = {};
+    if (name !== undefined && name.trim()) updates.name = name.trim();
     if (email !== undefined) updates.email = email;
     if (phone !== undefined) updates.phone = phone;
     if (profileImage !== undefined) updates.profileImage = profileImage;
+
+    // When batch is changed, automatically update semester to match the batch's currentSemester
+    if (batchId !== undefined && batchId) {
+      const { fetchAllBatches } = await import('../supabaseData');
+      const allBatches = await fetchAllBatches();
+      const matchedBatch = allBatches.find(b => b.id === batchId || (b.name && b.name.toLowerCase() === batchId.toLowerCase()));
+      if (matchedBatch) {
+        updates.batchId = matchedBatch.id;
+        updates.batchName = matchedBatch.name;
+        updates.currentSemester = matchedBatch.currentSemester;
+      } else {
+        updates.batchId = batchId;
+      }
+    }
 
     const updated = await updateUserInDB(user.id, updates);
 

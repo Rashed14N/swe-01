@@ -225,7 +225,7 @@ async function getFullCoursesForStudent(studentId: string): Promise<Course[]> {
     }
   }
 
-  return Array.from(courseMap.values());
+  return Array.from(courseMap.values()).sort((a, b) => (a.semester - b.semester) || (a.code || '').localeCompare(b.code || ''));
 }
 
 // GET /api/cgpa

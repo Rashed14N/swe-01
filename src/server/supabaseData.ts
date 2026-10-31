@@ -636,19 +636,38 @@ export async function deleteFacultyFromDB(id: string): Promise<boolean> {
 // 4. USERS & STUDENTS
 // ==============================================================================
 
+export function resolveBatchSemester(batchId?: string, batchName?: string, rawSemester?: any): number {
+  const bId = (batchId || '').trim().toLowerCase();
+  const bName = (batchName || '').trim().toLowerCase();
+
+  if (bId === 'batch-1788450159710' || bId === 'batch-13' || bName.includes('13th') || bName === '13') return 1;
+  if (bId === 'batch-1788449554669' || bId === 'batch-12' || bName.includes('12th') || bName === '12') return 2;
+  if (bId === 'batch-1792923073984' || bId === 'batch-11' || bName.includes('11th') || bName === '11') return 3;
+  if (bId === 'batch-10' || bName.includes('10th') || bName === '10') return 4;
+  if (bId === 'batch-9' || bName.includes('9th') || bName === '9') return 5;
+  if (bId === 'batch-8' || bName.includes('8th') || bName === '8') return 6;
+  if (bId === 'batch-7' || bName.includes('7th') || bName === '7') return 7;
+  if (bId === 'batch-6' || bName.includes('6th') || bName === '6') return 8;
+  if (bId === 'batch-5' || bName.includes('5th') || bName === '5') return 8;
+
+  const parsed = Number(rawSemester);
+  return !isNaN(parsed) && parsed > 0 ? parsed : 1;
+}
+
 export function mapUserFromSupabase(row: any): User {
+  const role = row.role || 'STUDENT';
+  const semester = role === 'ADMIN' ? 0 : resolveBatchSemester(row.batch_id, row.batch_name, row.current_semester);
+
   return {
     id: row.id,
     studentId: row.student_id || '',
     name: row.name || '',
     email: row.email || undefined,
     phone: row.phone || undefined,
-    role: row.role || 'STUDENT',
+    role,
     batchId: row.batch_id || undefined,
     batchName: row.batch_name || undefined,
-    currentSemester: (row.batch_id === 'batch-9' || (row.batch_name && String(row.batch_name).toLowerCase().includes('9th'))) 
-      ? Math.max(5, Number(row.current_semester || 5)) 
-      : Number(row.current_semester || 1),
+    currentSemester: semester,
     profileImage: row.profile_image || undefined,
     status: row.status || 'ACTIVE',
     points: Number(row.points || 0),
@@ -771,6 +790,10 @@ export async function updateUserInDB(id: string, updates: Partial<User>): Promis
       updatedAt: new Date().toISOString(),
     };
     local.users.push(existing);
+  }
+
+  if (updates.batchId && updates.currentSemester === undefined) {
+    updates.currentSemester = resolveBatchSemester(updates.batchId, updates.batchName || existing?.batchName);
   }
 
   const updated: User = { ...existing, ...updates, updatedAt: new Date().toISOString() };

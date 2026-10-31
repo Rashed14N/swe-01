@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   ClipboardList, Plus, Search, ExternalLink, Trash2,
-  Calendar, Clock, User, CheckCircle2, AlertCircle, Sparkles
+  Calendar, CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -390,7 +390,6 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
             {filteredTasks.map((item) => {
               const isCompleted = Boolean(completedTaskIds[item.id]);
               const dateInfo = parseTaskDate(item.date);
-              const dueInfo = formatDueDate(item.dueDate);
               const typeConfig = getTypeConfig(item.type);
 
               return (
@@ -399,150 +398,90 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
                   className={`rounded-2xl border p-4 sm:p-5 transition-all duration-200 relative group ${
                     isCompleted
                       ? 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-800/60 opacity-75'
-                      : dateInfo.isToday
-                      ? 'bg-blue-50/20 dark:bg-blue-950/10 border-blue-200 dark:border-blue-900/50 shadow-2xs hover:shadow-xs'
                       : 'bg-white dark:bg-[#0F172A] border-slate-200/90 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs'
                   }`}
                 >
-                  <div className="flex items-start gap-3.5 sm:gap-4">
-                    {/* Left: Prominent Calendar Date Block */}
-                    <div className="shrink-0 flex flex-col items-center justify-center w-12 sm:w-14 h-14 sm:h-15 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 text-center select-none shadow-2xs">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {dateInfo.month}
+                  {/* Top Meta Line: Course Badge + Title + Type + Delete */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 w-full">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Course Code */}
+                      <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        {item.courseCode}
                       </span>
-                      <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-none mt-0.5">
-                        {dateInfo.day}
+
+                      {/* Course Full Title */}
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold truncate max-w-[220px] sm:max-w-none">
+                        {item.courseTitle}
                       </span>
-                      {dateInfo.isToday && (
-                        <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 leading-none mt-1">
-                          Today
-                        </span>
-                      )}
+
+                      {/* Task Type Badge */}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${typeConfig.className}`}>
+                        {typeConfig.label}
+                      </span>
                     </div>
 
-                    {/* Right: Main Content Area */}
-                    <div className="flex-1 min-w-0">
-                      {/* Top Meta Line: Course Badge + Title + Type + Due Date */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {/* Course Code */}
-                          <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                            {item.courseCode}
-                          </span>
+                    {/* Delete for CR/Admin */}
+                    {isCRorAdmin && (
+                      <button
+                        onClick={(e) => handleDelete(item.id, item.title, e)}
+                        title="Delete class task"
+                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-md transition-colors cursor-pointer ml-auto"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
 
-                          {/* Course Full Title */}
-                          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold truncate max-w-[220px] sm:max-w-none">
-                            {item.courseTitle}
-                          </span>
+                  {/* Title Row with Completion Checkbox - Full Card Width */}
+                  <div className="flex items-start gap-2.5 w-full">
+                    <button
+                      onClick={(e) => handleToggleCompleted(item.id, e)}
+                      title={isCompleted ? 'Mark as pending' : 'Mark as completed'}
+                      className={`mt-0.5 w-4.5 h-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                        isCompleted
+                          ? 'bg-emerald-600 border-emerald-600 text-white'
+                          : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:bg-slate-800'
+                      }`}
+                    >
+                      {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
+                    </button>
 
-                          {/* Task Type Badge */}
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${typeConfig.className}`}>
-                            {typeConfig.label}
-                          </span>
+                    <h4
+                      className={`text-base sm:text-lg font-bold text-[#0B2348] dark:text-white leading-snug break-words flex-1 ${
+                        isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : ''
+                      }`}
+                    >
+                      {item.title}
+                    </h4>
+                  </div>
 
-                          {/* Priority Indicator */}
-                          {(item.priority === 'IMPORTANT' || item.priority === 'URGENT') && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                              <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                              <span>{item.priority === 'URGENT' ? 'Urgent' : 'Important'}</span>
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Top-Right: Due Date & Actions */}
-                        <div className="flex items-center gap-2">
-                          {dueInfo && (
-                            <span
-                              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                                dueInfo.isOverdue
-                                  ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
-                                  : dueInfo.isUrgent
-                                  ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                              }`}
-                            >
-                              <Clock className="w-3 h-3" />
-                              <span>{dueInfo.label}</span>
-                            </span>
-                          )}
-
-                          {/* Delete for CR/Admin */}
-                          {isCRorAdmin && (
-                            <button
-                              onClick={(e) => handleDelete(item.id, item.title, e)}
-                              title="Delete class task"
-                              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-md transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Title Row with Completion Checkbox */}
-                      <div className="flex items-start gap-2.5">
-                        <button
-                          onClick={(e) => handleToggleCompleted(item.id, e)}
-                          title={isCompleted ? 'Mark as pending' : 'Mark as completed'}
-                          className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
-                            isCompleted
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:bg-slate-800'
-                          }`}
-                        >
-                          {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
-                        </button>
-
-                        <h4
-                          className={`text-sm sm:text-base font-bold text-[#0B2348] dark:text-white leading-snug break-words ${
-                            isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : ''
-                          }`}
-                        >
-                          {item.title}
-                        </h4>
-                      </div>
-
-                      {/* Description Box (Full text visible, never hidden or truncated!) */}
-                      {item.description && (
-                        <div className="mt-2.5 ml-6.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50/80 dark:bg-slate-800/40 p-3 sm:p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/70">
-                          {item.description}
-                        </div>
-                      )}
-
-                      {/* Bottom Footer Metadata */}
-                      <div className="mt-3 ml-6.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          {item.facultyName && (
-                            <span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
-                              <User className="w-3.5 h-3.5 text-slate-400" />
-                              <span>Teacher: <strong className="text-slate-700 dark:text-slate-200">{item.facultyName}</strong></span>
-                            </span>
-                          )}
-
-                          <span>
-                            Posted by: <strong className="text-slate-700 dark:text-slate-200">{item.createdByName || 'CR'}</strong>
-                          </span>
-
-                          <span>
-                            Date: <strong className="text-slate-700 dark:text-slate-200">{dateInfo.formatted || item.date}</strong>
-                          </span>
-                        </div>
-
-                        {/* Attachment Link */}
-                        {item.attachmentUrl && (
-                          <a
-                            href={item.attachmentUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900 font-bold transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>{item.attachmentName || 'View Attachment'}</span>
-                          </a>
-                        )}
-                      </div>
+                  {/* Description Box - Full Card Width with light padding on both sides */}
+                  {item.description && (
+                    <div className="mt-3 w-full text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50/80 dark:bg-slate-800/40 px-3.5 py-3 sm:px-4 sm:py-3.5 rounded-xl border border-slate-100 dark:border-slate-800/70">
+                      {item.description}
                     </div>
+                  )}
+
+                  {/* Bottom Footer Metadata - Date and Attachment only (Teacher & Posted by removed) */}
+                  <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 w-full">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Date: <strong className="text-slate-700 dark:text-slate-200">{dateInfo.formatted || item.date}</strong></span>
+                    </div>
+
+                    {/* Attachment Link */}
+                    {item.attachmentUrl && (
+                      <a
+                        href={item.attachmentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900 font-bold transition-colors text-xs ml-auto"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>{item.attachmentName || 'View Attachment'}</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               );

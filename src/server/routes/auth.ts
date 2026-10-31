@@ -98,6 +98,14 @@ router.post(['/register', '/signup'], async (req: Request, res: Response) => {
     const passwordHash = bcrypt.hashSync(password || 'password123', 10);
     db.setPasswordHash(newUserId, passwordHash);
 
+    const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+    const matchedBatch = allBatches.find(b => b.id === batchId || (batchName && b.name.toLowerCase() === batchName.toLowerCase())) ||
+      allBatches.find(b => b.id === 'batch-9');
+
+    const assignedBatchId = matchedBatch ? matchedBatch.id : (batchId || 'batch-9');
+    const assignedBatchName = matchedBatch ? matchedBatch.name : (batchName || 'SWE 9th Batch');
+    const assignedSemester = matchedBatch ? matchedBatch.currentSemester : (Number(currentSemester) || 5);
+
     const newUser = {
       id: newUserId,
       studentId: studentId.trim(),
@@ -105,9 +113,9 @@ router.post(['/register', '/signup'], async (req: Request, res: Response) => {
       email: email.trim().toLowerCase(),
       phone: phone ? phone.trim() : undefined,
       role: 'STUDENT' as const,
-      batchId: batchId || 'batch-9',
-      batchName: batchName || 'SWE 9th Batch',
-      currentSemester: currentSemester || 5,
+      batchId: assignedBatchId,
+      batchName: assignedBatchName,
+      currentSemester: assignedSemester,
       status: 'ACTIVE' as const,
       points: 0,
       profileImage: '/avatars/pangolin-cream-2.svg',
@@ -153,6 +161,10 @@ router.get('/me', verifyAuthToken, async (req: AuthenticatedRequest, res: Respon
       if (userBatch) {
         activeSemester = userBatch.currentSemester;
         batchName = userBatch.name;
+        // Keep DB updated if out of sync
+        if (user.currentSemester !== activeSemester) {
+          await updateUserInDB(user.id, { currentSemester: activeSemester, batchName: userBatch.name }).catch(() => {});
+        }
       } else if (user.batchId === 'batch-9' || user.batchName?.toLowerCase().includes('9th')) {
         activeSemester = 5;
         batchName = 'SWE 9th Batch';

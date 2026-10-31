@@ -71,14 +71,14 @@
       "email": "atharmuhtasimmahdi@gmail.com",
       "phone": null,
       "role": "STUDENT",
-      "batchId": "batch-9",
+      "batchId": "batch-6",
       "batchName": "SWE 9th Batch",
       "currentSemester": 5,
       "profileImage": "/avatars/pangolin-cream-2.svg",
       "status": "ACTIVE",
       "points": 0,
       "createdAt": "2026-10-12T16:31:32.300586+00:00",
-      "updatedAt": "2026-10-25T13:33:12.388+00:00"
+      "updatedAt": "2026-10-31T10:07:22.373+00:00"
     },
     {
       "id": "usr_96a2eda9a669412dadb036a3ad25f86d",
@@ -266,7 +266,7 @@
     "usr_cr_1": "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
     "usr_admin_1": "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
     "usr_1786954698184": "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
-    "usr_swe_admin_central": "$2b$10$yao.OUssdctUvG2I4ukJb.q4AkP8hlWyHqtuFoPl8.QKs8uDEksVG"
+    "usr_swe_admin_central": "$2b$10$hGlpOtiED1jlZZkALwxxTuaYUjHPKYMuI2.a2gRxuSig.WgcToTUK"
   },
   "batches": [
     {
@@ -371,134 +371,262 @@
   ],
   "courses": [
     {
-      "id": "course-sem7-swe-333",
-      "code": "SWE-333",
-      "shortName": "SVT",
-      "title": "Software Verification & Testing",
+      "id": "course-sem5-swe-211",
+      "code": "SWE-211",
+      "title": "Computer Architecture",
+      "shortName": "CA",
       "credits": 3,
       "type": "THEORY",
-      "semester": 7,
-      "batchIds": [
-        "batch-6",
-        "batch-7"
-      ],
+      "semester": 5,
       "assignedFacultyId": "fac-2",
-      "assignedFacultyName": "Nazia Sultana Chowdhury"
-    },
-    {
-      "id": "course-sem7-swe-314",
-      "code": "SWE-314",
-      "shortName": "CN LAB",
-      "title": "Computer Networking Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 7,
+      "assignedFacultyName": "Nazia Sultana Chowdhury",
       "batchIds": [
-        "batch-6",
-        "batch-7"
+        "batch-8",
+        "batch-9"
       ],
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa"
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem7-swe-382",
-      "code": "SWE-382",
-      "shortName": "WD",
-      "title": "Project on Web App Development",
+      "id": "course-sem3-swe-182",
+      "code": "SWE-182",
+      "title": "Project on Python Development",
+      "shortName": "PPD",
       "credits": 3,
       "type": "PROJECT",
-      "semester": 7,
+      "semester": 3,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
       "batchIds": [
-        "batch-6"
-      ]
+        "batch-10",
+        "batch-11",
+        "batch-1792923073984"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem6-swe-316",
-      "code": "SWE-316",
-      "shortName": "AI LAB",
-      "title": "Artificial Intelligence Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 6,
+      "id": "course-sem4-swe-221",
+      "code": "SWE-221",
+      "title": "Algorithm",
+      "shortName": "ALGO",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 4,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
       "batchIds": [
-        "batch-7"
-      ]
+        "batch-10"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem6-swe-324",
-      "code": "SWE-324",
-      "shortName": "UI & UX",
-      "title": "Software UI & UX Design Practice Lab",
+      "id": "course-sem2-swe-122",
+      "code": "SWE-122",
+      "title": "Structured Programming Lab",
+      "shortName": "SP LAB",
       "credits": 1.5,
       "type": "LAB",
-      "semester": 6,
-      "batchIds": [
-        "batch-7"
-      ]
-    },
-    {
-      "id": "course-sem6-swe-232",
-      "code": "SWE-232",
-      "shortName": "CP-2",
-      "title": "Problem Solving with Competitive Programming Lab-2",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 6,
+      "semester": 2,
       "assignedFacultyId": "fac-6",
       "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
       "batchIds": [
-        "batch-7",
-        "batch-8",
-        "batch-5"
-      ]
+        "batch-11",
+        "batch-1788449554669",
+        "batch-12"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem8-swe-461",
-      "code": "SWE-461",
-      "shortName": "IC",
-      "title": "Introduction to Cryptography",
+      "id": "course-sem3-swe-111",
+      "code": "SWE-111",
+      "title": "Basic Electrical and Electronic Circuits",
+      "shortName": "BEEC",
       "credits": 3,
       "type": "THEORY",
+      "semester": 3,
+      "assignedFacultyId": "fac-air",
+      "assignedFacultyName": "A.I. Rahman",
+      "batchIds": [
+        "batch-10",
+        "batch-8"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem3-swe-112",
+      "code": "SWE-112",
+      "title": "Basic Electrical and Electronic Circuits Lab",
+      "shortName": "BEEC LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 3,
+      "assignedFacultyId": "fac-air",
+      "assignedFacultyName": "A.I. Rahman",
+      "batchIds": [
+        "batch-10",
+        "batch-8"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem3-swe-123",
+      "code": "SWE-123",
+      "title": "Data Structures",
+      "shortName": "DS",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 3,
+      "assignedFacultyId": "fac-6",
+      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
+      "batchIds": [
+        "batch-10",
+        "batch-11",
+        "batch-1792923073984"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem3-swe-124",
+      "code": "SWE-124",
+      "title": "Data Structure Lab",
+      "shortName": "DS LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 3,
+      "assignedFacultyId": "fac-6",
+      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
+      "batchIds": [
+        "batch-10",
+        "batch-11",
+        "batch-1792923073984"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem3-swe-235",
+      "code": "SWE-235",
+      "title": "Management Information Systems",
+      "shortName": "MIS",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 3,
+      "assignedFacultyId": "fac-5",
+      "assignedFacultyName": "Wadia Iqbal Chowdhury",
+      "batchIds": [
+        "batch-10",
+        "batch-11",
+        "batch-1792923073984"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem4-swe-222",
+      "code": "SWE-222",
+      "title": "Algorithm Lab",
+      "shortName": "ALGO LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 4,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
+      "batchIds": [
+        "batch-10"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem4-swe-225",
+      "code": "SWE-225",
+      "title": "Database Management System",
+      "shortName": "DBMS",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 4,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-10"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem4-swe-226",
+      "code": "SWE-226",
+      "title": "Database Management System Lab",
+      "shortName": "DBMS LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 4,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-10"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem4-swe-231",
+      "code": "SWE-231",
+      "title": "Software Requirement Engineering",
+      "shortName": "SRE",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 4,
+      "assignedFacultyId": "fac-5",
+      "assignedFacultyName": "Wadia Iqbal Chowdhury",
+      "batchIds": [
+        "batch-10"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem4-swe-311",
+      "code": "SWE-311",
+      "title": "Theory of Computation",
+      "shortName": "TOC",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 4,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem8-swe-422",
+      "code": "SWE-422",
+      "title": "Mobile App Development Practice Lab",
+      "shortName": "MDP",
+      "credits": 1.5,
+      "type": "LAB",
       "semester": 8,
+      "assignedFacultyId": "fac-mzuk",
+      "assignedFacultyName": "Md. Ziaul Karim",
       "batchIds": [
         "batch-5",
         "batch-6"
       ],
-      "assignedFacultyId": "fac-8",
-      "assignedFacultyName": "Syeda Sanjida Rahman"
-    },
-    {
-      "id": "course-sem8-swe-382",
-      "code": "SWE-382",
-      "shortName": "WD",
-      "title": "Project on Web App Development",
-      "credits": 3,
-      "type": "PROJECT",
-      "semester": 8,
-      "batchIds": [
-        "batch-5"
-      ]
-    },
-    {
-      "id": "course-sem5-swe-224",
-      "code": "SWE-224",
-      "shortName": "OOP LAB",
-      "title": "Object Oriented Programming Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 5,
-      "assignedFacultyId": "fac-1",
-      "assignedFacultyName": "Fuad Ahmed",
-      "batchIds": [
-        "batch-8",
-        "batch-9"
-      ]
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem5-mat-211",
       "code": "MAT-211",
-      "shortName": "NA",
       "title": "Numerical Analysis",
+      "shortName": "NA",
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
@@ -511,85 +639,15 @@
         "batch-11",
         "batch-5",
         "batch-1792923073984"
-      ]
-    },
-    {
-      "id": "course-sem5-swe-230",
-      "code": "SWE-230",
-      "shortName": "CP-I",
-      "title": "Problem Solving with Competitive Programming Lab-1",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 5,
-      "assignedFacultyId": "fac-ohr",
-      "assignedFacultyName": "Obaidur Rahman",
-      "batchIds": [
-        "batch-8",
-        "batch-9"
-      ]
-    },
-    {
-      "id": "course-sem6-ged-301",
-      "code": "GED-301",
-      "shortName": "BSP",
-      "title": "Basic Statistics and Probability",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 6,
-      "batchIds": [
-        "batch-7"
-      ]
-    },
-    {
-      "id": "course-sem8-swe-422",
-      "code": "SWE-422",
-      "shortName": "MDP",
-      "title": "Mobile App Development Practice Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 8,
-      "batchIds": [
-        "batch-5",
-        "batch-6"
       ],
-      "assignedFacultyId": "fac-mzuk",
-      "assignedFacultyName": "Md. Ziaul Karim"
-    },
-    {
-      "id": "course-sem8-ged-403",
-      "code": "GED-403",
-      "shortName": "ED",
-      "title": "Entrepreneurship Development",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 8,
-      "batchIds": [
-        "batch-5",
-        "batch-6"
-      ],
-      "assignedFacultyId": "fac-5",
-      "assignedFacultyName": "Wadia Iqbal Chowdhury"
-    },
-    {
-      "id": "course-sem5-swe-211",
-      "code": "SWE-211",
-      "shortName": "CA",
-      "title": "Computer Architecture",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 5,
-      "assignedFacultyId": "fac-2",
-      "assignedFacultyName": "Nazia Sultana Chowdhury",
-      "batchIds": [
-        "batch-8",
-        "batch-9"
-      ]
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem5-swe-223",
       "code": "SWE-223",
-      "shortName": "OOP",
       "title": "Object Oriented Programming",
+      "shortName": "OOP",
       "credits": 3,
       "type": "THEORY",
       "semester": 5,
@@ -598,220 +656,338 @@
       "batchIds": [
         "batch-8",
         "batch-9"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem7-swe-334",
-      "code": "SWE-334",
-      "shortName": "SVT LAB",
-      "title": "Software Verification & Testing Lab",
+      "id": "course-sem5-swe-224",
+      "code": "SWE-224",
+      "title": "Object Oriented Programming Lab",
+      "shortName": "OOP LAB",
       "credits": 1.5,
       "type": "LAB",
-      "semester": 7,
+      "semester": 5,
+      "assignedFacultyId": "fac-1",
+      "assignedFacultyName": "Fuad Ahmed",
       "batchIds": [
-        "batch-6",
-        "batch-7"
+        "batch-8",
+        "batch-9"
       ],
-      "assignedFacultyId": "fac-2",
-      "assignedFacultyName": "Nazia Sultana Chowdhury"
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem7-swe-313",
-      "code": "SWE-313",
-      "shortName": "CN",
-      "title": "Computer Networking",
+      "id": "course-sem5-swe-230",
+      "code": "SWE-230",
+      "title": "Problem Solving with Competitive Programming Lab-1",
+      "shortName": "CP-I",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 5,
+      "assignedFacultyId": "fac-ohr",
+      "assignedFacultyName": "Obaidur Rahman",
+      "batchIds": [
+        "batch-8",
+        "batch-9"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem6-ged-301",
+      "code": "GED-301",
+      "title": "Basic Statistics and Probability",
+      "shortName": "BSP",
       "credits": 3,
       "type": "THEORY",
-      "semester": 7,
+      "semester": 6,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
       "batchIds": [
-        "batch-6",
         "batch-7"
       ],
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa"
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem6-swe-232",
+      "code": "SWE-232",
+      "title": "Problem Solving with Competitive Programming Lab-2",
+      "shortName": "CP-2",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 6,
+      "assignedFacultyId": "fac-6",
+      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
+      "batchIds": [
+        "batch-7",
+        "batch-8",
+        "batch-5"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem6-swe-315",
       "code": "SWE-315",
-      "shortName": "AI",
       "title": "Artificial Intelligence",
+      "shortName": "AI",
       "credits": 3,
       "type": "THEORY",
       "semester": 6,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
       "batchIds": [
         "batch-7"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem6-swe-316",
+      "code": "SWE-316",
+      "title": "Artificial Intelligence Lab",
+      "shortName": "AI LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 6,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem6-swe-324",
+      "code": "SWE-324",
+      "title": "Software UI & UX Design Practice Lab",
+      "shortName": "UI & UX",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 6,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem7-swe-313",
+      "code": "SWE-313",
+      "title": "Computer Networking",
+      "shortName": "CN",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 7,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-6",
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem8-swe-461",
+      "code": "SWE-461",
+      "title": "Introduction to Cryptography",
+      "shortName": "IC",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 8,
+      "assignedFacultyId": "fac-8",
+      "assignedFacultyName": "Syeda Sanjida Rahman",
+      "batchIds": [
+        "batch-5",
+        "batch-6"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem7-swe-314",
+      "code": "SWE-314",
+      "title": "Computer Networking Lab",
+      "shortName": "CN LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 7,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-6",
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem7-swe-333",
+      "code": "SWE-333",
+      "title": "Software Verification & Testing",
+      "shortName": "SVT",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 7,
+      "assignedFacultyId": "fac-2",
+      "assignedFacultyName": "Nazia Sultana Chowdhury",
+      "batchIds": [
+        "batch-6",
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem7-swe-334",
+      "code": "SWE-334",
+      "title": "Software Verification & Testing Lab",
+      "shortName": "SVT LAB",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 7,
+      "assignedFacultyId": "fac-2",
+      "assignedFacultyName": "Nazia Sultana Chowdhury",
+      "batchIds": [
+        "batch-6",
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem7-swe-382",
+      "code": "SWE-382",
+      "title": "Project on Web App Development",
+      "shortName": "WD",
+      "credits": 3,
+      "type": "PROJECT",
+      "semester": 7,
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [
+        "batch-6"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem8-ged-403",
+      "code": "GED-403",
+      "title": "Entrepreneurship Development",
+      "shortName": "ED",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 8,
+      "assignedFacultyId": "fac-5",
+      "assignedFacultyName": "Wadia Iqbal Chowdhury",
+      "batchIds": [
+        "batch-5",
+        "batch-6"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem1-acm",
+      "code": "ACM",
+      "title": "ACM Workshop",
+      "shortName": "ACM",
+      "credits": 3,
+      "type": "LAB",
+      "semester": 1,
+      "assignedFacultyId": "fac-acm",
+      "assignedFacultyName": "ACM Workshop / Trainer",
+      "batchIds": [
+        "batch-12",
+        "batch-5"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem1-ged-101",
       "code": "GED-101",
-      "shortName": "CEL I",
       "title": "Communicative English Language I",
+      "shortName": "CEL I",
       "credits": 3,
       "type": "THEORY",
       "semester": 1,
-      "batchIds": [
-        "batch-12",
-        "batch-13",
-        "batch-1788450159710"
-      ],
       "assignedFacultyId": "fac-sam",
-      "assignedFacultyName": "Sheikh Ashikur Mahmud"
-    },
-    {
-      "id": "course-sem2-swe-121",
-      "code": "SWE-121",
-      "shortName": "SP",
-      "title": "Structured Programming",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 2,
-      "assignedFacultyId": "fac-6",
-      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
-      "batchIds": [
-        "batch-11",
-        "batch-1788449554669",
-        "batch-12"
-      ]
-    },
-    {
-      "id": "course-sem1-mat-111",
-      "code": "MAT-111",
-      "shortName": "DIC",
-      "title": "Differential & Integral Calculus",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 1,
+      "assignedFacultyName": "Sheikh Ashikur Mahmud",
       "batchIds": [
         "batch-12",
         "batch-13",
         "batch-1788450159710"
       ],
-      "assignedFacultyId": "fac-3",
-      "assignedFacultyName": "Rina Paul"
-    },
-    {
-      "id": "course-sem1-swe-131",
-      "code": "SWE-131",
-      "shortName": "ISE",
-      "title": "Introduction to Software Engineering",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 1,
-      "batchIds": [
-        "batch-12",
-        "batch-13",
-        "batch-1788450159710"
-      ],
-      "assignedFacultyId": "fac-5",
-      "assignedFacultyName": "Wadia Iqbal Chowdhury"
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem1-ged-105",
       "code": "GED-105",
-      "shortName": "BS",
       "title": "Bangladesh Studies",
+      "shortName": "BS",
       "credits": 3,
       "type": "THEORY",
       "semester": 1,
+      "assignedFacultyId": "fac-3",
+      "assignedFacultyName": "Rina Paul",
       "batchIds": [
         "batch-12",
         "batch-13",
         "batch-1788450159710"
       ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem1-mat-111",
+      "code": "MAT-111",
+      "title": "Differential & Integral Calculus",
+      "shortName": "DIC",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 1,
       "assignedFacultyId": "fac-3",
-      "assignedFacultyName": "Rina Paul"
-    },
-    {
-      "id": "course-sem3-swe-112",
-      "code": "SWE-112",
-      "shortName": "BEEC LAB",
-      "title": "Basic Electrical and Electronic Circuits Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 3,
-      "assignedFacultyId": "fac-air",
-      "assignedFacultyName": "A.I. Rahman",
+      "assignedFacultyName": "Rina Paul",
       "batchIds": [
-        "batch-10",
-        "batch-8"
-      ]
+        "batch-12",
+        "batch-13",
+        "batch-1788450159710"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem4-swe-222",
-      "code": "SWE-222",
-      "shortName": "ALGO LAB",
-      "title": "Algorithm Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 4,
-      "assignedFacultyId": "fac-4",
-      "assignedFacultyName": "Al Akram Chowdhury",
-      "batchIds": [
-        "batch-10"
-      ]
-    },
-    {
-      "id": "course-sem4-swe-311",
-      "code": "SWE-311",
-      "shortName": "TOC",
-      "title": "Theory of Computation",
+      "id": "course-sem1-swe-131",
+      "code": "SWE-131",
+      "title": "Introduction to Software Engineering",
+      "shortName": "ISE",
       "credits": 3,
       "type": "THEORY",
-      "semester": 4,
-      "batchIds": []
-    },
-    {
-      "id": "course-sem4-swe-225",
-      "code": "SWE-225",
-      "shortName": "DBMS",
-      "title": "Database Management System",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 4,
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa",
+      "semester": 1,
+      "assignedFacultyId": "fac-5",
+      "assignedFacultyName": "Wadia Iqbal Chowdhury",
       "batchIds": [
-        "batch-10"
-      ]
-    },
-    {
-      "id": "course-sem2-phy-111",
-      "code": "PHY-111",
-      "shortName": "BP",
-      "title": "Basic Physics",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 2,
-      "assignedFacultyId": "fac-cmw",
-      "assignedFacultyName": "Chowdhury Mahir Wahid",
-      "batchIds": [
-        "batch-11",
-        "batch-1788449554669",
-        "batch-12"
-      ]
-    },
-    {
-      "id": "course-sem2-swe-122",
-      "code": "SWE-122",
-      "shortName": "SP LAB",
-      "title": "Structured Programming Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 2,
-      "assignedFacultyId": "fac-6",
-      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
-      "batchIds": [
-        "batch-11",
-        "batch-1788449554669",
-        "batch-12"
-      ]
+        "batch-12",
+        "batch-13",
+        "batch-1788450159710"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem2-mat-112",
       "code": "MAT-112",
-      "shortName": "LADE",
       "title": "Linear Algebra & Differential Equations",
+      "shortName": "LADE",
       "credits": 3,
       "type": "THEORY",
       "semester": 2,
@@ -821,13 +997,15 @@
         "batch-11",
         "batch-1788449554669",
         "batch-12"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem2-mat-113",
       "code": "MAT-113",
-      "shortName": "DM",
       "title": "Discrete Mathematics",
+      "shortName": "DM",
       "credits": 3,
       "type": "THEORY",
       "semester": 2,
@@ -837,149 +1015,51 @@
         "batch-11",
         "batch-1788449554669",
         "batch-12"
-      ]
-    },
-    {
-      "id": "course-sem3-swe-123",
-      "code": "SWE-123",
-      "shortName": "DS",
-      "title": "Data Structures",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 3,
-      "assignedFacultyId": "fac-6",
-      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
-      "batchIds": [
-        "batch-10",
-        "batch-11",
-        "batch-1792923073984"
-      ]
-    },
-    {
-      "id": "course-sem3-swe-124",
-      "code": "SWE-124",
-      "shortName": "DS LAB",
-      "title": "Data Structure Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 3,
-      "assignedFacultyId": "fac-6",
-      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
-      "batchIds": [
-        "batch-10",
-        "batch-11",
-        "batch-1792923073984"
-      ]
-    },
-    {
-      "id": "course-sem3-swe-235",
-      "code": "SWE-235",
-      "shortName": "MIS",
-      "title": "Management Information Systems",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 3,
-      "assignedFacultyId": "fac-5",
-      "assignedFacultyName": "Wadia Iqbal Chowdhury",
-      "batchIds": [
-        "batch-10",
-        "batch-11",
-        "batch-1792923073984"
-      ]
-    },
-    {
-      "id": "course-sem3-swe-111",
-      "code": "SWE-111",
-      "shortName": "BEEC",
-      "title": "Basic Electrical and Electronic Circuits",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 3,
-      "assignedFacultyId": "fac-air",
-      "assignedFacultyName": "A.I. Rahman",
-      "batchIds": [
-        "batch-10",
-        "batch-8"
-      ]
-    },
-    {
-      "id": "course-sem4-swe-226",
-      "code": "SWE-226",
-      "shortName": "DBMS LAB",
-      "title": "Database Management System Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 4,
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa",
-      "batchIds": [
-        "batch-10"
-      ]
-    },
-    {
-      "id": "course-sem4-swe-231",
-      "code": "SWE-231",
-      "shortName": "SRE",
-      "title": "Software Requirement Engineering",
-      "credits": 3,
-      "type": "THEORY",
-      "semester": 4,
-      "assignedFacultyId": "fac-5",
-      "assignedFacultyName": "Wadia Iqbal Chowdhury",
-      "batchIds": [
-        "batch-10"
-      ]
-    },
-    {
-      "id": "course-sem3-swe-182",
-      "code": "SWE-182",
-      "shortName": "PPD",
-      "title": "Project on Python Development",
-      "credits": 3,
-      "type": "PROJECT",
-      "semester": 3,
-      "assignedFacultyId": "fac-4",
-      "assignedFacultyName": "Al Akram Chowdhury",
-      "batchIds": [
-        "batch-10",
-        "batch-11",
-        "batch-1792923073984"
-      ]
-    },
-    {
-      "id": "course-sem1-acm",
-      "code": "ACM",
-      "shortName": "ACM",
-      "title": "ACM Workshop",
-      "credits": 3,
-      "type": "LAB",
-      "semester": 1,
-      "batchIds": [
-        "batch-12",
-        "batch-5"
       ],
-      "assignedFacultyId": "fac-acm",
-      "assignedFacultyName": "ACM Workshop / Trainer"
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
-      "id": "course-sem4-swe-221",
-      "code": "SWE-221",
-      "shortName": "ALGO",
-      "title": "Algorithm",
+      "id": "course-sem2-phy-111",
+      "code": "PHY-111",
+      "title": "Basic Physics",
+      "shortName": "BP",
       "credits": 3,
       "type": "THEORY",
-      "semester": 4,
-      "assignedFacultyId": "fac-4",
-      "assignedFacultyName": "Al Akram Chowdhury",
+      "semester": 2,
+      "assignedFacultyId": "fac-cmw",
+      "assignedFacultyName": "Chowdhury Mahir Wahid",
       "batchIds": [
-        "batch-10"
-      ]
+        "batch-11",
+        "batch-1788449554669",
+        "batch-12"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
+    },
+    {
+      "id": "course-sem2-swe-121",
+      "code": "SWE-121",
+      "title": "Structured Programming",
+      "shortName": "SP",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 2,
+      "assignedFacultyId": "fac-6",
+      "assignedFacultyName": "Iffat Ahmed Chowdhury Nahid",
+      "batchIds": [
+        "batch-11",
+        "batch-1788449554669",
+        "batch-12"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-08-29T14:12:16.634071+00:00"
     },
     {
       "id": "course-sem6-swe-234",
       "code": "SWE-234",
-      "shortName": "SADP Lab",
       "title": "Software Architecture and Design Patterns Lab",
+      "shortName": "SADP Lab",
       "credits": 1.5,
       "type": "LAB",
       "semester": 6,
@@ -987,13 +1067,15 @@
       "assignedFacultyName": "Nazia Sultana Chowdhury",
       "batchIds": [
         "batch-8"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-06T18:01:36.549039+00:00"
     },
     {
       "id": "course-sem6-swe-282",
       "code": "SWE-282",
-      "shortName": "JGD Lab",
       "title": "Project on Java GUI Development Lab",
+      "shortName": "JGD Lab",
       "credits": 2,
       "type": "PROJECT",
       "semester": 6,
@@ -1001,13 +1083,15 @@
       "assignedFacultyName": "Fuad Ahmed",
       "batchIds": [
         "batch-8"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-06T18:01:36.549039+00:00"
     },
     {
       "id": "course-sem6-swe-233",
       "code": "SWE-233",
-      "shortName": "SADP",
       "title": "Software Architecture and Design Patterns",
+      "shortName": "SADP",
       "credits": 3,
       "type": "THEORY",
       "semester": 6,
@@ -1015,236 +1099,371 @@
       "assignedFacultyName": "Nazia Sultana Chowdhury",
       "batchIds": [
         "batch-8"
-      ]
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-06T18:01:36.549039+00:00"
     },
     {
       "id": "course-sem9-swe-411",
       "code": "SWE-411",
-      "shortName": "SA",
       "title": "Software Architecture & Enterprise Design",
+      "shortName": "SA",
       "credits": 3,
       "type": "THEORY",
       "semester": 9,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:03.474176+00:00"
     },
     {
       "id": "course-sem9-swe-412",
       "code": "SWE-412",
-      "shortName": "SAL",
       "title": "Software Architecture & Enterprise Design Lab",
+      "shortName": "SAL",
       "credits": 1.5,
       "type": "LAB",
       "semester": 9,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:03.704503+00:00"
     },
     {
       "id": "course-sem9-swe-431",
       "code": "SWE-431",
-      "shortName": "ML",
       "title": "Machine Learning & Predictive Systems",
+      "shortName": "ML",
       "credits": 3,
       "type": "THEORY",
       "semester": 9,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
       "batchIds": [
         "batch-6"
       ],
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa"
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:03.881752+00:00"
     },
     {
       "id": "course-sem9-swe-400a",
       "code": "SWE-400A",
-      "shortName": "CP1",
       "title": "Capstone Project / Thesis (Phase-I)",
+      "shortName": "CP1",
       "credits": 2,
       "type": "PROJECT",
       "semester": 9,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:03.991863+00:00"
     },
     {
       "id": "course-sem10-swe-441",
       "code": "SWE-441",
-      "shortName": "CC",
       "title": "Cloud Computing & DevOps Engineering",
+      "shortName": "CC",
       "credits": 3,
       "type": "THEORY",
       "semester": 10,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:04.38005+00:00"
     },
     {
       "id": "course-sem10-swe-442",
       "code": "SWE-442",
-      "shortName": "CCL",
       "title": "Cloud Computing & DevOps Practice Lab",
+      "shortName": "CCL",
       "credits": 1.5,
       "type": "LAB",
       "semester": 10,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:04.500783+00:00"
     },
     {
       "id": "course-sem10-swe-451",
       "code": "SWE-451",
-      "shortName": "DS",
       "title": "Distributed Systems & Microservices",
+      "shortName": "DS",
       "credits": 3,
       "type": "THEORY",
       "semester": 10,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:04.601667+00:00"
     },
     {
       "id": "course-sem10-swe-400b",
       "code": "SWE-400B",
-      "shortName": "CP2",
       "title": "Capstone Project / Thesis (Phase-II)",
+      "shortName": "CP2",
       "credits": 2,
       "type": "PROJECT",
       "semester": 10,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:04.724233+00:00"
     },
     {
       "id": "course-sem11-swe-471",
       "code": "SWE-471",
-      "shortName": "BDA",
       "title": "Big Data Analytics & Data Engineering",
+      "shortName": "BDA",
       "credits": 3,
       "type": "THEORY",
       "semester": 11,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:04.915508+00:00"
     },
     {
       "id": "course-sem11-swe-472",
       "code": "SWE-472",
-      "shortName": "BDAL",
       "title": "Big Data Analytics Lab",
+      "shortName": "BDAL",
       "credits": 1.5,
       "type": "LAB",
       "semester": 11,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.015344+00:00"
     },
     {
       "id": "course-sem11-swe-481",
       "code": "SWE-481",
-      "shortName": "CS",
       "title": "Cyber Security, Privacy & Secure Coding",
+      "shortName": "CS",
       "credits": 3,
       "type": "THEORY",
       "semester": 11,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.146212+00:00"
     },
     {
       "id": "course-sem11-swe-400c",
       "code": "SWE-400C",
-      "shortName": "CP3",
       "title": "Capstone Project / Thesis (Phase-III)",
+      "shortName": "CP3",
       "credits": 2,
       "type": "PROJECT",
       "semester": 11,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.273783+00:00"
     },
     {
       "id": "course-sem12-swe-490",
       "code": "SWE-490",
-      "shortName": "INT",
       "title": "Industrial Internship / Professional Attachment",
+      "shortName": "INT",
       "credits": 6,
       "type": "PROJECT",
       "semester": 12,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.368817+00:00"
     },
     {
       "id": "course-sem12-swe-499",
       "code": "SWE-499",
-      "shortName": "VIV",
       "title": "Comprehensive Viva & Senior Defense",
+      "shortName": "VIV",
       "credits": 3,
       "type": "THEORY",
       "semester": 12,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.536285+00:00"
     },
     {
       "id": "course-sem12-ged-404",
       "code": "GED-404",
-      "shortName": "PEL",
       "title": "Professional Ethics, Law & Leadership",
+      "shortName": "PEL",
       "credits": 3,
       "type": "THEORY",
       "semester": 12,
-      "batchIds": []
+      "assignedFacultyId": null,
+      "assignedFacultyName": null,
+      "batchIds": [],
+      "syllabus": [],
+      "createdAt": "2026-10-16T05:21:05.632405+00:00"
+    },
+    {
+      "id": "course-swe-342",
+      "code": "SWE-342",
+      "title": "Data Mining Tools Lab",
+      "shortName": "DMT Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 7,
+      "assignedFacultyId": "fac-11",
+      "assignedFacultyName": "Mridul Kanti Bhattacharjee",
+      "batchIds": [
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-27T03:39:03.370003+00:00"
+    },
+    {
+      "id": "course-swe-322",
+      "code": "SWE-322",
+      "title": "Web Programming Practice Lab",
+      "shortName": "WP Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 7,
+      "assignedFacultyId": "fac-10",
+      "assignedFacultyName": "Lukman Hussain Nakib",
+      "batchIds": [
+        "batch-7"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-27T03:39:03.370003+00:00"
     },
     {
       "id": "course-swe-443",
+      "code": "SWE-443",
+      "title": "Neural Networks & Deep Learning",
+      "shortName": "NN&DL",
+      "credits": 3,
+      "type": "THEORY",
+      "semester": 8,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
+      "batchIds": [
+        "batch-5"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-27T03:39:03.370003+00:00"
+    },
+    {
+      "id": "course-swe-444",
+      "code": "SWE-444",
+      "title": "Neural Networks & Deep Learning Lab",
+      "shortName": "NN&DL Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 8,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
+      "batchIds": [
+        "batch-5"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-27T03:39:03.370003+00:00"
+    },
+    {
+      "id": "course-sem8-swe-432",
+      "code": "SWE-432",
+      "title": "Machine Learning Lab",
+      "shortName": "ML Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 8,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-6"
+      ],
+      "syllabus": [],
+      "createdAt": "2026-10-29T15:15:48.110916+00:00"
+    },
+    {
+      "id": "course-sem8-swe-443",
       "code": "SWE-443",
       "shortName": "NN&DL",
       "title": "Neural Networks & Deep Learning",
       "credits": 3,
       "type": "THEORY",
-      "semester": 1,
+      "semester": 8,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
       "batchIds": [
         "batch-5"
-      ],
-      "createdAt": "2026-10-27T03:39:01.873Z",
-      "assignedFacultyId": "fac-4",
-      "assignedFacultyName": "Al Akram Chowdhury"
+      ]
     },
     {
-      "id": "course-swe-444",
-      "code": "SWE-444",
-      "shortName": "NN&DL Lab",
-      "title": "Neural Networks & Deep Learning Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 1,
-      "batchIds": [
-        "batch-5"
-      ],
-      "createdAt": "2026-10-27T03:39:01.873Z",
-      "assignedFacultyId": "fac-4",
-      "assignedFacultyName": "Al Akram Chowdhury"
-    },
-    {
-      "id": "course-swe-432",
-      "code": "SWE-432",
-      "shortName": "ML Lab",
-      "title": "Machine Learning Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 1,
-      "batchIds": [
-        "batch-6"
-      ],
-      "createdAt": "2026-10-27T03:39:01.873Z",
-      "assignedFacultyId": "fac-7",
-      "assignedFacultyName": "Nazia Hassan Nisa"
-    },
-    {
-      "id": "course-swe-322",
-      "code": "SWE-322",
-      "shortName": "WP Lab",
-      "title": "Web Programming Practice Lab",
-      "credits": 1.5,
-      "type": "LAB",
-      "semester": 1,
-      "batchIds": [
-        "batch-7"
-      ],
-      "createdAt": "2026-10-27T03:39:01.874Z",
-      "assignedFacultyId": "fac-10",
-      "assignedFacultyName": "Lukman Hussain Nakib"
-    },
-    {
-      "id": "course-swe-342",
+      "id": "course-sem7-swe-342",
       "code": "SWE-342",
       "shortName": "DMT Lab",
       "title": "Data Mining Tools Lab",
       "credits": 1.5,
       "type": "LAB",
-      "semester": 1,
+      "semester": 7,
+      "assignedFacultyId": "fac-11",
+      "assignedFacultyName": "Mridul Kanti Bhattacharjee",
       "batchIds": [
         "batch-7"
-      ],
-      "createdAt": "2026-10-27T03:39:01.875Z",
-      "assignedFacultyId": "fac-11",
-      "assignedFacultyName": "Mridul Kanti Bhattacharjee"
+      ]
+    },
+    {
+      "id": "course-sem8-swe-432",
+      "code": "SWE-432",
+      "shortName": "ML Lab",
+      "title": "Machine Learning Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 8,
+      "assignedFacultyId": "fac-7",
+      "assignedFacultyName": "Nazia Hassan Nisa",
+      "batchIds": [
+        "batch-6"
+      ]
+    },
+    {
+      "id": "course-sem8-swe-444",
+      "code": "SWE-444",
+      "shortName": "NN&DL Lab",
+      "title": "Neural Networks & Deep Learning Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 8,
+      "assignedFacultyId": "fac-4",
+      "assignedFacultyName": "Al Akram Chowdhury",
+      "batchIds": [
+        "batch-5"
+      ]
+    },
+    {
+      "id": "course-sem7-swe-322",
+      "code": "SWE-322",
+      "shortName": "WP Lab",
+      "title": "Web Programming Practice Lab",
+      "credits": 1.5,
+      "type": "LAB",
+      "semester": 7,
+      "assignedFacultyId": "fac-10",
+      "assignedFacultyName": "Lukman Hussain Nakib",
+      "batchIds": [
+        "batch-7"
+      ]
     }
   ],
   "routines": [
@@ -3017,7 +3236,7 @@
       "date": "2026-08-18",
       "startTime": "10:00 AM",
       "room": "Exam Hall 1",
-      "description": null,
+      "description": "",
       "createdBy": "user-cr-2",
       "createdByName": "Saima Akter (CR)",
       "createdAt": "2026-08-02T10:00:00+00:00"
@@ -3036,7 +3255,7 @@
       "description": "Chapters 1 to 3",
       "createdBy": "usr_admin_1",
       "createdByName": "Department Admin",
-      "createdAt": "2026-08-27T10:08:29.077Z"
+      "createdAt": "2026-08-27T10:08:29.077+00:00"
     },
     {
       "id": "exam-1787839564918",
@@ -3049,7 +3268,7 @@
       "date": "2026-09-15",
       "startTime": "10:00 AM",
       "room": "Lab 402",
-      "description": null,
+      "description": "",
       "createdBy": "usr_admin_1",
       "createdByName": "Department Admin",
       "createdAt": "2026-08-27T14:06:04.918+00:00"
@@ -3065,7 +3284,7 @@
       "date": "2026-09-15",
       "startTime": "10:00 AM",
       "room": "Lab 402",
-      "description": null,
+      "description": "",
       "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
       "createdByName": "Rashedul Hasan Mojumdar",
       "createdAt": "2026-08-28T07:51:20.961+00:00"
@@ -3539,7 +3758,7 @@
       "uploaderBatchName": "SWE Department Archive",
       "status": "APPROVED",
       "rejectionReason": null,
-      "downloadCount": 88,
+      "downloadCount": 89,
       "createdAt": "2026-10-06T02:18:28.007+00:00",
       "verifiedAt": "2026-10-06T17:18:28.007+00:00"
     },
@@ -3679,7 +3898,7 @@
       "uploaderBatchName": "SWE Department Archive",
       "status": "APPROVED",
       "rejectionReason": null,
-      "downloadCount": 103,
+      "downloadCount": 104,
       "createdAt": "2026-10-05T21:18:28.007+00:00",
       "verifiedAt": "2026-10-06T17:18:28.007+00:00"
     },
@@ -4154,7 +4373,7 @@
       "uploaderName": "fgdbsjh",
       "uploaderBatchName": "SWE 9th Batch",
       "status": "REJECTED",
-      "rejectionReason": "",
+      "rejectionReason": null,
       "downloadCount": 0,
       "createdAt": "2026-09-04T15:41:41.727+00:00",
       "verifiedAt": null
@@ -4470,6 +4689,20 @@
       "createdAt": "2026-08-29T13:59:05.137869+00:00"
     },
     {
+      "id": "fac-mzuk",
+      "name": "Md. Ziaul Karim",
+      "shortName": "MZUK",
+      "designation": "Assistant Professor",
+      "department": "Department of Software Engineering",
+      "email": "ziaul@metrouni.edu.bd",
+      "phone": null,
+      "officeRoom": "Room 405",
+      "photoUrl": null,
+      "specialization": null,
+      "assignedCourses": [],
+      "createdAt": "2026-10-27T03:39:03.493267+00:00"
+    },
+    {
       "id": "fac-2",
       "name": "Nazia Sultana Chowdhury",
       "shortName": "NSC",
@@ -4496,6 +4729,20 @@
       "specialization": null,
       "assignedCourses": [],
       "createdAt": "2026-08-29T13:59:05.137869+00:00"
+    },
+    {
+      "id": "fac-sam",
+      "name": "Sheikh Ashikur Mahmud",
+      "shortName": "SAM",
+      "designation": "Assistant Professor (English)",
+      "department": "Department of Software Engineering",
+      "email": "sam@metrouni.edu.bd",
+      "phone": null,
+      "officeRoom": "Room 402",
+      "photoUrl": null,
+      "specialization": null,
+      "assignedCourses": [],
+      "createdAt": "2026-10-27T03:39:03.493267+00:00"
     },
     {
       "id": "fac-5",
@@ -4652,43 +4899,18 @@
       "createdAt": "2026-08-29T13:59:05.137869+00:00"
     },
     {
-      "id": "fac-mzuk",
-      "name": "Md. Ziaul Karim",
-      "shortName": "MZUK",
-      "designation": "Assistant Professor",
-      "department": "Department of Software Engineering",
-      "email": "ziaul@metrouni.edu.bd",
-      "officeRoom": "Room 405",
-      "photoUrl": null,
-      "specialization": null,
-      "assignedCourses": [],
-      "createdAt": "2026-10-27T03:39:01.869Z"
-    },
-    {
-      "id": "fac-sam",
-      "name": "Sheikh Ashikur Mahmud",
-      "shortName": "SAM",
-      "designation": "Assistant Professor (English)",
-      "department": "Department of Software Engineering",
-      "email": "sam@metrouni.edu.bd",
-      "officeRoom": "Room 402",
-      "photoUrl": null,
-      "specialization": null,
-      "assignedCourses": [],
-      "createdAt": "2026-10-27T03:39:01.871Z"
-    },
-    {
       "id": "fac-acm",
       "name": "ACM Workshop / Trainer",
       "shortName": "ACM",
       "designation": "Competitive Programming Trainer",
       "department": "Department of Software Engineering",
       "email": "acm@metrouni.edu.bd",
+      "phone": null,
       "officeRoom": "Room 301",
       "photoUrl": null,
       "specialization": null,
       "assignedCourses": [],
-      "createdAt": "2026-10-27T03:39:01.871Z"
+      "createdAt": "2026-10-27T03:39:03.493267+00:00"
     }
   ],
   "notifications": [

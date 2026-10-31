@@ -123,7 +123,20 @@ export const saveRoutineToSupabase = async (slot: RoutineSlot): Promise<boolean>
 };
 
 export const fetchExamsFromSupabase = async (batchId?: string): Promise<Exam[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  const fallbackToApi = async () => {
+    try {
+      const res = await fetch(`/api/exams?batchId=${batchId || ''}&includePast=true`);
+      if (res.ok) {
+        const json = await res.json();
+        return json.exams || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  };
+
+  if (!checkIsSupabaseConfigured()) return fallbackToApi();
   try {
     const client = getSupabase();
     let query = client.from('exams').select('*').order('date', { ascending: true });
@@ -131,7 +144,7 @@ export const fetchExamsFromSupabase = async (batchId?: string): Promise<Exam[]> 
       query = query.eq('batch_id', batchId);
     }
     const { data, error } = await query;
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return fallbackToApi();
     return data.map((e: any) => ({
       id: e.id,
       batchId: e.batch_id,
@@ -149,7 +162,7 @@ export const fetchExamsFromSupabase = async (batchId?: string): Promise<Exam[]> 
       createdAt: e.created_at,
     }));
   } catch {
-    return [];
+    return fallbackToApi();
   }
 };
 
@@ -179,7 +192,20 @@ export const saveExamToSupabase = async (exam: Exam): Promise<boolean> => {
 };
 
 export const fetchAnnouncementsFromSupabase = async (batchId?: string): Promise<BatchAnnouncement[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  const fallbackToApi = async () => {
+    try {
+      const res = await fetch(`/api/announcements?batchId=${batchId || ''}`);
+      if (res.ok) {
+        const json = await res.json();
+        return json.announcements || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  };
+
+  if (!checkIsSupabaseConfigured()) return fallbackToApi();
   try {
     const client = getSupabase();
     let query = client.from('announcements').select('*').order('created_at', { ascending: false });
@@ -187,7 +213,7 @@ export const fetchAnnouncementsFromSupabase = async (batchId?: string): Promise<
       query = query.eq('batch_id', batchId);
     }
     const { data, error } = await query;
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return fallbackToApi();
     return data.map((a: any) => ({
       id: a.id,
       batchId: a.batch_id,
@@ -201,7 +227,7 @@ export const fetchAnnouncementsFromSupabase = async (batchId?: string): Promise<
       createdAt: a.created_at,
     }));
   } catch {
-    return [];
+    return fallbackToApi();
   }
 };
 
@@ -227,14 +253,27 @@ export const saveAnnouncementToSupabase = async (announcement: BatchAnnouncement
 };
 
 export const fetchNoticesFromSupabase = async (): Promise<DepartmentNotice[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  const fallbackToApi = async () => {
+    try {
+      const res = await fetch('/api/notices');
+      if (res.ok) {
+        const json = await res.json();
+        return json.notices || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  };
+
+  if (!checkIsSupabaseConfigured()) return fallbackToApi();
   try {
     const client = getSupabase();
     const { data, error } = await client
       .from('department_notices')
       .select('*')
       .order('publish_date', { ascending: false });
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return fallbackToApi();
     return data.map((n: any) => ({
       id: n.id,
       title: n.title,
@@ -248,7 +287,7 @@ export const fetchNoticesFromSupabase = async (): Promise<DepartmentNotice[]> =>
       createdAt: n.created_at,
     }));
   } catch {
-    return [];
+    return fallbackToApi();
   }
 };
 
@@ -274,7 +313,20 @@ export const saveNoticeToSupabase = async (notice: DepartmentNotice): Promise<bo
 };
 
 export const fetchResourcesFromSupabase = async (type?: 'QUESTION' | 'NOTE' | 'LAB'): Promise<Resource[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  const fallbackToApi = async () => {
+    try {
+      const res = await fetch(`/api/resources?type=${type || ''}`);
+      if (res.ok) {
+        const json = await res.json();
+        return json.resources || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  };
+
+  if (!checkIsSupabaseConfigured()) return fallbackToApi();
   try {
     const client = getSupabase();
     let query = client.from('resources').select('*').order('created_at', { ascending: false });
@@ -282,7 +334,7 @@ export const fetchResourcesFromSupabase = async (type?: 'QUESTION' | 'NOTE' | 'L
       query = query.eq('type', type);
     }
     const { data, error } = await query;
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return fallbackToApi();
     return data.map((res: any) => ({
       id: res.id,
       title: res.title,
@@ -354,7 +406,20 @@ export const saveResourceToSupabase = async (item: Resource): Promise<boolean> =
 };
 
 export const fetchCoursesFromSupabase = async (semester?: number, batchId?: string): Promise<Course[]> => {
-  if (!checkIsSupabaseConfigured()) return [];
+  const fallbackToApi = async () => {
+    try {
+      const res = await fetch(`/api/courses?batchId=${batchId || ''}${semester ? `&semester=${semester}` : ''}`);
+      if (res.ok) {
+        const json = await res.json();
+        return json.courses || [];
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  };
+
+  if (!checkIsSupabaseConfigured()) return fallbackToApi();
   try {
     const client = getSupabase();
     let targetSemester = semester;
@@ -375,7 +440,7 @@ export const fetchCoursesFromSupabase = async (semester?: number, batchId?: stri
       query = query.eq('semester', targetSemester);
     }
     const { data, error } = await query;
-    if (error || !data) return [];
+    if (error || !data || data.length === 0) return fallbackToApi();
     
     let courses = data.map((c: any) => ({
       id: c.id,
@@ -394,8 +459,8 @@ export const fetchCoursesFromSupabase = async (semester?: number, batchId?: stri
       courses = courses.filter(c => c.batchIds?.includes(batchId) || (targetSemester && c.semester === targetSemester));
     }
 
-    return courses;
+    return courses.length > 0 ? courses : fallbackToApi();
   } catch {
-    return [];
+    return fallbackToApi();
   }
 };

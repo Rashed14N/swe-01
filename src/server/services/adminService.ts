@@ -282,6 +282,18 @@ export async function createUser(userData: Partial<User>, adminUser: { id: strin
   const id = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const now = new Date().toISOString();
 
+  let assignedBatchName = userData.batchName || null;
+  let assignedSemester = Number(userData.currentSemester || 1);
+  if (userData.batchId) {
+    try {
+      const { data: bData } = await supabase.from('batches').select('name, current_semester').eq('id', userData.batchId).maybeSingle();
+      if (bData) {
+        assignedBatchName = bData.name;
+        assignedSemester = Number(bData.current_semester || assignedSemester);
+      }
+    } catch {}
+  }
+
   const insertPayload = {
     id,
     student_id: cleanStudentId,
@@ -290,8 +302,8 @@ export async function createUser(userData: Partial<User>, adminUser: { id: strin
     phone: userData.phone ? userData.phone.trim() : null,
     role: userData.role || 'STUDENT',
     batch_id: userData.batchId || null,
-    batch_name: userData.batchName || null,
-    current_semester: Number(userData.currentSemester || 1),
+    batch_name: assignedBatchName,
+    current_semester: assignedSemester,
     profile_image: userData.profileImage || null,
     status: userData.status || 'ACTIVE',
     points: Number(userData.points || 0),
@@ -341,9 +353,24 @@ export async function updateUser(id: string, updates: Partial<User>, adminUser: 
   if (updates.email !== undefined) updatePayload.email = updates.email ? updates.email.trim().toLowerCase() : null;
   if (updates.phone !== undefined) updatePayload.phone = updates.phone ? updates.phone.trim() : null;
   if (updates.role !== undefined) updatePayload.role = updates.role;
-  if (updates.batchId !== undefined) updatePayload.batch_id = updates.batchId || null;
-  if (updates.batchName !== undefined) updatePayload.batch_name = updates.batchName || null;
-  if (updates.currentSemester !== undefined) updatePayload.current_semester = Number(updates.currentSemester);
+  
+  if (updates.batchId !== undefined) {
+    updatePayload.batch_id = updates.batchId || null;
+    if (updates.batchId) {
+      try {
+        const { data: bData } = await supabase.from('batches').select('name, current_semester').eq('id', updates.batchId).maybeSingle();
+        if (bData) {
+          updatePayload.batch_name = bData.name;
+          // Batch er shate semester o change hbe
+          updatePayload.current_semester = Number(bData.current_semester || 1);
+        }
+      } catch {}
+    }
+  }
+  if (updates.batchName !== undefined && !updatePayload.batch_name) updatePayload.batch_name = updates.batchName || null;
+  if (updates.currentSemester !== undefined && updatePayload.current_semester === undefined) {
+    updatePayload.current_semester = Number(updates.currentSemester);
+  }
   if (updates.profileImage !== undefined) updatePayload.profile_image = updates.profileImage || null;
   if (updates.status !== undefined) updatePayload.status = updates.status;
   if (updates.points !== undefined) updatePayload.points = Number(updates.points);

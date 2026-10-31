@@ -1,6 +1,7 @@
 import { User, UserRole } from '../types';
 import { supabase } from '../lib/supabase';
 import { safeParseJson } from '../lib/apiClient';
+import { getBatchSemester } from '../utils/semester';
 
 export interface SignupParams {
   name: string;
@@ -71,16 +72,23 @@ export function mapDbUserToAppUser(row: any): User {
     throw new Error('Cannot map empty user row');
   }
 
+  const role = (row.role as UserRole) || 'STUDENT';
+  const batchId = row.batch_id || row.batchId || 'batch-9';
+  const batchName = row.batch_name || row.batchName || 'SWE 9th Batch';
+  const batchSem = getBatchSemester(batchId, batchName);
+  const rawSem = Number(row.current_semester || row.currentSemester);
+  const currentSemester = role === 'ADMIN' ? 0 : (batchSem !== null ? batchSem : (rawSem > 0 ? rawSem : 5));
+
   return {
     id: row.id || `usr_${row.auth_user_id || Date.now()}`,
     studentId: row.student_id || row.studentId || '',
     name: row.name || 'User',
     email: row.email || '',
     phone: row.phone || undefined,
-    role: (row.role as UserRole) || 'STUDENT',
-    batchId: row.batch_id || row.batchId || 'batch-9',
-    batchName: row.batch_name || row.batchName || 'SWE 9th Batch',
-    currentSemester: Number(row.current_semester || row.currentSemester || 5),
+    role,
+    batchId,
+    batchName,
+    currentSemester,
     profileImage: row.profile_image || row.profileImage || '/avatars/pangolin-cream-2.svg',
     status: (row.status as 'ACTIVE' | 'DISABLED') || 'ACTIVE',
     points: Number(row.points || 0),

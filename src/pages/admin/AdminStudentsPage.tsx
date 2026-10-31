@@ -92,7 +92,11 @@ export const AdminStudentsPage: React.FC = () => {
         const batchList = data.batches || data.data || (Array.isArray(data) ? data : []);
         setBatches(batchList);
         if (Array.isArray(batchList) && batchList.length > 0) {
-          setAddForm(prev => ({ ...prev, batchId: batchList[0].id }));
+          setAddForm(prev => ({
+            ...prev,
+            batchId: batchList[0].id,
+            currentSemester: batchList[0].currentSemester || 1,
+          }));
           setCsvDefaultBatchId(batchList[0].id);
         }
       })
@@ -419,13 +423,14 @@ export const AdminStudentsPage: React.FC = () => {
                     <button
                       onClick={() => {
                         setSelectedStudent(st);
+                        const b = batches.find(x => x.id === st.batchId);
                         setEditForm({
                           studentId: st.studentId,
                           name: st.name,
                           email: st.email || '',
                           phone: st.phone || '',
                           batchId: st.batchId || '',
-                          currentSemester: st.currentSemester,
+                          currentSemester: b?.currentSemester ?? (st.currentSemester || 1),
                           role: st.role,
                           status: st.status || 'ACTIVE',
                         });
@@ -517,13 +522,14 @@ export const AdminStudentsPage: React.FC = () => {
                       <button
                         onClick={() => {
                           setSelectedStudent(st);
+                          const b = batches.find(x => x.id === st.batchId);
                           setEditForm({
                             studentId: st.studentId,
                             name: st.name,
                             email: st.email || '',
                             phone: st.phone || '',
                             batchId: st.batchId || '',
-                            currentSemester: st.currentSemester,
+                            currentSemester: b?.currentSemester ?? (st.currentSemester || 1),
                             role: st.role,
                             status: st.status || 'ACTIVE',
                           });
@@ -647,12 +653,20 @@ export const AdminStudentsPage: React.FC = () => {
                   <label className="block font-bold text-slate-700 mb-1">Batch *</label>
                   <select
                     value={addForm.batchId}
-                    onChange={e => setAddForm({ ...addForm, batchId: e.target.value })}
+                    onChange={e => {
+                      const newBatchId = e.target.value;
+                      const matched = batches.find(b => b.id === newBatchId);
+                      setAddForm({
+                        ...addForm,
+                        batchId: newBatchId,
+                        currentSemester: matched?.currentSemester ?? addForm.currentSemester,
+                      });
+                    }}
                     className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
                   >
                     {batches.map(b => (
                       <option key={b.id} value={b.id}>
-                        {b.name}
+                        {b.name} (Sem {b.currentSemester})
                       </option>
                     ))}
                   </select>
@@ -831,12 +845,20 @@ export const AdminStudentsPage: React.FC = () => {
                   <label className="block font-bold text-slate-700 mb-1">Batch</label>
                   <select
                     value={editForm.batchId}
-                    onChange={e => setEditForm({ ...editForm, batchId: e.target.value })}
+                    onChange={e => {
+                      const newBatchId = e.target.value;
+                      const matched = batches.find(b => b.id === newBatchId);
+                      setEditForm({
+                        ...editForm,
+                        batchId: newBatchId,
+                        currentSemester: matched?.currentSemester ?? editForm.currentSemester,
+                      });
+                    }}
                     className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
                   >
                     {batches.map(b => (
                       <option key={b.id} value={b.id}>
-                        {b.name}
+                        {b.name} (Sem {b.currentSemester})
                       </option>
                     ))}
                   </select>

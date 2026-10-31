@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User, UserRole, Batch } from '../types';
 import { authService, SignupParams } from '../services/authService';
 import { getSupabase } from '../lib/supabase';
+import { getEffectiveSemester, getBatchSemester } from '../utils/semester';
 
 export interface SignupData extends SignupParams {}
 
@@ -62,11 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentSemester: 0,
       };
     }
-    const is9th = u.batchId === 'batch-9' || u.batchName?.toLowerCase().includes('9th');
-    if (is9th && (!u.currentSemester || u.currentSemester < 5)) {
-      return { ...u, currentSemester: 5, batchName: u.batchName || 'SWE 9th Batch' };
-    }
-    return u;
+    const effSem = getEffectiveSemester(u);
+    return {
+      ...u,
+      currentSemester: effSem,
+    };
   };
 
   const syncWithBatch = async (u: User) => {
@@ -357,7 +358,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserInContext = async (updated: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     if (currentUser) {
-      const newObj = { ...currentUser, ...updated, updatedAt: new Date().toISOString() };
+      let nextSemester = updated.currentSemester ?? currentUser.currentSemester;
+      let nextBatchName = updated.batchName ?? currentUser.batchName;
+
+      if (updated.batchId && updated.batchId !== currentUser.batchId) {
+        const batchSem = getBatchSemester(updated.batchId, nextBatchName);
+        if (batchSem !== null) {
+          nextSemester = batchSem;
+        }
+      }
+
+      const newObj = {
+        ...currentUser,
+        ...updated,
+        batchName: nextBatchName,
+        currentSemester: nextSemester,
+        updatedAt: new Date().toISOString(),
+      };
       setCurrentUser(newObj);
       
       // Update demo session storage if applicable

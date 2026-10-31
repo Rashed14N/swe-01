@@ -8,6 +8,7 @@ import type {
 } from '../types';
 
 import { syncToSupabase, deleteFromSupabase, hydrateFromSupabase } from './supabaseSync';
+import embeddedDatabase from '../../data/database.json';
 
 export interface DBData {
   users: User[];
@@ -35,6 +36,21 @@ export interface DBData {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
+
+export function findDatabaseFile(): string | null {
+  const candidates = [
+    DB_FILE,
+    path.join(process.cwd(), 'database.json'),
+    path.join(process.cwd(), 'data/database.json'),
+    '/app/applet/data/database.json',
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) return c;
+    } catch {}
+  }
+  return null;
+}
 
 // Ensure data directory exists safely (guard against read-only serverless filesystems)
 try {
@@ -707,18 +723,92 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'PROJECT',
       semester: 7,
-      batchIds: ['batch-6'],
+      batchIds: ['batch-7', 'batch-6'],
+    },
+    {
+      id: 'course-sem7-swe-322',
+      code: 'SWE-322',
+      shortName: 'WP Lab',
+      title: 'Web Programming Practice Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 7,
+      assignedFacultyId: 'fac-10',
+      assignedFacultyName: 'Lukman Hussain Nakib',
+      batchIds: ['batch-7'],
+    },
+    {
+      id: 'course-sem7-swe-342',
+      code: 'SWE-342',
+      shortName: 'DMT Lab',
+      title: 'Data Mining Tools Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 7,
+      assignedFacultyId: 'fac-11',
+      assignedFacultyName: 'Mridul Kanti Bhattacharjee',
+      batchIds: ['batch-7'],
     },
 
-    // Semester 8 (5th Batch)
+    // Semester 8 (5th Batch & 6th Batch)
     {
-      id: 'course-sem8-swe-382',
-      code: 'SWE-382',
-      shortName: 'WD',
-      title: 'Project on Web App Development',
+      id: 'course-sem8-ged-403',
+      code: 'GED-403',
+      shortName: 'ED',
+      title: 'Entrepreneurship Development',
       credits: 3,
-      type: 'PROJECT',
+      type: 'THEORY',
       semester: 8,
+      assignedFacultyId: 'fac-5',
+      assignedFacultyName: 'Wadia Iqbal Chowdhury',
+      batchIds: ['batch-5', 'batch-6'],
+    },
+    {
+      id: 'course-sem8-swe-422',
+      code: 'SWE-422',
+      shortName: 'MDP',
+      title: 'Mobile App Development Practice Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 8,
+      assignedFacultyId: 'fac-mzuk',
+      assignedFacultyName: 'Md. Ziaul Karim',
+      batchIds: ['batch-5', 'batch-6'],
+    },
+    {
+      id: 'course-sem8-swe-432',
+      code: 'SWE-432',
+      shortName: 'ML Lab',
+      title: 'Machine Learning Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 8,
+      assignedFacultyId: 'fac-7',
+      assignedFacultyName: 'Nazia Hassan Nisa',
+      batchIds: ['batch-6'],
+    },
+    {
+      id: 'course-sem8-swe-443',
+      code: 'SWE-443',
+      shortName: 'NN&DL',
+      title: 'Neural Networks & Deep Learning',
+      credits: 3,
+      type: 'THEORY',
+      semester: 8,
+      assignedFacultyId: 'fac-4',
+      assignedFacultyName: 'Al Akram Chowdhury',
+      batchIds: ['batch-5'],
+    },
+    {
+      id: 'course-sem8-swe-444',
+      code: 'SWE-444',
+      shortName: 'NN&DL Lab',
+      title: 'Neural Networks & Deep Learning Lab',
+      credits: 1.5,
+      type: 'LAB',
+      semester: 8,
+      assignedFacultyId: 'fac-4',
+      assignedFacultyName: 'Al Akram Chowdhury',
       batchIds: ['batch-5'],
     },
     {
@@ -729,27 +819,9 @@ export function seedInitialData(): DBData {
       credits: 3,
       type: 'THEORY',
       semester: 8,
-      batchIds: ['batch-5'],
-    },
-    {
-      id: 'course-sem8-swe-422',
-      code: 'SWE-422',
-      shortName: 'MDP',
-      title: 'Mobile App Development Practice Lab',
-      credits: 1.5,
-      type: 'LAB',
-      semester: 8,
-      batchIds: ['batch-5'],
-    },
-    {
-      id: 'course-sem8-ged-403',
-      code: 'GED-403',
-      shortName: 'ED',
-      title: 'Entrepreneurship Development',
-      credits: 3,
-      type: 'THEORY',
-      semester: 8,
-      batchIds: ['batch-5'],
+      assignedFacultyId: 'fac-8',
+      assignedFacultyName: 'Syeda Sanjida Rahman',
+      batchIds: ['batch-5', 'batch-6'],
     },
 
     // Semester 9
@@ -2456,18 +2528,34 @@ class JsonDB {
   private data: DBData;
 
   constructor() {
-    if (fs.existsSync(DB_FILE)) {
+    const resolvedDbPath = findDatabaseFile();
+    if (resolvedDbPath) {
       try {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
+        const raw = fs.readFileSync(resolvedDbPath, 'utf-8');
         this.data = JSON.parse(raw);
       } catch (err) {
-        console.error('Error reading DB_FILE, seeding fresh data...', err);
-        this.data = seedInitialData();
+        console.error('Error reading resolvedDbPath, using embedded data...', err);
+        this.data = JSON.parse(JSON.stringify(embeddedDatabase));
         this.save();
       }
     } else {
-      this.data = seedInitialData();
+      console.log('No database.json file found on disk, using embedded database...');
+      this.data = JSON.parse(JSON.stringify(embeddedDatabase));
       this.save();
+    }
+
+    // Safety fallback: Ensure full routines, courses, faculty, and batches are always present
+    if (!this.data.routines || this.data.routines.length < (embeddedDatabase.routines?.length || 0)) {
+      this.data.routines = JSON.parse(JSON.stringify(embeddedDatabase.routines || []));
+    }
+    if (!this.data.courses || this.data.courses.length < (embeddedDatabase.courses?.length || 0)) {
+      this.data.courses = JSON.parse(JSON.stringify(embeddedDatabase.courses || []));
+    }
+    if (!this.data.faculty || this.data.faculty.length < (embeddedDatabase.faculty?.length || 0)) {
+      this.data.faculty = JSON.parse(JSON.stringify(embeddedDatabase.faculty || []));
+    }
+    if (!this.data.batches || this.data.batches.length < (embeddedDatabase.batches?.length || 0)) {
+      this.data.batches = JSON.parse(JSON.stringify(embeddedDatabase.batches || []));
     }
 
     // Ensure all collections are defined

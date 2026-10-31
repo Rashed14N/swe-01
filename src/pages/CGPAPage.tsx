@@ -194,7 +194,7 @@ export const CGPAPage: React.FC = () => {
 
   // Filtered Semesters and Courses
   const filteredSemesters = useMemo(() => {
-    let result = [...semesters];
+    let result = [...semesters].sort((a, b) => (a?.semester || 0) - (b?.semester || 0));
 
     if (selectedSemesterTab !== 'ALL') {
       result = result.filter(s => s && s.semester === selectedSemesterTab);
@@ -219,6 +219,9 @@ export const CGPAPage: React.FC = () => {
         );
       }
 
+      // Sort courses alphabetically by code (theory + lab paired together)
+      filteredCourses.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+
       return {
         ...s,
         courses: filteredCourses,
@@ -231,10 +234,15 @@ export const CGPAPage: React.FC = () => {
     const activeBatchSem = effectiveSemester;
     return semesters
       .filter(s => s && (s.semester <= activeBatchSem || s.isPublished))
-      .map(s => ({
-        ...s,
-        courses: (s?.courses || []).filter(c => !isAcmCourse(c)),
-      }));
+      .sort((a, b) => (a?.semester || 0) - (b?.semester || 0))
+      .map(s => {
+        const sorted = (s?.courses || []).filter(c => !isAcmCourse(c));
+        sorted.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+        return {
+          ...s,
+          courses: sorted,
+        };
+      });
   }, [semesters, user, effectiveSemester]);
 
   // Save Single Course Grade

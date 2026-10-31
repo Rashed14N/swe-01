@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Resource, ResourceType, Course, Faculty, getFacultyRank } from '../types';
+import { Resource, ResourceType, Course, Faculty, getFacultyRank, Batch } from '../types';
 import { getUserAvatarUrl, PRESET_AVATARS, DEFAULT_AVATAR_URL } from '../data/avatars';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
 import { parseGoogleDriveLink } from '../lib/driveUtils';
@@ -30,8 +30,21 @@ export const ProfilePage: React.FC = () => {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [batchList, setBatchList] = useState<Batch[]>([]);
+  const [selectedBatchId, setSelectedBatchId] = useState(user?.batchId || 'batch-9');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [cgpaSummary, setCgpaSummary] = useState<{ cgpa: number; academicStanding: string; totalGradedCredits: number } | null>(null);
+
+  // Fetch batches for selection
+  useEffect(() => {
+    fetch('/api/batches')
+      .then(r => r.json())
+      .then(d => {
+        const list: Batch[] = Array.isArray(d?.batches) ? d.batches : [];
+        setBatchList(list);
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch student CGPA for profile
   useEffect(() => {
@@ -53,6 +66,9 @@ export const ProfilePage: React.FC = () => {
       setName(user.name || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
+      if (user.batchId) {
+        setSelectedBatchId(user.batchId);
+      }
     }
   }, [user]);
 
@@ -238,7 +254,7 @@ export const ProfilePage: React.FC = () => {
     fetchMyContributions();
   }, [token, user?.id, user?.studentId, activeTab]);
 
-  // Handle Profile Update (Name, Email, Phone)
+  // Handle Profile Update (Name, Email, Phone, Batch & Semester)
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -252,16 +268,43 @@ export const ProfilePage: React.FC = () => {
 
     setIsSavingProfile(true);
     try {
+      const chosenBatch = batchList.find(b => b.id === selectedBatchId) || 
+                          batchList.find(b => user?.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()) || {
+                            id: selectedBatchId || user?.batchId || 'batch-9',
+                            name: user?.batchName || 'SWE 9th Batch',
+                            currentSemester: user?.currentSemester || 5,
+                          };
+
       const res = await updateUserInContext({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim() || undefined,
+        batchId: chosenBatch.id,
+        batchName: chosenBatch.name,
+        currentSemester: chosenBatch.currentSemester,
       });
+
+      // Synchronize backend profile endpoint as well
+      try {
+        await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim() || undefined,
+            batchId: chosenBatch.id,
+          }),
+        });
+      } catch {}
 
       if (res && res.success === false) {
         addToast('error', res.error || 'Failed to update profile.');
       } else {
-        addToast('success', 'Profile information updated successfully!');
+        addToast('success', `Profile updated! Enrolled in ${chosenBatch.name} (Semester ${chosenBatch.currentSemester}).`);
       }
     } catch (err: any) {
       addToast('error', err?.message || 'Failed to update profile.');
@@ -814,6 +857,51 @@ export const ProfilePage: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* Academic Batch & Dynamic Semester Selection */}
+              {user?.role !== 'ADMIN' && (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Academic Batch
+                    </label>
+                    {(() => {
+                      const matched = batchList.find(b => b.id === selectedBatchId);
+                      const sem = matched?.currentSemester ?? (user?.currentSemester || 5);
+                      return (
+                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/60">
+                          Active: Semester {sem}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                      <GraduationCap className="w-4 h-4" />
+                    </div>
+                    <select
+                      value={selectedBatchId}
+                      onChange={(e) => setSelectedBatchId(e.target.value)}
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 transition-all cursor-pointer"
+                    >
+                      {batchList.length > 0 ? (
+                        batchList.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name} (Semester {b.currentSemester})
+                          </option>
+                        ))
+                      ) : (
+                        <option value={user?.batchId || 'batch-9'}>
+                          {user?.batchName || 'SWE 9th Batch'} (Semester {user?.currentSemester || 5})
+                        </option>
+                      )}
+                    </select>
+                  </div>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    Changing your batch will automatically switch your portal view to that batch&apos;s current active semester.
+                  </p>
+                </div>
+              )}
 
               {/* Mobile Save Button (Visible only on small screens) */}
               <div className="sm:hidden pt-2">

@@ -1,26 +1,15 @@
-// src/server/app.ts
-import express from "express";
-import cors from "cors";
-
-// src/server/routes/auth.ts
-import { Router } from "express";
-import bcrypt2 from "bcryptjs";
-
-// src/server/db.ts
-import fs from "fs";
-import path from "path";
-import bcrypt from "bcryptjs";
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
 // src/server/supabaseSync.ts
 import { createClient } from "@supabase/supabase-js";
-var DUMMY_UNREGISTERED_KEY = "sb_secret_sztWG8UZFLGZv6oApyHa0Q_sL-uYJ7_";
-var rawServiceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();
-var envServiceKey = rawServiceKey && rawServiceKey !== DUMMY_UNREGISTERED_KEY ? rawServiceKey : "";
-var envUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://aasktchpxsxxanfkkrxx.supabase.co").trim();
-var envPubKey = (process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || "sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1").trim();
-var currentSupabaseUrl = envUrl;
-var currentSupabaseKey = envServiceKey || envPubKey || "";
-var serverSupabase = null;
 function isServiceRoleKeyConfigured() {
   return Boolean(envServiceKey && currentSupabaseKey === envServiceKey);
 }
@@ -48,7 +37,6 @@ function initSupabase(url, key) {
   serverSupabase = null;
   return { success: false, message: "Supabase URL or Key is missing or invalid" };
 }
-initSupabase();
 function getServerSupabase() {
   return serverSupabase;
 }
@@ -636,15 +624,6101 @@ async function hydrateFromSupabase(dbData) {
     console.error("[Supabase Hydrate Error]:", err.message);
   }
 }
+var DUMMY_UNREGISTERED_KEY, rawServiceKey, envServiceKey, envUrl, envPubKey, currentSupabaseUrl, currentSupabaseKey, serverSupabase;
+var init_supabaseSync = __esm({
+  "src/server/supabaseSync.ts"() {
+    DUMMY_UNREGISTERED_KEY = "sb_secret_sztWG8UZFLGZv6oApyHa0Q_sL-uYJ7_";
+    rawServiceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();
+    envServiceKey = rawServiceKey && rawServiceKey !== DUMMY_UNREGISTERED_KEY ? rawServiceKey : "";
+    envUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://aasktchpxsxxanfkkrxx.supabase.co").trim();
+    envPubKey = (process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || "sb_publishable_usAyLlXmFO0s77Y9VIOlMQ_UCwuz0Q1").trim();
+    currentSupabaseUrl = envUrl;
+    currentSupabaseKey = envServiceKey || envPubKey || "";
+    serverSupabase = null;
+    initSupabase();
+  }
+});
+
+// data/database.json
+var database_default;
+var init_database = __esm({
+  "data/database.json"() {
+    database_default = {
+      users: [
+        {
+          id: "usr_94654d049d7e493ca4d71e1a433a00a6",
+          studentId: "000000000",
+          name: "abc",
+          email: "abc@test.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-22T17:23:57.171342+00:00",
+          updatedAt: "2026-09-22T17:23:55.687+00:00"
+        },
+        {
+          id: "usr_c6263437a8734e5ca17cc7555d64f098",
+          studentId: "111111008",
+          name: "8 Test",
+          email: "8test@gmail.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-8",
+          batchName: "SWE 8th Batch",
+          currentSemester: 6,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-10-04T19:07:57.475475+00:00",
+          updatedAt: "2026-10-04T19:07:58.159+00:00"
+        },
+        {
+          id: "usr_demo_student_111111111",
+          studentId: "111111111",
+          name: "Demo Student (Testing)",
+          email: "student@swe.demo",
+          phone: "01711111111",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 4,
+          profileImage: "data:image/webp;base64,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",
+          status: "ACTIVE",
+          points: 150,
+          createdAt: "2026-10-04T18:25:36.791666+00:00",
+          updatedAt: "2026-10-04T18:28:25.665+00:00"
+        },
+        {
+          id: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          studentId: "123",
+          name: "fgdbsjh",
+          email: "skdjfhjhf@gmail.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 40,
+          createdAt: "2026-08-28T17:03:14.953591+00:00",
+          updatedAt: "2026-09-06T03:17:23.401+00:00"
+        },
+        {
+          id: "usr_f79d575d88e346a3928d99dcd943e57d",
+          studentId: "241134025",
+          name: "Athar muhtasim Mahdi",
+          email: "atharmuhtasimmahdi@gmail.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-6",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-10-12T16:31:32.300586+00:00",
+          updatedAt: "2026-10-31T10:07:22.373+00:00"
+        },
+        {
+          id: "usr_96a2eda9a669412dadb036a3ad25f86d",
+          studentId: "252134001",
+          name: "Test Account",
+          email: "test@gmail.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-10T11:29:25.176372+00:00",
+          updatedAt: "2026-09-10T11:29:25.529+00:00"
+        },
+        {
+          id: "usr_dc0ac6623ddb4c1abd5da0cc485a6b70",
+          studentId: "252134003",
+          name: "Mahbuba Chowdhury Eity",
+          email: "mahbubachowdhury64@gmail.com",
+          phone: "01763050451",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-25T06:51:28.423241+00:00",
+          updatedAt: "2026-09-25T06:51:29.405+00:00"
+        },
+        {
+          id: "usr_e77702669a144283be0071f47704a2b7",
+          studentId: "252134012",
+          name: "Md Hossain Akhiar",
+          email: "hossainakhiar05@gmail.com",
+          phone: "01881103606",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-29T18:59:16.285707+00:00",
+          updatedAt: "2026-09-29T18:59:16.88+00:00"
+        },
+        {
+          id: "usr_f898ef41532c456e8af1d340da3a9b29",
+          studentId: "252134018",
+          name: "Taoshin Rahman",
+          email: "rtaoshin@gmail.com",
+          phone: "01836277787",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/lightbulb-3.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-10-06T04:09:54.168284+00:00",
+          updatedAt: "2026-10-06T04:14:09.325+00:00"
+        },
+        {
+          id: "usr_68bf253ad3a242e79a883bb46ce99787",
+          studentId: "252134022",
+          name: "Rashedul Hasan Mojumdar",
+          email: "rashedulhasanhst@gmail.com",
+          phone: "01765481645",
+          role: "ADMIN",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/peanut.svg",
+          status: "ACTIVE",
+          points: 110,
+          createdAt: "2026-08-18T10:01:34.07871+00:00",
+          updatedAt: "2026-09-30T05:46:32.955+00:00"
+        },
+        {
+          id: "usr_a917725e3b30440cbecf040af72c6fc0",
+          studentId: "252134043",
+          name: "Anindro Kishor Ovi",
+          email: "anindroot@gmail.com",
+          phone: "01319646319",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/raccoon-close-set-eyes-left.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-22T17:25:48.462327+00:00",
+          updatedAt: "2026-09-22T17:32:30.072+00:00"
+        },
+        {
+          id: "usr_1189ff27bae945748b8b5867e48745cb",
+          studentId: "252134046",
+          name: "Jihan Adiba Iqbal",
+          email: "adibajihan34@gmail.com",
+          phone: "01312321255",
+          role: "CR",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-09-25T06:46:03.361764+00:00",
+          updatedAt: "2026-09-30T05:43:58.266+00:00"
+        },
+        {
+          id: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          studentId: "252143048",
+          name: "Anbb",
+          email: "hshdhdj@gmail.com",
+          phone: "0134457869",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-08-21T17:17:58.684031+00:00",
+          updatedAt: "2026-09-04T13:32:33.597+00:00"
+        },
+        {
+          id: "usr_swe_admin_central",
+          studentId: "admin",
+          name: "Rashedul Hasan Mojumdar",
+          email: "admin@swe.metrouni.edu.bd",
+          phone: "+8801700000000",
+          role: "ADMIN",
+          batchId: "batch-9",
+          batchName: "SWE Administration",
+          currentSemester: 8,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 1e3,
+          createdAt: "2026-09-04T18:03:08.376484+00:00",
+          updatedAt: "2026-09-04T18:03:05.182+00:00"
+        },
+        {
+          id: "user-test-1787906269004",
+          studentId: "STD-TEST-1787906269004",
+          name: "Test Student",
+          email: null,
+          phone: null,
+          role: "STUDENT",
+          batchId: null,
+          batchName: null,
+          currentSemester: 1,
+          profileImage: null,
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-08-28T08:37:49.437338+00:00",
+          updatedAt: "2026-08-28T08:37:49.437338+00:00"
+        },
+        {
+          id: "usr_593f18bab5444d5785d312869415f9a3",
+          studentId: "231134021",
+          name: "Sharmin Akter Smrity",
+          email: "smrityse021@gmail.com",
+          phone: "01932286790",
+          role: "STUDENT",
+          batchId: "batch-6",
+          batchName: "SWE 6th Batch",
+          currentSemester: 8,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-10-25T09:22:01.509327+00:00",
+          updatedAt: "2026-10-25T09:22:02.817+00:00"
+        }
+      ],
+      passwords: {
+        usr_1786868051979: "$2b$10$Yy9kufNi/cPa6wS5C3JEmuIle9QoDwsI/spfxckKuqBTU8iorsQi2",
+        usr_1786868451950: "$2b$10$nphCNPyehQM5oHtGL5UyzurVilJTDKpL0sVPpmSogfw.nUU0IgIh.",
+        usr_1786868978412: "$2b$10$mXs7X/mSL9JBRe.LxWr/DOUnUtJDuCd1DsiADIbnAgV3pUEm/p9TC",
+        usr_1786871683233: "$2b$10$jHmnR7ChEM8JvzVocjHrD.2f7P4K9yTcTfsVqjAV.tJvEWp6otlDy",
+        usr_student_1: "$2b$10$.faxDxYHaEClfsVxozmuZeBEHr4t1rWCURQg/CCy/Ez9Mvr.9r5nK",
+        usr_cr_1: "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
+        usr_admin_1: "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
+        usr_1786954698184: "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
+        usr_swe_admin_central: "$2b$10$Ld2T8TgWTURIVqyQkPKtuO.KkKy9fx3EV9JlDwo.XIkJNLBSliN3."
+      },
+      batches: [
+        {
+          id: "batch-1788449554669",
+          name: "SWE 12th Batch",
+          admissionYear: 2026,
+          currentSemester: 2,
+          academicSession: "2026-2027",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-09-03T15:32:34.669+00:00"
+        },
+        {
+          id: "batch-1788450159710",
+          name: "SWE 13th Batch",
+          admissionYear: 2026,
+          currentSemester: 1,
+          academicSession: "2027-2028",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-09-03T15:42:39.71+00:00"
+        },
+        {
+          id: "batch-1792923073984",
+          name: "SWE 11th Batch",
+          admissionYear: 2026,
+          currentSemester: 3,
+          academicSession: "2027-2028",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-10-25T10:11:13.984+00:00"
+        },
+        {
+          id: "batch-10",
+          name: "SWE 10th Batch",
+          admissionYear: 2024,
+          currentSemester: 4,
+          academicSession: "2024-2025",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2024-01-15T00:00:00+00:00"
+        },
+        {
+          id: "batch-9",
+          name: "SWE 9th Batch",
+          admissionYear: 2023,
+          currentSemester: 5,
+          academicSession: "2023-2024",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2023-01-15T00:00:00+00:00"
+        },
+        {
+          id: "batch-8",
+          name: "SWE 8th Batch",
+          admissionYear: 2022,
+          currentSemester: 6,
+          academicSession: "2022-2023",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2022-01-15T00:00:00+00:00"
+        },
+        {
+          id: "batch-7",
+          name: "SWE 7th Batch",
+          admissionYear: 2021,
+          currentSemester: 7,
+          academicSession: "2021-2022",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-10-14T10:27:21.521113+00:00"
+        },
+        {
+          id: "batch-6",
+          name: "SWE 6th Batch",
+          admissionYear: 2020,
+          currentSemester: 8,
+          academicSession: "2020-2021",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-10-14T10:27:21.651388+00:00"
+        },
+        {
+          id: "batch-5",
+          name: "SWE 5th Batch",
+          admissionYear: 2019,
+          currentSemester: 8,
+          academicSession: "2019-2020",
+          semesterMode: "SEQUENCE",
+          status: "ACTIVE",
+          crIds: [],
+          createdAt: "2026-10-14T10:27:21.786022+00:00"
+        }
+      ],
+      courses: [
+        {
+          id: "course-sem5-swe-211",
+          code: "SWE-211",
+          title: "Computer Architecture",
+          shortName: "CA",
+          credits: 3,
+          type: "THEORY",
+          semester: 5,
+          assignedFacultyId: "fac-2",
+          assignedFacultyName: "Nazia Sultana Chowdhury",
+          batchIds: [
+            "batch-8",
+            "batch-9"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-182",
+          code: "SWE-182",
+          title: "Project on Python Development",
+          shortName: "PPD",
+          credits: 3,
+          type: "PROJECT",
+          semester: 3,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-10",
+            "batch-11",
+            "batch-1792923073984"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-221",
+          code: "SWE-221",
+          title: "Algorithm",
+          shortName: "ALGO",
+          credits: 3,
+          type: "THEORY",
+          semester: 4,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-10"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem2-swe-122",
+          code: "SWE-122",
+          title: "Structured Programming Lab",
+          shortName: "SP LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 2,
+          assignedFacultyId: "fac-6",
+          assignedFacultyName: "Iffat Ahmed Chowdhury Nahid",
+          batchIds: [
+            "batch-11",
+            "batch-1788449554669",
+            "batch-12"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-111",
+          code: "SWE-111",
+          title: "Basic Electrical and Electronic Circuits",
+          shortName: "BEEC",
+          credits: 3,
+          type: "THEORY",
+          semester: 3,
+          assignedFacultyId: "fac-air",
+          assignedFacultyName: "A.I. Rahman",
+          batchIds: [
+            "batch-10",
+            "batch-8"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-112",
+          code: "SWE-112",
+          title: "Basic Electrical and Electronic Circuits Lab",
+          shortName: "BEEC LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 3,
+          assignedFacultyId: "fac-air",
+          assignedFacultyName: "A.I. Rahman",
+          batchIds: [
+            "batch-10",
+            "batch-8"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-123",
+          code: "SWE-123",
+          title: "Data Structures",
+          shortName: "DS",
+          credits: 3,
+          type: "THEORY",
+          semester: 3,
+          assignedFacultyId: "fac-6",
+          assignedFacultyName: "Iffat Ahmed Chowdhury Nahid",
+          batchIds: [
+            "batch-10",
+            "batch-11",
+            "batch-1792923073984"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-124",
+          code: "SWE-124",
+          title: "Data Structure Lab",
+          shortName: "DS LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 3,
+          assignedFacultyId: "fac-6",
+          assignedFacultyName: "Iffat Ahmed Chowdhury Nahid",
+          batchIds: [
+            "batch-10",
+            "batch-11",
+            "batch-1792923073984"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem3-swe-235",
+          code: "SWE-235",
+          title: "Management Information Systems",
+          shortName: "MIS",
+          credits: 3,
+          type: "THEORY",
+          semester: 3,
+          assignedFacultyId: "fac-5",
+          assignedFacultyName: "Wadia Iqbal Chowdhury",
+          batchIds: [
+            "batch-10",
+            "batch-11",
+            "batch-1792923073984"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-222",
+          code: "SWE-222",
+          title: "Algorithm Lab",
+          shortName: "ALGO LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 4,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-10"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-225",
+          code: "SWE-225",
+          title: "Database Management System",
+          shortName: "DBMS",
+          credits: 3,
+          type: "THEORY",
+          semester: 4,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-10"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-226",
+          code: "SWE-226",
+          title: "Database Management System Lab",
+          shortName: "DBMS LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 4,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-10"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-231",
+          code: "SWE-231",
+          title: "Software Requirement Engineering",
+          shortName: "SRE",
+          credits: 3,
+          type: "THEORY",
+          semester: 4,
+          assignedFacultyId: "fac-5",
+          assignedFacultyName: "Wadia Iqbal Chowdhury",
+          batchIds: [
+            "batch-10"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem4-swe-311",
+          code: "SWE-311",
+          title: "Theory of Computation",
+          shortName: "TOC",
+          credits: 3,
+          type: "THEORY",
+          semester: 4,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem8-swe-422",
+          code: "SWE-422",
+          title: "Mobile App Development Practice Lab",
+          shortName: "MDP",
+          credits: 1.5,
+          type: "LAB",
+          semester: 8,
+          assignedFacultyId: "fac-mzuk",
+          assignedFacultyName: "Md. Ziaul Karim",
+          batchIds: [
+            "batch-5",
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem5-mat-211",
+          code: "MAT-211",
+          title: "Numerical Analysis",
+          shortName: "NA",
+          credits: 3,
+          type: "THEORY",
+          semester: 5,
+          assignedFacultyId: "fac-8",
+          assignedFacultyName: "Syeda Sanjida Rahman",
+          batchIds: [
+            "batch-8",
+            "batch-9",
+            "batch-10",
+            "batch-11",
+            "batch-5",
+            "batch-1792923073984"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem5-swe-223",
+          code: "SWE-223",
+          title: "Object Oriented Programming",
+          shortName: "OOP",
+          credits: 3,
+          type: "THEORY",
+          semester: 5,
+          assignedFacultyId: "fac-1",
+          assignedFacultyName: "Fuad Ahmed",
+          batchIds: [
+            "batch-8",
+            "batch-9"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem5-swe-224",
+          code: "SWE-224",
+          title: "Object Oriented Programming Lab",
+          shortName: "OOP LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 5,
+          assignedFacultyId: "fac-1",
+          assignedFacultyName: "Fuad Ahmed",
+          batchIds: [
+            "batch-8",
+            "batch-9"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem5-swe-230",
+          code: "SWE-230",
+          title: "Problem Solving with Competitive Programming Lab-1",
+          shortName: "CP-I",
+          credits: 1.5,
+          type: "LAB",
+          semester: 5,
+          assignedFacultyId: "fac-ohr",
+          assignedFacultyName: "Obaidur Rahman",
+          batchIds: [
+            "batch-8",
+            "batch-9"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-ged-301",
+          code: "GED-301",
+          title: "Basic Statistics and Probability",
+          shortName: "BSP",
+          credits: 3,
+          type: "THEORY",
+          semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-swe-232",
+          code: "SWE-232",
+          title: "Problem Solving with Competitive Programming Lab-2",
+          shortName: "CP-2",
+          credits: 1.5,
+          type: "LAB",
+          semester: 6,
+          assignedFacultyId: "fac-6",
+          assignedFacultyName: "Iffat Ahmed Chowdhury Nahid",
+          batchIds: [
+            "batch-7",
+            "batch-8",
+            "batch-5"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-swe-315",
+          code: "SWE-315",
+          title: "Artificial Intelligence",
+          shortName: "AI",
+          credits: 3,
+          type: "THEORY",
+          semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-swe-316",
+          code: "SWE-316",
+          title: "Artificial Intelligence Lab",
+          shortName: "AI LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-swe-324",
+          code: "SWE-324",
+          title: "Software UI & UX Design Practice Lab",
+          shortName: "UI & UX",
+          credits: 1.5,
+          type: "LAB",
+          semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem7-swe-313",
+          code: "SWE-313",
+          title: "Computer Networking",
+          shortName: "CN",
+          credits: 3,
+          type: "THEORY",
+          semester: 7,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-6",
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem8-swe-461",
+          code: "SWE-461",
+          title: "Introduction to Cryptography",
+          shortName: "IC",
+          credits: 3,
+          type: "THEORY",
+          semester: 8,
+          assignedFacultyId: "fac-8",
+          assignedFacultyName: "Syeda Sanjida Rahman",
+          batchIds: [
+            "batch-5",
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem7-swe-314",
+          code: "SWE-314",
+          title: "Computer Networking Lab",
+          shortName: "CN LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-6",
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem7-swe-333",
+          code: "SWE-333",
+          title: "Software Verification & Testing",
+          shortName: "SVT",
+          credits: 3,
+          type: "THEORY",
+          semester: 7,
+          assignedFacultyId: "fac-2",
+          assignedFacultyName: "Nazia Sultana Chowdhury",
+          batchIds: [
+            "batch-6",
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem7-swe-334",
+          code: "SWE-334",
+          title: "Software Verification & Testing Lab",
+          shortName: "SVT LAB",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-2",
+          assignedFacultyName: "Nazia Sultana Chowdhury",
+          batchIds: [
+            "batch-6",
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem7-swe-382",
+          code: "SWE-382",
+          title: "Project on Web App Development",
+          shortName: "WD",
+          credits: 3,
+          type: "PROJECT",
+          semester: 7,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem8-ged-403",
+          code: "GED-403",
+          title: "Entrepreneurship Development",
+          shortName: "ED",
+          credits: 3,
+          type: "THEORY",
+          semester: 8,
+          assignedFacultyId: "fac-5",
+          assignedFacultyName: "Wadia Iqbal Chowdhury",
+          batchIds: [
+            "batch-5",
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem1-acm",
+          code: "ACM",
+          title: "ACM Workshop",
+          shortName: "ACM",
+          credits: 3,
+          type: "LAB",
+          semester: 1,
+          assignedFacultyId: "fac-acm",
+          assignedFacultyName: "ACM Workshop / Trainer",
+          batchIds: [
+            "batch-12",
+            "batch-5"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem1-ged-101",
+          code: "GED-101",
+          title: "Communicative English Language I",
+          shortName: "CEL I",
+          credits: 3,
+          type: "THEORY",
+          semester: 1,
+          assignedFacultyId: "fac-sam",
+          assignedFacultyName: "Sheikh Ashikur Mahmud",
+          batchIds: [
+            "batch-12",
+            "batch-13",
+            "batch-1788450159710"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem1-ged-105",
+          code: "GED-105",
+          title: "Bangladesh Studies",
+          shortName: "BS",
+          credits: 3,
+          type: "THEORY",
+          semester: 1,
+          assignedFacultyId: "fac-3",
+          assignedFacultyName: "Rina Paul",
+          batchIds: [
+            "batch-12",
+            "batch-13",
+            "batch-1788450159710"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem1-mat-111",
+          code: "MAT-111",
+          title: "Differential & Integral Calculus",
+          shortName: "DIC",
+          credits: 3,
+          type: "THEORY",
+          semester: 1,
+          assignedFacultyId: "fac-3",
+          assignedFacultyName: "Rina Paul",
+          batchIds: [
+            "batch-12",
+            "batch-13",
+            "batch-1788450159710"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem1-swe-131",
+          code: "SWE-131",
+          title: "Introduction to Software Engineering",
+          shortName: "ISE",
+          credits: 3,
+          type: "THEORY",
+          semester: 1,
+          assignedFacultyId: "fac-5",
+          assignedFacultyName: "Wadia Iqbal Chowdhury",
+          batchIds: [
+            "batch-12",
+            "batch-13",
+            "batch-1788450159710"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem2-mat-112",
+          code: "MAT-112",
+          title: "Linear Algebra & Differential Equations",
+          shortName: "LADE",
+          credits: 3,
+          type: "THEORY",
+          semester: 2,
+          assignedFacultyId: "fac-3",
+          assignedFacultyName: "Rina Paul",
+          batchIds: [
+            "batch-11",
+            "batch-1788449554669",
+            "batch-12"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem2-mat-113",
+          code: "MAT-113",
+          title: "Discrete Mathematics",
+          shortName: "DM",
+          credits: 3,
+          type: "THEORY",
+          semester: 2,
+          assignedFacultyId: "fac-8",
+          assignedFacultyName: "Syeda Sanjida Rahman",
+          batchIds: [
+            "batch-11",
+            "batch-1788449554669",
+            "batch-12"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem2-phy-111",
+          code: "PHY-111",
+          title: "Basic Physics",
+          shortName: "BP",
+          credits: 3,
+          type: "THEORY",
+          semester: 2,
+          assignedFacultyId: "fac-cmw",
+          assignedFacultyName: "Chowdhury Mahir Wahid",
+          batchIds: [
+            "batch-11",
+            "batch-1788449554669",
+            "batch-12"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem2-swe-121",
+          code: "SWE-121",
+          title: "Structured Programming",
+          shortName: "SP",
+          credits: 3,
+          type: "THEORY",
+          semester: 2,
+          assignedFacultyId: "fac-6",
+          assignedFacultyName: "Iffat Ahmed Chowdhury Nahid",
+          batchIds: [
+            "batch-11",
+            "batch-1788449554669",
+            "batch-12"
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
+        },
+        {
+          id: "course-sem6-swe-234",
+          code: "SWE-234",
+          title: "Software Architecture and Design Patterns Lab",
+          shortName: "SADP Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 6,
+          assignedFacultyId: "fac-2",
+          assignedFacultyName: "Nazia Sultana Chowdhury",
+          batchIds: [
+            "batch-8"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
+        },
+        {
+          id: "course-sem6-swe-282",
+          code: "SWE-282",
+          title: "Project on Java GUI Development Lab",
+          shortName: "JGD Lab",
+          credits: 2,
+          type: "PROJECT",
+          semester: 6,
+          assignedFacultyId: "fac-1",
+          assignedFacultyName: "Fuad Ahmed",
+          batchIds: [
+            "batch-8"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
+        },
+        {
+          id: "course-sem6-swe-233",
+          code: "SWE-233",
+          title: "Software Architecture and Design Patterns",
+          shortName: "SADP",
+          credits: 3,
+          type: "THEORY",
+          semester: 6,
+          assignedFacultyId: "fac-2",
+          assignedFacultyName: "Nazia Sultana Chowdhury",
+          batchIds: [
+            "batch-8"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
+        },
+        {
+          id: "course-sem9-swe-411",
+          code: "SWE-411",
+          title: "Software Architecture & Enterprise Design",
+          shortName: "SA",
+          credits: 3,
+          type: "THEORY",
+          semester: 9,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.474176+00:00"
+        },
+        {
+          id: "course-sem9-swe-412",
+          code: "SWE-412",
+          title: "Software Architecture & Enterprise Design Lab",
+          shortName: "SAL",
+          credits: 1.5,
+          type: "LAB",
+          semester: 9,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.704503+00:00"
+        },
+        {
+          id: "course-sem9-swe-431",
+          code: "SWE-431",
+          title: "Machine Learning & Predictive Systems",
+          shortName: "ML",
+          credits: 3,
+          type: "THEORY",
+          semester: 9,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.881752+00:00"
+        },
+        {
+          id: "course-sem9-swe-400a",
+          code: "SWE-400A",
+          title: "Capstone Project / Thesis (Phase-I)",
+          shortName: "CP1",
+          credits: 2,
+          type: "PROJECT",
+          semester: 9,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.991863+00:00"
+        },
+        {
+          id: "course-sem10-swe-441",
+          code: "SWE-441",
+          title: "Cloud Computing & DevOps Engineering",
+          shortName: "CC",
+          credits: 3,
+          type: "THEORY",
+          semester: 10,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.38005+00:00"
+        },
+        {
+          id: "course-sem10-swe-442",
+          code: "SWE-442",
+          title: "Cloud Computing & DevOps Practice Lab",
+          shortName: "CCL",
+          credits: 1.5,
+          type: "LAB",
+          semester: 10,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.500783+00:00"
+        },
+        {
+          id: "course-sem10-swe-451",
+          code: "SWE-451",
+          title: "Distributed Systems & Microservices",
+          shortName: "DS",
+          credits: 3,
+          type: "THEORY",
+          semester: 10,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.601667+00:00"
+        },
+        {
+          id: "course-sem10-swe-400b",
+          code: "SWE-400B",
+          title: "Capstone Project / Thesis (Phase-II)",
+          shortName: "CP2",
+          credits: 2,
+          type: "PROJECT",
+          semester: 10,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.724233+00:00"
+        },
+        {
+          id: "course-sem11-swe-471",
+          code: "SWE-471",
+          title: "Big Data Analytics & Data Engineering",
+          shortName: "BDA",
+          credits: 3,
+          type: "THEORY",
+          semester: 11,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.915508+00:00"
+        },
+        {
+          id: "course-sem11-swe-472",
+          code: "SWE-472",
+          title: "Big Data Analytics Lab",
+          shortName: "BDAL",
+          credits: 1.5,
+          type: "LAB",
+          semester: 11,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.015344+00:00"
+        },
+        {
+          id: "course-sem11-swe-481",
+          code: "SWE-481",
+          title: "Cyber Security, Privacy & Secure Coding",
+          shortName: "CS",
+          credits: 3,
+          type: "THEORY",
+          semester: 11,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.146212+00:00"
+        },
+        {
+          id: "course-sem11-swe-400c",
+          code: "SWE-400C",
+          title: "Capstone Project / Thesis (Phase-III)",
+          shortName: "CP3",
+          credits: 2,
+          type: "PROJECT",
+          semester: 11,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.273783+00:00"
+        },
+        {
+          id: "course-sem12-swe-490",
+          code: "SWE-490",
+          title: "Industrial Internship / Professional Attachment",
+          shortName: "INT",
+          credits: 6,
+          type: "PROJECT",
+          semester: 12,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.368817+00:00"
+        },
+        {
+          id: "course-sem12-swe-499",
+          code: "SWE-499",
+          title: "Comprehensive Viva & Senior Defense",
+          shortName: "VIV",
+          credits: 3,
+          type: "THEORY",
+          semester: 12,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.536285+00:00"
+        },
+        {
+          id: "course-sem12-ged-404",
+          code: "GED-404",
+          title: "Professional Ethics, Law & Leadership",
+          shortName: "PEL",
+          credits: 3,
+          type: "THEORY",
+          semester: 12,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.632405+00:00"
+        },
+        {
+          id: "course-swe-342",
+          code: "SWE-342",
+          title: "Data Mining Tools Lab",
+          shortName: "DMT Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-11",
+          assignedFacultyName: "Mridul Kanti Bhattacharjee",
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
+        },
+        {
+          id: "course-swe-322",
+          code: "SWE-322",
+          title: "Web Programming Practice Lab",
+          shortName: "WP Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-10",
+          assignedFacultyName: "Lukman Hussain Nakib",
+          batchIds: [
+            "batch-7"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
+        },
+        {
+          id: "course-swe-443",
+          code: "SWE-443",
+          title: "Neural Networks & Deep Learning",
+          shortName: "NN&DL",
+          credits: 3,
+          type: "THEORY",
+          semester: 8,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-5"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
+        },
+        {
+          id: "course-swe-444",
+          code: "SWE-444",
+          title: "Neural Networks & Deep Learning Lab",
+          shortName: "NN&DL Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 8,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-5"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
+        },
+        {
+          id: "course-sem8-swe-432",
+          code: "SWE-432",
+          title: "Machine Learning Lab",
+          shortName: "ML Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 8,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-6"
+          ],
+          syllabus: [],
+          createdAt: "2026-10-29T15:15:48.110916+00:00"
+        },
+        {
+          id: "course-sem8-swe-443",
+          code: "SWE-443",
+          shortName: "NN&DL",
+          title: "Neural Networks & Deep Learning",
+          credits: 3,
+          type: "THEORY",
+          semester: 8,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-5"
+          ]
+        },
+        {
+          id: "course-sem7-swe-342",
+          code: "SWE-342",
+          shortName: "DMT Lab",
+          title: "Data Mining Tools Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-11",
+          assignedFacultyName: "Mridul Kanti Bhattacharjee",
+          batchIds: [
+            "batch-7"
+          ]
+        },
+        {
+          id: "course-sem8-swe-432",
+          code: "SWE-432",
+          shortName: "ML Lab",
+          title: "Machine Learning Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 8,
+          assignedFacultyId: "fac-7",
+          assignedFacultyName: "Nazia Hassan Nisa",
+          batchIds: [
+            "batch-6"
+          ]
+        },
+        {
+          id: "course-sem8-swe-444",
+          code: "SWE-444",
+          shortName: "NN&DL Lab",
+          title: "Neural Networks & Deep Learning Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 8,
+          assignedFacultyId: "fac-4",
+          assignedFacultyName: "Al Akram Chowdhury",
+          batchIds: [
+            "batch-5"
+          ]
+        },
+        {
+          id: "course-sem7-swe-322",
+          code: "SWE-322",
+          shortName: "WP Lab",
+          title: "Web Programming Practice Lab",
+          credits: 1.5,
+          type: "LAB",
+          semester: 7,
+          assignedFacultyId: "fac-10",
+          assignedFacultyName: "Lukman Hussain Nakib",
+          batchIds: [
+            "batch-7"
+          ]
+        }
+      ],
+      routines: [
+        {
+          id: "rout-batch-5-sun-1",
+          batchId: "batch-5",
+          day: "SUNDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-5-sun-2",
+          batchId: "batch-5",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-swe-443",
+          courseCode: "SWE-443",
+          courseShortName: "NN&DL",
+          courseTitle: "Neural Networks & Deep Learning",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-5-sun-3",
+          batchId: "batch-5",
+          day: "SUNDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem6-swe-232",
+          courseCode: "SWE-232",
+          courseShortName: "CP Lab-2",
+          courseTitle: "Problem Solving with Competitive Programming Lab-2",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-5-sun-4",
+          batchId: "batch-5",
+          day: "SUNDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem6-swe-232",
+          courseCode: "SWE-232",
+          courseShortName: "CP Lab-2",
+          courseTitle: "Problem Solving with Competitive Programming Lab-2",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-5-mon-5",
+          batchId: "batch-5",
+          day: "MONDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem1-acm",
+          courseCode: "ACM",
+          courseShortName: "ACM",
+          courseTitle: "ACM Workshop",
+          teacherName: "ACM Workshop / Trainer",
+          teacherShortName: "ACM",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-5-mon-6",
+          batchId: "batch-5",
+          day: "MONDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem1-acm",
+          courseCode: "ACM",
+          courseShortName: "ACM",
+          courseTitle: "ACM Workshop",
+          teacherName: "ACM Workshop / Trainer",
+          teacherShortName: "ACM",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-5-tue-7",
+          batchId: "batch-5",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-5-tue-8",
+          batchId: "batch-5",
+          day: "TUESDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-swe-443",
+          courseCode: "SWE-443",
+          courseShortName: "NN&DL",
+          courseTitle: "Neural Networks & Deep Learning",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-5-wed-9",
+          batchId: "batch-5",
+          day: "WEDNESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-swe-444",
+          courseCode: "SWE-444",
+          courseShortName: "NN&DL Lab",
+          courseTitle: "Neural Networks & Deep Learning Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 310"
+        },
+        {
+          id: "rout-batch-5-wed-10",
+          batchId: "batch-5",
+          day: "WEDNESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-swe-444",
+          courseCode: "SWE-444",
+          courseShortName: "NN&DL Lab",
+          courseTitle: "Neural Networks & Deep Learning Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 310"
+        },
+        {
+          id: "rout-batch-6-sun-1",
+          batchId: "batch-6",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem8-swe-461",
+          courseCode: "SWE-461",
+          courseShortName: "IC",
+          courseTitle: "Introduction to Cryptography",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 306"
+        },
+        {
+          id: "rout-batch-6-sun-2",
+          batchId: "batch-6",
+          day: "SUNDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem8-swe-422",
+          courseCode: "SWE-422",
+          courseShortName: "MDP Lab",
+          courseTitle: "Mobile App Development Practice Lab",
+          teacherName: "Md. Ziaul Karim",
+          teacherShortName: "MZUK",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-6-sun-3",
+          batchId: "batch-6",
+          day: "SUNDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem8-swe-422",
+          courseCode: "SWE-422",
+          courseShortName: "MDP Lab",
+          courseTitle: "Mobile App Development Practice Lab",
+          teacherName: "Md. Ziaul Karim",
+          teacherShortName: "MZUK",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-6-mon-4",
+          batchId: "batch-6",
+          day: "MONDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-swe-432",
+          courseCode: "SWE-432",
+          courseShortName: "ML Lab",
+          courseTitle: "Machine Learning Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-6-mon-5",
+          batchId: "batch-6",
+          day: "MONDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-swe-432",
+          courseCode: "SWE-432",
+          courseShortName: "ML Lab",
+          courseTitle: "Machine Learning Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-6-tue-6",
+          batchId: "batch-6",
+          day: "TUESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem9-swe-431",
+          courseCode: "SWE-431",
+          courseShortName: "ML",
+          courseTitle: "Machine Learning & Predictive Systems",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-6-tue-7",
+          batchId: "batch-6",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem8-swe-461",
+          courseCode: "SWE-461",
+          courseShortName: "IC",
+          courseTitle: "Introduction to Cryptography",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-4"
+        },
+        {
+          id: "rout-batch-6-tue-8",
+          batchId: "batch-6",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem8-ged-403",
+          courseCode: "GED-403",
+          courseShortName: "ED",
+          courseTitle: "Entrepreneurship Development",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Room 504"
+        },
+        {
+          id: "rout-batch-6-thu-9",
+          batchId: "batch-6",
+          day: "THURSDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem9-swe-431",
+          courseCode: "SWE-431",
+          courseShortName: "ML",
+          courseTitle: "Machine Learning & Predictive Systems",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-6-thu-10",
+          batchId: "batch-6",
+          day: "THURSDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem8-ged-403",
+          courseCode: "GED-403",
+          courseShortName: "ED",
+          courseTitle: "Entrepreneurship Development",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-7-sun-1",
+          batchId: "batch-7",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem7-swe-313",
+          courseCode: "SWE-313",
+          courseShortName: "CN",
+          courseTitle: "Computer Networking",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-7-sun-2",
+          batchId: "batch-7",
+          day: "SUNDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-swe-322",
+          courseCode: "SWE-322",
+          courseShortName: "WP Lab",
+          courseTitle: "Web Programming Practice Lab",
+          teacherName: "Lukman Hussain Nakib",
+          teacherShortName: "LN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-sun-3",
+          batchId: "batch-7",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-swe-322",
+          courseCode: "SWE-322",
+          courseShortName: "WP Lab",
+          courseTitle: "Web Programming Practice Lab",
+          teacherName: "Lukman Hussain Nakib",
+          teacherShortName: "LN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-mon-4",
+          batchId: "batch-7",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem7-swe-333",
+          courseCode: "SWE-333",
+          courseShortName: "SVT",
+          courseTitle: "Software Verification & Testing",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-7-mon-5",
+          batchId: "batch-7",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem7-swe-313",
+          courseCode: "SWE-313",
+          courseShortName: "CN",
+          courseTitle: "Computer Networking",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-7-tue-6",
+          batchId: "batch-7",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem7-swe-334",
+          courseCode: "SWE-334",
+          courseShortName: "SVT Lab",
+          courseTitle: "Software Verification & Testing Lab",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-tue-7",
+          batchId: "batch-7",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem7-swe-334",
+          courseCode: "SWE-334",
+          courseShortName: "SVT Lab",
+          courseTitle: "Software Verification & Testing Lab",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-wed-8",
+          batchId: "batch-7",
+          day: "WEDNESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem7-swe-333",
+          courseCode: "SWE-333",
+          courseShortName: "SVT",
+          courseTitle: "Software Verification & Testing",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-7-wed-9",
+          batchId: "batch-7",
+          day: "WEDNESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-swe-342",
+          courseCode: "SWE-342",
+          courseShortName: "DMT Lab",
+          courseTitle: "Data Mining Tools Lab",
+          teacherName: "Mridul Kanti Bhattacharjee",
+          teacherShortName: "MKB",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-wed-10",
+          batchId: "batch-7",
+          day: "WEDNESDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-swe-342",
+          courseCode: "SWE-342",
+          courseShortName: "DMT Lab",
+          courseTitle: "Data Mining Tools Lab",
+          teacherName: "Mridul Kanti Bhattacharjee",
+          teacherShortName: "MKB",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-7-thu-11",
+          batchId: "batch-7",
+          day: "THURSDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem7-swe-314",
+          courseCode: "SWE-314",
+          courseShortName: "CN Lab",
+          courseTitle: "Computer Networking Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-7-thu-12",
+          batchId: "batch-7",
+          day: "THURSDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem7-swe-314",
+          courseCode: "SWE-314",
+          courseShortName: "CN Lab",
+          courseTitle: "Computer Networking Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-8-sun-1",
+          batchId: "batch-8",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem6-swe-234",
+          courseCode: "SWE-234",
+          courseShortName: "SADP Lab",
+          courseTitle: "Software Architecture and Design Patterns Lab",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-8-sun-2",
+          batchId: "batch-8",
+          day: "SUNDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem6-swe-234",
+          courseCode: "SWE-234",
+          courseShortName: "SADP Lab",
+          courseTitle: "Software Architecture and Design Patterns Lab",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-8-sun-3",
+          batchId: "batch-8",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem3-swe-111",
+          courseCode: "SWE-111",
+          courseShortName: "BEEC",
+          courseTitle: "Basic Electrical and Electronic Circuits",
+          teacherName: "A.I. Rahman",
+          teacherShortName: "AIR",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-8-mon-4",
+          batchId: "batch-8",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem3-swe-111",
+          courseCode: "SWE-111",
+          courseShortName: "BEEC",
+          courseTitle: "Basic Electrical and Electronic Circuits",
+          teacherName: "A.I. Rahman",
+          teacherShortName: "AIR",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-8-mon-5",
+          batchId: "batch-8",
+          day: "MONDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem6-swe-282",
+          courseCode: "SWE-282",
+          courseShortName: "JGD Lab",
+          courseTitle: "Project on Java GUI Development Lab",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Room 306"
+        },
+        {
+          id: "rout-batch-8-mon-6",
+          batchId: "batch-8",
+          day: "MONDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem6-swe-282",
+          courseCode: "SWE-282",
+          courseShortName: "JGD Lab",
+          courseTitle: "Project on Java GUI Development Lab",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Room 306"
+        },
+        {
+          id: "rout-batch-8-tue-7",
+          batchId: "batch-8",
+          day: "TUESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem6-swe-233",
+          courseCode: "SWE-233",
+          courseShortName: "SADP",
+          courseTitle: "Software Architecture and Design Patterns",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-8-tue-8",
+          batchId: "batch-8",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem6-swe-232",
+          courseCode: "SWE-232",
+          courseShortName: "CP Lab-2",
+          courseTitle: "Problem Solving with Competitive Programming Lab-2",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-8-tue-9",
+          batchId: "batch-8",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem6-swe-232",
+          courseCode: "SWE-232",
+          courseShortName: "CP Lab-2",
+          courseTitle: "Problem Solving with Competitive Programming Lab-2",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-8-thu-10",
+          batchId: "batch-8",
+          day: "THURSDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem6-swe-233",
+          courseCode: "SWE-233",
+          courseShortName: "SADP",
+          courseTitle: "Software Architecture and Design Patterns",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 508"
+        },
+        {
+          id: "rout-batch-8-thu-11",
+          batchId: "batch-8",
+          day: "THURSDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem3-swe-112",
+          courseCode: "SWE-112",
+          courseShortName: "BEEC Lab",
+          courseTitle: "Basic Electrical and Electronic Circuits Lab",
+          teacherName: "A.I. Rahman",
+          teacherShortName: "AIR",
+          room: "Room 109"
+        },
+        {
+          id: "rout-batch-8-thu-12",
+          batchId: "batch-8",
+          day: "THURSDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem3-swe-112",
+          courseCode: "SWE-112",
+          courseShortName: "BEEC Lab",
+          courseTitle: "Basic Electrical and Electronic Circuits Lab",
+          teacherName: "A.I. Rahman",
+          teacherShortName: "AIR",
+          room: "Room 109"
+        },
+        {
+          id: "rout-batch-9-mon-1",
+          batchId: "batch-9",
+          day: "MONDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-9-mon-2",
+          batchId: "batch-9",
+          day: "MONDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem5-swe-211",
+          courseCode: "SWE-211",
+          courseShortName: "CA",
+          courseTitle: "Computer Architecture",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-9-tue-3",
+          batchId: "batch-9",
+          day: "TUESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-9-tue-4",
+          batchId: "batch-9",
+          day: "TUESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem5-swe-223",
+          courseCode: "SWE-223",
+          courseShortName: "OOP",
+          courseTitle: "Object Oriented Programming",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-9-wed-5",
+          batchId: "batch-9",
+          day: "WEDNESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem5-swe-224",
+          courseCode: "SWE-224",
+          courseShortName: "OOP Lab",
+          courseTitle: "Object Oriented Programming Lab",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-9-wed-6",
+          batchId: "batch-9",
+          day: "WEDNESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem5-swe-224",
+          courseCode: "SWE-224",
+          courseShortName: "OOP Lab",
+          courseTitle: "Object Oriented Programming Lab",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-9-thu-7",
+          batchId: "batch-9",
+          day: "THURSDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem5-swe-223",
+          courseCode: "SWE-223",
+          courseShortName: "OOP",
+          courseTitle: "Object Oriented Programming",
+          teacherName: "Fuad Ahmed",
+          teacherShortName: "FA",
+          room: "Room 506"
+        },
+        {
+          id: "rout-batch-9-thu-8",
+          batchId: "batch-9",
+          day: "THURSDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem5-swe-211",
+          courseCode: "SWE-211",
+          courseShortName: "CA",
+          courseTitle: "Computer Architecture",
+          teacherName: "Nazia Sultana Chowdhury",
+          teacherShortName: "NSC",
+          room: "Room 506"
+        },
+        {
+          id: "rout-batch-9-thu-9",
+          batchId: "batch-9",
+          day: "THURSDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem5-swe-230",
+          courseCode: "SWE-230",
+          courseShortName: "CP Lab-1",
+          courseTitle: "Problem Solving with Competitive Programming Lab-1",
+          teacherName: "Obaidur Rahman",
+          teacherShortName: "OHR",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-9-thu-10",
+          batchId: "batch-9",
+          day: "THURSDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem5-swe-230",
+          courseCode: "SWE-230",
+          courseShortName: "CP Lab-1",
+          courseTitle: "Problem Solving with Competitive Programming Lab-1",
+          teacherName: "Obaidur Rahman",
+          teacherShortName: "OHR",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-10-sun-1",
+          batchId: "batch-10",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem4-swe-225",
+          courseCode: "SWE-225",
+          courseShortName: "DBMS",
+          courseTitle: "Database Management System",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 504"
+        },
+        {
+          id: "rout-batch-10-sun-2",
+          batchId: "batch-10",
+          day: "SUNDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem4-swe-221",
+          courseCode: "SWE-221",
+          courseShortName: "ALGO",
+          courseTitle: "Algorithm",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 504"
+        },
+        {
+          id: "rout-batch-10-mon-3",
+          batchId: "batch-10",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem4-swe-222",
+          courseCode: "SWE-222",
+          courseShortName: "ALGO Lab",
+          courseTitle: "Algorithm Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-10-mon-4",
+          batchId: "batch-10",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem4-swe-222",
+          courseCode: "SWE-222",
+          courseShortName: "ALGO Lab",
+          courseTitle: "Algorithm Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-10-mon-5",
+          batchId: "batch-10",
+          day: "MONDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem4-swe-231",
+          courseCode: "SWE-231",
+          courseShortName: "SRE",
+          courseTitle: "Software Requirement Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-10-tue-6",
+          batchId: "batch-10",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem4-swe-225",
+          courseCode: "SWE-225",
+          courseShortName: "DBMS",
+          courseTitle: "Database Management System",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-10-tue-7",
+          batchId: "batch-10",
+          day: "TUESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem4-swe-221",
+          courseCode: "SWE-221",
+          courseShortName: "ALGO",
+          courseTitle: "Algorithm",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 501"
+        },
+        {
+          id: "rout-batch-10-wed-8",
+          batchId: "batch-10",
+          day: "WEDNESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-4"
+        },
+        {
+          id: "rout-batch-10-wed-9",
+          batchId: "batch-10",
+          day: "WEDNESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem4-swe-226",
+          courseCode: "SWE-226",
+          courseShortName: "DBMS Lab",
+          courseTitle: "Database Management System Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-10-wed-10",
+          batchId: "batch-10",
+          day: "WEDNESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem4-swe-226",
+          courseCode: "SWE-226",
+          courseShortName: "DBMS Lab",
+          courseTitle: "Database Management System Lab",
+          teacherName: "Nazia Hassan Nisa",
+          teacherShortName: "NHN",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-10-thu-11",
+          batchId: "batch-10",
+          day: "THURSDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem4-swe-231",
+          courseCode: "SWE-231",
+          courseShortName: "SRE",
+          courseTitle: "Software Requirement Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-10-thu-12",
+          batchId: "batch-10",
+          day: "THURSDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 403"
+        },
+        {
+          id: "rout-batch-11-mon-1",
+          batchId: "batch-11",
+          day: "MONDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem3-swe-124",
+          courseCode: "SWE-124",
+          courseShortName: "DS Lab",
+          courseTitle: "Data Structure Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-1792923073984-mon-1-1",
+          batchId: "batch-1792923073984",
+          day: "MONDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem3-swe-124",
+          courseCode: "SWE-124",
+          courseShortName: "DS Lab",
+          courseTitle: "Data Structure Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-11-mon-2",
+          batchId: "batch-11",
+          day: "MONDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem3-swe-124",
+          courseCode: "SWE-124",
+          courseShortName: "DS Lab",
+          courseTitle: "Data Structure Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-1792923073984-mon-2-1",
+          batchId: "batch-1792923073984",
+          day: "MONDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem3-swe-124",
+          courseCode: "SWE-124",
+          courseShortName: "DS Lab",
+          courseTitle: "Data Structure Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 405"
+        },
+        {
+          id: "rout-batch-11-tue-3",
+          batchId: "batch-11",
+          day: "TUESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem3-swe-123",
+          courseCode: "SWE-123",
+          courseShortName: "DS",
+          courseTitle: "Data Structures",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-1792923073984-tue-3-1",
+          batchId: "batch-1792923073984",
+          day: "TUESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem3-swe-123",
+          courseCode: "SWE-123",
+          courseShortName: "DS",
+          courseTitle: "Data Structures",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-11-tue-4",
+          batchId: "batch-11",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem3-swe-235",
+          courseCode: "SWE-235",
+          courseShortName: "MIS",
+          courseTitle: "Management Information Systems",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-1792923073984-tue-4-1",
+          batchId: "batch-1792923073984",
+          day: "TUESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem3-swe-235",
+          courseCode: "SWE-235",
+          courseShortName: "MIS",
+          courseTitle: "Management Information Systems",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-11-wed-5",
+          batchId: "batch-11",
+          day: "WEDNESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 502"
+        },
+        {
+          id: "rout-batch-1792923073984-wed-5-1",
+          batchId: "batch-1792923073984",
+          day: "WEDNESDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 502"
+        },
+        {
+          id: "rout-batch-11-wed-6",
+          batchId: "batch-11",
+          day: "WEDNESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem3-swe-123",
+          courseCode: "SWE-123",
+          courseShortName: "DS",
+          courseTitle: "Data Structures",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 502"
+        },
+        {
+          id: "rout-batch-1792923073984-wed-6-1",
+          batchId: "batch-1792923073984",
+          day: "WEDNESDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem3-swe-123",
+          courseCode: "SWE-123",
+          courseShortName: "DS",
+          courseTitle: "Data Structures",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 502"
+        },
+        {
+          id: "rout-batch-11-wed-7",
+          batchId: "batch-11",
+          day: "WEDNESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem3-swe-235",
+          courseCode: "SWE-235",
+          courseShortName: "MIS",
+          courseTitle: "Management Information Systems",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-1792923073984-wed-7-1",
+          batchId: "batch-1792923073984",
+          day: "WEDNESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem3-swe-235",
+          courseCode: "SWE-235",
+          courseShortName: "MIS",
+          courseTitle: "Management Information Systems",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-11-thu-8",
+          batchId: "batch-11",
+          day: "THURSDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-1792923073984-thu-8-1",
+          batchId: "batch-1792923073984",
+          day: "THURSDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseShortName: "NA",
+          courseTitle: "Numerical Analysis",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-11-thu-9",
+          batchId: "batch-11",
+          day: "THURSDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem3-swe-182",
+          courseCode: "SWE-182",
+          courseShortName: "PPD Lab",
+          courseTitle: "Project on Python Development Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 309"
+        },
+        {
+          id: "rout-batch-1792923073984-thu-9-1",
+          batchId: "batch-1792923073984",
+          day: "THURSDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem3-swe-182",
+          courseCode: "SWE-182",
+          courseShortName: "PPD Lab",
+          courseTitle: "Project on Python Development Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 309"
+        },
+        {
+          id: "rout-batch-11-thu-10",
+          batchId: "batch-11",
+          day: "THURSDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem3-swe-182",
+          courseCode: "SWE-182",
+          courseShortName: "PPD Lab",
+          courseTitle: "Project on Python Development Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 309"
+        },
+        {
+          id: "rout-batch-1792923073984-thu-10-1",
+          batchId: "batch-1792923073984",
+          day: "THURSDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem3-swe-182",
+          courseCode: "SWE-182",
+          courseShortName: "PPD Lab",
+          courseTitle: "Project on Python Development Lab",
+          teacherName: "Al Akram Chowdhury",
+          teacherShortName: "AAC",
+          room: "Room 309"
+        },
+        {
+          id: "rout-batch-12-sun-1",
+          batchId: "batch-12",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-mat-113",
+          courseCode: "MAT-113",
+          courseShortName: "DM",
+          courseTitle: "Discrete Mathematics",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-1788449554669-sun-1-1",
+          batchId: "batch-1788449554669",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-mat-113",
+          courseCode: "MAT-113",
+          courseShortName: "DM",
+          courseTitle: "Discrete Mathematics",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-12-sun-2",
+          batchId: "batch-12",
+          day: "SUNDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-swe-121",
+          courseCode: "SWE-121",
+          courseShortName: "SP",
+          courseTitle: "Structured Programming",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-1788449554669-sun-2-1",
+          batchId: "batch-1788449554669",
+          day: "SUNDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-swe-121",
+          courseCode: "SWE-121",
+          courseShortName: "SP",
+          courseTitle: "Structured Programming",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-12-mon-3",
+          batchId: "batch-12",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-phy-111",
+          courseCode: "PHY-111",
+          courseShortName: "BP",
+          courseTitle: "Basic Physics",
+          teacherName: "Chowdhury Mahir Wahid",
+          teacherShortName: "CMW",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-1788449554669-mon-3-1",
+          batchId: "batch-1788449554669",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-phy-111",
+          courseCode: "PHY-111",
+          courseShortName: "BP",
+          courseTitle: "Basic Physics",
+          teacherName: "Chowdhury Mahir Wahid",
+          teacherShortName: "CMW",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-12-mon-4",
+          batchId: "batch-12",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-mat-112",
+          courseCode: "MAT-112",
+          courseShortName: "LADE",
+          courseTitle: "Linear Algebra & Differential Equations",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-1788449554669-mon-4-1",
+          batchId: "batch-1788449554669",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-mat-112",
+          courseCode: "MAT-112",
+          courseShortName: "LADE",
+          courseTitle: "Linear Algebra & Differential Equations",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-2"
+        },
+        {
+          id: "rout-batch-12-tue-5",
+          batchId: "batch-12",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem2-mat-113",
+          courseCode: "MAT-113",
+          courseShortName: "DM",
+          courseTitle: "Discrete Mathematics",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-1788449554669-tue-5-1",
+          batchId: "batch-1788449554669",
+          day: "TUESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem2-mat-113",
+          courseCode: "MAT-113",
+          courseShortName: "DM",
+          courseTitle: "Discrete Mathematics",
+          teacherName: "Syeda Sanjida Rahman",
+          teacherShortName: "SSJ",
+          room: "Exten-3"
+        },
+        {
+          id: "rout-batch-12-tue-6",
+          batchId: "batch-12",
+          day: "TUESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem2-phy-111",
+          courseCode: "PHY-111",
+          courseShortName: "BP",
+          courseTitle: "Basic Physics",
+          teacherName: "Chowdhury Mahir Wahid",
+          teacherShortName: "CMW",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-1788449554669-tue-6-1",
+          batchId: "batch-1788449554669",
+          day: "TUESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem2-phy-111",
+          courseCode: "PHY-111",
+          courseShortName: "BP",
+          courseTitle: "Basic Physics",
+          teacherName: "Chowdhury Mahir Wahid",
+          teacherShortName: "CMW",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-12-wed-7",
+          batchId: "batch-12",
+          day: "WEDNESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem2-mat-112",
+          courseCode: "MAT-112",
+          courseShortName: "LADE",
+          courseTitle: "Linear Algebra & Differential Equations",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 408"
+        },
+        {
+          id: "rout-batch-1788449554669-wed-7-1",
+          batchId: "batch-1788449554669",
+          day: "WEDNESDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem2-mat-112",
+          courseCode: "MAT-112",
+          courseShortName: "LADE",
+          courseTitle: "Linear Algebra & Differential Equations",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 408"
+        },
+        {
+          id: "rout-batch-12-wed-8",
+          batchId: "batch-12",
+          day: "WEDNESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem2-swe-121",
+          courseCode: "SWE-121",
+          courseShortName: "SP",
+          courseTitle: "Structured Programming",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 507"
+        },
+        {
+          id: "rout-batch-1788449554669-wed-8-1",
+          batchId: "batch-1788449554669",
+          day: "WEDNESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem2-swe-121",
+          courseCode: "SWE-121",
+          courseShortName: "SP",
+          courseTitle: "Structured Programming",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 507"
+        },
+        {
+          id: "rout-batch-12-thu-9",
+          batchId: "batch-12",
+          day: "THURSDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-swe-122",
+          courseCode: "SWE-122",
+          courseShortName: "SP Lab",
+          courseTitle: "Structured Programming Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-1788449554669-thu-9-1",
+          batchId: "batch-1788449554669",
+          day: "THURSDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem2-swe-122",
+          courseCode: "SWE-122",
+          courseShortName: "SP Lab",
+          courseTitle: "Structured Programming Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-12-thu-10",
+          batchId: "batch-12",
+          day: "THURSDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-swe-122",
+          courseCode: "SWE-122",
+          courseShortName: "SP Lab",
+          courseTitle: "Structured Programming Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-1788449554669-thu-10-1",
+          batchId: "batch-1788449554669",
+          day: "THURSDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem2-swe-122",
+          courseCode: "SWE-122",
+          courseShortName: "SP Lab",
+          courseTitle: "Structured Programming Lab",
+          teacherName: "Iffat Ahmed Chowdhury Nahid",
+          teacherShortName: "IAC",
+          room: "Room 301"
+        },
+        {
+          id: "rout-batch-13-sun-1",
+          batchId: "batch-13",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem1-mat-111",
+          courseCode: "MAT-111",
+          courseShortName: "DIC",
+          courseTitle: "Differential & Integral Calculus",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-1788450159710-sun-1-1",
+          batchId: "batch-1788450159710",
+          day: "SUNDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem1-mat-111",
+          courseCode: "MAT-111",
+          courseShortName: "DIC",
+          courseTitle: "Differential & Integral Calculus",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-5"
+        },
+        {
+          id: "rout-batch-13-sun-2",
+          batchId: "batch-13",
+          day: "SUNDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem1-ged-101",
+          courseCode: "GED-101",
+          courseShortName: "CEL-I",
+          courseTitle: "Communicative English Language I",
+          teacherName: "Sheikh Ashikur Mahmud",
+          teacherShortName: "SAM",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-1788450159710-sun-2-1",
+          batchId: "batch-1788450159710",
+          day: "SUNDAY",
+          startTime: "12:00 PM",
+          endTime: "01:30 PM",
+          courseId: "course-sem1-ged-101",
+          courseCode: "GED-101",
+          courseShortName: "CEL-I",
+          courseTitle: "Communicative English Language I",
+          teacherName: "Sheikh Ashikur Mahmud",
+          teacherShortName: "SAM",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-13-sun-3",
+          batchId: "batch-13",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem1-ged-105",
+          courseCode: "GED-105",
+          courseShortName: "BS",
+          courseTitle: "Bangladesh Studies",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 402"
+        },
+        {
+          id: "rout-batch-1788450159710-sun-3-1",
+          batchId: "batch-1788450159710",
+          day: "SUNDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem1-ged-105",
+          courseCode: "GED-105",
+          courseShortName: "BS",
+          courseTitle: "Bangladesh Studies",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 402"
+        },
+        {
+          id: "rout-batch-13-mon-4",
+          batchId: "batch-13",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem1-ged-101",
+          courseCode: "GED-101",
+          courseShortName: "CEL-I",
+          courseTitle: "Communicative English Language I",
+          teacherName: "Sheikh Ashikur Mahmud",
+          teacherShortName: "SAM",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-1788450159710-mon-4-1",
+          batchId: "batch-1788450159710",
+          day: "MONDAY",
+          startTime: "09:00 AM",
+          endTime: "10:30 AM",
+          courseId: "course-sem1-ged-101",
+          courseCode: "GED-101",
+          courseShortName: "CEL-I",
+          courseTitle: "Communicative English Language I",
+          teacherName: "Sheikh Ashikur Mahmud",
+          teacherShortName: "SAM",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-13-mon-5",
+          batchId: "batch-13",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem1-swe-131",
+          courseCode: "SWE-131",
+          courseShortName: "ISE",
+          courseTitle: "Introduction to Software Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-1788450159710-mon-5-1",
+          batchId: "batch-1788450159710",
+          day: "MONDAY",
+          startTime: "10:30 AM",
+          endTime: "12:00 PM",
+          courseId: "course-sem1-swe-131",
+          courseCode: "SWE-131",
+          courseShortName: "ISE",
+          courseTitle: "Introduction to Software Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Exten-1"
+        },
+        {
+          id: "rout-batch-13-wed-6",
+          batchId: "batch-13",
+          day: "WEDNESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem1-mat-111",
+          courseCode: "MAT-111",
+          courseShortName: "DIC",
+          courseTitle: "Differential & Integral Calculus",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-1788450159710-wed-6-1",
+          batchId: "batch-1788450159710",
+          day: "WEDNESDAY",
+          startTime: "01:30 PM",
+          endTime: "03:00 PM",
+          courseId: "course-sem1-mat-111",
+          courseCode: "MAT-111",
+          courseShortName: "DIC",
+          courseTitle: "Differential & Integral Calculus",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Exten-6"
+        },
+        {
+          id: "rout-batch-13-wed-7",
+          batchId: "batch-13",
+          day: "WEDNESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem1-swe-131",
+          courseCode: "SWE-131",
+          courseShortName: "ISE",
+          courseTitle: "Introduction to Software Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-1788450159710-wed-7-1",
+          batchId: "batch-1788450159710",
+          day: "WEDNESDAY",
+          startTime: "03:00 PM",
+          endTime: "04:30 PM",
+          courseId: "course-sem1-swe-131",
+          courseCode: "SWE-131",
+          courseShortName: "ISE",
+          courseTitle: "Introduction to Software Engineering",
+          teacherName: "Wadia Iqbal Chowdhury",
+          teacherShortName: "WIC",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-13-wed-8",
+          batchId: "batch-13",
+          day: "WEDNESDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem1-ged-105",
+          courseCode: "GED-105",
+          courseShortName: "BS",
+          courseTitle: "Bangladesh Studies",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 505"
+        },
+        {
+          id: "rout-batch-1788450159710-wed-8-1",
+          batchId: "batch-1788450159710",
+          day: "WEDNESDAY",
+          startTime: "04:30 PM",
+          endTime: "06:00 PM",
+          courseId: "course-sem1-ged-105",
+          courseCode: "GED-105",
+          courseShortName: "BS",
+          courseTitle: "Bangladesh Studies",
+          teacherName: "Rina Paul",
+          teacherShortName: "RP",
+          room: "Room 505"
+        }
+      ],
+      exams: [
+        {
+          id: "exam-1",
+          batchId: "batch-9",
+          courseId: "course-305",
+          courseCode: "SWE 305",
+          courseTitle: "Database Systems",
+          type: "MIDTERM",
+          title: "Database Systems Midterm Exam",
+          date: "2026-08-15",
+          startTime: "10:00 AM",
+          room: "Exam Hall 3",
+          description: "Covers Chapters 1-5: ER Diagram, Relational Algebra, SQL, Normalization (1NF to BCNF).",
+          createdBy: "user-cr-1",
+          createdByName: "Mahmudul Hasan (CR)",
+          createdAt: "2026-08-01T10:00:00+00:00"
+        },
+        {
+          id: "exam-2",
+          batchId: "batch-9",
+          courseId: "course-309",
+          courseCode: "SWE 309",
+          courseTitle: "Algorithms",
+          type: "QUIZ",
+          title: "Algorithms Quiz 2 (Dynamic Programming)",
+          date: "2026-08-20",
+          startTime: "11:30 AM",
+          room: "402 Class Room",
+          description: "Topics: Knapsack, LCS, Matrix Chain Multiplication.",
+          createdBy: "user-cr-1",
+          createdByName: "Mahmudul Hasan (CR)",
+          createdAt: "2026-08-05T12:00:00+00:00"
+        },
+        {
+          id: "exam-3",
+          batchId: "batch-9",
+          courseId: "course-307",
+          courseCode: "SWE 307",
+          courseTitle: "Software Engineering",
+          type: "PRESENTATION",
+          title: "SRS Document Project Presentation",
+          date: "2026-09-02",
+          startTime: "01:00 PM",
+          room: "504 Lab",
+          description: "10 minutes team presentation on SRS, UML Use Cases, Sequence Diagrams.",
+          createdBy: "user-cr-1",
+          createdByName: "Mahmudul Hasan (CR)",
+          createdAt: "2026-08-08T09:00:00+00:00"
+        },
+        {
+          id: "exam-4",
+          batchId: "batch-8",
+          courseId: "course-401",
+          courseCode: "SWE 401",
+          courseTitle: "Distributed Databases",
+          type: "MIDTERM",
+          title: "Distributed DB Midterm Assessment",
+          date: "2026-08-18",
+          startTime: "10:00 AM",
+          room: "Exam Hall 1",
+          description: "",
+          createdBy: "user-cr-2",
+          createdByName: "Saima Akter (CR)",
+          createdAt: "2026-08-02T10:00:00+00:00"
+        },
+        {
+          id: "exam-1787825309077",
+          batchId: "batch-9",
+          courseId: "course-305",
+          courseCode: "SWE 305",
+          courseTitle: "Database Systems",
+          type: "CT",
+          title: "Class Test 1 on Normalization",
+          date: "2026-09-10",
+          startTime: "10:00 AM",
+          room: "Room 501",
+          description: "Chapters 1 to 3",
+          createdBy: "usr_admin_1",
+          createdByName: "Department Admin",
+          createdAt: "2026-08-27T10:08:29.077+00:00"
+        },
+        {
+          id: "exam-1787839564918",
+          batchId: "batch-9",
+          courseId: "course-gen",
+          courseCode: "SWE 301",
+          courseTitle: "Database Systems",
+          type: "MIDTERM",
+          title: "Midterm Exam - DB",
+          date: "2026-09-15",
+          startTime: "10:00 AM",
+          room: "Lab 402",
+          description: "",
+          createdBy: "usr_admin_1",
+          createdByName: "Department Admin",
+          createdAt: "2026-08-27T14:06:04.918+00:00"
+        },
+        {
+          id: "exam-1787903480961",
+          batchId: "batch-9",
+          courseId: "course-gen",
+          courseCode: "SWE 301",
+          courseTitle: "Database Systems",
+          type: "MIDTERM",
+          title: "Midterm Exam - DB",
+          date: "2026-09-15",
+          startTime: "10:00 AM",
+          room: "Lab 402",
+          description: "",
+          createdBy: "usr_68bf253ad3a242e79a883bb46ce99787",
+          createdByName: "Rashedul Hasan Mojumdar",
+          createdAt: "2026-08-28T07:51:20.961+00:00"
+        }
+      ],
+      announcements: [],
+      departmentNotices: [
+        {
+          id: "notice-1787903481439",
+          title: "Semester Final Registration Notice",
+          content: "All students are requested to complete semester final exam registration by next week.",
+          category: "EXAM",
+          publishDate: "2026-08-28",
+          isImportant: true,
+          attachmentUrl: null,
+          createdBy: "usr_68bf253ad3a242e79a883bb46ce99787",
+          createdByName: "Rashedul Hasan Mojumdar",
+          createdAt: "2026-08-28T07:51:21.439+00:00"
+        },
+        {
+          id: "notice-2",
+          title: "National Mourning Day Holiday Notice",
+          content: "The university and all academic activities will remain closed on August 15, 2026 on account of National Mourning Day.",
+          category: "HOLIDAY",
+          publishDate: "2026-08-09",
+          isImportant: true,
+          attachmentUrl: null,
+          createdBy: "user-admin-1",
+          createdByName: "Dr. Shahriar Hossain (Admin)",
+          createdAt: "2026-08-09T11:00:00+00:00"
+        },
+        {
+          id: "notice-1",
+          title: "Fall 2026 Semester Course Registration Schedule & Instructions",
+          content: "All students of SWE Department are hereby notified that Fall 2026 semester registration will commence from August 20, 2026. Clear all outstanding tuition fees before registration.",
+          category: "REGISTRATION",
+          publishDate: "2026-08-08",
+          isImportant: true,
+          attachmentUrl: null,
+          createdBy: "user-admin-1",
+          createdByName: "Dr. Shahriar Hossain (Admin)",
+          createdAt: "2026-08-08T10:00:00+00:00"
+        },
+        {
+          id: "notice-3",
+          title: "Guest Seminar on Cloud Native Systems & Microservices",
+          content: "Join us on August 22 at Auditorium 2 for an industry seminar conducted by Senior Software Engineers from Google & AWS.",
+          category: "SEMINAR",
+          publishDate: "2026-08-05",
+          isImportant: false,
+          attachmentUrl: null,
+          createdBy: "user-admin-1",
+          createdByName: "Dr. Shahriar Hossain (Admin)",
+          createdAt: "2026-08-05T08:00:00+00:00"
+        }
+      ],
+      resources: [
+        {
+          id: "res-sheet-1",
+          title: "Artificial Intelligence Final Exam Question (1st, 2nd, 3rd & 5th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-315",
+          courseCode: "SWE-315",
+          courseTitle: "Artificial Intelligence",
+          semester: 6,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 3rd, 5th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Artificial Intelligence (SWE-315) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1uwN8jrTighrFG-v3bUrtwes70W3ERah1",
+          fileName: "SWE-315_Final_Exam_AI-1-2-3-5.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 45,
+          createdAt: "2026-10-06T16:18:28.006+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-2",
+          title: "Algorithm Final Exam Question (1st to 9th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-221",
+          courseCode: "SWE-221",
+          courseTitle: "Algorithm",
+          semester: 4,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Algorithm (SWE-221) covering 1st to 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1EXy9fYNhLjkqcy17eg3sBL6HK4DQtCwq",
+          fileName: "SWE-221_Final_Exam_ALGO-1-2-3-4-5-6-7-8-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 49,
+          createdAt: "2026-10-06T15:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-3",
+          title: "Basic Electrical and Electronic Circuits Final Exam Question (1st to 7th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-111",
+          courseCode: "SWE-111",
+          courseTitle: "Basic Electrical and Electronic Circuits",
+          semester: 3,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 7th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Basic Electrical and Electronic Circuits (SWE-111) covering 1st to 7th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1KexlSR0M0E-whSv-KrMiA2nb0tRiCmnl",
+          fileName: "SWE-111_Final_Exam_BEEC-1-2-3-4-5-6-7.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 51,
+          createdAt: "2026-10-06T14:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-4",
+          title: "Basic Programming Final Exam Question (1st, 2nd, 5th & 7th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-121",
+          courseCode: "SWE-121",
+          courseTitle: "Basic Programming",
+          semester: 2,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 5th, 7th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Basic Programming (SWE-121) covering 1st, 2nd, 5th, 7th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1Y_-fZS2q568yhcvP9W3XvL480om92J9U",
+          fileName: "SWE-121_Final_Exam_BP-1-2-5-7.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 54,
+          createdAt: "2026-10-06T13:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-5",
+          title: "Bangladesh Studies Final Exam Question (9th, 10th & 11th Batch)",
+          type: "QUESTION",
+          courseId: "course-ged-105",
+          courseCode: "GED-105",
+          courseTitle: "Bangladesh Studies",
+          semester: 1,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "9th, 10th, 11th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Bangladesh Studies (GED-105) covering 9th, 10th, 11th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=17nZog3x4B-uZSYvb2gwmDdUHB3jRbiEk",
+          fileName: "GED-105_Final_Exam_BS-9-10-11.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 57,
+          createdAt: "2026-10-06T12:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-6",
+          title: "Basic Science Physics Final Exam Question (1st, 2nd, 3rd & 5th Batch)",
+          type: "QUESTION",
+          courseId: "course-phy-111",
+          courseCode: "PHY-111",
+          courseTitle: "Basic Science Physics",
+          semester: 2,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 3rd, 5th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Basic Science Physics (PHY-111) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1r39LWSFh3yEclcYQHkCSGX_0VNHEsRIX",
+          fileName: "PHY-111_Final_Exam_BSP-1-2-3-5.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 60,
+          createdAt: "2026-10-06T11:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-7",
+          title: "Computer Architecture Final Exam Question (1st to 5th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-211",
+          courseCode: "SWE-211",
+          courseTitle: "Computer Architecture",
+          semester: 5,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 5th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Computer Architecture (SWE-211) covering 1st to 5th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1LV8_bSwLCcOxELC4hNP_A7z3QxLLCk4H",
+          fileName: "SWE-211_Final_Exam_CA-1-2-3-4-5.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 66,
+          createdAt: "2026-10-06T10:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-8",
+          title: "Computer Networking Final Exam Question (1st, 2nd & 3rd Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-313",
+          courseCode: "SWE-313",
+          courseTitle: "Computer Networking",
+          semester: 7,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 3rd Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Computer Networking (SWE-313) covering 1st, 2nd, 3rd Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1EQpdG41vtXzw_tqZ_I4ToWjQoyHOJTAU",
+          fileName: "SWE-313_Final_Exam_CN-1-2-3.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 67,
+          createdAt: "2026-10-06T09:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-9",
+          title: "Database Management System Final Exam Question (1st to 9th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-225",
+          courseCode: "SWE-225",
+          courseTitle: "Database Management System",
+          semester: 4,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Database Management System (SWE-225) covering 1st to 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1wEoiJ2EKucqJU4OnIQ0Lfh2XJLQYUxgn",
+          fileName: "SWE-225_Final_Exam_DBMS-1-2-3-4-5-6-7-8-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 69,
+          createdAt: "2026-10-06T08:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-10",
+          title: "Differential & Integral Calculus Final Exam Question (1st to 11th Batch)",
+          type: "QUESTION",
+          courseId: "course-mat-111",
+          courseCode: "MAT-111",
+          courseTitle: "Differential & Integral Calculus",
+          semester: 1,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 11th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Differential & Integral Calculus (MAT-111) covering 1st to 11th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1OmmI8Y3dROArNTc-y8kkbJPkTpPxh8bE",
+          fileName: "MAT-111_Final_Exam_DIC-1-2-5-6-7-8-9-10-11.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 72,
+          createdAt: "2026-10-06T07:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-11",
+          title: "Digital Logic Design Final Exam Question (1st to 5th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-131",
+          courseCode: "SWE-131",
+          courseTitle: "Digital Logic Design",
+          semester: 1,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 5th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 1st to 5th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1xx9zP-KMvrxAZPUDpiNVYUfSFNBlt4A9",
+          fileName: "SWE-131_Final_Exam_DLD-1-2-3-4-5.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 75,
+          createdAt: "2026-10-06T06:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-12",
+          title: "Digital Logic Design Final Exam Question 3rd & 4th Batch",
+          type: "QUESTION",
+          courseId: "course-swe-131",
+          courseCode: "SWE-131",
+          courseTitle: "Digital Logic Design",
+          semester: 1,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "3rd & 4th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 3rd & 4th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1cNeF5fPOunSF5Z0_b6e4PXXgVsXSl0nW",
+          fileName: "SWE-131_Final_Exam_DLD-3-4.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 78,
+          createdAt: "2026-10-06T05:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-13",
+          title: "Discrete Mathematics Final Exam Question (1st, 4th, 5th, 7th, 9th & 11th Batch)",
+          type: "QUESTION",
+          courseId: "course-mat-113",
+          courseCode: "MAT-113",
+          courseTitle: "Discrete Mathematics",
+          semester: 2,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 4th, 5th, 7th, 9th, 11th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Discrete Mathematics (MAT-113) covering 1st, 4th, 5th, 7th, 9th, 11th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1d-3g3BBM4z906vrLG7WV9AfjpjU7BH1v",
+          fileName: "MAT-113_Final_Exam_DM-1-4-5-7-9-11.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 81,
+          createdAt: "2026-10-06T04:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-14",
+          title: "Data Structures Final Exam Question (1st to 9th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-123",
+          courseCode: "SWE-123",
+          courseTitle: "Data Structures",
+          semester: 3,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Data Structures (SWE-123) covering 1st to 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1RKSA7J1Lfh2txTIOjaeHHEfcUnIhD_7a",
+          fileName: "SWE-123_Final_Exam_DS-1-2-3-4-5-7-8-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 84,
+          createdAt: "2026-10-06T03:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-15",
+          title: "Introduction to Software Engineering Final Exam Question (2nd to 9th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-131",
+          courseCode: "SWE-131",
+          courseTitle: "Introduction to Software Engineering",
+          semester: 1,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "2nd to 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Introduction to Software Engineering (SWE-131) covering 2nd to 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1U_ipui70k8A8KkF1LsLWERZKlw4M8cHf",
+          fileName: "SWE-131_Final_Exam_IS-2-3-4-5-7-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 89,
+          createdAt: "2026-10-06T02:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-16",
+          title: "Linear Algebra & Differential Equations Final Exam Question (3rd to 11th Batch)",
+          type: "QUESTION",
+          courseId: "course-mat-112",
+          courseCode: "MAT-112",
+          courseTitle: "Linear Algebra & Differential Equations",
+          semester: 2,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "3rd to 11th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Linear Algebra & Differential Equations (MAT-112) covering 3rd to 11th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1OWU_q3Eh3hR-7Fy9nwILNQLpY08o3vye",
+          fileName: "MAT-112_Final_Exam_LADE-3-4-5-7-9-11.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 90,
+          createdAt: "2026-10-06T01:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-17",
+          title: "Management Information Systems Final Exam Question (1st to 5th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-235",
+          courseCode: "SWE-235",
+          courseTitle: "Management Information Systems",
+          semester: 3,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 5th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Management Information Systems (SWE-235) covering 1st to 5th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1Lsq18VRjasFUbvJd3kQgAaz7ARkVo9wf",
+          fileName: "SWE-235_Final_Exam_MIS-1-2-3-4-5.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 93,
+          createdAt: "2026-10-06T00:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-18",
+          title: "Machine Learning Final Exam Question (1st to 4th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-421",
+          courseCode: "SWE-421",
+          courseTitle: "Machine Learning",
+          semester: 8,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 4th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Machine Learning (SWE-421) covering 1st to 4th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1LCdpQZzXp-c26PEBPRQNXhTNsp2LaBr4",
+          fileName: "SWE-421_Final_Exam_ML-1-2-3-4.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 97,
+          createdAt: "2026-10-05T23:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-19",
+          title: "Numerical Analysis Final Exam Question (1st, 2nd, 3rd & 6th Batch)",
+          type: "QUESTION",
+          courseId: "course-mat-211",
+          courseCode: "MAT-211",
+          courseTitle: "Numerical Analysis",
+          semester: 5,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 3rd, 6th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Numerical Analysis (MAT-211) covering 1st, 2nd, 3rd, 6th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=14p-jNgC3mSl8iCOokWPD_EuzHfMcBqs_",
+          fileName: "MAT-211_Final_Exam_NA-1-2-3-6.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 101,
+          createdAt: "2026-10-05T22:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-20",
+          title: "Object Oriented Programming Final Exam Question (1st to 7th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-223",
+          courseCode: "SWE-223",
+          courseTitle: "Object Oriented Programming",
+          semester: 5,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 7th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Object Oriented Programming (SWE-223) covering 1st to 7th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1Lee27f7JSg-5GwTUGM9BS-n20Ayp9_0Y",
+          fileName: "SWE-223_Final_Exam_OOP-1-2-3-4-5-6-7.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 104,
+          createdAt: "2026-10-05T21:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-21",
+          title: "Operating Systems Final Exam Question (1st to 4th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-311",
+          courseCode: "SWE-311",
+          courseTitle: "Operating Systems",
+          semester: 4,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 4th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Operating Systems (SWE-311) covering 1st to 4th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1WdOWNWUXaMov2ErzP_Ae4q01yLzoiivS",
+          fileName: "SWE-311_Final_Exam_OS-1-2-3-4.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 105,
+          createdAt: "2026-10-05T20:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-22",
+          title: "Software Architecture and Design Patterns Final Exam Question (1st to 6th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-323",
+          courseCode: "SWE-323",
+          courseTitle: "Software Architecture and Design Patterns",
+          semester: 6,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 6th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Software Architecture and Design Patterns (SWE-323) covering 1st to 6th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=14q3Bocpucr2p5khmlRPl5ik_1H24BzNQ",
+          fileName: "SWE-323_Final_Exam_SADP-1-2-3-4-5-6.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 108,
+          createdAt: "2026-10-05T19:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-23",
+          title: "Structured Programming Final Exam Question (1st to 11th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-121",
+          courseCode: "SWE-121",
+          courseTitle: "Structured Programming",
+          semester: 2,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 11th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Structured Programming (SWE-121) covering 1st to 11th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=153ttrkN29Ii50DfL0ak3zglTUUEC8Hzf",
+          fileName: "SWE-121_Final_Exam_SP-1-2-5-7-9-11.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 111,
+          createdAt: "2026-10-05T18:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-24",
+          title: "Software Requirement Engineering Final Exam Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-swe-231",
+          courseCode: "SWE-231",
+          courseTitle: "Software Requirement Engineering",
+          semester: 4,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Software Requirement Engineering (SWE-231) covering 1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1S8-aZpHfzrp0beMEtaoFBJwNShxWtlDn",
+          fileName: "SWE-231_Final_Exam_SRE-1-2-3-4-5-8-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 114,
+          createdAt: "2026-10-05T17:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-25",
+          title: "Software Verification & Testing Final Exam Question (1st to 6th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-333",
+          courseCode: "SWE-333",
+          courseTitle: "Software Verification & Testing",
+          semester: 7,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 6th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Software Verification & Testing (SWE-333) covering 1st to 6th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1Z1sJKW6vWJKYmhfzjFK7WckHGc9NLF5Q",
+          fileName: "SWE-333_Final_Exam_SVT-1-2-4-5-6.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 117,
+          createdAt: "2026-10-05T16:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-sheet-26",
+          title: "Theory of Computation Final Exam Question (1st to 9th Batch)",
+          type: "QUESTION",
+          courseId: "course-swe-311",
+          courseCode: "SWE-311",
+          courseTitle: "Theory of Computation",
+          semester: 4,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Department Academic Faculty",
+          targetBatch: "1st to 9th Batch",
+          labCategory: null,
+          description: "Official Metropolitan University Department Question Archive for Theory of Computation (SWE-311) covering 1st to 9th Batch. Direct Google Drive PDF download.",
+          fileUrl: "https://drive.google.com/uc?export=download&id=1WtMdKbadgkDgzhWfukVUO7bYDOXIvK2_",
+          fileName: "SWE-311_Final_Exam_TOC-1-2-3-4-5-8-9.pdf",
+          fileSize: "1.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-admin-1",
+          uploaderStudentId: "252-ADMIN",
+          uploaderName: "Department Academic Cell",
+          uploaderBatchName: "SWE Department Archive",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 123,
+          createdAt: "2026-10-05T15:18:28.007+00:00",
+          verifiedAt: "2026-10-06T17:18:28.007+00:00"
+        },
+        {
+          id: "res-1790285652563",
+          title: "Theory of Computation Final Exam Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem4-swe-311",
+          courseCode: "SWE-311",
+          courseTitle: "Theory of Computation",
+          semester: 4,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: "Nazia Hassan",
+          targetBatch: "8",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1oedo0litzhyN33XSM6MtISNZZONSz1UL",
+          fileName: "SWE-311_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 2,
+          createdAt: "2026-09-24T21:34:12.563+00:00",
+          verifiedAt: "2026-09-24T21:34:12.563+00:00"
+        },
+        {
+          id: "res-1790285542904",
+          title: "Theory of Computation Ct Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem4-swe-311",
+          courseCode: "SWE-311",
+          courseTitle: "Theory of Computation",
+          semester: 4,
+          academicYear: 2026,
+          examType: "CLASS_TEST",
+          facultyName: null,
+          targetBatch: "8",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1lFBDfkKp5qxc89QKLBv5rE_TSpR5fEv2",
+          fileName: "SWE-311_CLASS_TEST_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-24T21:32:22.904+00:00",
+          verifiedAt: "2026-09-24T21:32:22.904+00:00"
+        },
+        {
+          id: "res-1790285469748",
+          title: "Software Requirement Engineering Final Exam Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem4-swe-231",
+          courseCode: "SWE-231",
+          courseTitle: "Software Requirement Engineering",
+          semester: 4,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "8",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1M2magfWKdXAkAr34SQ3ngjUZrOpjeFoc",
+          fileName: "SWE-231_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-24T21:31:09.748+00:00",
+          verifiedAt: "2026-09-24T21:31:09.748+00:00"
+        },
+        {
+          id: "res-1790285287791",
+          title: "SRE Final Exam Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem4-swe-231",
+          courseCode: "SWE-231",
+          courseTitle: "Software Requirement Engineering",
+          semester: 4,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "8",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1_qaMmZr6tsYEXvciKIGcqkoRmo2xE8m4",
+          fileName: "SWE-231_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 1,
+          createdAt: "2026-09-24T21:28:07.791+00:00",
+          verifiedAt: "2026-09-24T21:28:07.791+00:00"
+        },
+        {
+          id: "res-1790285184094",
+          title: "Data Structures Final Exam Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem3-swe-123",
+          courseCode: "SWE-123",
+          courseTitle: "Data Structures",
+          semester: 3,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "8",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1CnMVrbECQnEp3aIzVKePO2fboyN5R-GC",
+          fileName: "SWE-123_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 2,
+          createdAt: "2026-09-24T21:26:24.094+00:00",
+          verifiedAt: "2026-09-24T21:26:24.094+00:00"
+        },
+        {
+          id: "res-1790285091351",
+          title: "DBMS Final Question 8th Batch",
+          type: "QUESTION",
+          courseId: "course-sem4-swe-225",
+          courseCode: "SWE-225",
+          courseTitle: "Database Management System",
+          semester: 4,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc%3Fexport%3Ddownload%26id%3D1ZuUrK5ODAcWnFnJzQHgYmVgSmGaE_-5I",
+          fileName: "SWE-225_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-24T21:24:51.351+00:00",
+          verifiedAt: "2026-09-24T21:24:51.351+00:00"
+        },
+        {
+          id: "res-1790284966311",
+          title: "Algorithm Final Question 8th Barch",
+          type: "QUESTION",
+          courseId: "course-sem5-swe-211",
+          courseCode: "SWE-211",
+          courseTitle: "Algorithm",
+          semester: 5,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=11GiVUBE0dK_VZXx9R-XJA-POB2nCmejY",
+          fileName: "SWE-211_FINAL_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 4,
+          createdAt: "2026-09-24T21:22:46.311+00:00",
+          verifiedAt: "2026-09-24T21:22:46.311+00:00"
+        },
+        {
+          id: "res-1788544954996",
+          title: "MIS Class Test 1 Question 9th Batch",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE-235",
+          courseTitle: "Management Information System",
+          semester: 2,
+          academicYear: 2025,
+          examType: "CLASS_TEST",
+          facultyName: "Wadia Iqbal Chowdhury",
+          targetBatch: "9th Batch",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1Bhd1EIB53YCTCWMt2rZU92gSc0ICC92X",
+          fileName: "SWE-235_CLASS_TEST_2025.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 1,
+          createdAt: "2026-09-04T18:02:34.996+00:00",
+          verifiedAt: "2026-09-04T18:02:34.996+00:00"
+        },
+        {
+          id: "res-1788544699900",
+          title: "LADE Class Test 1 - 9th Batch",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "MAT 112",
+          courseTitle: "Linear Algebra & Differential Equations",
+          semester: 2,
+          academicYear: 2025,
+          examType: "CLASS_TEST",
+          facultyName: "Nasrin Akter Tanya",
+          targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1kTMQmYqzfNekCYOzY4XYQC-i68Xtrnpz",
+          fileName: "MAT_112_CLASS_TEST_2025.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 2,
+          createdAt: "2026-09-04T17:58:19.9+00:00",
+          verifiedAt: "2026-09-04T17:58:19.9+00:00"
+        },
+        {
+          id: "res-1788538220326",
+          title: "Software Engineering Requirements Class Test Question",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 235",
+          courseTitle: "Software Engineering Requirments",
+          semester: 4,
+          academicYear: 2026,
+          examType: "CLASS_TEST",
+          facultyName: "Wadia Iqbal Chowdury",
+          targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1V2-4mt1nrrC8GrAaet_GRfPWMiRnM9wD",
+          fileName: "SWE_235_CLASS_TEST_2026.pdf",
+          fileSize: "Google Drive",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 2,
+          createdAt: "2026-09-04T16:10:20.326+00:00",
+          verifiedAt: "2026-09-04T16:10:20.326+00:00"
+        },
+        {
+          id: "res-1788536501727",
+          title: "Test",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 311",
+          courseTitle: "Software Engineering",
+          semester: 4,
+          academicYear: 2026,
+          examType: "FINAL",
+          facultyName: "Dr Jafor",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.com",
+          fileName: "SWE_311_FINAL_2026.pdf",
+          fileSize: "1.8 MB",
+          fileType: "application/pdf",
+          uploaderId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          uploaderStudentId: "123",
+          uploaderName: "fgdbsjh",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "REJECTED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-04T15:41:41.727+00:00",
+          verifiedAt: null
+        },
+        {
+          id: "res-1788535685406",
+          title: "SWE 221 Final Exam 2023",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 221",
+          courseTitle: "Data Structures & Algorithms",
+          semester: 4,
+          academicYear: 2023,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/file/d/test12345/view",
+          fileName: "SWE_221_Final_Exam_2023.pdf",
+          fileSize: "1.5 MB",
+          fileType: "application/pdf",
+          uploaderId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          uploaderStudentId: "123",
+          uploaderName: "fgdbsjh",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "REJECTED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-04T15:28:05.406+00:00",
+          verifiedAt: null
+        },
+        {
+          id: "res-1788535613979",
+          title: "SWE 411 Midterm Exam 2024",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 411",
+          courseTitle: "Software Quality Assurance",
+          semester: 6,
+          academicYear: 2024,
+          examType: "MIDTERM",
+          facultyName: null,
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/file/d/456/view",
+          fileName: "SWE_411_Midterm_Exam_2024.pdf",
+          fileSize: "1.5 MB",
+          fileType: "application/pdf",
+          uploaderId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          uploaderStudentId: "252134022",
+          uploaderName: "Rashedul Hasan Mojumdar",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-04T15:26:53.979+00:00",
+          verifiedAt: "2026-09-04T15:26:53.979+00:00"
+        },
+        {
+          id: "res-1788535607222",
+          title: "SWE 311 Final Exam 2024",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 311",
+          courseTitle: "Software Architecture & Design Patterns",
+          semester: 5,
+          academicYear: 2024,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/file/d/123/view",
+          fileName: "SWE_311_Final_Exam_2024.pdf",
+          fileSize: "1.5 MB",
+          fileType: "application/pdf",
+          uploaderId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          uploaderStudentId: "123",
+          uploaderName: "fgdbsjh",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "REJECTED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-09-04T15:26:47.222+00:00",
+          verifiedAt: null
+        },
+        {
+          id: "res-1788439501149",
+          title: "SWE 311 Final Exam 2025 Test Drive",
+          type: "QUESTION",
+          courseId: "course-gen",
+          courseCode: "SWE 311",
+          courseTitle: "Software Architecture",
+          semester: 5,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: null,
+          targetBatch: "SWE Administration",
+          labCategory: null,
+          description: null,
+          fileUrl: "https://drive.google.com/uc?export=download&id=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+          fileName: "SWE_311_FINAL_2025.pdf",
+          fileSize: "Google Drive Cloud",
+          fileType: "application/pdf",
+          uploaderId: "usr_swe_admin_central",
+          uploaderStudentId: "admin",
+          uploaderName: "Department Admin",
+          uploaderBatchName: "SWE Administration",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 2,
+          createdAt: "2026-09-03T12:45:01.149+00:00",
+          verifiedAt: "2026-09-03T12:45:01.149+00:00"
+        },
+        {
+          id: "res-4",
+          title: "Algorithms Midterm Exam Question 2024 (Spring)",
+          type: "QUESTION",
+          courseId: "course-309",
+          courseCode: "SWE 309",
+          courseTitle: "Algorithms",
+          semester: 5,
+          academicYear: 2024,
+          examType: "MIDTERM",
+          facultyName: "Prof. Dr. Ahsan Habib",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: "Midterm paper covering Recurrence relations, Divide & Conquer, MergeSort, QuickSort proofs.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "SWE_309_Midterm_2024.pdf",
+          fileSize: "950 KB",
+          fileType: "application/pdf",
+          uploaderId: "user-student-1",
+          uploaderStudentId: "252-134-022",
+          uploaderName: "Rashedul Hasan",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 0,
+          createdAt: "2026-08-11T16:00:00+00:00",
+          verifiedAt: "2026-08-31T18:27:59.713+00:00"
+        },
+        {
+          id: "res-3",
+          title: "Cisco Packet Tracer Lab Experiments & Topology Files",
+          type: "LAB",
+          courseId: "course-311",
+          courseCode: "SWE 311",
+          courseTitle: "Computer Networks",
+          semester: 5,
+          academicYear: 2026,
+          examType: null,
+          facultyName: "Ms. Nusrat Jahan",
+          targetBatch: "SWE 9th Batch",
+          labCategory: "SOURCE_CODE",
+          description: "Subnetting, VLAN configuration, RIP/OSPF routing topologies for Packet Tracer.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "Networks_Lab_Pack_SWE311.zip",
+          fileSize: "8.1 MB",
+          fileType: "application/zip",
+          uploaderId: "user-student-1",
+          uploaderStudentId: "252-134-022",
+          uploaderName: "Rashedul Hasan",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 31,
+          createdAt: "2026-08-02T14:00:00+00:00",
+          verifiedAt: "2026-08-03T10:00:00+00:00"
+        },
+        {
+          id: "res-6",
+          title: "Computer Networks Quiz 1 Question Paper 2026",
+          type: "QUESTION",
+          courseId: "course-311",
+          courseCode: "SWE 311",
+          courseTitle: "Computer Networks",
+          semester: 5,
+          academicYear: 2026,
+          examType: "QUIZ",
+          facultyName: "Ms. Nusrat Jahan",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: "Quiz paper covering OSI Model layers, TCP/IP Suite, and IP Subnetting calculations.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "SWE_311_Quiz1_2026.pdf",
+          fileSize: "820 KB",
+          fileType: "application/pdf",
+          uploaderId: "user-student-2",
+          uploaderStudentId: "252-134-023",
+          uploaderName: "Sadia Afrin",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 63,
+          createdAt: "2026-07-28T14:00:00+00:00",
+          verifiedAt: "2026-07-29T10:00:00+00:00"
+        },
+        {
+          id: "res-2",
+          title: "Complete Software Architecture Lecture Notes (Ch 1-8)",
+          type: "NOTE",
+          courseId: "course-307",
+          courseCode: "SWE 307",
+          courseTitle: "Software Engineering",
+          semester: 5,
+          academicYear: 2026,
+          examType: null,
+          facultyName: "Mr. Imran Hossain",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: "Comprehensive handwritten and digitized lecture notes covering Agile, Scrum, Design Patterns, and SRS.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "SWE_307_Software_Engineering_Notes.pdf",
+          fileSize: "3.4 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-student-2",
+          uploaderStudentId: "252-134-023",
+          uploaderName: "Sadia Afrin",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 92,
+          createdAt: "2026-07-25T11:00:00+00:00",
+          verifiedAt: "2026-07-26T09:00:00+00:00"
+        },
+        {
+          id: "res-5",
+          title: "Software Engineering Midterm Question Paper 2025",
+          type: "QUESTION",
+          courseId: "course-307",
+          courseCode: "SWE 307",
+          courseTitle: "Software Engineering",
+          semester: 5,
+          academicYear: 2025,
+          examType: "MIDTERM",
+          facultyName: "Mr. Imran Hossain",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: "Midterm paper covering Software Development Life Cycle (SDLC), Agile Manifesto, and Use Case Diagrams.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "SWE_307_Midterm_2025.pdf",
+          fileSize: "1.1 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-cr-1",
+          uploaderStudentId: "252-134-001",
+          uploaderName: "Mahmudul Hasan (CR)",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 35,
+          createdAt: "2026-07-22T09:00:00+00:00",
+          verifiedAt: "2026-07-22T11:00:00+00:00"
+        },
+        {
+          id: "res-1",
+          title: "Database Systems Final Exam Question Paper 2025",
+          type: "QUESTION",
+          courseId: "course-305",
+          courseCode: "SWE 305",
+          courseTitle: "Database Systems",
+          semester: 5,
+          academicYear: 2025,
+          examType: "FINAL",
+          facultyName: "Dr. Tanvir Rahman",
+          targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: "Official Spring 2025 Final Examination question paper with answer hints for SQL & Normalization.",
+          fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          fileName: "SWE_305_Final_Exam_2025.pdf",
+          fileSize: "1.2 MB",
+          fileType: "application/pdf",
+          uploaderId: "user-student-1",
+          uploaderStudentId: "252-134-022",
+          uploaderName: "Rashedul Hasan",
+          uploaderBatchName: "SWE 9th Batch",
+          status: "APPROVED",
+          rejectionReason: null,
+          downloadCount: 48,
+          createdAt: "2026-07-20T10:00:00+00:00",
+          verifiedAt: "2026-07-21T12:00:00+00:00"
+        }
+      ],
+      faculty: [
+        {
+          id: "fac-1",
+          name: "Fuad Ahmed",
+          shortName: "FA",
+          designation: "Professor & Head",
+          department: "Department of Software Engineering",
+          email: "fahmed@metrouni.edu.bd",
+          phone: "+8801611829316",
+          officeRoom: "Room 502",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-1.png",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-4",
+          name: "Al Akram Chowdhury",
+          shortName: "AAC",
+          designation: "Assistant Professor",
+          department: "Department of Software Engineering",
+          email: "akram@metrouni.edu.bd",
+          phone: "+8801730980003",
+          officeRoom: "Room 503",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-4.png",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-mzuk",
+          name: "Md. Ziaul Karim",
+          shortName: "MZUK",
+          designation: "Assistant Professor",
+          department: "Department of Software Engineering",
+          email: "ziaul@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Room 405",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
+        },
+        {
+          id: "fac-2",
+          name: "Nazia Sultana Chowdhury",
+          shortName: "NSC",
+          designation: "Assistant Professor",
+          department: "Department of Software Engineering",
+          email: "nazia@metrouni.edu.bd",
+          phone: "+8801627055017",
+          officeRoom: "Room 503",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-2.png",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-3",
+          name: "Rina Paul",
+          shortName: "RP",
+          designation: "Assistant Professor",
+          department: "Department of Software Engineering",
+          email: "rina@metrouni.edu.bd",
+          phone: "+8801319931147",
+          officeRoom: "Room 408",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-3.png",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-sam",
+          name: "Sheikh Ashikur Mahmud",
+          shortName: "SAM",
+          designation: "Assistant Professor (English)",
+          department: "Department of Software Engineering",
+          email: "sam@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Room 402",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
+        },
+        {
+          id: "fac-5",
+          name: "Wadia Iqbal Chowdhury",
+          shortName: "WIC",
+          designation: "Assistant Professor",
+          department: "Department of Software Engineering",
+          email: "wadia@metrouni.edu.bd",
+          phone: "+8801758305093",
+          officeRoom: "Room 503",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-5.png",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-11",
+          name: "Mridul Kanti Bhattacharjee",
+          shortName: "MKB",
+          designation: "Adjunct Faculty",
+          department: "Department of Software Engineering",
+          email: "mridul@metrouni.edu.bd",
+          phone: "+8801763784158",
+          officeRoom: "",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-air",
+          name: "A.I. Rahman",
+          shortName: "AIR",
+          designation: "Lecturer",
+          department: "Electrical & Electronic Engineering",
+          email: "air@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Room 109",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T18:01:36.411797+00:00"
+        },
+        {
+          id: "fac-cmw",
+          name: "Chowdhury Mahir Wahid",
+          shortName: "CMW",
+          designation: "Lecturer",
+          department: "Software Engineering",
+          email: "mahir.wahid@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Exten-2",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T17:38:47.04288+00:00"
+        },
+        {
+          id: "fac-9",
+          name: "Dhiman Dash",
+          shortName: "DD",
+          designation: "Lecturer",
+          department: "Department of Software Engineering",
+          email: "dhiman@metrouni.edu.bd",
+          phone: "+8801764619468",
+          officeRoom: "",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-6",
+          name: "Iffat Ahmed Chowdhury Nahid",
+          shortName: "IAC",
+          designation: "Lecturer",
+          department: "Department of Software Engineering",
+          email: "iffat@metrouni.edu.bd",
+          phone: "+8801724296767",
+          officeRoom: "Room 505",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-6.jpg",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-10",
+          name: "Lukman Hussain Nakib",
+          shortName: "LN",
+          designation: "Lecturer",
+          department: "Department of Software Engineering",
+          email: "nakib@metrouni.edu.bd",
+          phone: "+8801738779684",
+          officeRoom: "Room 505",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-7",
+          name: "Nazia Hassan Nisa",
+          shortName: "NHN",
+          designation: "Lecturer",
+          department: "Department of Software Engineering",
+          email: "nisa@metrouni.edu.bd",
+          phone: "+8801777264878",
+          officeRoom: "Room 505",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-7.jpg",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-ohr",
+          name: "Obaidur Rahman",
+          shortName: "OHR",
+          designation: "Lecturer",
+          department: "Software Engineering",
+          email: "obaidur@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Room 301",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T17:44:53.289033+00:00"
+        },
+        {
+          id: "fac-8",
+          name: "Syeda Sanjida Rahman",
+          shortName: "SSJ",
+          designation: "Lecturer",
+          department: "Department of Software Engineering",
+          email: "sanjida@metrouni.edu.bd",
+          phone: "+8801783852026",
+          officeRoom: "Room 505",
+          photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-8.jpg",
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-12",
+          name: "Nasrin Akter Tanya",
+          shortName: "NAT",
+          designation: "Lecturer (Study Leave)",
+          department: "Department of Software Engineering",
+          email: "tanya@metrouni.edu.bd",
+          phone: "+8801716942150",
+          officeRoom: "",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
+        },
+        {
+          id: "fac-acm",
+          name: "ACM Workshop / Trainer",
+          shortName: "ACM",
+          designation: "Competitive Programming Trainer",
+          department: "Department of Software Engineering",
+          email: "acm@metrouni.edu.bd",
+          phone: null,
+          officeRoom: "Room 301",
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
+        }
+      ],
+      notifications: [
+        {
+          id: "notif-1787903481669-0.4182047741732302",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "\u{1F3DB}\uFE0F New Department Notice",
+          message: "Semester Final Registration Notice",
+          type: "NOTICE",
+          linkUrl: "/notices",
+          read: false,
+          createdAt: "2026-08-28T07:51:21.669Z"
+        },
+        {
+          id: "notif-1787903481435-0.5882311329106276",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Class Rescheduled for Sunday",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-28T07:51:21.435Z"
+        },
+        {
+          id: "notif-1787903481237-0.09210325107167083",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "Midterm Exam - DB" scheduled for 2026-09-15 in SWE 301.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-28T07:51:21.237Z"
+        },
+        {
+          id: "notif-1787839565183-0.851220553001448",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "Midterm Exam - DB" scheduled for 2026-09-15 in SWE 301.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T14:06:05.183Z"
+        },
+        {
+          id: "notif-1787839565183-0.6257293576433447",
+          userId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "Midterm Exam - DB" scheduled for 2026-09-15 in SWE 301.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T14:06:05.183Z"
+        },
+        {
+          id: "notif-1787825309094-0.048579904200644286",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.10538926771286783",
+          userId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.8259502010479525",
+          userId: "usr_1786954698184",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.5336468150626608",
+          userId: "usr_cr_1",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.1766993373490391",
+          userId: "usr_1786871683233",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.3301777168479876",
+          userId: "usr_1786868978412",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.0006607160975251603",
+          userId: "usr_rashed_58",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.23218762786382796",
+          userId: "usr_1786868451950",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.27478255269479734",
+          userId: "usr_1786868051979",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.5125104113574717",
+          userId: "user-student-1",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309094-0.8584151807994087",
+          userId: "user-cr-1",
+          title: "\u{1F4E2} Batch Announcement",
+          message: "Midterm Routine Published",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.094Z"
+        },
+        {
+          id: "notif-1787825309077-0.7153803078820191",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.12140397430432825",
+          userId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.3181225549898701",
+          userId: "usr_1786954698184",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.09367208273738759",
+          userId: "usr_cr_1",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.18133669049641843",
+          userId: "usr_1786871683233",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.3452937268631653",
+          userId: "usr_1786868978412",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.12339026499241834",
+          userId: "usr_rashed_58",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.999051032073976",
+          userId: "usr_1786868451950",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.4382903139360137",
+          userId: "usr_1786868051979",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.9573859337266017",
+          userId: "user-student-1",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1787825309077-0.15389264007729264",
+          userId: "user-cr-1",
+          title: "New Exam Scheduled \u{1F4C5}",
+          message: 'CT - "Class Test 1 on Normalization" scheduled for 2026-09-10 in SWE 305.',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-08-27T10:08:29.077Z"
+        },
+        {
+          id: "notif-1",
+          userId: "user-student-1",
+          title: "Resource Approved \u{1F389}",
+          message: 'Your contribution "Cisco Packet Tracer Lab Experiments" has been verified and published.',
+          type: "RESOURCE_APPROVED",
+          linkUrl: "/resources/labs",
+          read: false,
+          createdAt: "2026-08-03T10:00:00Z"
+        },
+        {
+          id: "notif-2",
+          userId: "user-student-1",
+          title: "New Announcement",
+          message: "Urgent: Software Engineering Makeup Class on Friday.",
+          type: "ANNOUNCEMENT",
+          linkUrl: "/announcements",
+          read: false,
+          createdAt: "2026-08-11T14:00:00Z"
+        }
+      ],
+      auditLogs: [
+        {
+          id: "log-1791823948064",
+          actorId: "usr_swe_admin_central",
+          actorName: "Rashedul Hasan",
+          action: "FACULTY_DELETED",
+          target: "Faculty: Prof. Test Cache Verification (Assistant Professor)",
+          details: "Permanently removed from database",
+          timestamp: "2026-10-12T16:52:28.064Z"
+        },
+        {
+          id: "log-1791823936360",
+          actorId: "usr_swe_admin_central",
+          actorName: "Rashedul Hasan",
+          action: "FACULTY_CREATED",
+          target: "Faculty: Prof. Test Cache Verification (Assistant Professor)",
+          details: "Email: prof.test.cache@swe.edu, Office: SWE Faculty Room",
+          timestamp: "2026-10-12T16:52:16.360Z"
+        },
+        {
+          id: "log-1791823379681",
+          actorId: "usr_swe_admin_central",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "BATCH_CREATED",
+          target: "Batch: SWE Automated Verification Batch",
+          details: "Year: 2026, Semester: 1",
+          timestamp: "2026-10-12T16:42:59.681Z"
+        },
+        {
+          id: "log-1791380291975",
+          actorId: "usr_94654d049d7e493ca4d71e1a433a00a6",
+          actorName: "abc",
+          action: "UPDATE_CGPA_GRADES",
+          target: "1 courses",
+          details: "Updated grades. New CGPA: 3.73",
+          timestamp: "2026-10-07T13:38:11.975Z"
+        },
+        {
+          id: "log-1791380284598",
+          actorId: "usr_94654d049d7e493ca4d71e1a433a00a6",
+          actorName: "abc",
+          action: "UPDATE_CGPA_GRADES",
+          target: "1 courses",
+          details: "Updated grades. New CGPA: 3.74",
+          timestamp: "2026-10-07T13:38:04.598Z"
+        },
+        {
+          id: "log-1788535685687",
+          actorId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          actorName: "fgdbsjh",
+          action: "RESOURCE_SUBMITTED",
+          target: "SWE 221 Final Exam 2023",
+          details: "+10 contribution points earned",
+          timestamp: "2026-09-04T15:28:05.687Z"
+        },
+        {
+          id: "log-1788535614271",
+          actorId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "RESOURCE_SUBMITTED",
+          target: "SWE 411 Midterm Exam 2024",
+          details: "+10 contribution points earned",
+          timestamp: "2026-09-04T15:26:54.271Z"
+        },
+        {
+          id: "log-1788535607549",
+          actorId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          actorName: "fgdbsjh",
+          action: "RESOURCE_SUBMITTED",
+          target: "SWE 311 Final Exam 2024",
+          details: "+10 contribution points earned",
+          timestamp: "2026-09-04T15:26:47.549Z"
+        },
+        {
+          id: "log-1788528755052",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_SEMESTER_CONTROL",
+          target: "SWE 9th Batch (Semester 4 \u2192 5)",
+          details: "Admin assigned SWE 9th Batch to Semester 5. 5 courses activated in enrolled classes. 3 students updated.",
+          timestamp: "2026-09-04T13:32:35.052Z"
+        },
+        {
+          id: "log-1788528743626",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_SEMESTER_CONTROL",
+          target: "SWE 9th Batch (Semester 5 \u2192 4)",
+          details: "Admin assigned SWE 9th Batch to Semester 4. 6 courses activated in enrolled classes. 3 students updated.",
+          timestamp: "2026-09-04T13:32:23.626Z"
+        },
+        {
+          id: "log-1788528740992",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_SEMESTER_CONTROL",
+          target: "SWE 9th Batch (Semester 4 \u2192 5)",
+          details: "Admin assigned SWE 9th Batch to Semester 5. 5 courses activated in enrolled classes. 3 students updated.",
+          timestamp: "2026-09-04T13:32:20.992Z"
+        },
+        {
+          id: "log-1788450623718",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_SEMESTER_CONTROL",
+          target: "SWE 9th Batch (Semester 5 \u2192 4)",
+          details: "Admin assigned SWE 9th Batch to Semester 4. 6 courses activated in enrolled classes. 3 students updated.",
+          timestamp: "2026-09-03T15:50:23.718Z"
+        },
+        {
+          id: "log-1788450159855",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "SWE 13th Batch (SEQUENCE)",
+          timestamp: "2026-09-03T15:42:39.855Z"
+        },
+        {
+          id: "log-1788450145683",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_UPDATED",
+          target: "SWE 8th Batch (SEQUENCE, Sem 6)",
+          timestamp: "2026-09-03T15:42:25.683Z"
+        },
+        {
+          id: "log-1788449969304",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "ANNOUNCEMENT_DELETED",
+          target: "Announcement #ann-1788449962084",
+          timestamp: "2026-09-03T15:39:29.304Z"
+        },
+        {
+          id: "log-1788449962188",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "ANNOUNCEMENT_CREATED",
+          target: "Mid-Term Examination Schedule Announcement (ALL)",
+          timestamp: "2026-09-03T15:39:22.188Z"
+        },
+        {
+          id: "log-1788449554761",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "SWE 12th Batch Test (SEQUENCE)",
+          timestamp: "2026-09-03T15:32:34.761Z"
+        },
+        {
+          id: "log-1788449543546",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "SWE 12th Batch (SEQUENCE)",
+          timestamp: "2026-09-03T15:32:23.546Z"
+        },
+        {
+          id: "log-1788449369844",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "SWE Test Batch 99 (SEQUENCE)",
+          timestamp: "2026-09-03T15:29:29.844Z"
+        },
+        {
+          id: "log-1788439501435",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "RESOURCE_SUBMITTED",
+          target: "SWE 311 Final Exam 2025 Test Drive",
+          details: "+10 contribution points earned",
+          timestamp: "2026-09-03T12:45:01.435Z"
+        },
+        {
+          id: "log-1788403534156",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "BATCH_DELETED",
+          target: "Batch: SWE Batch 533",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-03T02:45:34.156Z"
+        },
+        {
+          id: "log-1788403533756",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "BATCH_UPDATED",
+          target: "Batch: SWE Batch 533",
+          details: "Updated fields: current_semester, academic_session",
+          timestamp: "2026-09-03T02:45:33.756Z"
+        },
+        {
+          id: "log-1788403533374",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "BATCH_CREATED",
+          target: "Batch: SWE Batch 533",
+          details: "Year: 2026, Semester: 1",
+          timestamp: "2026-09-03T02:45:33.374Z"
+        },
+        {
+          id: "log-1788403533075",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "COURSE_DELETED",
+          target: "Course: SWE-6546 - Advanced Distributed Systems Verification & Testing",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-03T02:45:33.076Z"
+        },
+        {
+          id: "log-1788403532689",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "COURSE_UPDATED",
+          target: "Course: SWE-6546 - Advanced Distributed Systems Verification & Testing",
+          details: "Updated fields: title, credits, type",
+          timestamp: "2026-09-03T02:45:32.689Z"
+        },
+        {
+          id: "log-1788403532323",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "COURSE_CREATED",
+          target: "Course: SWE-6546 - Advanced Distributed Systems Verification",
+          details: "Credits: 3.5, Semester: 7, Type: THEORY",
+          timestamp: "2026-09-03T02:45:32.323Z"
+        },
+        {
+          id: "log-1788403532037",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "FACULTY_DELETED",
+          target: "Faculty: Dr. Alan Turing 0988 (Chair Professor & Dean)",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-03T02:45:32.037Z"
+        },
+        {
+          id: "log-1788403531670",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "FACULTY_UPDATED",
+          target: "Faculty: Dr. Alan Turing 0988 (Chair Professor & Dean)",
+          details: "Updated fields: designation, office_room",
+          timestamp: "2026-09-03T02:45:31.670Z"
+        },
+        {
+          id: "log-1788403531226",
+          actorId: "usr_admin_audit_test",
+          actorName: "Admin Auditor",
+          action: "FACULTY_CREATED",
+          target: "Faculty: Dr. Alan Turing 0988 (Professor)",
+          details: "Email: alan.turing.1788403530988@swe.edu, Office: Room 404B",
+          timestamp: "2026-09-03T02:45:31.226Z"
+        },
+        {
+          id: "log-1788403200853",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "FACULTY_DELETED",
+          target: "Faculty: Dr. Audit Professor (Associate Professor)",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-03T02:40:00.853Z"
+        },
+        {
+          id: "log-1788403200543",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "FACULTY_CREATED",
+          target: "Faculty: Dr. Audit Professor (Associate Professor)",
+          details: "Email: audit.prof@metrouni.edu.bd, Office: Room 505",
+          timestamp: "2026-09-03T02:40:00.543Z"
+        },
+        {
+          id: "log-1788382345208",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "COURSE_DELETED",
+          target: "Course: course_1788382344789_863e - ",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-02T20:52:25.208Z"
+        },
+        {
+          id: "log-1788382345008",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "COURSE_CREATED",
+          target: "Course: SWE-9999 - Advanced System Architecture",
+          details: "Credits: 3, Semester: 1, Type: THEORY",
+          timestamp: "2026-09-02T20:52:25.008Z"
+        },
+        {
+          id: "log-1788382344782",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_DELETED",
+          target: "Batch: batch_1788382344356_j457",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-02T20:52:24.782Z"
+        },
+        {
+          id: "log-1788382344490",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "Batch: SWE Test Batch 99",
+          details: "Year: 2027, Semester: 1",
+          timestamp: "2026-09-02T20:52:24.490Z"
+        },
+        {
+          id: "log-1788382344350",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "FACULTY_DELETED",
+          target: "Faculty: fac_1788382343981_c54l ()",
+          details: "Permanently removed from database",
+          timestamp: "2026-09-02T20:52:24.350Z"
+        },
+        {
+          id: "log-1788382344130",
+          actorId: "usr_swe_admin_central",
+          actorName: "Department Admin",
+          action: "FACULTY_CREATED",
+          target: "Faculty: Professor Test Admin (Assistant Professor)",
+          details: "Email: prof.admin.test@metrouni.edu.bd, Office: SWE Faculty Room",
+          timestamp: "2026-09-02T20:52:24.130Z"
+        },
+        {
+          id: "log-1788107713303",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "ROUTINE_SLOT_DELETED",
+          target: "Slot: SWE (SUNDAY)",
+          details: "Permanently removed from schedule",
+          timestamp: "2026-08-30T16:35:13.303Z"
+        },
+        {
+          id: "log-1788107713021",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "ROUTINE_SLOT_CREATED",
+          target: "Slot: SWE on SUNDAY (09:00 AM-10:30 AM)",
+          details: "Room: Lab 501, Batch: batch-9",
+          timestamp: "2026-08-30T16:35:13.021Z"
+        },
+        {
+          id: "log-1788107622153",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "NOTIFICATION_DELETED",
+          target: "Notification ID: notif_1788107621763_pdk7",
+          details: "Removed from notifications",
+          timestamp: "2026-08-30T16:33:42.153Z"
+        },
+        {
+          id: "log-1788107621970",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "NOTIFICATION_DISPATCHED",
+          target: "Notification: Test Notification -> usr_demo_student_111111111",
+          details: "Type: ANNOUNCEMENT",
+          timestamp: "2026-08-30T16:33:41.970Z"
+        },
+        {
+          id: "log-1788107621757",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "RESOURCE_DELETED",
+          target: "Resource: Test Resource (NOTE)",
+          details: "Permanently removed from academic vault",
+          timestamp: "2026-08-30T16:33:41.757Z"
+        },
+        {
+          id: "log-1788107621489",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "RESOURCE_CREATED",
+          target: "Resource: Test Resource (NOTE)",
+          details: "Course: SWE, Status: APPROVED",
+          timestamp: "2026-08-30T16:33:41.489Z"
+        },
+        {
+          id: "log-1788107621306",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "NOTICE_DELETED",
+          target: "Notice: Test Notice",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:41.306Z"
+        },
+        {
+          id: "log-1788107621039",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "NOTICE_PUBLISHED",
+          target: "Notice: Test Notice",
+          details: "Category: GENERAL, Important: false",
+          timestamp: "2026-08-30T16:33:41.039Z"
+        },
+        {
+          id: "log-1788107620849",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "ANNOUNCEMENT_DELETED",
+          target: "Announcement: Test Announcement",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:40.849Z"
+        },
+        {
+          id: "log-1788107620568",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "ANNOUNCEMENT_POSTED",
+          target: "Announcement: Test Announcement",
+          details: "Batch: batch-9, Priority: NORMAL",
+          timestamp: "2026-08-30T16:33:40.568Z"
+        },
+        {
+          id: "log-1788107620373",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "EXAM_DELETED",
+          target: "Exam: SWE MID (2026-10-15)",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:40.373Z"
+        },
+        {
+          id: "log-1788107620070",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "EXAM_SCHEDULED",
+          target: "Exam: SWE MID (2026-10-15)",
+          details: "Batch: batch-9, Room: TBD",
+          timestamp: "2026-08-30T16:33:40.070Z"
+        },
+        {
+          id: "log-1788107619760",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "FACULTY_DELETED",
+          target: "Faculty: Dr. Test Faculty (Professor)",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:39.760Z"
+        },
+        {
+          id: "log-1788107619508",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "FACULTY_CREATED",
+          target: "Faculty: Dr. Test Faculty (Professor)",
+          details: "Email: testfaculty@swe.edu, Office: 501",
+          timestamp: "2026-08-30T16:33:39.508Z"
+        },
+        {
+          id: "log-1788107619302",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "COURSE_DELETED",
+          target: "Course: SWE TEST99 - Test Admin Course",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:39.302Z"
+        },
+        {
+          id: "log-1788107618983",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "COURSE_UPDATED",
+          target: "Course: SWE TEST99 - Test Admin Course",
+          details: "Updated fields: credits",
+          timestamp: "2026-08-30T16:33:38.983Z"
+        },
+        {
+          id: "log-1788107618779",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "COURSE_CREATED",
+          target: "Course: SWE TEST99 - Test Admin Course",
+          details: "Credits: 3, Semester: 1, Type: THEORY",
+          timestamp: "2026-08-30T16:33:38.779Z"
+        },
+        {
+          id: "log-1788107610979",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "BATCH_DELETED",
+          target: "Batch: SWE Automated Test Batch 1788107610293",
+          details: "Permanently removed from database",
+          timestamp: "2026-08-30T16:33:30.979Z"
+        },
+        {
+          id: "log-1788107610705",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "BATCH_UPDATED",
+          target: "Batch: SWE Automated Test Batch 1788107610293",
+          details: "Updated fields: current_semester",
+          timestamp: "2026-08-30T16:33:30.705Z"
+        },
+        {
+          id: "log-1788107610508",
+          actorId: "usr_admin_test",
+          actorName: "Central Admin Test",
+          action: "BATCH_CREATED",
+          target: "Batch: SWE Automated Test Batch 1788107610293",
+          details: "Year: 2026, Semester: 1",
+          timestamp: "2026-08-30T16:33:30.508Z"
+        },
+        {
+          id: "log-1787903481780",
+          actorId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "ROUTINE_ADDED",
+          target: "Slot for batch-9 on MONDAY",
+          timestamp: "2026-08-28T07:51:21.780Z"
+        },
+        {
+          id: "log-1787903481669",
+          actorId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "DEPARTMENT_NOTICE_PUBLISHED",
+          target: "Semester Final Registration Notice",
+          timestamp: "2026-08-28T07:51:21.669Z"
+        },
+        {
+          id: "log-1787903481435",
+          actorId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "ANNOUNCEMENT_CREATED",
+          target: "Class Rescheduled for Sunday (batch-9)",
+          timestamp: "2026-08-28T07:51:21.435Z"
+        },
+        {
+          id: "log-1787903481237",
+          actorId: "usr_68bf253ad3a242e79a883bb46ce99787",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "EXAM_CREATED",
+          target: "MIDTERM: Midterm Exam - DB (batch-9)",
+          timestamp: "2026-08-28T07:51:21.237Z"
+        },
+        {
+          id: "log-1787839565184",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "EXAM_CREATED",
+          target: "MIDTERM: Midterm Exam - DB (batch-9)",
+          timestamp: "2026-08-27T14:06:05.184Z"
+        },
+        {
+          id: "log-1787839559844",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "COURSE_CREATED",
+          target: "SWE 450 - Distributed Systems & Cloud Computing",
+          timestamp: "2026-08-27T14:05:59.844Z"
+        },
+        {
+          id: "log-1787825309095",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "ANNOUNCEMENT_CREATED",
+          target: "Midterm Routine Published (batch-9)",
+          timestamp: "2026-08-27T10:08:29.095Z"
+        },
+        {
+          id: "log-1787825309078",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "EXAM_CREATED",
+          target: "CT: Class Test 1 on Normalization (batch-9)",
+          timestamp: "2026-08-27T10:08:29.078Z"
+        },
+        {
+          id: "log-1787825309063",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "ROUTINE_ADDED",
+          target: "Slot for batch-9 on Sunday",
+          timestamp: "2026-08-27T10:08:29.063Z"
+        },
+        {
+          id: "log-1787825295370",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "BATCH_CREATED",
+          target: "SWE 12th Batch (SEQUENCE)",
+          timestamp: "2026-08-27T10:08:15.370Z"
+        },
+        {
+          id: "log-1787825295355",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "FACULTY_ADDED",
+          target: "Dr. Test Faculty",
+          timestamp: "2026-08-27T10:08:15.355Z"
+        },
+        {
+          id: "log-1787825287184",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "COURSE_DELETED",
+          target: "SWE 499",
+          timestamp: "2026-08-27T10:08:07.184Z"
+        },
+        {
+          id: "log-1787825287167",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "COURSE_UPDATED",
+          target: "SWE 499 - Advanced Compiler Design",
+          timestamp: "2026-08-27T10:08:07.167Z"
+        },
+        {
+          id: "log-1787825287131",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "COURSE_CREATED",
+          target: "SWE 499 - Compiler Design & Optimization",
+          timestamp: "2026-08-27T10:08:07.131Z"
+        },
+        {
+          id: "log-1787825205604",
+          actorId: "usr_admin_1",
+          actorName: "Department Admin",
+          action: "COURSE_CREATED",
+          target: "SWE 999 - Automated Testing Course",
+          timestamp: "2026-08-27T10:06:45.604Z"
+        },
+        {
+          id: "log-1786954698232",
+          actorId: "usr_1786954698184",
+          actorName: "Test User",
+          action: "STUDENT_REGISTERED",
+          target: "New account created (999-999-999)",
+          timestamp: "2026-08-17T08:18:18.232Z"
+        },
+        {
+          id: "log-1786871683421",
+          actorId: "usr_1786871683233",
+          actorName: "Rashedul",
+          action: "STUDENT_REGISTERED",
+          target: "New account created (252)",
+          timestamp: "2026-08-16T09:14:43.421Z"
+        },
+        {
+          id: "log-1786868978542",
+          actorId: "usr_1786868978412",
+          actorName: "Sabbir Hossain",
+          action: "STUDENT_REGISTERED",
+          target: "New account created (252-135-099)",
+          timestamp: "2026-08-16T08:29:38.542Z"
+        },
+        {
+          id: "log-1786868451951",
+          actorId: "usr_1786868451950",
+          actorName: "Mahir Faysal",
+          action: "STUDENT_REGISTERED",
+          target: "New account created (252-134-777)",
+          timestamp: "2026-08-16T08:20:51.951Z"
+        },
+        {
+          id: "log-1786868051979",
+          actorId: "usr_1786868051979",
+          actorName: "Tanvir Ahmed",
+          action: "STUDENT_REGISTERED",
+          target: "New account created (252-134-888)",
+          timestamp: "2026-08-16T08:14:11.980Z"
+        },
+        {
+          id: "log-1",
+          actorId: "system-admin",
+          actorName: "Department Administration",
+          action: "RESOURCE_APPROVED",
+          target: "Resource #res-3",
+          details: "Approved Cisco Packet Tracer Lab Experiments submitted by Rashedul Hasan",
+          timestamp: "2026-08-03T10:00:00Z"
+        },
+        {
+          id: "log-2",
+          actorId: "system-admin",
+          actorName: "Department Administration",
+          action: "NOTICE_PUBLISHED",
+          target: "Department Notice #notice-1",
+          details: "Published Fall 2026 Registration notice",
+          timestamp: "2026-08-08T10:00:00Z"
+        }
+      ],
+      routineRequests: [],
+      retakeRegistrations: [],
+      studentGrades: {
+        usr_94654d049d7e493ca4d71e1a433a00a6: {}
+      },
+      studentDocuments: {},
+      studentCustomCourses: {
+        usr_94654d049d7e493ca4d71e1a433a00a6: []
+      },
+      studentExcludedCourses: {
+        usr_94654d049d7e493ca4d71e1a433a00a6: []
+      },
+      bugReports: [],
+      classTopics: [
+        {
+          id: "topic-1",
+          courseId: "course-swe223",
+          courseCode: "SWE-223",
+          courseTitle: "Object Oriented Programming",
+          semester: 5,
+          batchId: "batch-9",
+          lectureNumber: "Lecture 14",
+          date: "2026-10-18",
+          topic: "Exception Handling & Custom Exceptions in Java",
+          description: "Covered try-catch-finally blocks, checked vs unchecked exceptions, throw and throws keywords, and creating custom application exception classes with real-life banking scenario.",
+          facultyName: "Dr. Mohammad Mizanur Rahman",
+          references: "Java How to Program (Deitel) Chapter 11, Slides 1-32",
+          homework: "Implement custom InsufficientFundsException and submit by next Tuesday",
+          createdBy: "usr_admin",
+          createdByName: "SWE Department CR",
+          createdAt: "2026-10-18T07:58:59.162Z"
+        },
+        {
+          id: "topic-2",
+          courseId: "course-swe211",
+          courseCode: "SWE-211",
+          courseTitle: "Computer Architecture",
+          semester: 5,
+          batchId: "batch-9",
+          lectureNumber: "Lecture 12",
+          date: "2026-10-17",
+          topic: "Cache Memory Mapping (Direct vs Set-Associative)",
+          description: "Detailed analysis of cache hit vs miss ratio, block replacement policies (LRU, FIFO), and numerical problems on 4-way set associative cache address calculation.",
+          facultyName: "Engr. Sarah Ahmed",
+          references: "Patterson & Hennessy Chapter 5, Handout Sheet #4",
+          homework: "Solve numerical exercise 5.4 & 5.7 from chapter end",
+          createdBy: "usr_admin",
+          createdByName: "SWE Department CR",
+          createdAt: "2026-10-17T07:58:59.162Z"
+        },
+        {
+          id: "topic-3",
+          courseId: "course-mat211",
+          courseCode: "MAT-211",
+          courseTitle: "Numerical Analysis",
+          semester: 5,
+          batchId: "batch-9",
+          lectureNumber: "Lecture 10",
+          date: "2026-10-16",
+          topic: "Newton-Raphson & Secant Method Convergence",
+          description: "Mathematical derivation of Newton-Raphson iteration formula, rate of quadratic convergence, pitfalls when f'(x)=0, and step-by-step approximation of roots up to 4 decimal places.",
+          facultyName: "Prof. Dr. Kabir Hossain",
+          references: "Introductory Methods of Numerical Analysis (Sastry)",
+          homework: "Complete root finding problem set #3 on graph paper",
+          createdBy: "usr_admin",
+          createdByName: "SWE Department CR",
+          createdAt: "2026-10-16T07:58:59.162Z"
+        },
+        {
+          id: "topic-4",
+          courseId: "course-swe224",
+          courseCode: "SWE-224",
+          courseTitle: "Object Oriented Programming Lab",
+          semester: 5,
+          batchId: "batch-9",
+          lectureNumber: "Lab Session 6",
+          date: "2026-10-15",
+          topic: "Swing GUI Development & ActionListener Integration",
+          description: "Hands-on laboratory session creating a modular Student Registration & Calculator form utilizing JFrame, JPanel, Layout Managers (BorderLayout, GridBagLayout), and event handling with lambda expressions.",
+          facultyName: "Tahmina Begum",
+          references: "Lab Manual Experiment 6, GitHub Starter Repository",
+          homework: "Push finished GUI project to individual GitHub repositories",
+          createdBy: "usr_admin",
+          createdByName: "SWE Department CR",
+          createdAt: "2026-10-15T07:58:59.162Z"
+        }
+      ],
+      classTasks: [
+        {
+          id: "task-1",
+          courseId: "course-sem5-swe-223",
+          courseCode: "SWE-223",
+          courseTitle: "Object Oriented Programming",
+          semester: 5,
+          batchId: "batch-9",
+          date: "2026-10-18",
+          dueDate: "2026-10-22",
+          title: "Assignment 2: Custom Exception Hierarchy & Banking System",
+          description: "Implement a custom InsufficientFundsException and InvalidAccountException. Write unit tests with try-catch-finally blocks as instructed in class today.",
+          type: "ASSIGNMENT",
+          priority: "IMPORTANT",
+          facultyName: "Dr. Mohammad Mizanur Rahman",
+          createdBy: "usr_admin",
+          createdByName: "SWE 9th Batch CR",
+          createdAt: "2026-10-18T16:32:58.513Z"
+        },
+        {
+          id: "task-2",
+          courseId: "course-sem5-swe-211",
+          courseCode: "SWE-211",
+          courseTitle: "Computer Architecture",
+          semester: 5,
+          batchId: "batch-9",
+          date: "2026-10-17",
+          dueDate: "2026-10-21",
+          title: "Homework: Cache Memory 4-Way Set Associative Problems",
+          description: "Solve numerical exercise 5.4 & 5.7 from Patterson & Hennessy Chapter 5. Bring solutions on paper for review next class.",
+          type: "HOMEWORK",
+          priority: "NORMAL",
+          facultyName: "Engr. Sarah Ahmed",
+          createdBy: "usr_admin",
+          createdByName: "SWE 9th Batch CR",
+          createdAt: "2026-10-18T16:32:58.513Z"
+        },
+        {
+          id: "task-3",
+          courseId: "course-sem5-swe-224",
+          courseCode: "SWE-224",
+          courseTitle: "Object Oriented Programming Lab",
+          semester: 5,
+          batchId: "batch-9",
+          date: "2026-10-16",
+          dueDate: "2026-10-23",
+          title: "Lab Report 6: Java Swing Registration Form Submission",
+          description: "Push your finalized Swing GUI Calculator & Registration application to GitHub and submit the repo URL in the department portal.",
+          type: "LAB_REPORT",
+          priority: "IMPORTANT",
+          facultyName: "Tahmina Begum",
+          createdBy: "usr_admin",
+          createdByName: "SWE 9th Batch CR",
+          createdAt: "2026-10-18T16:32:58.513Z"
+        },
+        {
+          id: "task-4",
+          courseId: "course-sem5-mat-211",
+          courseCode: "MAT-211",
+          courseTitle: "Numerical Analysis",
+          semester: 5,
+          batchId: "batch-9",
+          date: "2026-10-15",
+          dueDate: "2026-10-20",
+          title: "Class Update: Newton-Raphson Graph Paper Plotting",
+          description: "Sir asked everyone to bring graph paper and scientific calculators for finding real roots using Secant & Newton-Raphson methods next Tuesday.",
+          type: "CLASS_UPDATE",
+          priority: "NORMAL",
+          facultyName: "Prof. Dr. Kabir Hossain",
+          createdBy: "usr_admin",
+          createdByName: "SWE 9th Batch CR",
+          createdAt: "2026-10-18T16:32:58.513Z"
+        }
+      ]
+    };
+  }
+});
 
 // src/server/db.ts
-var DATA_DIR = path.join(process.cwd(), "data");
-var DB_FILE = path.join(DATA_DIR, "database.json");
-try {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+import fs from "fs";
+import path from "path";
+import bcrypt from "bcryptjs";
+function findDatabaseFile() {
+  const candidates = [
+    DB_FILE,
+    path.join(process.cwd(), "database.json"),
+    path.join(process.cwd(), "data/database.json"),
+    "/app/applet/data/database.json"
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) return c;
+    } catch {
+    }
   }
-} catch {
+  return null;
 }
 function seedInitialData() {
   const batches = [
@@ -1297,17 +7371,91 @@ function seedInitialData() {
       credits: 3,
       type: "PROJECT",
       semester: 7,
+      batchIds: ["batch-7", "batch-6"]
+    },
+    {
+      id: "course-sem7-swe-322",
+      code: "SWE-322",
+      shortName: "WP Lab",
+      title: "Web Programming Practice Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 7,
+      assignedFacultyId: "fac-10",
+      assignedFacultyName: "Lukman Hussain Nakib",
+      batchIds: ["batch-7"]
+    },
+    {
+      id: "course-sem7-swe-342",
+      code: "SWE-342",
+      shortName: "DMT Lab",
+      title: "Data Mining Tools Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 7,
+      assignedFacultyId: "fac-11",
+      assignedFacultyName: "Mridul Kanti Bhattacharjee",
+      batchIds: ["batch-7"]
+    },
+    // Semester 8 (5th Batch & 6th Batch)
+    {
+      id: "course-sem8-ged-403",
+      code: "GED-403",
+      shortName: "ED",
+      title: "Entrepreneurship Development",
+      credits: 3,
+      type: "THEORY",
+      semester: 8,
+      assignedFacultyId: "fac-5",
+      assignedFacultyName: "Wadia Iqbal Chowdhury",
+      batchIds: ["batch-5", "batch-6"]
+    },
+    {
+      id: "course-sem8-swe-422",
+      code: "SWE-422",
+      shortName: "MDP",
+      title: "Mobile App Development Practice Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 8,
+      assignedFacultyId: "fac-mzuk",
+      assignedFacultyName: "Md. Ziaul Karim",
+      batchIds: ["batch-5", "batch-6"]
+    },
+    {
+      id: "course-sem8-swe-432",
+      code: "SWE-432",
+      shortName: "ML Lab",
+      title: "Machine Learning Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 8,
+      assignedFacultyId: "fac-7",
+      assignedFacultyName: "Nazia Hassan Nisa",
       batchIds: ["batch-6"]
     },
-    // Semester 8 (5th Batch)
     {
-      id: "course-sem8-swe-382",
-      code: "SWE-382",
-      shortName: "WD",
-      title: "Project on Web App Development",
+      id: "course-sem8-swe-443",
+      code: "SWE-443",
+      shortName: "NN&DL",
+      title: "Neural Networks & Deep Learning",
       credits: 3,
-      type: "PROJECT",
+      type: "THEORY",
       semester: 8,
+      assignedFacultyId: "fac-4",
+      assignedFacultyName: "Al Akram Chowdhury",
+      batchIds: ["batch-5"]
+    },
+    {
+      id: "course-sem8-swe-444",
+      code: "SWE-444",
+      shortName: "NN&DL Lab",
+      title: "Neural Networks & Deep Learning Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 8,
+      assignedFacultyId: "fac-4",
+      assignedFacultyName: "Al Akram Chowdhury",
       batchIds: ["batch-5"]
     },
     {
@@ -1318,27 +7466,163 @@ function seedInitialData() {
       credits: 3,
       type: "THEORY",
       semester: 8,
-      batchIds: ["batch-5"]
+      assignedFacultyId: "fac-8",
+      assignedFacultyName: "Syeda Sanjida Rahman",
+      batchIds: ["batch-5", "batch-6"]
     },
+    // Semester 9
     {
-      id: "course-sem8-swe-422",
-      code: "SWE-422",
-      shortName: "MDP",
-      title: "Mobile App Development Practice Lab",
-      credits: 1.5,
-      type: "LAB",
-      semester: 8,
-      batchIds: ["batch-5"]
-    },
-    {
-      id: "course-sem8-ged-403",
-      code: "GED-403",
-      shortName: "ED",
-      title: "Entrepreneurship Development",
+      id: "course-sem9-swe-411",
+      code: "SWE-411",
+      shortName: "SA",
+      title: "Software Architecture & Enterprise Design",
       credits: 3,
       type: "THEORY",
-      semester: 8,
-      batchIds: ["batch-5"]
+      semester: 9,
+      batchIds: []
+    },
+    {
+      id: "course-sem9-swe-412",
+      code: "SWE-412",
+      shortName: "SAL",
+      title: "Software Architecture & Enterprise Design Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 9,
+      batchIds: []
+    },
+    {
+      id: "course-sem9-swe-431",
+      code: "SWE-431",
+      shortName: "ML",
+      title: "Machine Learning & Predictive Systems",
+      credits: 3,
+      type: "THEORY",
+      semester: 9,
+      batchIds: []
+    },
+    {
+      id: "course-sem9-swe-400a",
+      code: "SWE-400A",
+      shortName: "CP1",
+      title: "Capstone Project / Thesis (Phase-I)",
+      credits: 2,
+      type: "PROJECT",
+      semester: 9,
+      batchIds: []
+    },
+    // Semester 10
+    {
+      id: "course-sem10-swe-441",
+      code: "SWE-441",
+      shortName: "CC",
+      title: "Cloud Computing & DevOps Engineering",
+      credits: 3,
+      type: "THEORY",
+      semester: 10,
+      batchIds: []
+    },
+    {
+      id: "course-sem10-swe-442",
+      code: "SWE-442",
+      shortName: "CCL",
+      title: "Cloud Computing & DevOps Practice Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 10,
+      batchIds: []
+    },
+    {
+      id: "course-sem10-swe-451",
+      code: "SWE-451",
+      shortName: "DS",
+      title: "Distributed Systems & Microservices",
+      credits: 3,
+      type: "THEORY",
+      semester: 10,
+      batchIds: []
+    },
+    {
+      id: "course-sem10-swe-400b",
+      code: "SWE-400B",
+      shortName: "CP2",
+      title: "Capstone Project / Thesis (Phase-II)",
+      credits: 2,
+      type: "PROJECT",
+      semester: 10,
+      batchIds: []
+    },
+    // Semester 11
+    {
+      id: "course-sem11-swe-471",
+      code: "SWE-471",
+      shortName: "BDA",
+      title: "Big Data Analytics & Data Engineering",
+      credits: 3,
+      type: "THEORY",
+      semester: 11,
+      batchIds: []
+    },
+    {
+      id: "course-sem11-swe-472",
+      code: "SWE-472",
+      shortName: "BDAL",
+      title: "Big Data Analytics Lab",
+      credits: 1.5,
+      type: "LAB",
+      semester: 11,
+      batchIds: []
+    },
+    {
+      id: "course-sem11-swe-481",
+      code: "SWE-481",
+      shortName: "CS",
+      title: "Cyber Security, Privacy & Secure Coding",
+      credits: 3,
+      type: "THEORY",
+      semester: 11,
+      batchIds: []
+    },
+    {
+      id: "course-sem11-swe-400c",
+      code: "SWE-400C",
+      shortName: "CP3",
+      title: "Capstone Project / Thesis (Phase-III)",
+      credits: 2,
+      type: "PROJECT",
+      semester: 11,
+      batchIds: []
+    },
+    // Semester 12
+    {
+      id: "course-sem12-swe-490",
+      code: "SWE-490",
+      shortName: "INT",
+      title: "Industrial Internship / Professional Attachment",
+      credits: 6,
+      type: "PROJECT",
+      semester: 12,
+      batchIds: []
+    },
+    {
+      id: "course-sem12-swe-499",
+      code: "SWE-499",
+      shortName: "VIV",
+      title: "Comprehensive Viva & Senior Defense",
+      credits: 3,
+      type: "THEORY",
+      semester: 12,
+      batchIds: []
+    },
+    {
+      id: "course-sem12-ged-404",
+      code: "GED-404",
+      shortName: "PEL",
+      title: "Professional Ethics, Law & Leadership",
+      credits: 3,
+      type: "THEORY",
+      semester: 12,
+      batchIds: []
     }
   ];
   const routines = [
@@ -2587,45 +8871,7 @@ function seedInitialData() {
       createdAt: "2026-08-02T10:00:00Z"
     }
   ];
-  const announcements = [
-    {
-      id: "ann-1",
-      batchId: "batch-9",
-      title: "Database Assignment Submission Deadline Extended",
-      description: "Nazia Sultana Chowdhury has extended the Database ER-Diagram assignment submission till Sunday 18th August. Submit via portal or offline hardcopy.",
-      publishDate: "2026-08-10",
-      expiryDate: "2026-08-25",
-      priority: "IMPORTANT",
-      createdBy: "user-cr-1",
-      createdByName: "Mahmudul Hasan (CR)",
-      createdAt: "2026-08-10T08:00:00Z"
-    },
-    {
-      id: "ann-2",
-      batchId: "batch-9",
-      title: "Software Engineering Makeup Class on Friday",
-      description: "Extra class for SWE 307 scheduled for Friday 10:00 AM at Room 401. Attendance will be recorded.",
-      publishDate: "2026-08-11",
-      expiryDate: "2026-08-16",
-      priority: "URGENT",
-      createdBy: "user-cr-1",
-      createdByName: "Mahmudul Hasan (CR)",
-      createdAt: "2026-08-11T14:00:00Z"
-    },
-    {
-      id: "ann-3",
-      batchId: "batch-9",
-      title: "Lab Manual for Computer Networks Uploaded",
-      description: "Check the Lab Resources section for Cisco Packet Tracer lab manual 3.",
-      publishDate: "2026-08-01",
-      expiryDate: "2026-08-05",
-      // Expired announcement to test archive
-      priority: "NORMAL",
-      createdBy: "user-cr-1",
-      createdByName: "Mahmudul Hasan (CR)",
-      createdAt: "2026-08-01T09:00:00Z"
-    }
-  ];
+  const announcements = [];
   const departmentNotices = [
     {
       id: "notice-1",
@@ -2902,688 +9148,555 @@ function seedInitialData() {
     retakeRegistrations: []
   };
 }
-var JsonDB = class {
-  constructor() {
-    if (fs.existsSync(DB_FILE)) {
-      try {
-        const raw = fs.readFileSync(DB_FILE, "utf-8");
-        this.data = JSON.parse(raw);
-      } catch (err) {
-        console.error("Error reading DB_FILE, seeding fresh data...", err);
-        this.data = seedInitialData();
-        this.save();
-      }
-    } else {
-      this.data = seedInitialData();
-      this.save();
-    }
-    if (!this.data.users) this.data.users = [];
-    if (!this.data.passwords) this.data.passwords = {};
-    if (!this.data.batches) this.data.batches = [];
-    if (!this.data.courses) this.data.courses = [];
-    if (!this.data.routines) this.data.routines = [];
-    if (!this.data.exams) this.data.exams = [];
-    if (!this.data.announcements) this.data.announcements = [];
-    if (!this.data.departmentNotices) this.data.departmentNotices = [];
-    if (!this.data.resources) this.data.resources = [];
-    if (!this.data.faculty) this.data.faculty = [];
-    if (!this.data.routineRequests) this.data.routineRequests = [];
-    if (!this.data.notifications) this.data.notifications = [];
-    if (!this.data.auditLogs) this.data.auditLogs = [];
-    if (!this.data.retakeRegistrations) this.data.retakeRegistrations = [];
-    if (!this.data.bugReports) this.data.bugReports = [];
-    const initialBatches = seedInitialData().batches;
-    initialBatches.forEach((seedBatch) => {
-      const existing = this.data.batches.find((b) => b.id === seedBatch.id || b.name.toLowerCase() === seedBatch.name.toLowerCase());
-      if (!existing) {
-        this.data.batches.push(seedBatch);
-      }
-    });
-    this.data.batches.forEach((b) => {
-      const lowerName = b.name.toLowerCase();
-      if (b.id === "batch-9" || lowerName.includes("9th")) {
-        b.currentSemester = 5;
-      }
-      if (!b.semesterMode) {
-        if (lowerName.includes("5th") || lowerName.includes("6th") || lowerName.includes("7th")) {
-          b.semesterMode = "MANUAL";
-        } else {
-          b.semesterMode = "SEQUENCE";
-        }
-      }
-      if (!b.status) {
-        b.status = b.currentSemester > 8 ? "GRADUATED" : "ACTIVE";
-      }
-      if (!b.crIds) b.crIds = [];
-    });
-    this.data.users.forEach((u) => {
-      const b = this.data.batches.find((batch) => batch.id === u.batchId || u.batchName && batch.name.toLowerCase() === u.batchName.toLowerCase());
-      if (b) {
-        u.currentSemester = b.currentSemester;
-        u.batchId = b.id;
-        u.batchName = b.name;
-      } else if (u.batchId === "batch-9" || u.batchName?.toLowerCase().includes("9th")) {
-        u.currentSemester = 5;
-      }
-    });
-    this.data.users = this.data.users.filter((u) => {
-      const sid = (u.studentId || "").toLowerCase();
-      const email = (u.email || "").toLowerCase();
-      const name = (u.name || "").toLowerCase();
-      const id = (u.id || "").toLowerCase();
-      if (sid === "2023-swe-001" || sid === "2022-swe-002" || sid === "2021-swe-003" || sid === "admin-001" || sid === "admin101") return false;
-      if (email === "admin@swe.edu") return false;
-      if (id === "user-admin-1" || id === "user-admin-101") return false;
-      if (name.includes("tanvir hossain") || name.includes("samiul alam") || name.includes("dr. shahriar")) return false;
-      return true;
-    });
-    const adminUser = {
-      id: "usr_swe_admin_central",
-      studentId: "admin",
-      name: "Department Admin",
-      email: "admin@swe.metrouni.edu.bd",
-      phone: "+8801700000000",
-      role: "ADMIN",
-      batchId: "batch-9",
-      batchName: "SWE Administration",
-      currentSemester: 8,
-      profileImage: "/avatars/pangolin-cream-2.svg",
-      status: "ACTIVE",
-      points: 1e3,
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    const existingAdminIdx = this.data.users.findIndex((u) => u.id === adminUser.id || u.studentId === "admin" || u.email === adminUser.email);
-    if (existingAdminIdx >= 0) {
-      this.data.users[existingAdminIdx] = { ...this.data.users[existingAdminIdx], ...adminUser, role: "ADMIN", status: "ACTIVE" };
-    } else {
-      this.data.users.push(adminUser);
-    }
-    this.data.passwords[adminUser.id] = bcrypt.hashSync("admin123", 10);
-    this.save();
-    hydrateFromSupabase(this.data).catch(() => {
-    });
-  }
-  save() {
+var DATA_DIR, DB_FILE, JsonDB, db;
+var init_db = __esm({
+  "src/server/db.ts"() {
+    init_supabaseSync();
+    init_database();
+    DATA_DIR = path.join(process.cwd(), "data");
+    DB_FILE = path.join(DATA_DIR, "database.json");
     try {
-      if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-        return;
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
       }
-      fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), "utf-8");
     } catch {
     }
-  }
-  getData() {
-    return this.data;
-  }
-  getCourses() {
-    return this.data.courses || [];
-  }
-  getBatches() {
-    return this.data.batches || [];
-  }
-  getRoutines() {
-    return this.data.routines || [];
-  }
-  getExams() {
-    return this.data.exams || [];
-  }
-  getAnnouncements() {
-    return this.data.announcements || [];
-  }
-  // Helper methods
-  getUsers() {
-    return this.data.users || [];
-  }
-  getUserById(id) {
-    return this.data.users.find((u) => u.id === id);
-  }
-  getUserByStudentId(studentId) {
-    if (!studentId) return void 0;
-    const term = studentId.trim().toLowerCase();
-    const termNoDash = term.replace(/[\s-]/g, "");
-    let user = this.data.users.find(
-      (u) => u.studentId?.toLowerCase() === term || u.email && u.email.toLowerCase() === term || u.id.toLowerCase() === term
-    );
-    if (user) return user;
-    user = this.data.users.find(
-      (u) => u.studentId?.toLowerCase().replace(/[\s-]/g, "") === termNoDash
-    );
-    if (user) return user;
-    return void 0;
-  }
-  getPasswordHash(userId) {
-    return this.data.passwords[userId];
-  }
-  setPasswordHash(userId, hash) {
-    this.data.passwords[userId] = hash;
-    this.save();
-  }
-  async addUser(user, passwordHash) {
-    this.data.users.push(user);
-    this.data.passwords[user.id] = passwordHash;
-    this.save();
-    try {
-      await syncToSupabase("users", {
-        id: user.id,
-        student_id: user.studentId,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        batch_id: user.batchId,
-        batch_name: user.batchName,
-        current_semester: user.currentSemester,
-        profile_image: user.profileImage,
-        status: user.status,
-        points: user.points || 0,
-        created_at: user.createdAt || (/* @__PURE__ */ new Date()).toISOString(),
-        updated_at: (/* @__PURE__ */ new Date()).toISOString()
-      });
-    } catch (e) {
-      console.error("[Supabase Direct User Insert Error]:", e);
-    }
-  }
-  async updateUser(user) {
-    const idx = this.data.users.findIndex((u) => u.id === user.id);
-    if (idx !== -1) {
-      this.data.users[idx] = user;
-      this.save();
-      try {
-        await syncToSupabase("users", {
-          id: user.id,
-          student_id: user.studentId,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          role: user.role,
-          batch_id: user.batchId,
-          batch_name: user.batchName,
-          current_semester: user.currentSemester,
-          profile_image: user.profileImage,
-          status: user.status,
-          points: user.points || 0,
-          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+    JsonDB = class {
+      constructor() {
+        const resolvedDbPath = findDatabaseFile();
+        if (resolvedDbPath) {
+          try {
+            const raw = fs.readFileSync(resolvedDbPath, "utf-8");
+            this.data = JSON.parse(raw);
+          } catch (err) {
+            console.error("Error reading resolvedDbPath, using embedded data...", err);
+            this.data = JSON.parse(JSON.stringify(database_default));
+            this.save();
+          }
+        } else {
+          console.log("No database.json file found on disk, using embedded database...");
+          this.data = JSON.parse(JSON.stringify(database_default));
+          this.save();
+        }
+        if (!this.data.routines || this.data.routines.length < (database_default.routines?.length || 0)) {
+          this.data.routines = JSON.parse(JSON.stringify(database_default.routines || []));
+        }
+        if (!this.data.courses || this.data.courses.length < (database_default.courses?.length || 0)) {
+          this.data.courses = JSON.parse(JSON.stringify(database_default.courses || []));
+        }
+        if (!this.data.faculty || this.data.faculty.length < (database_default.faculty?.length || 0)) {
+          this.data.faculty = JSON.parse(JSON.stringify(database_default.faculty || []));
+        }
+        if (!this.data.batches || this.data.batches.length < (database_default.batches?.length || 0)) {
+          this.data.batches = JSON.parse(JSON.stringify(database_default.batches || []));
+        }
+        if (!this.data.users) this.data.users = [];
+        if (!this.data.passwords) this.data.passwords = {};
+        if (!this.data.batches) this.data.batches = [];
+        if (!this.data.courses) this.data.courses = [];
+        if (!this.data.routines) this.data.routines = [];
+        if (!this.data.exams) this.data.exams = [];
+        if (!this.data.announcements) this.data.announcements = [];
+        if (!this.data.departmentNotices) this.data.departmentNotices = [];
+        if (!this.data.resources) this.data.resources = [];
+        if (!this.data.faculty) this.data.faculty = [];
+        if (!this.data.routineRequests) this.data.routineRequests = [];
+        if (!this.data.notifications) this.data.notifications = [];
+        if (!this.data.auditLogs) this.data.auditLogs = [];
+        if (!this.data.retakeRegistrations) this.data.retakeRegistrations = [];
+        if (!this.data.bugReports) this.data.bugReports = [];
+        const initialBatches = seedInitialData().batches;
+        initialBatches.forEach((seedBatch) => {
+          const existing = this.data.batches.find((b) => b.id === seedBatch.id || b.name.toLowerCase() === seedBatch.name.toLowerCase());
+          if (!existing) {
+            this.data.batches.push(seedBatch);
+          }
         });
-      } catch (e) {
-        console.error("[Supabase Direct User Update Error]:", e);
-      }
-    }
-  }
-  addAuditLog(actorId, actorName, action, target, details) {
-    const log = {
-      id: `log-${Date.now()}`,
-      actorId,
-      actorName,
-      action,
-      target,
-      details,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    this.data.auditLogs.unshift(log);
-    this.save();
-  }
-  getRetakes() {
-    if (!this.data.retakeRegistrations) {
-      this.data.retakeRegistrations = [];
-    }
-    return this.data.retakeRegistrations;
-  }
-  saveRetake(registration) {
-    if (!this.data.retakeRegistrations) {
-      this.data.retakeRegistrations = [];
-    }
-    const idx = this.data.retakeRegistrations.findIndex((r) => r.id === registration.id);
-    if (idx >= 0) {
-      this.data.retakeRegistrations[idx] = registration;
-    } else {
-      this.data.retakeRegistrations.push(registration);
-    }
-    this.save();
-  }
-  deleteRetake(id) {
-    if (!this.data.retakeRegistrations) return false;
-    const initialLen = this.data.retakeRegistrations.length;
-    this.data.retakeRegistrations = this.data.retakeRegistrations.filter((r) => r.id !== id);
-    if (this.data.retakeRegistrations.length !== initialLen) {
-      this.save();
-      return true;
-    }
-    return false;
-  }
-  getStudentGrades(studentId) {
-    if (!this.data.studentGrades) {
-      this.data.studentGrades = {};
-    }
-    return this.data.studentGrades[studentId] || {};
-  }
-  saveStudentGrades(studentId, grades) {
-    if (!this.data.studentGrades) {
-      this.data.studentGrades = {};
-    }
-    const current = this.data.studentGrades[studentId] || {};
-    const now = (/* @__PURE__ */ new Date()).toISOString();
-    for (const [code, info] of Object.entries(grades)) {
-      if (!info.grade || info.grade === "N/A" || info.grade === "NOT_PUBLISHED") {
-        delete current[code];
-      } else {
-        current[code] = {
-          grade: info.grade,
-          gradePoint: info.gradePoint,
-          semester: info.semester,
-          updatedAt: now
-        };
-      }
-    }
-    this.data.studentGrades[studentId] = current;
-    this.save();
-    return current;
-  }
-  getStudentCGPADocs(studentId) {
-    if (!this.data.studentDocuments) {
-      this.data.studentDocuments = {};
-    }
-    return this.data.studentDocuments[studentId] || [];
-  }
-  addStudentCGPADoc(studentId, doc) {
-    if (!this.data.studentDocuments) {
-      this.data.studentDocuments = {};
-    }
-    const list = this.data.studentDocuments[studentId] || [];
-    list.unshift(doc);
-    this.data.studentDocuments[studentId] = list;
-    this.save();
-    return list;
-  }
-  getStudentCustomCourses(studentId) {
-    if (!this.data.studentCustomCourses) {
-      this.data.studentCustomCourses = {};
-    }
-    return this.data.studentCustomCourses[studentId] || [];
-  }
-  saveStudentCustomCourse(studentId, course) {
-    if (!this.data.studentCustomCourses) {
-      this.data.studentCustomCourses = {};
-    }
-    const list = this.data.studentCustomCourses[studentId] || [];
-    const idx = list.findIndex((c) => c.id === course.id || c.code.toLowerCase() === course.code.toLowerCase());
-    if (idx >= 0) {
-      list[idx] = { ...list[idx], ...course };
-    } else {
-      list.push(course);
-    }
-    this.data.studentCustomCourses[studentId] = list;
-    this.save();
-    return list;
-  }
-  deleteStudentCustomCourse(studentId, courseIdOrCode) {
-    if (!this.data.studentCustomCourses) {
-      this.data.studentCustomCourses = {};
-    }
-    const target = courseIdOrCode.toLowerCase();
-    const list = (this.data.studentCustomCourses[studentId] || []).filter(
-      (c) => c.id.toLowerCase() !== target && c.code.toLowerCase() !== target
-    );
-    this.data.studentCustomCourses[studentId] = list;
-    this.save();
-    return list;
-  }
-  getStudentExcludedCourses(studentId) {
-    if (!this.data.studentExcludedCourses) {
-      this.data.studentExcludedCourses = {};
-    }
-    return this.data.studentExcludedCourses[studentId] || [];
-  }
-  excludeCourseForStudent(studentId, courseCode) {
-    if (!this.data.studentExcludedCourses) {
-      this.data.studentExcludedCourses = {};
-    }
-    const list = this.data.studentExcludedCourses[studentId] || [];
-    const normalized = courseCode.trim().toUpperCase();
-    if (!list.includes(normalized)) {
-      list.push(normalized);
-    }
-    this.data.studentExcludedCourses[studentId] = list;
-    this.save();
-    return list;
-  }
-  unexcludeCourseForStudent(studentId, courseCode) {
-    if (!this.data.studentExcludedCourses) {
-      this.data.studentExcludedCourses = {};
-    }
-    const list = this.data.studentExcludedCourses[studentId] || [];
-    const normalized = courseCode.trim().toUpperCase();
-    this.data.studentExcludedCourses[studentId] = list.filter((c) => c !== normalized);
-    this.save();
-    return this.data.studentExcludedCourses[studentId];
-  }
-  resetExcludedCoursesForStudent(studentId) {
-    if (!this.data.studentExcludedCourses) {
-      this.data.studentExcludedCourses = {};
-    }
-    this.data.studentExcludedCourses[studentId] = [];
-    this.save();
-  }
-  getNotifications(userId) {
-    const all = this.data.notifications || [];
-    return userId ? all.filter((n) => n.userId === userId) : all;
-  }
-  addNotification(notif) {
-    if (!this.data.notifications) this.data.notifications = [];
-    this.data.notifications.unshift(notif);
-    this.save();
-    return notif;
-  }
-  getBugReports() {
-    return this.data.bugReports || [];
-  }
-  addBugReport(report) {
-    if (!this.data.bugReports) {
-      this.data.bugReports = [];
-    }
-    this.data.bugReports.unshift(report);
-    this.save();
-    return report;
-  }
-  updateBugReportStatus(reportId, status) {
-    if (!this.data.bugReports) return null;
-    const item = this.data.bugReports.find((b) => b.id === reportId);
-    if (!item) return null;
-    item.status = status;
-    this.save();
-    return item;
-  }
-};
-var db = new JsonDB();
-
-// src/server/auth.ts
-import jwt from "jsonwebtoken";
-var JWT_SECRET = process.env.JWT_SECRET || "swe-portal-secret-key-2026";
-function enrichUserWithBatchSemester(user) {
-  if (!user) return user;
-  const batches = db.getData().batches || [];
-  const matchedBatch = batches.find(
-    (b) => user.batchId && b.id === user.batchId || user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()
-  );
-  if (matchedBatch && matchedBatch.currentSemester) {
-    return {
-      ...user,
-      batchName: matchedBatch.name || user.batchName,
-      currentSemester: matchedBatch.currentSemester
-    };
-  }
-  if ((user.batchId === "batch-9" || user.batchName?.includes("9th")) && (!user.currentSemester || user.currentSemester < 5)) {
-    return {
-      ...user,
-      batchName: "SWE 9th Batch",
-      currentSemester: 5
-    };
-  }
-  return user;
-}
-function generateToken(user) {
-  const payload = {
-    id: user.id,
-    studentId: user.studentId,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    batchId: user.batchId,
-    batchName: user.batchName,
-    currentSemester: user.currentSemester
-  };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-}
-async function verifyAuthToken(req, res, next) {
-  const originalNext = next;
-  next = ((...args) => {
-    if (req.user) {
-      req.user = enrichUserWithBatchSemester(req.user);
-    }
-    return originalNext(...args);
-  });
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      success: false,
-      error: "Unauthorized: Missing or invalid authorization token",
-      message: "Unauthorized: Missing or invalid authorization token",
-      code: "UNAUTHORIZED"
-    });
-  }
-  const token = authHeader.split(" ")[1]?.trim();
-  if (!token || token === "undefined" || token === "null") {
-    return res.status(401).json({
-      success: false,
-      error: "Unauthorized: Empty or invalid token provided",
-      message: "Unauthorized: Empty or invalid token provided",
-      code: "UNAUTHORIZED"
-    });
-  }
-  if (token.startsWith("admin_session_token") || token.startsWith("swe_admin_") || token === "admin_token" || token === "admin") {
-    const allUsers = db.getData().users || [];
-    const adminUser = allUsers.find((u) => u.role === "ADMIN") || {
-      id: "usr_swe_admin_central",
-      studentId: "admin",
-      name: "Department Admin",
-      email: "admin@swe.metrouni.edu.bd",
-      role: "ADMIN",
-      batchId: "batch-9",
-      batchName: "SWE 9th Batch",
-      currentSemester: 5
-    };
-    req.user = {
-      id: adminUser.id,
-      studentId: adminUser.studentId || "ADMIN",
-      name: adminUser.name || "Department Admin",
-      email: adminUser.email || "admin@swe.metrouni.edu.bd",
-      role: "ADMIN",
-      batchId: adminUser.batchId || "batch-9",
-      batchName: adminUser.batchName || "SWE 9th Batch",
-      currentSemester: Number(adminUser.currentSemester || 5)
-    };
-    return next();
-  }
-  if (token.startsWith("demo_") || token.startsWith("demo_session_token") || token === "demo_token" || token.includes("111111111") || token.includes("demo-student")) {
-    const allUsers = db.getData().users || [];
-    const demoUser = allUsers.find((u) => u.studentId === "111111111") || allUsers.find((u) => u.role === "STUDENT") || {
-      id: "usr_demo_student_111111111",
-      studentId: "111111111",
-      name: "Demo Student",
-      email: "student@swe.demo",
-      role: "STUDENT",
-      batchId: "batch-9",
-      batchName: "SWE 9th Batch",
-      currentSemester: 5
-    };
-    req.user = {
-      id: demoUser.id,
-      studentId: demoUser.studentId || "111111111",
-      name: demoUser.name || "Demo Student",
-      email: demoUser.email || "student@swe.demo",
-      role: demoUser.role || "STUDENT",
-      batchId: demoUser.batchId || "batch-9",
-      batchName: demoUser.batchName || "SWE 9th Batch",
-      currentSemester: Number(demoUser.currentSemester || 5)
-    };
-    return next();
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded && decoded.id && decoded.role) {
-      req.user = {
-        id: decoded.id,
-        studentId: decoded.studentId || "STUDENT",
-        name: decoded.name || "User",
-        email: decoded.email,
-        role: decoded.role,
-        batchId: decoded.batchId || "batch-9",
-        batchName: decoded.batchName || "SWE 9th Batch",
-        currentSemester: Number(decoded.currentSemester || 1)
-      };
-      return next();
-    }
-  } catch (jwtErr) {
-  }
-  const supabase = getServerSupabase();
-  if (supabase) {
-    try {
-      const { data: authData, error: authError } = await supabase.auth.getUser(token);
-      if (!authError && authData?.user) {
-        const authUser = authData.user;
-        const { data: profile } = await supabase.from("users").select("*").or(`auth_user_id.eq.${authUser.id},email.eq.${authUser.email || ""}`).maybeSingle();
-        if (profile && profile.status !== "DISABLED") {
-          req.user = {
-            id: profile.id,
-            studentId: profile.student_id,
-            name: profile.name,
-            email: profile.email || authUser.email,
-            role: profile.role,
-            batchId: profile.batch_id || void 0,
-            batchName: profile.batch_name || void 0,
-            currentSemester: Number(profile.current_semester || 1)
-          };
-          return next();
-        }
-        const rawRole = authUser.user_metadata?.role || authUser.app_metadata?.role;
-        const metaRole = ["ADMIN", "CR", "STUDENT", "FACULTY"].includes(rawRole) ? rawRole : "STUDENT";
-        req.user = {
-          id: `usr_${authUser.id.replace(/-/g, "")}`,
-          studentId: authUser.user_metadata?.student_id || authUser.user_metadata?.studentId || (metaRole === "ADMIN" ? "ADMIN" : "STUDENT"),
-          name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || "User",
-          email: authUser.email || "",
-          role: metaRole,
-          batchId: authUser.user_metadata?.batch_id || "batch-9",
-          batchName: authUser.user_metadata?.batch_name || "SWE 9th Batch",
-          currentSemester: Number(authUser.user_metadata?.current_semester || 1)
-        };
-        return next();
-      }
-    } catch (sbAuthErr) {
-    }
-  }
-  try {
-    const unverified = jwt.decode(token);
-    if (unverified && typeof unverified === "object" && (unverified.sub || unverified.id || unverified.email)) {
-      const decodedEmail = unverified.email || unverified.user_metadata?.email || unverified.app_metadata?.email;
-      const decodedSub = unverified.sub || unverified.id || unverified.user_id;
-      const allUsers = db.getData().users || [];
-      const match = allUsers.find(
-        (u) => decodedEmail && u.email && u.email.toLowerCase() === String(decodedEmail).toLowerCase() || decodedSub && (u.id === decodedSub || u.id.includes(String(decodedSub).replace(/-/g, "")))
-      );
-      if (match && match.status !== "DISABLED") {
-        req.user = {
-          id: match.id,
-          studentId: match.studentId,
-          name: match.name,
-          email: match.email,
-          role: match.role,
-          batchId: match.batchId,
-          batchName: match.batchName,
-          currentSemester: match.currentSemester
-        };
-        return next();
-      }
-      const rawRole = unverified.app_metadata?.role || unverified.user_metadata?.role || unverified.role;
-      const userRole = ["ADMIN", "CR", "STUDENT", "FACULTY"].includes(rawRole) ? rawRole : "STUDENT";
-      req.user = {
-        id: decodedSub || `usr_${Date.now()}`,
-        studentId: unverified.user_metadata?.student_id || unverified.user_metadata?.studentId || unverified.studentId || (userRole === "ADMIN" ? "ADMIN" : "STUDENT"),
-        name: unverified.user_metadata?.full_name || unverified.user_metadata?.name || unverified.name || "User",
-        email: decodedEmail || "",
-        role: userRole,
-        batchId: unverified.user_metadata?.batch_id || unverified.batchId || "batch-9",
-        batchName: unverified.user_metadata?.batch_name || unverified.batchName || "SWE 9th Batch",
-        currentSemester: Number(unverified.user_metadata?.current_semester || unverified.currentSemester || 1)
-      };
-      return next();
-    }
-  } catch (decodeErr) {
-  }
-  return res.status(401).json({
-    success: false,
-    error: "Unauthorized: Invalid or expired authorization token",
-    message: "Unauthorized: Invalid or expired authorization token",
-    code: "UNAUTHORIZED"
-  });
-}
-function optionalAuthToken(req, res, next) {
-  const originalNext = next;
-  next = ((...args) => {
-    if (req.user) {
-      req.user = enrichUserWithBatchSemester(req.user);
-    }
-    return originalNext(...args);
-  });
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1]?.trim();
-    if (token && token !== "undefined" && token !== "null") {
-      if (token.startsWith("admin_session_token") || token.startsWith("swe_admin_") || token === "admin_token") {
-        const adminUser = db.getData().users?.find((u) => u.role === "ADMIN");
-        if (adminUser) {
-          req.user = {
-            id: adminUser.id,
-            studentId: adminUser.studentId || "ADMIN",
-            name: adminUser.name || "Admin",
-            email: adminUser.email,
-            role: "ADMIN",
-            batchId: adminUser.batchId || "batch-9",
-            batchName: adminUser.batchName || "SWE 9th Batch",
-            currentSemester: adminUser.currentSemester || 5
-          };
-          return next();
-        }
-      }
-      if (token.startsWith("demo_session_token") || token === "demo_token") {
-        const demoUser = db.getData().users?.find((u) => u.studentId === "111111111" || u.role === "STUDENT");
-        if (demoUser) {
-          req.user = {
-            id: demoUser.id,
-            studentId: demoUser.studentId,
-            name: demoUser.name,
-            email: demoUser.email,
-            role: demoUser.role,
-            batchId: demoUser.batchId || "batch-9",
-            batchName: demoUser.batchName || "SWE 9th Batch",
-            currentSemester: demoUser.currentSemester || 5
-          };
-          return next();
-        }
-      }
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-      } catch (e) {
-        try {
-          const unverified = jwt.decode(token);
-          if (unverified && typeof unverified === "object") {
-            const allUsers = db.getData().users || [];
-            const decodedEmail = unverified.email || unverified.user_metadata?.email;
-            const decodedSub = unverified.sub || unverified.id;
-            const match = allUsers.find(
-              (u) => decodedEmail && u.email && u.email.toLowerCase() === String(decodedEmail).toLowerCase() || decodedSub && (u.id === decodedSub || u.id.includes(String(decodedSub).replace(/-/g, "")))
-            );
-            if (match) {
-              req.user = {
-                id: match.id,
-                studentId: match.studentId,
-                name: match.name,
-                email: match.email,
-                role: match.role,
-                batchId: match.batchId || "batch-9",
-                batchName: match.batchName || "SWE 9th Batch",
-                currentSemester: match.currentSemester || 1
-              };
+        this.data.batches.forEach((b) => {
+          const lowerName = b.name.toLowerCase();
+          if (b.id === "batch-9" || lowerName.includes("9th")) {
+            b.currentSemester = 5;
+          }
+          if (!b.semesterMode) {
+            if (lowerName.includes("5th") || lowerName.includes("6th") || lowerName.includes("7th")) {
+              b.semesterMode = "MANUAL";
+            } else {
+              b.semesterMode = "SEQUENCE";
             }
           }
-        } catch (err) {
+          if (!b.status) {
+            b.status = b.currentSemester > 12 ? "GRADUATED" : "ACTIVE";
+          }
+          if (!b.crIds) b.crIds = [];
+        });
+        this.data.users.forEach((u) => {
+          const b = this.data.batches.find((batch) => batch.id === u.batchId || u.batchName && batch.name.toLowerCase() === u.batchName.toLowerCase());
+          if (b) {
+            u.currentSemester = b.currentSemester;
+            u.batchId = b.id;
+            u.batchName = b.name;
+          } else if (u.batchId === "batch-9" || u.batchName?.toLowerCase().includes("9th")) {
+            u.currentSemester = 5;
+          }
+        });
+        this.data.users = this.data.users.filter((u) => {
+          const sid = (u.studentId || "").toLowerCase();
+          const email = (u.email || "").toLowerCase();
+          const name = (u.name || "").toLowerCase();
+          const id = (u.id || "").toLowerCase();
+          if (sid === "2023-swe-001" || sid === "2022-swe-002" || sid === "2021-swe-003" || sid === "admin-001" || sid === "admin101") return false;
+          if (email === "admin@swe.edu") return false;
+          if (id === "user-admin-1" || id === "user-admin-101") return false;
+          if (name.includes("tanvir hossain") || name.includes("samiul alam") || name.includes("dr. shahriar")) return false;
+          return true;
+        });
+        const adminUser = {
+          id: "usr_swe_admin_central",
+          studentId: "admin",
+          name: "Department Admin",
+          email: "admin@swe.metrouni.edu.bd",
+          phone: "+8801700000000",
+          role: "ADMIN",
+          batchId: "batch-9",
+          batchName: "SWE Administration",
+          currentSemester: 8,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 1e3,
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const existingAdminIdx = this.data.users.findIndex((u) => u.id === adminUser.id || u.studentId === "admin" || u.email === adminUser.email);
+        if (existingAdminIdx >= 0) {
+          this.data.users[existingAdminIdx] = { ...this.data.users[existingAdminIdx], ...adminUser, role: "ADMIN", status: "ACTIVE" };
+        } else {
+          this.data.users.push(adminUser);
+        }
+        this.data.passwords[adminUser.id] = bcrypt.hashSync("admin123", 10);
+        this.save();
+        hydrateFromSupabase(this.data).catch(() => {
+        });
+      }
+      save() {
+        try {
+          if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+            return;
+          }
+          fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), "utf-8");
+        } catch {
         }
       }
-    }
+      getData() {
+        return this.data;
+      }
+      getCourses() {
+        return this.data.courses || [];
+      }
+      getBatches() {
+        return this.data.batches || [];
+      }
+      getRoutines() {
+        return this.data.routines || [];
+      }
+      getExams() {
+        return this.data.exams || [];
+      }
+      getAnnouncements() {
+        return this.data.announcements || [];
+      }
+      // Helper methods
+      getUsers() {
+        return this.data.users || [];
+      }
+      getUserById(id) {
+        return this.data.users.find((u) => u.id === id);
+      }
+      getUserByStudentId(studentId) {
+        if (!studentId) return void 0;
+        const term = studentId.trim().toLowerCase();
+        const termNoDash = term.replace(/[\s-]/g, "");
+        let user = this.data.users.find(
+          (u) => u.studentId?.toLowerCase() === term || u.email && u.email.toLowerCase() === term || u.id.toLowerCase() === term
+        );
+        if (user) return user;
+        user = this.data.users.find(
+          (u) => u.studentId?.toLowerCase().replace(/[\s-]/g, "") === termNoDash
+        );
+        if (user) return user;
+        return void 0;
+      }
+      getPasswordHash(userId) {
+        return this.data.passwords[userId];
+      }
+      setPasswordHash(userId, hash) {
+        this.data.passwords[userId] = hash;
+        this.save();
+      }
+      async addUser(user, passwordHash) {
+        this.data.users.push(user);
+        this.data.passwords[user.id] = passwordHash;
+        this.save();
+        try {
+          await syncToSupabase("users", {
+            id: user.id,
+            student_id: user.studentId,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            batch_id: user.batchId,
+            batch_name: user.batchName,
+            current_semester: user.currentSemester,
+            profile_image: user.profileImage,
+            status: user.status,
+            points: user.points || 0,
+            created_at: user.createdAt || (/* @__PURE__ */ new Date()).toISOString(),
+            updated_at: (/* @__PURE__ */ new Date()).toISOString()
+          });
+        } catch (e) {
+          console.error("[Supabase Direct User Insert Error]:", e);
+        }
+      }
+      async updateUser(user) {
+        const idx = this.data.users.findIndex((u) => u.id === user.id);
+        if (idx !== -1) {
+          this.data.users[idx] = user;
+          this.save();
+          try {
+            await syncToSupabase("users", {
+              id: user.id,
+              student_id: user.studentId,
+              name: user.name,
+              email: user.email,
+              phone: user.phone,
+              role: user.role,
+              batch_id: user.batchId,
+              batch_name: user.batchName,
+              current_semester: user.currentSemester,
+              profile_image: user.profileImage,
+              status: user.status,
+              points: user.points || 0,
+              updated_at: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          } catch (e) {
+            console.error("[Supabase Direct User Update Error]:", e);
+          }
+        }
+      }
+      addAuditLog(actorId, actorName, action, target, details) {
+        const log = {
+          id: `log-${Date.now()}`,
+          actorId,
+          actorName,
+          action,
+          target,
+          details,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        this.data.auditLogs.unshift(log);
+        this.save();
+      }
+      getRetakes() {
+        if (!this.data.retakeRegistrations) {
+          this.data.retakeRegistrations = [];
+        }
+        return this.data.retakeRegistrations;
+      }
+      saveRetake(registration) {
+        if (!this.data.retakeRegistrations) {
+          this.data.retakeRegistrations = [];
+        }
+        const idx = this.data.retakeRegistrations.findIndex((r) => r.id === registration.id);
+        if (idx >= 0) {
+          this.data.retakeRegistrations[idx] = registration;
+        } else {
+          this.data.retakeRegistrations.push(registration);
+        }
+        this.save();
+      }
+      deleteRetake(id) {
+        if (!this.data.retakeRegistrations) return false;
+        const initialLen = this.data.retakeRegistrations.length;
+        this.data.retakeRegistrations = this.data.retakeRegistrations.filter((r) => r.id !== id);
+        if (this.data.retakeRegistrations.length !== initialLen) {
+          this.save();
+          return true;
+        }
+        return false;
+      }
+      getStudentGrades(studentId, alternateId) {
+        if (!this.data.studentGrades) {
+          this.data.studentGrades = {};
+        }
+        const primary = this.data.studentGrades[studentId];
+        if (primary && Object.keys(primary).length > 0) return primary;
+        if (alternateId && this.data.studentGrades[alternateId]) {
+          return this.data.studentGrades[alternateId];
+        }
+        return primary || {};
+      }
+      saveStudentGrades(studentId, grades, alternateId) {
+        if (!this.data.studentGrades) {
+          this.data.studentGrades = {};
+        }
+        const current = { ...this.data.studentGrades[studentId] || (alternateId ? this.data.studentGrades[alternateId] : null) || {} };
+        const now = (/* @__PURE__ */ new Date()).toISOString();
+        for (const [code, info] of Object.entries(grades)) {
+          if (!info.grade || info.grade === "N/A" || info.grade === "NOT_PUBLISHED") {
+            delete current[code];
+          } else {
+            current[code] = {
+              grade: info.grade,
+              gradePoint: info.gradePoint,
+              semester: info.semester,
+              updatedAt: now
+            };
+          }
+        }
+        this.data.studentGrades[studentId] = current;
+        if (alternateId && alternateId !== studentId) {
+          this.data.studentGrades[alternateId] = current;
+        }
+        let totalQualityPoints = 0;
+        let totalGradedCredits = 0;
+        for (const item of Object.values(current)) {
+          if (item && typeof item.gradePoint === "number" && item.gradePoint >= 0) {
+            const cred = 3;
+            totalQualityPoints += cred * item.gradePoint;
+            totalGradedCredits += cred;
+          }
+        }
+        const computedCgpa = totalGradedCredits > 0 ? Number((totalQualityPoints / totalGradedCredits).toFixed(2)) : 0;
+        const matchedUser = this.data.users.find((u) => u.id === studentId || alternateId && (u.id === alternateId || u.studentId === alternateId) || u.studentId === studentId);
+        if (matchedUser) {
+          matchedUser.cgpa = computedCgpa;
+        }
+        this.save();
+        return current;
+      }
+      getStudentCGPA(studentId, alternateId) {
+        const grades = this.getStudentGrades(studentId, alternateId);
+        let totalQualityPoints = 0;
+        let totalGradedCredits = 0;
+        for (const item of Object.values(grades)) {
+          if (item && typeof item.gradePoint === "number" && item.gradePoint >= 0) {
+            const cred = 3;
+            totalQualityPoints += cred * item.gradePoint;
+            totalGradedCredits += cred;
+          }
+        }
+        if (totalGradedCredits === 0) {
+          const u = this.data.users.find((usr) => usr.id === studentId || usr.studentId === studentId || alternateId && (usr.id === alternateId || usr.studentId === alternateId));
+          return u?.cgpa || 0;
+        }
+        return Number((totalQualityPoints / totalGradedCredits).toFixed(2));
+      }
+      setStudentCGPA(studentId, cgpa, alternateId) {
+        const matchedUser = this.data.users.find((u) => u.id === studentId || u.studentId === studentId || alternateId && (u.id === alternateId || u.studentId === alternateId));
+        if (matchedUser) {
+          matchedUser.cgpa = cgpa;
+          this.save();
+        }
+      }
+      resetStudentGrades(studentId, alternateId) {
+        if (!this.data.studentGrades) this.data.studentGrades = {};
+        this.data.studentGrades[studentId] = {};
+        if (alternateId) this.data.studentGrades[alternateId] = {};
+        const matchedUser = this.data.users.find((u) => u.id === studentId || u.studentId === studentId || alternateId && (u.id === alternateId || u.studentId === alternateId));
+        if (matchedUser) {
+          matchedUser.cgpa = 0;
+        }
+        this.save();
+      }
+      getStudentCGPADocs(studentId) {
+        if (!this.data.studentDocuments) {
+          this.data.studentDocuments = {};
+        }
+        return this.data.studentDocuments[studentId] || [];
+      }
+      addStudentCGPADoc(studentId, doc) {
+        if (!this.data.studentDocuments) {
+          this.data.studentDocuments = {};
+        }
+        const list = this.data.studentDocuments[studentId] || [];
+        list.unshift(doc);
+        this.data.studentDocuments[studentId] = list;
+        this.save();
+        return list;
+      }
+      getStudentCustomCourses(studentId) {
+        if (!this.data.studentCustomCourses) {
+          this.data.studentCustomCourses = {};
+        }
+        return this.data.studentCustomCourses[studentId] || [];
+      }
+      saveStudentCustomCourse(studentId, course) {
+        if (!this.data.studentCustomCourses) {
+          this.data.studentCustomCourses = {};
+        }
+        const list = this.data.studentCustomCourses[studentId] || [];
+        const idx = list.findIndex((c) => c.id === course.id || c.code.toLowerCase() === course.code.toLowerCase());
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...course };
+        } else {
+          list.push(course);
+        }
+        this.data.studentCustomCourses[studentId] = list;
+        this.save();
+        return list;
+      }
+      deleteStudentCustomCourse(studentId, courseIdOrCode) {
+        if (!this.data.studentCustomCourses) {
+          this.data.studentCustomCourses = {};
+        }
+        const target = courseIdOrCode.toLowerCase();
+        const list = (this.data.studentCustomCourses[studentId] || []).filter(
+          (c) => c.id.toLowerCase() !== target && c.code.toLowerCase() !== target
+        );
+        this.data.studentCustomCourses[studentId] = list;
+        this.save();
+        return list;
+      }
+      getStudentExcludedCourses(studentId) {
+        if (!this.data.studentExcludedCourses) {
+          this.data.studentExcludedCourses = {};
+        }
+        return this.data.studentExcludedCourses[studentId] || [];
+      }
+      excludeCourseForStudent(studentId, courseCode) {
+        if (!this.data.studentExcludedCourses) {
+          this.data.studentExcludedCourses = {};
+        }
+        const list = this.data.studentExcludedCourses[studentId] || [];
+        const normalized = courseCode.trim().toUpperCase();
+        if (!list.includes(normalized)) {
+          list.push(normalized);
+        }
+        this.data.studentExcludedCourses[studentId] = list;
+        this.save();
+        return list;
+      }
+      unexcludeCourseForStudent(studentId, courseCode) {
+        if (!this.data.studentExcludedCourses) {
+          this.data.studentExcludedCourses = {};
+        }
+        const list = this.data.studentExcludedCourses[studentId] || [];
+        const normalized = courseCode.trim().toUpperCase();
+        this.data.studentExcludedCourses[studentId] = list.filter((c) => c !== normalized);
+        this.save();
+        return this.data.studentExcludedCourses[studentId];
+      }
+      resetExcludedCoursesForStudent(studentId) {
+        if (!this.data.studentExcludedCourses) {
+          this.data.studentExcludedCourses = {};
+        }
+        this.data.studentExcludedCourses[studentId] = [];
+        this.save();
+      }
+      getNotifications(userId) {
+        const all = this.data.notifications || [];
+        return userId ? all.filter((n) => n.userId === userId) : all;
+      }
+      addNotification(notif) {
+        if (!this.data.notifications) this.data.notifications = [];
+        this.data.notifications.unshift(notif);
+        this.save();
+        return notif;
+      }
+      getBugReports() {
+        return this.data.bugReports || [];
+      }
+      addBugReport(report) {
+        if (!this.data.bugReports) {
+          this.data.bugReports = [];
+        }
+        this.data.bugReports.unshift(report);
+        this.save();
+        return report;
+      }
+      updateBugReportStatus(reportId, status) {
+        if (!this.data.bugReports) return null;
+        const item = this.data.bugReports.find((b) => b.id === reportId);
+        if (!item) return null;
+        item.status = status;
+        this.save();
+        return item;
+      }
+      getClassTasks() {
+        if (!this.data.classTasks) {
+          if (this.data.classTopics && Array.isArray(this.data.classTopics) && this.data.classTopics.length > 0) {
+            this.data.classTasks = this.data.classTopics.map((t) => ({
+              id: t.id,
+              courseId: t.courseId,
+              courseCode: t.courseCode,
+              courseTitle: t.courseTitle,
+              semester: t.semester,
+              batchId: t.batchId,
+              date: t.date,
+              dueDate: t.homework ? t.date : void 0,
+              title: t.topic || t.title || "Class Task",
+              description: t.description || t.homework || "",
+              type: "TASK",
+              priority: "NORMAL",
+              facultyName: t.facultyName,
+              attachmentUrl: t.attachmentUrl,
+              attachmentName: t.attachmentName,
+              createdBy: t.createdBy,
+              createdByName: t.createdByName,
+              createdAt: t.createdAt
+            }));
+          } else {
+            this.data.classTasks = [];
+          }
+        }
+        return this.data.classTasks;
+      }
+      addClassTask(task) {
+        if (!this.data.classTasks) {
+          this.data.classTasks = [];
+        }
+        this.data.classTasks.unshift(task);
+        this.save();
+        return task;
+      }
+      updateClassTask(id, updates) {
+        if (!this.data.classTasks) return null;
+        const idx = this.data.classTasks.findIndex((t) => t.id === id);
+        if (idx === -1) return null;
+        this.data.classTasks[idx] = {
+          ...this.data.classTasks[idx],
+          ...updates
+        };
+        this.save();
+        return this.data.classTasks[idx];
+      }
+      deleteClassTask(id) {
+        if (!this.data.classTasks) return false;
+        const initialLen = this.data.classTasks.length;
+        this.data.classTasks = this.data.classTasks.filter((t) => t.id !== id);
+        if (this.data.classTasks.length !== initialLen) {
+          this.save();
+          return true;
+        }
+        return false;
+      }
+      // Backwards compatibility methods
+      getClassTopics() {
+        return this.getClassTasks();
+      }
+      addClassTopic(topic) {
+        return this.addClassTask(topic);
+      }
+      updateClassTopic(id, updates) {
+        return this.updateClassTask(id, updates);
+      }
+      deleteClassTopic(id) {
+        return this.deleteClassTask(id);
+      }
+    };
+    db = new JsonDB();
   }
-  next();
-}
+});
 
 // src/types/index.ts
 function getFacultyRank(designation = "") {
@@ -3606,6 +9719,17 @@ function sortFacultyByHierarchy(list) {
     return a.name.localeCompare(b.name);
   });
 }
+var init_types = __esm({
+  "src/types/index.ts"() {
+  }
+});
+
+// src/types.ts
+var init_types2 = __esm({
+  "src/types.ts"() {
+    init_types();
+  }
+});
 
 // src/utils/routineUtils.ts
 function parseTimeToMinutes(timeStr) {
@@ -3623,10 +9747,11 @@ function normalizeCourseCode(val) {
   return (val || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
 }
 function sortRoutineSlots(slots) {
+  if (!Array.isArray(slots) || slots.length === 0) return [];
   return [...slots].sort((a, b) => {
-    const diff = parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime);
+    const diff = parseTimeToMinutes(a?.startTime) - parseTimeToMinutes(b?.startTime);
     if (diff !== 0) return diff;
-    return parseTimeToMinutes(a.endTime) - parseTimeToMinutes(b.endTime);
+    return parseTimeToMinutes(a?.endTime) - parseTimeToMinutes(b?.endTime);
   });
 }
 function deduplicateAndMergeRoutineSlots(slots) {
@@ -3680,10 +9805,81 @@ function deduplicateAndMergeRoutineSlots(slots) {
   }
   return sortRoutineSlots(finalResult);
 }
+var init_routineUtils = __esm({
+  "src/utils/routineUtils.ts"() {
+  }
+});
 
 // src/server/supabaseData.ts
-var CACHE_TTL_MS = 60 * 1e3;
-var memoryCache = /* @__PURE__ */ new Map();
+var supabaseData_exports = {};
+__export(supabaseData_exports, {
+  createAnnouncementInDB: () => createAnnouncementInDB,
+  createBatchInDB: () => createBatchInDB,
+  createCourseInDB: () => createCourseInDB,
+  createExamInDB: () => createExamInDB,
+  createFacultyInDB: () => createFacultyInDB,
+  createNoticeInDB: () => createNoticeInDB,
+  createNotificationInDB: () => createNotificationInDB,
+  createResourceInDB: () => createResourceInDB,
+  createRoutineSlotInDB: () => createRoutineSlotInDB,
+  createUserInDB: () => createUserInDB,
+  deleteAnnouncementFromDB: () => deleteAnnouncementFromDB,
+  deleteBatchFromDB: () => deleteBatchFromDB,
+  deleteCourseFromDB: () => deleteCourseFromDB,
+  deleteExamFromDB: () => deleteExamFromDB,
+  deleteFacultyFromDB: () => deleteFacultyFromDB,
+  deleteNoticeFromDB: () => deleteNoticeFromDB,
+  deleteResourceFromDB: () => deleteResourceFromDB,
+  deleteRoutineSlotFromDB: () => deleteRoutineSlotFromDB,
+  deleteUserFromDB: () => deleteUserFromDB,
+  fetchAllAnnouncements: () => fetchAllAnnouncements,
+  fetchAllBatches: () => fetchAllBatches,
+  fetchAllCourses: () => fetchAllCourses,
+  fetchAllExams: () => fetchAllExams,
+  fetchAllFaculty: () => fetchAllFaculty,
+  fetchAllNotices: () => fetchAllNotices,
+  fetchAllResources: () => fetchAllResources,
+  fetchAllRoutineSlots: () => fetchAllRoutineSlots,
+  fetchAllUsers: () => fetchAllUsers,
+  fetchBatchById: () => fetchBatchById,
+  fetchCourseById: () => fetchCourseById,
+  fetchNotificationsForUser: () => fetchNotificationsForUser,
+  fetchUserByIdOrStudentId: () => fetchUserByIdOrStudentId,
+  getCached: () => getCached,
+  invalidateCache: () => invalidateCache,
+  mapAnnouncementFromSupabase: () => mapAnnouncementFromSupabase,
+  mapAnnouncementToSupabase: () => mapAnnouncementToSupabase,
+  mapBatchFromSupabase: () => mapBatchFromSupabase,
+  mapBatchToSupabase: () => mapBatchToSupabase,
+  mapCourseFromSupabase: () => mapCourseFromSupabase,
+  mapCourseToSupabase: () => mapCourseToSupabase,
+  mapExamFromSupabase: () => mapExamFromSupabase,
+  mapExamToSupabase: () => mapExamToSupabase,
+  mapFacultyFromSupabase: () => mapFacultyFromSupabase,
+  mapFacultyToSupabase: () => mapFacultyToSupabase,
+  mapNoticeFromSupabase: () => mapNoticeFromSupabase,
+  mapNoticeToSupabase: () => mapNoticeToSupabase,
+  mapNotificationFromSupabase: () => mapNotificationFromSupabase,
+  mapNotificationToSupabase: () => mapNotificationToSupabase,
+  mapResourceFromSupabase: () => mapResourceFromSupabase,
+  mapResourceToSupabase: () => mapResourceToSupabase,
+  mapRoutineSlotFromSupabase: () => mapRoutineSlotFromSupabase,
+  mapRoutineSlotToSupabase: () => mapRoutineSlotToSupabase,
+  mapUserFromSupabase: () => mapUserFromSupabase,
+  mapUserToSupabase: () => mapUserToSupabase,
+  markAllNotificationsAsReadInDB: () => markAllNotificationsAsReadInDB,
+  markNotificationAsReadInDB: () => markNotificationAsReadInDB,
+  resolveBatchSemester: () => resolveBatchSemester,
+  setCached: () => setCached,
+  updateBatchInDB: () => updateBatchInDB,
+  updateCourseInDB: () => updateCourseInDB,
+  updateExamInDB: () => updateExamInDB,
+  updateFacultyInDB: () => updateFacultyInDB,
+  updateResourceInDB: () => updateResourceInDB,
+  updateRoutineSlotInDB: () => updateRoutineSlotInDB,
+  updateUserInDB: () => updateUserInDB,
+  uploadBase64ImageToStorage: () => uploadBase64ImageToStorage
+});
 function getCached(key) {
   const entry = memoryCache.get(key);
   if (!entry) return null;
@@ -4047,6 +10243,24 @@ async function updateBatchInDB(id, updates) {
   }
   return updated;
 }
+async function deleteBatchFromDB(id) {
+  invalidateCache("batches");
+  const local = db.getData();
+  if (local.batches) {
+    local.batches = local.batches.filter((b) => b.id !== id);
+    db.save();
+  }
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("batches").delete().eq("id", id);
+      if (error) console.warn("[Supabase deleteBatch Warning]:", error.message);
+    } catch (e) {
+      console.warn("[Supabase deleteBatch Exception]:", e?.message);
+    }
+  }
+  return true;
+}
 function mapFacultyFromSupabase(row) {
   return {
     id: row.id,
@@ -4206,17 +10420,34 @@ async function deleteFacultyFromDB(id) {
   }
   return true;
 }
+function resolveBatchSemester(batchId, batchName, rawSemester) {
+  const bId = (batchId || "").trim().toLowerCase();
+  const bName = (batchName || "").trim().toLowerCase();
+  if (bId === "batch-1788450159710" || bId === "batch-13" || bName.includes("13th") || bName === "13") return 1;
+  if (bId === "batch-1788449554669" || bId === "batch-12" || bName.includes("12th") || bName === "12") return 2;
+  if (bId === "batch-1792923073984" || bId === "batch-11" || bName.includes("11th") || bName === "11") return 3;
+  if (bId === "batch-10" || bName.includes("10th") || bName === "10") return 4;
+  if (bId === "batch-9" || bName.includes("9th") || bName === "9") return 5;
+  if (bId === "batch-8" || bName.includes("8th") || bName === "8") return 6;
+  if (bId === "batch-7" || bName.includes("7th") || bName === "7") return 7;
+  if (bId === "batch-6" || bName.includes("6th") || bName === "6") return 8;
+  if (bId === "batch-5" || bName.includes("5th") || bName === "5") return 8;
+  const parsed = Number(rawSemester);
+  return !isNaN(parsed) && parsed > 0 ? parsed : 1;
+}
 function mapUserFromSupabase(row) {
+  const role = row.role || "STUDENT";
+  const semester = role === "ADMIN" ? 0 : resolveBatchSemester(row.batch_id, row.batch_name, row.current_semester);
   return {
     id: row.id,
     studentId: row.student_id || "",
     name: row.name || "",
     email: row.email || void 0,
     phone: row.phone || void 0,
-    role: row.role || "STUDENT",
+    role,
     batchId: row.batch_id || void 0,
     batchName: row.batch_name || void 0,
-    currentSemester: row.batch_id === "batch-9" || row.batch_name && String(row.batch_name).toLowerCase().includes("9th") ? Math.max(5, Number(row.current_semester || 5)) : Number(row.current_semester || 1),
+    currentSemester: semester,
     profileImage: row.profile_image || void 0,
     status: row.status || "ACTIVE",
     points: Number(row.points || 0),
@@ -4334,6 +10565,9 @@ async function updateUserInDB(id, updates) {
     };
     local.users.push(existing);
   }
+  if (updates.batchId && updates.currentSemester === void 0) {
+    updates.currentSemester = resolveBatchSemester(updates.batchId, updates.batchName || existing?.batchName);
+  }
   const updated = { ...existing, ...updates, updatedAt: (/* @__PURE__ */ new Date()).toISOString() };
   const idx = local.users.findIndex((u) => u.id === existing.id);
   if (idx >= 0) local.users[idx] = updated;
@@ -4357,6 +10591,23 @@ async function updateUserInDB(id, updates) {
     }
   }
   return updated;
+}
+async function deleteUserFromDB(id) {
+  const local = db.getData();
+  if (local.users) {
+    local.users = local.users.filter((u) => u.id !== id && u.studentId !== id);
+    db.save();
+  }
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("users").delete().eq("id", id);
+      if (error) console.warn("[Supabase deleteUser Warning]:", error.message);
+    } catch (e) {
+      console.warn("[Supabase deleteUser Exception]:", e?.message);
+    }
+  }
+  return true;
 }
 function mapRoutineSlotFromSupabase(row) {
   return {
@@ -4399,11 +10650,12 @@ async function fetchAllRoutineSlots(batchId) {
   const batchCandidates = batchId ? [
     batchId,
     normalizedBatchId,
-    `${normalizedBatchId}th`,
     ...normalizedBatchId === "batch-13" ? ["batch-1788450159710"] : [],
     ...batchId === "batch-1788450159710" ? ["batch-13", "batch-13th"] : [],
     ...normalizedBatchId === "batch-12" ? ["batch-1788449554669"] : [],
-    ...batchId === "batch-1788449554669" ? ["batch-12", "batch-12th"] : []
+    ...batchId === "batch-1788449554669" ? ["batch-12", "batch-12th"] : [],
+    ...normalizedBatchId === "batch-11" ? ["batch-1792923073984"] : [],
+    ...batchId === "batch-1792923073984" ? ["batch-11", "batch-11th"] : []
   ] : [];
   if (supabase) {
     try {
@@ -4669,14 +10921,30 @@ async function deleteExamFromDB(id) {
   return true;
 }
 function mapAnnouncementFromSupabase(row) {
+  let featuredImageUrl = row.featured_image_url || row.featuredImageUrl || void 0;
+  let description = row.description || row.content || "";
+  if (typeof description === "string" && description.startsWith("<!--IMG:")) {
+    const endIdx = description.indexOf("-->");
+    if (endIdx > 8) {
+      if (!featuredImageUrl) {
+        featuredImageUrl = description.substring(8, endIdx);
+      }
+      description = description.substring(endIdx + 3).trimStart();
+    }
+  }
+  const local = db.getData().announcements?.find((a) => a.id === row.id);
+  if (!featuredImageUrl && local?.featuredImageUrl) {
+    featuredImageUrl = local.featuredImageUrl;
+  }
   return {
     id: row.id,
     batchId: row.batch_id || "",
     title: row.title || "",
-    description: row.description || row.content || "",
+    description,
     publishDate: row.publish_date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
     expiryDate: row.expiry_date || new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0],
     priority: row.priority || "NORMAL",
+    featuredImageUrl,
     createdBy: row.created_by || row.author_id || "",
     createdByName: row.created_by_name || row.author_name || "CR",
     createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
@@ -4685,11 +10953,16 @@ function mapAnnouncementFromSupabase(row) {
 function mapAnnouncementToSupabase(ann) {
   const rawPriority = (ann.priority || "NORMAL").toUpperCase();
   const priority = rawPriority === "URGENT" || rawPriority === "HIGH" ? "URGENT" : "NORMAL";
+  let description = ann.description || "";
+  if (ann.featuredImageUrl) {
+    description = `<!--IMG:${ann.featuredImageUrl}-->
+${description}`;
+  }
   return {
     id: ann.id,
     batch_id: ann.batchId,
     title: ann.title,
-    description: ann.description,
+    description,
     publish_date: ann.publishDate,
     expiry_date: ann.expiryDate,
     priority,
@@ -4771,6 +11044,30 @@ async function deleteAnnouncementFromDB(id) {
   return true;
 }
 function mapNoticeFromSupabase(row) {
+  let featuredImageUrl = row.featured_image_url || void 0;
+  let attachmentUrl = row.attachment_url || void 0;
+  let attachmentFileName = row.attachment_file_name || row.attachmentFileName || void 0;
+  let attachmentSize = row.attachment_size || row.attachmentSize || void 0;
+  let attachedPhotos = [];
+  if (row.attachment_url && typeof row.attachment_url === "string" && row.attachment_url.trim().startsWith("{")) {
+    try {
+      const meta = JSON.parse(row.attachment_url);
+      if (meta.featuredImageUrl) featuredImageUrl = meta.featuredImageUrl;
+      if (meta.attachmentUrl) attachmentUrl = meta.attachmentUrl;
+      if (meta.attachmentFileName) attachmentFileName = meta.attachmentFileName;
+      if (meta.attachmentSize) attachmentSize = meta.attachmentSize;
+      if (Array.isArray(meta.attachedPhotos)) attachedPhotos = meta.attachedPhotos;
+    } catch {
+    }
+  }
+  const local = db.getData().departmentNotices?.find((n) => n.id === row.id);
+  if (local) {
+    if (!featuredImageUrl && local.featuredImageUrl) featuredImageUrl = local.featuredImageUrl;
+    if (!attachmentUrl && local.attachmentUrl) attachmentUrl = local.attachmentUrl;
+    if (!attachmentFileName && local.attachmentFileName) attachmentFileName = local.attachmentFileName;
+    if (!attachmentSize && local.attachmentSize) attachmentSize = local.attachmentSize;
+    if (attachedPhotos.length === 0 && local.attachedPhotos) attachedPhotos = local.attachedPhotos;
+  }
   return {
     id: row.id,
     title: row.title || "",
@@ -4778,10 +11075,11 @@ function mapNoticeFromSupabase(row) {
     category: row.category || "GENERAL",
     publishDate: row.publish_date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
     isImportant: Boolean(row.is_important),
-    attachmentUrl: row.attachment_url || void 0,
-    attachmentFileName: row.attachment_file_name || row.attachmentFileName || void 0,
-    attachmentSize: row.attachment_size || row.attachmentSize || void 0,
-    featuredImageUrl: row.featured_image_url || row.featuredImageUrl || void 0,
+    attachmentUrl,
+    attachmentFileName,
+    attachmentSize,
+    featuredImageUrl,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : void 0,
     createdBy: row.created_by || "Admin",
     createdByName: row.created_by_name || "Department Admin",
     createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
@@ -4793,6 +11091,16 @@ function mapNoticeToSupabase(notice) {
   if (["EXAM", "HOLIDAY", "URGENT", "GENERAL", "ACADEMIC", "SCHOLARSHIP", "EVENT", "REGISTRATION"].includes(rawCat)) {
     category = rawCat;
   }
+  let finalAttachmentUrl = notice.attachmentUrl || null;
+  if (notice.featuredImageUrl || notice.attachedPhotos && notice.attachedPhotos.length > 0 || notice.attachmentFileName) {
+    finalAttachmentUrl = JSON.stringify({
+      featuredImageUrl: notice.featuredImageUrl || null,
+      attachedPhotos: notice.attachedPhotos || [],
+      attachmentUrl: notice.attachmentUrl || null,
+      attachmentFileName: notice.attachmentFileName || null,
+      attachmentSize: notice.attachmentSize || null
+    });
+  }
   return {
     id: notice.id,
     title: notice.title,
@@ -4800,10 +11108,7 @@ function mapNoticeToSupabase(notice) {
     category,
     publish_date: notice.publishDate,
     is_important: notice.isImportant,
-    attachment_url: notice.attachmentUrl || null,
-    attachment_file_name: notice.attachmentFileName || null,
-    attachment_size: notice.attachmentSize || null,
-    featured_image_url: notice.featuredImageUrl || null,
+    attachment_url: finalAttachmentUrl,
     created_by: notice.createdBy,
     created_by_name: notice.createdByName,
     created_at: notice.createdAt || (/* @__PURE__ */ new Date()).toISOString()
@@ -5185,8 +11490,320 @@ async function markAllNotificationsAsReadInDB(userId) {
   }
   return true;
 }
+var CACHE_TTL_MS, memoryCache;
+var init_supabaseData = __esm({
+  "src/server/supabaseData.ts"() {
+    init_supabaseSync();
+    init_db();
+    init_types2();
+    init_routineUtils();
+    CACHE_TTL_MS = 60 * 1e3;
+    memoryCache = /* @__PURE__ */ new Map();
+  }
+});
+
+// src/server/app.ts
+import express from "express";
+import cors from "cors";
 
 // src/server/routes/auth.ts
+init_db();
+import { Router } from "express";
+import bcrypt2 from "bcryptjs";
+
+// src/server/auth.ts
+init_db();
+init_supabaseSync();
+import jwt from "jsonwebtoken";
+var JWT_SECRET = process.env.JWT_SECRET || "swe-portal-secret-key-2026";
+function enrichUserWithBatchSemester(user) {
+  if (!user) return user;
+  const batches = db.getData().batches || [];
+  const matchedBatch = batches.find(
+    (b) => user.batchId && b.id === user.batchId || user.batchName && b.name.toLowerCase() === user.batchName.toLowerCase()
+  );
+  if (matchedBatch && matchedBatch.currentSemester) {
+    return {
+      ...user,
+      batchName: matchedBatch.name || user.batchName,
+      currentSemester: matchedBatch.currentSemester
+    };
+  }
+  if ((user.batchId === "batch-9" || user.batchName?.includes("9th")) && (!user.currentSemester || user.currentSemester < 5)) {
+    return {
+      ...user,
+      batchName: "SWE 9th Batch",
+      currentSemester: 5
+    };
+  }
+  return user;
+}
+function generateToken(user) {
+  const payload = {
+    id: user.id,
+    studentId: user.studentId,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    batchId: user.batchId,
+    batchName: user.batchName,
+    currentSemester: user.currentSemester
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+}
+async function verifyAuthToken(req, res, next) {
+  const originalNext = next;
+  next = ((...args) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return originalNext(...args);
+  });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized: Missing or invalid authorization token",
+      message: "Unauthorized: Missing or invalid authorization token",
+      code: "UNAUTHORIZED"
+    });
+  }
+  const token = authHeader.split(" ")[1]?.trim();
+  if (!token || token === "undefined" || token === "null") {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized: Empty or invalid token provided",
+      message: "Unauthorized: Empty or invalid token provided",
+      code: "UNAUTHORIZED"
+    });
+  }
+  if (token.startsWith("admin_session_token") || token.startsWith("swe_admin_") || token === "admin_token" || token === "admin") {
+    const allUsers = db.getData().users || [];
+    const adminUser = allUsers.find((u) => u.role === "ADMIN") || {
+      id: "usr_swe_admin_central",
+      studentId: "admin",
+      name: "Department Admin",
+      email: "admin@swe.metrouni.edu.bd",
+      role: "ADMIN",
+      batchId: "batch-9",
+      batchName: "SWE 9th Batch",
+      currentSemester: 5
+    };
+    req.user = {
+      id: adminUser.id,
+      studentId: adminUser.studentId || "ADMIN",
+      name: adminUser.name || "Department Admin",
+      email: adminUser.email || "admin@swe.metrouni.edu.bd",
+      role: "ADMIN",
+      batchId: adminUser.batchId || "batch-9",
+      batchName: adminUser.batchName || "SWE 9th Batch",
+      currentSemester: Number(adminUser.currentSemester || 5)
+    };
+    return next();
+  }
+  if (token.startsWith("demo_") || token.startsWith("demo_session_token") || token === "demo_token" || token.includes("111111111") || token.includes("demo-student")) {
+    const allUsers = db.getData().users || [];
+    const demoUser = allUsers.find((u) => u.studentId === "111111111") || allUsers.find((u) => u.role === "STUDENT") || {
+      id: "usr_demo_student_111111111",
+      studentId: "111111111",
+      name: "Demo Student",
+      email: "student@swe.demo",
+      role: "STUDENT",
+      batchId: "batch-9",
+      batchName: "SWE 9th Batch",
+      currentSemester: 5
+    };
+    req.user = {
+      id: demoUser.id,
+      studentId: demoUser.studentId || "111111111",
+      name: demoUser.name || "Demo Student",
+      email: demoUser.email || "student@swe.demo",
+      role: demoUser.role || "STUDENT",
+      batchId: demoUser.batchId || "batch-9",
+      batchName: demoUser.batchName || "SWE 9th Batch",
+      currentSemester: Number(demoUser.currentSemester || 5)
+    };
+    return next();
+  }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded && decoded.id && decoded.role) {
+      req.user = {
+        id: decoded.id,
+        studentId: decoded.studentId || "STUDENT",
+        name: decoded.name || "User",
+        email: decoded.email,
+        role: decoded.role,
+        batchId: decoded.batchId || "batch-9",
+        batchName: decoded.batchName || "SWE 9th Batch",
+        currentSemester: Number(decoded.currentSemester || 1)
+      };
+      return next();
+    }
+  } catch (jwtErr) {
+  }
+  const supabase = getServerSupabase();
+  if (supabase) {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (!authError && authData?.user) {
+        const authUser = authData.user;
+        const { data: profile } = await supabase.from("users").select("*").or(`auth_user_id.eq.${authUser.id},email.eq.${authUser.email || ""}`).maybeSingle();
+        if (profile && profile.status !== "DISABLED") {
+          req.user = {
+            id: profile.id,
+            studentId: profile.student_id,
+            name: profile.name,
+            email: profile.email || authUser.email,
+            role: profile.role,
+            batchId: profile.batch_id || void 0,
+            batchName: profile.batch_name || void 0,
+            currentSemester: Number(profile.current_semester || 1)
+          };
+          return next();
+        }
+        const rawRole = authUser.user_metadata?.role || authUser.app_metadata?.role;
+        const metaRole = ["ADMIN", "CR", "STUDENT", "FACULTY"].includes(rawRole) ? rawRole : "STUDENT";
+        req.user = {
+          id: `usr_${authUser.id.replace(/-/g, "")}`,
+          studentId: authUser.user_metadata?.student_id || authUser.user_metadata?.studentId || (metaRole === "ADMIN" ? "ADMIN" : "STUDENT"),
+          name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || "User",
+          email: authUser.email || "",
+          role: metaRole,
+          batchId: authUser.user_metadata?.batch_id || "batch-9",
+          batchName: authUser.user_metadata?.batch_name || "SWE 9th Batch",
+          currentSemester: Number(authUser.user_metadata?.current_semester || 1)
+        };
+        return next();
+      }
+    } catch (sbAuthErr) {
+    }
+  }
+  try {
+    const unverified = jwt.decode(token);
+    if (unverified && typeof unverified === "object" && (unverified.sub || unverified.id || unverified.email)) {
+      const decodedEmail = unverified.email || unverified.user_metadata?.email || unverified.app_metadata?.email;
+      const decodedSub = unverified.sub || unverified.id || unverified.user_id;
+      const allUsers = db.getData().users || [];
+      const match = allUsers.find(
+        (u) => decodedEmail && u.email && u.email.toLowerCase() === String(decodedEmail).toLowerCase() || decodedSub && (u.id === decodedSub || u.id.includes(String(decodedSub).replace(/-/g, "")))
+      );
+      if (match && match.status !== "DISABLED") {
+        req.user = {
+          id: match.id,
+          studentId: match.studentId,
+          name: match.name,
+          email: match.email,
+          role: match.role,
+          batchId: match.batchId,
+          batchName: match.batchName,
+          currentSemester: match.currentSemester
+        };
+        return next();
+      }
+      const rawRole = unverified.app_metadata?.role || unverified.user_metadata?.role || unverified.role;
+      const userRole = ["ADMIN", "CR", "STUDENT", "FACULTY"].includes(rawRole) ? rawRole : "STUDENT";
+      req.user = {
+        id: decodedSub || `usr_${Date.now()}`,
+        studentId: unverified.user_metadata?.student_id || unverified.user_metadata?.studentId || unverified.studentId || (userRole === "ADMIN" ? "ADMIN" : "STUDENT"),
+        name: unverified.user_metadata?.full_name || unverified.user_metadata?.name || unverified.name || "User",
+        email: decodedEmail || "",
+        role: userRole,
+        batchId: unverified.user_metadata?.batch_id || unverified.batchId || "batch-9",
+        batchName: unverified.user_metadata?.batch_name || unverified.batchName || "SWE 9th Batch",
+        currentSemester: Number(unverified.user_metadata?.current_semester || unverified.currentSemester || 1)
+      };
+      return next();
+    }
+  } catch (decodeErr) {
+  }
+  return res.status(401).json({
+    success: false,
+    error: "Unauthorized: Invalid or expired authorization token",
+    message: "Unauthorized: Invalid or expired authorization token",
+    code: "UNAUTHORIZED"
+  });
+}
+function optionalAuthToken(req, res, next) {
+  const originalNext = next;
+  next = ((...args) => {
+    if (req.user) {
+      req.user = enrichUserWithBatchSemester(req.user);
+    }
+    return originalNext(...args);
+  });
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1]?.trim();
+    if (token && token !== "undefined" && token !== "null") {
+      if (token.startsWith("admin_session_token") || token.startsWith("swe_admin_") || token === "admin_token") {
+        const adminUser = db.getData().users?.find((u) => u.role === "ADMIN");
+        if (adminUser) {
+          req.user = {
+            id: adminUser.id,
+            studentId: adminUser.studentId || "ADMIN",
+            name: adminUser.name || "Admin",
+            email: adminUser.email,
+            role: "ADMIN",
+            batchId: adminUser.batchId || "batch-9",
+            batchName: adminUser.batchName || "SWE 9th Batch",
+            currentSemester: adminUser.currentSemester || 5
+          };
+          return next();
+        }
+      }
+      if (token.startsWith("demo_session_token") || token === "demo_token") {
+        const demoUser = db.getData().users?.find((u) => u.studentId === "111111111" || u.role === "STUDENT");
+        if (demoUser) {
+          req.user = {
+            id: demoUser.id,
+            studentId: demoUser.studentId,
+            name: demoUser.name,
+            email: demoUser.email,
+            role: demoUser.role,
+            batchId: demoUser.batchId || "batch-9",
+            batchName: demoUser.batchName || "SWE 9th Batch",
+            currentSemester: demoUser.currentSemester || 5
+          };
+          return next();
+        }
+      }
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+      } catch (e) {
+        try {
+          const unverified = jwt.decode(token);
+          if (unverified && typeof unverified === "object") {
+            const allUsers = db.getData().users || [];
+            const decodedEmail = unverified.email || unverified.user_metadata?.email;
+            const decodedSub = unverified.sub || unverified.id;
+            const match = allUsers.find(
+              (u) => decodedEmail && u.email && u.email.toLowerCase() === String(decodedEmail).toLowerCase() || decodedSub && (u.id === decodedSub || u.id.includes(String(decodedSub).replace(/-/g, "")))
+            );
+            if (match) {
+              req.user = {
+                id: match.id,
+                studentId: match.studentId,
+                name: match.name,
+                email: match.email,
+                role: match.role,
+                batchId: match.batchId || "batch-9",
+                batchName: match.batchName || "SWE 9th Batch",
+                currentSemester: match.currentSemester || 1
+              };
+            }
+          }
+        } catch (err) {
+        }
+      }
+    }
+  }
+  next();
+}
+
+// src/server/routes/auth.ts
+init_supabaseData();
 var router = Router();
 router.post("/login", async (req, res) => {
   const { studentId, email, identifier, password } = req.body;
@@ -5252,6 +11869,11 @@ router.post(["/register", "/signup"], async (req, res) => {
     const newUserId = `usr_${Date.now()}`;
     const passwordHash = bcrypt2.hashSync(password || "password123", 10);
     db.setPasswordHash(newUserId, passwordHash);
+    const allBatches = await fetchAllBatches().catch(() => db.getBatches());
+    const matchedBatch = allBatches.find((b) => b.id === batchId || batchName && b.name.toLowerCase() === batchName.toLowerCase()) || allBatches.find((b) => b.id === "batch-9");
+    const assignedBatchId = matchedBatch ? matchedBatch.id : batchId || "batch-9";
+    const assignedBatchName = matchedBatch ? matchedBatch.name : batchName || "SWE 9th Batch";
+    const assignedSemester = matchedBatch ? matchedBatch.currentSemester : Number(currentSemester) || 5;
     const newUser = {
       id: newUserId,
       studentId: studentId.trim(),
@@ -5259,9 +11881,9 @@ router.post(["/register", "/signup"], async (req, res) => {
       email: email.trim().toLowerCase(),
       phone: phone ? phone.trim() : void 0,
       role: "STUDENT",
-      batchId: batchId || "batch-9",
-      batchName: batchName || "SWE 9th Batch",
-      currentSemester: currentSemester || 5,
+      batchId: assignedBatchId,
+      batchName: assignedBatchName,
+      currentSemester: assignedSemester,
       status: "ACTIVE",
       points: 0,
       profileImage: "/avatars/pangolin-cream-2.svg",
@@ -5299,6 +11921,10 @@ router.get("/me", verifyAuthToken, async (req, res) => {
       if (userBatch) {
         activeSemester = userBatch.currentSemester;
         batchName = userBatch.name;
+        if (user.currentSemester !== activeSemester) {
+          await updateUserInDB(user.id, { currentSemester: activeSemester, batchName: userBatch.name }).catch(() => {
+          });
+        }
       } else if (user.batchId === "batch-9" || user.batchName?.toLowerCase().includes("9th")) {
         activeSemester = 5;
         batchName = "SWE 9th Batch";
@@ -5389,6 +12015,8 @@ var auth_default = router;
 
 // src/server/routes/dashboard.ts
 import { Router as Router2 } from "express";
+init_supabaseData();
+init_db();
 var router2 = Router2();
 router2.get("/summary", verifyAuthToken, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: "Unauthorized" });
@@ -5534,6 +12162,7 @@ router2.get("/summary", verifyAuthToken, async (req, res) => {
 var dashboard_default = router2;
 
 // src/server/routes/batches.ts
+init_db();
 import { Router as Router3 } from "express";
 
 // src/server/middleware.ts
@@ -5562,6 +12191,7 @@ function requireRole(...allowedRoles) {
 }
 
 // src/server/routes/batches.ts
+init_supabaseData();
 var router3 = Router3();
 router3.get("/progression-preview", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
   try {
@@ -5574,7 +12204,7 @@ router3.get("/progression-preview", verifyAuthToken, requireRole("ADMIN"), async
     let mostRecentProgression = null;
     allBatches.forEach((b) => {
       const isSequence = (b.semesterMode || "SEQUENCE") === "SEQUENCE";
-      const status = b.status || (b.currentSemester > 8 ? "GRADUATED" : "ACTIVE");
+      const status = b.status || (b.currentSemester > 12 ? "GRADUATED" : "ACTIVE");
       const studentsCount = allUsers.filter((u) => u.batchId === b.id).length;
       if (b.lastProgressedAt) {
         if (!mostRecentProgression || new Date(b.lastProgressedAt) > new Date(mostRecentProgression)) {
@@ -5584,7 +12214,7 @@ router3.get("/progression-preview", verifyAuthToken, requireRole("ADMIN"), async
       if (isSequence) {
         const isEligible = status === "ACTIVE";
         const nextSem = b.currentSemester + 1;
-        const willGraduate = nextSem > 8;
+        const willGraduate = nextSem > 12;
         sequenceBatches.push({
           id: b.id,
           name: b.name,
@@ -5667,7 +12297,7 @@ router3.post("/advance-sequence", verifyAuthToken, requireRole("ADMIN"), async (
       if (isSequence && isActive) {
         const prevSemester = batch.currentSemester;
         const nextSemester = prevSemester + 1;
-        const updatedStatus = nextSemester > 8 ? "GRADUATED" : "ACTIVE";
+        const updatedStatus = nextSemester > 12 ? "GRADUATED" : "ACTIVE";
         await updateBatchInDB(batch.id, {
           currentSemester: nextSemester,
           lastProgressedAt: nowIso,
@@ -5985,7 +12615,10 @@ router3.put("/:id", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
 var batches_default = router3;
 
 // src/server/routes/routines.ts
+init_db();
 import { Router as Router4 } from "express";
+init_routineUtils();
+init_supabaseData();
 var router4 = Router4();
 router4.get("/requests", verifyAuthToken, (req, res) => {
   if (!req.user) return res.status(401).json({ error: "Unauthorized" });
@@ -6252,8 +12885,30 @@ router4.delete("/:id", verifyAuthToken, requireRole("ADMIN", "CR"), async (req, 
 var routines_default = router4;
 
 // src/server/routes/courses.ts
+init_db();
 import { Router as Router5 } from "express";
+init_supabaseData();
 var router5 = Router5();
+function sanitizeCourse(c) {
+  return {
+    id: c.id,
+    code: c.code,
+    title: c.title,
+    shortName: c.shortName,
+    credits: c.credits,
+    type: c.type,
+    semester: c.semester,
+    assignedFacultyId: c.assignedFacultyId,
+    assignedFacultyName: c.assignedFacultyName,
+    batchIds: Array.isArray(c.batchIds) ? c.batchIds : [],
+    ...c.isRetakeCourse ? {
+      isRetakeCourse: true,
+      retakeType: c.retakeType,
+      retakeBatchId: c.retakeBatchId,
+      retakeBatchName: c.retakeBatchName
+    } : {}
+  };
+}
 router5.get("/", optionalAuthToken, async (req, res) => {
   try {
     const allCourses = await fetchAllCourses();
@@ -6280,7 +12935,7 @@ router5.get("/", optionalAuthToken, async (req, res) => {
     } else if (semesterQuery) {
       courses = courses.filter((c) => c.semester === semesterQuery);
     }
-    if (req.user && req.user.role === "STUDENT") {
+    if (req.user && (req.user.role === "STUDENT" || req.user.role === "CR")) {
       try {
         const userRetakes = (db.getRetakes?.() || []).filter((r) => r.studentId === req.user.id && r.status !== "DROPPED");
         if (userRetakes.length > 0) {
@@ -6333,7 +12988,7 @@ router5.get("/", optionalAuthToken, async (req, res) => {
         console.warn("[Courses API retakes error]:", retakeErr);
       }
     }
-    return res.json({ courses });
+    return res.json({ courses: courses.map(sanitizeCourse) });
   } catch (err) {
     console.error({
       route: "/api/courses",
@@ -6342,7 +12997,7 @@ router5.get("/", optionalAuthToken, async (req, res) => {
       supabaseError: err?.supabaseError || err?.details || null
     });
     const fallbackList = db.getData()?.courses || [];
-    return res.status(200).json({ courses: fallbackList });
+    return res.status(200).json({ courses: fallbackList.map(sanitizeCourse) });
   }
 });
 router5.get("/:id", optionalAuthToken, async (req, res) => {
@@ -6372,15 +13027,55 @@ router5.get("/:id", optionalAuthToken, async (req, res) => {
       }
       return false;
     };
-    const matchedResources = allResources.filter((r) => isMatch(r) && r.status !== "REJECTED");
+    const isAdminOrCR = req.user && (req.user.role === "ADMIN" || req.user.role === "CR");
+    const matchedResources = allResources.filter((r) => {
+      if (!isMatch(r)) return false;
+      if (isAdminOrCR) return r.status !== "REJECTED";
+      if (req.user && r.uploaderId === req.user.id) return r.status !== "REJECTED";
+      return r.status === "APPROVED";
+    });
+    const sanitizeResourceItem = (r) => ({
+      id: r.id,
+      title: r.title,
+      type: r.type,
+      courseId: r.courseId,
+      courseCode: r.courseCode,
+      courseTitle: r.courseTitle,
+      semester: r.semester,
+      academicYear: r.academicYear,
+      examType: r.examType,
+      facultyName: r.facultyName,
+      targetBatch: r.targetBatch,
+      labCategory: r.labCategory,
+      description: r.description,
+      fileUrl: r.fileUrl,
+      fileName: r.fileName,
+      fileSize: r.fileSize,
+      fileType: r.fileType,
+      uploaderName: r.uploaderName,
+      status: r.status,
+      downloadCount: r.downloadCount || 0,
+      createdAt: r.createdAt
+    });
     const questions = matchedResources.filter((r) => r.type === "QUESTION").sort((a, b) => {
       const yearDiff = (Number(b.academicYear) || 0) - (Number(a.academicYear) || 0);
       if (yearDiff !== 0) return yearDiff;
       return (b.createdAt || "").localeCompare(a.createdAt || "");
-    });
-    const notes = matchedResources.filter((r) => r.type === "NOTE").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-    const labs = matchedResources.filter((r) => r.type === "LAB").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+    }).map(sanitizeResourceItem);
+    const notes = matchedResources.filter((r) => r.type === "NOTE").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).map(sanitizeResourceItem);
+    const labs = matchedResources.filter((r) => r.type === "LAB").sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).map(sanitizeResourceItem);
     const faculty = allFaculty.find((f) => f.id === course.assignedFacultyId);
+    const sanitizedFaculty = faculty ? {
+      id: faculty.id,
+      name: faculty.name,
+      shortName: faculty.shortName,
+      designation: faculty.designation,
+      department: faculty.department,
+      email: faculty.email,
+      phone: faculty.phone,
+      officeRoom: faculty.officeRoom,
+      photoUrl: faculty.photoUrl
+    } : null;
     const allExams = await fetchAllExams().catch(() => db.getExams?.() || []);
     const todayStr = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
     const courseExams = allExams.filter((e) => {
@@ -6393,17 +13088,37 @@ router5.get("/:id", optionalAuthToken, async (req, res) => {
       const diffTime = examDate.getTime() - now.getTime();
       const daysLeft = Math.ceil(diffTime / (1e3 * 60 * 60 * 24));
       const isArchived = e.date < todayStr;
-      return { ...e, daysLeft, isArchived };
+      return {
+        id: e.id,
+        title: e.title,
+        courseId: e.courseId,
+        courseCode: e.courseCode,
+        courseTitle: e.courseTitle,
+        batchId: e.batchId,
+        batchName: e.batchName,
+        type: e.type,
+        date: e.date,
+        startTime: e.startTime,
+        room: e.room,
+        description: e.description,
+        daysLeft,
+        isArchived
+      };
     }).sort((a, b) => a.date.localeCompare(b.date));
+    const courseCodeClean = (course.code || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const classTasks = (db.getClassTasks() || []).filter((t) => t.courseId === course.id || t.courseCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === courseCodeClean).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.json({
-      course,
-      faculty,
+      course: sanitizeCourse(course),
+      faculty: sanitizedFaculty,
       exams: courseExams,
       resources: {
         questions,
         notes,
         labs
-      }
+      },
+      classTasks,
+      tasks: classTasks,
+      classTopics: classTasks
     });
   } catch (err) {
     console.error(`[Courses API GET /:id Error]:`, err);
@@ -6498,9 +13213,13 @@ router5.delete("/:id", verifyAuthToken, requireRole("ADMIN"), async (req, res) =
 var courses_default = router5;
 
 // src/server/routes/exams.ts
+init_db();
 import { Router as Router6 } from "express";
+init_supabaseData();
 
 // src/server/emailService.ts
+init_db();
+init_supabaseData();
 import { Resend } from "resend";
 var resendClient = null;
 function getResendClient() {
@@ -7170,7 +13889,9 @@ router6.delete("/:id", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, 
 var exams_default = router6;
 
 // src/server/routes/announcements.ts
+init_db();
 import { Router as Router7 } from "express";
+init_supabaseData();
 var router7 = Router7();
 router7.get("/", optionalAuthToken, async (req, res) => {
   try {
@@ -7215,6 +13936,7 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
     publishDate,
     expiryDate,
     priority,
+    featuredImageUrl,
     sendNotification,
     isExamRelated,
     courseCode: rawCourseCode,
@@ -7242,6 +13964,8 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
       publishDate: publishDate || todayStr,
       expiryDate,
       priority: priority || "NORMAL",
+      featuredImageUrl: featuredImageUrl ? String(featuredImageUrl).trim() : void 0,
+      eventDate: req.body.eventDate || rawExamDate || void 0,
       createdBy: req.user.id,
       createdByName: req.user.name,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
@@ -7383,7 +14107,9 @@ router7.delete("/:id", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, 
 var announcements_default = router7;
 
 // src/server/routes/notices.ts
+init_db();
 import { Router as Router8 } from "express";
+init_supabaseData();
 var router8 = Router8();
 router8.get("/", optionalAuthToken, async (req, res) => {
   try {
@@ -7404,7 +14130,8 @@ router8.post("/", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
     attachmentUrl,
     attachmentFileName,
     attachmentSize,
-    featuredImageUrl
+    featuredImageUrl,
+    attachedPhotos
   } = req.body;
   if (!title || !content || !category) {
     return res.status(400).json({ error: "Title, content, and category are required" });
@@ -7422,6 +14149,7 @@ router8.post("/", verifyAuthToken, requireRole("ADMIN"), async (req, res) => {
       attachmentFileName: attachmentFileName ? String(attachmentFileName).trim() : void 0,
       attachmentSize: attachmentSize ? String(attachmentSize).trim() : void 0,
       featuredImageUrl: featuredImageUrl ? String(featuredImageUrl).trim() : void 0,
+      attachedPhotos: Array.isArray(attachedPhotos) ? attachedPhotos : void 0,
       createdBy: req.user.id,
       createdByName: req.user.name,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
@@ -7467,7 +14195,9 @@ router8.delete("/:id", verifyAuthToken, requireRole("ADMIN"), async (req, res) =
 var notices_default = router8;
 
 // src/server/routes/resources.ts
+init_db();
 import { Router as Router9 } from "express";
+init_supabaseData();
 var router9 = Router9();
 router9.get("/", optionalAuthToken, async (req, res) => {
   try {
@@ -7809,6 +14539,10 @@ var resources_default = router9;
 import { Router as Router10 } from "express";
 
 // src/server/services/adminService.ts
+init_supabaseSync();
+init_db();
+init_types2();
+init_supabaseData();
 import bcrypt3 from "bcryptjs";
 async function createAuditLog(actorId, actorName, action, target, details) {
   const logId = `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -7966,6 +14700,7 @@ async function getPaginatedUsers(options) {
           profileImage: row.profile_image || void 0,
           status: row.status,
           points: Number(row.points || 0),
+          cgpa: db.getStudentCGPA(row.id, row.student_id),
           createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString(),
           updatedAt: row.updated_at || (/* @__PURE__ */ new Date()).toISOString()
         }));
@@ -7993,7 +14728,10 @@ async function getPaginatedUsers(options) {
     );
   }
   const total = filtered.length;
-  const paginated = filtered.slice(offset, offset + limit);
+  const paginated = filtered.slice(offset, offset + limit).map((u) => ({
+    ...u,
+    cgpa: db.getStudentCGPA(u.id, u.studentId)
+  }));
   return {
     users: paginated,
     total,
@@ -8011,6 +14749,18 @@ async function createUser(userData, adminUser) {
   const cleanStudentId = userData.studentId.trim();
   const id = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const now = (/* @__PURE__ */ new Date()).toISOString();
+  let assignedBatchName = userData.batchName || null;
+  let assignedSemester = Number(userData.currentSemester || 1);
+  if (userData.batchId) {
+    try {
+      const { data: bData } = await supabase.from("batches").select("name, current_semester").eq("id", userData.batchId).maybeSingle();
+      if (bData) {
+        assignedBatchName = bData.name;
+        assignedSemester = Number(bData.current_semester || assignedSemester);
+      }
+    } catch {
+    }
+  }
   const insertPayload = {
     id,
     student_id: cleanStudentId,
@@ -8019,8 +14769,8 @@ async function createUser(userData, adminUser) {
     phone: userData.phone ? userData.phone.trim() : null,
     role: userData.role || "STUDENT",
     batch_id: userData.batchId || null,
-    batch_name: userData.batchName || null,
-    current_semester: Number(userData.currentSemester || 1),
+    batch_name: assignedBatchName,
+    current_semester: assignedSemester,
     profile_image: userData.profileImage || null,
     status: userData.status || "ACTIVE",
     points: Number(userData.points || 0),
@@ -8064,9 +14814,23 @@ async function updateUser(id, updates, adminUser) {
   if (updates.email !== void 0) updatePayload.email = updates.email ? updates.email.trim().toLowerCase() : null;
   if (updates.phone !== void 0) updatePayload.phone = updates.phone ? updates.phone.trim() : null;
   if (updates.role !== void 0) updatePayload.role = updates.role;
-  if (updates.batchId !== void 0) updatePayload.batch_id = updates.batchId || null;
-  if (updates.batchName !== void 0) updatePayload.batch_name = updates.batchName || null;
-  if (updates.currentSemester !== void 0) updatePayload.current_semester = Number(updates.currentSemester);
+  if (updates.batchId !== void 0) {
+    updatePayload.batch_id = updates.batchId || null;
+    if (updates.batchId) {
+      try {
+        const { data: bData } = await supabase.from("batches").select("name, current_semester").eq("id", updates.batchId).maybeSingle();
+        if (bData) {
+          updatePayload.batch_name = bData.name;
+          updatePayload.current_semester = Number(bData.current_semester || 1);
+        }
+      } catch {
+      }
+    }
+  }
+  if (updates.batchName !== void 0 && !updatePayload.batch_name) updatePayload.batch_name = updates.batchName || null;
+  if (updates.currentSemester !== void 0 && updatePayload.current_semester === void 0) {
+    updatePayload.current_semester = Number(updates.currentSemester);
+  }
   if (updates.profileImage !== void 0) updatePayload.profile_image = updates.profileImage || null;
   if (updates.status !== void 0) updatePayload.status = updates.status;
   if (updates.points !== void 0) updatePayload.points = Number(updates.points);
@@ -9034,21 +15798,49 @@ async function getAllNotices() {
   if (!supabase) throw new Error("Supabase client unavailable");
   const { data, error } = await supabase.from("department_notices").select("*").order("publish_date", { ascending: false });
   if (error) throw new Error(`Supabase error: ${error.message}`);
-  return (data || []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    content: row.content,
-    category: row.category || "GENERAL",
-    publishDate: row.publish_date,
-    isImportant: Boolean(row.is_important),
-    attachmentUrl: row.attachment_url || void 0,
-    attachmentFileName: row.attachment_file_name || void 0,
-    attachmentSize: row.attachment_size || void 0,
-    featuredImageUrl: row.featured_image_url || void 0,
-    createdBy: row.created_by || "admin",
-    createdByName: row.created_by_name || "Department Admin",
-    createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
-  }));
+  const localNotices = db.getData().departmentNotices || [];
+  return (data || []).map((row) => {
+    let featuredImageUrl = row.featured_image_url || void 0;
+    let attachmentUrl = row.attachment_url || void 0;
+    let attachmentFileName = row.attachment_file_name || void 0;
+    let attachmentSize = row.attachment_size || void 0;
+    let attachedPhotos = [];
+    if (row.attachment_url && typeof row.attachment_url === "string" && row.attachment_url.trim().startsWith("{")) {
+      try {
+        const meta = JSON.parse(row.attachment_url);
+        if (meta.featuredImageUrl) featuredImageUrl = meta.featuredImageUrl;
+        if (meta.attachmentUrl) attachmentUrl = meta.attachmentUrl;
+        if (meta.attachmentFileName) attachmentFileName = meta.attachmentFileName;
+        if (meta.attachmentSize) attachmentSize = meta.attachmentSize;
+        if (Array.isArray(meta.attachedPhotos)) attachedPhotos = meta.attachedPhotos;
+      } catch {
+      }
+    }
+    const localMatch = localNotices.find((n) => n.id === row.id);
+    if (localMatch) {
+      if (!featuredImageUrl && localMatch.featuredImageUrl) featuredImageUrl = localMatch.featuredImageUrl;
+      if (!attachmentUrl && localMatch.attachmentUrl) attachmentUrl = localMatch.attachmentUrl;
+      if (!attachmentFileName && localMatch.attachmentFileName) attachmentFileName = localMatch.attachmentFileName;
+      if (!attachmentSize && localMatch.attachmentSize) attachmentSize = localMatch.attachmentSize;
+      if (attachedPhotos.length === 0 && localMatch.attachedPhotos) attachedPhotos = localMatch.attachedPhotos;
+    }
+    return {
+      id: row.id,
+      title: row.title,
+      content: row.content,
+      category: row.category || "GENERAL",
+      publishDate: row.publish_date,
+      isImportant: Boolean(row.is_important),
+      attachmentUrl,
+      attachmentFileName,
+      attachmentSize,
+      featuredImageUrl,
+      attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : void 0,
+      createdBy: row.created_by || "admin",
+      createdByName: row.created_by_name || "Department Admin",
+      createdAt: row.created_at || (/* @__PURE__ */ new Date()).toISOString()
+    };
+  });
 }
 async function createNotice(noticeData, adminUser) {
   const supabase = getServerSupabase();
@@ -9059,6 +15851,17 @@ async function createNotice(noticeData, adminUser) {
   const id = `not_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const today = now.split("T")[0];
+  const attachedPhotos = Array.isArray(noticeData.attachedPhotos) ? noticeData.attachedPhotos : [];
+  let finalAttachmentUrl = noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null;
+  if (noticeData.featuredImageUrl || attachedPhotos.length > 0 || noticeData.attachmentFileName || noticeData.attachmentSize) {
+    finalAttachmentUrl = JSON.stringify({
+      featuredImageUrl: noticeData.featuredImageUrl?.trim() || null,
+      attachedPhotos,
+      attachmentUrl: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
+      attachmentFileName: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
+      attachmentSize: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null
+    });
+  }
   const insertPayload = {
     id,
     title: noticeData.title.trim(),
@@ -9066,16 +15869,36 @@ async function createNotice(noticeData, adminUser) {
     category: noticeData.category || "GENERAL",
     publish_date: noticeData.publishDate || today,
     is_important: Boolean(noticeData.isImportant),
-    attachment_url: noticeData.attachmentUrl ? noticeData.attachmentUrl.trim() : null,
-    attachment_file_name: noticeData.attachmentFileName ? noticeData.attachmentFileName.trim() : null,
-    attachment_size: noticeData.attachmentSize ? noticeData.attachmentSize.trim() : null,
-    featured_image_url: noticeData.featuredImageUrl ? noticeData.featuredImageUrl.trim() : null,
+    attachment_url: finalAttachmentUrl,
     created_by: adminUser.id,
     created_by_name: adminUser.name,
     created_at: now
   };
   const { data, error } = await supabase.from("department_notices").insert(insertPayload).select().single();
   if (error) throw new Error(`Failed to create notice: ${error.message}`);
+  const createdNotice = {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    category: data.category,
+    publishDate: data.publish_date,
+    isImportant: Boolean(data.is_important),
+    attachmentUrl: noticeData.attachmentUrl?.trim() || void 0,
+    attachmentFileName: noticeData.attachmentFileName?.trim() || void 0,
+    attachmentSize: noticeData.attachmentSize?.trim() || void 0,
+    featuredImageUrl: noticeData.featuredImageUrl?.trim() || void 0,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : void 0,
+    createdBy: data.created_by,
+    createdByName: data.created_by_name,
+    createdAt: data.created_at
+  };
+  const local = db.getData();
+  if (!local.departmentNotices) local.departmentNotices = [];
+  local.departmentNotices.unshift(createdNotice);
+  try {
+    db.save();
+  } catch {
+  }
   await createAuditLog(
     adminUser.id,
     adminUser.name,
@@ -9083,21 +15906,7 @@ async function createNotice(noticeData, adminUser) {
     `Notice: ${data.title}`,
     `Category: ${data.category}, Important: ${data.is_important}`
   );
-  return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    category: data.category,
-    publishDate: data.publish_date,
-    isImportant: Boolean(data.is_important),
-    attachmentUrl: data.attachment_url || void 0,
-    attachmentFileName: data.attachment_file_name || void 0,
-    attachmentSize: data.attachment_size || void 0,
-    featuredImageUrl: data.featured_image_url || void 0,
-    createdBy: data.created_by,
-    createdByName: data.created_by_name,
-    createdAt: data.created_at
-  };
+  return createdNotice;
 }
 async function updateNotice(id, updates, adminUser) {
   const supabase = getServerSupabase();
@@ -9108,12 +15917,43 @@ async function updateNotice(id, updates, adminUser) {
   if (updates.category !== void 0) updatePayload.category = updates.category;
   if (updates.publishDate !== void 0) updatePayload.publish_date = updates.publishDate;
   if (updates.isImportant !== void 0) updatePayload.is_important = Boolean(updates.isImportant);
-  if (updates.attachmentUrl !== void 0) updatePayload.attachment_url = updates.attachmentUrl ? updates.attachmentUrl.trim() : null;
-  if (updates.attachmentFileName !== void 0) updatePayload.attachment_file_name = updates.attachmentFileName ? updates.attachmentFileName.trim() : null;
-  if (updates.attachmentSize !== void 0) updatePayload.attachment_size = updates.attachmentSize ? updates.attachmentSize.trim() : null;
-  if (updates.featuredImageUrl !== void 0) updatePayload.featured_image_url = updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null;
+  const attachedPhotos = Array.isArray(updates.attachedPhotos) ? updates.attachedPhotos : [];
+  if (updates.featuredImageUrl !== void 0 || updates.attachedPhotos !== void 0 || updates.attachmentUrl !== void 0 || updates.attachmentFileName !== void 0) {
+    updatePayload.attachment_url = JSON.stringify({
+      featuredImageUrl: updates.featuredImageUrl ? updates.featuredImageUrl.trim() : null,
+      attachedPhotos,
+      attachmentUrl: updates.attachmentUrl ? updates.attachmentUrl.trim() : null,
+      attachmentFileName: updates.attachmentFileName ? updates.attachmentFileName.trim() : null,
+      attachmentSize: updates.attachmentSize ? updates.attachmentSize.trim() : null
+    });
+  }
   const { data, error } = await supabase.from("department_notices").update(updatePayload).eq("id", id).select().single();
   if (error) throw new Error(`Failed to update notice: ${error.message}`);
+  const updatedNotice = {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    category: data.category,
+    publishDate: data.publish_date,
+    isImportant: Boolean(data.is_important),
+    attachmentUrl: updates.attachmentUrl?.trim() || void 0,
+    attachmentFileName: updates.attachmentFileName?.trim() || void 0,
+    attachmentSize: updates.attachmentSize?.trim() || void 0,
+    featuredImageUrl: updates.featuredImageUrl?.trim() || void 0,
+    attachedPhotos: attachedPhotos.length > 0 ? attachedPhotos : void 0,
+    createdBy: data.created_by,
+    createdByName: data.created_by_name,
+    createdAt: data.created_at
+  };
+  const local = db.getData();
+  if (local.departmentNotices) {
+    const idx = local.departmentNotices.findIndex((n) => n.id === id);
+    if (idx >= 0) local.departmentNotices[idx] = { ...local.departmentNotices[idx], ...updatedNotice };
+    try {
+      db.save();
+    } catch {
+    }
+  }
   await createAuditLog(
     adminUser.id,
     adminUser.name,
@@ -9121,21 +15961,7 @@ async function updateNotice(id, updates, adminUser) {
     `Notice: ${data.title}`,
     `Updated fields in notice`
   );
-  return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    category: data.category,
-    publishDate: data.publish_date,
-    isImportant: Boolean(data.is_important),
-    attachmentUrl: data.attachment_url || void 0,
-    attachmentFileName: data.attachment_file_name || void 0,
-    attachmentSize: data.attachment_size || void 0,
-    featuredImageUrl: data.featured_image_url || void 0,
-    createdBy: data.created_by,
-    createdByName: data.created_by_name,
-    createdAt: data.created_at
-  };
+  return updatedNotice;
 }
 async function deleteNotice(id, adminUser) {
   const supabase = getServerSupabase();
@@ -9492,6 +16318,7 @@ async function getAllAuditLogs(limit = 100) {
 }
 
 // src/server/routes/admin.ts
+init_db();
 var router10 = Router10();
 router10.use(verifyAuthToken, requireRole("ADMIN"));
 function sendSuccess(res, data, status = 200) {
@@ -10002,7 +16829,9 @@ router10.put("/bug-reports/:id", async (req, res) => {
 var admin_default = router10;
 
 // src/server/routes/faculty.ts
+init_db();
 import { Router as Router11 } from "express";
+init_supabaseData();
 var router11 = Router11();
 router11.get("/", optionalAuthToken, async (req, res) => {
   try {
@@ -10121,6 +16950,7 @@ var faculty_default = router11;
 
 // src/server/routes/notifications.ts
 import { Router as Router12 } from "express";
+init_supabaseData();
 var router12 = Router12();
 router12.get("/", optionalAuthToken, async (req, res) => {
   try {
@@ -10175,6 +17005,7 @@ var notifications_default = router12;
 
 // src/server/routes/profile.ts
 import { Router as Router13 } from "express";
+init_supabaseData();
 var router13 = Router13();
 router13.get("/", verifyAuthToken, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: "Unauthorized" });
@@ -10219,7 +17050,7 @@ router13.put("/", verifyAuthToken, async (req, res) => {
   try {
     const user = await fetchUserByIdOrStudentId(req.user.id);
     if (!user) return res.status(404).json({ error: "User not found" });
-    const { email, phone, profileImage } = req.body;
+    const { email, phone, profileImage, name, batchId } = req.body;
     if (profileImage && typeof profileImage === "string") {
       let sizeInBytes = profileImage.length;
       if (profileImage.startsWith("data:image")) {
@@ -10233,9 +17064,22 @@ router13.put("/", verifyAuthToken, async (req, res) => {
       }
     }
     const updates = {};
+    if (name !== void 0 && name.trim()) updates.name = name.trim();
     if (email !== void 0) updates.email = email;
     if (phone !== void 0) updates.phone = phone;
     if (profileImage !== void 0) updates.profileImage = profileImage;
+    if (batchId !== void 0 && batchId) {
+      const { fetchAllBatches: fetchAllBatches2 } = await Promise.resolve().then(() => (init_supabaseData(), supabaseData_exports));
+      const allBatches = await fetchAllBatches2();
+      const matchedBatch = allBatches.find((b) => b.id === batchId || b.name && b.name.toLowerCase() === batchId.toLowerCase());
+      if (matchedBatch) {
+        updates.batchId = matchedBatch.id;
+        updates.batchName = matchedBatch.name;
+        updates.currentSemester = matchedBatch.currentSemester;
+      } else {
+        updates.batchId = batchId;
+      }
+    }
     const updated = await updateUserInDB(user.id, updates);
     res.json({ message: "Profile updated successfully", user: updated });
   } catch (err) {
@@ -10245,6 +17089,8 @@ router13.put("/", verifyAuthToken, async (req, res) => {
 var profile_default = router13;
 
 // src/server/routes/supabaseConfig.ts
+init_db();
+init_supabaseSync();
 import { Router as Router14 } from "express";
 import fs2 from "fs";
 import path2 from "path";
@@ -10329,6 +17175,8 @@ var supabaseConfig_default = router14;
 
 // src/server/routes/retakes.ts
 import { Router as Router15 } from "express";
+init_db();
+init_supabaseData();
 var router15 = Router15();
 function parseTimeToMinutes2(timeStr) {
   if (!timeStr) return 0;
@@ -10845,7 +17693,9 @@ router15.delete("/:id", verifyAuthToken, async (req, res) => {
 var retakes_default = router15;
 
 // src/server/routes/cgpa.ts
+init_db();
 import { Router as Router16 } from "express";
+init_supabaseData();
 var router16 = Router16();
 var MU_GRADING_SCALE = [
   { grade: "A+", minMarks: 80, gradePoint: 4, remarks: "Outstanding" },
@@ -10928,7 +17778,7 @@ function calculateMetrics(courses, studentGrades, currentSemester) {
   else if (cgpa > 0) academicStanding = "Academic Warning / Probation";
   else academicStanding = "No Published Grades Yet";
   const semesterMap = {};
-  for (let s = 1; s <= 8; s++) {
+  for (let s = 1; s <= 12; s++) {
     const semName = s === 1 ? "1st Semester" : s === 2 ? "2nd Semester" : s === 3 ? "3rd Semester" : `${s}th Semester`;
     semesterMap[s] = {
       semester: s,
@@ -10969,11 +17819,17 @@ function calculateMetrics(courses, studentGrades, currentSemester) {
     }
   }
   const completedSemestersCount = Object.values(semesterMap).filter((s) => s.gradedCredits > 0).length;
+  let runningQualityPoints = 0;
+  let runningGradedCredits = 0;
   const semesterBreakdown = Object.values(semesterMap).sort((a, b) => a.semester - b.semester).map((sem) => {
     const sgpa = sem.gradedCredits > 0 ? Number((sem.qualityPoints / sem.gradedCredits).toFixed(2)) : null;
+    runningQualityPoints += sem.qualityPoints;
+    runningGradedCredits += sem.gradedCredits;
+    const cumulativeCgpa = runningGradedCredits > 0 ? Number((runningQualityPoints / runningGradedCredits).toFixed(2)) : null;
     return {
       ...sem,
       sgpa,
+      cumulativeCgpa,
       isPublished: sem.gradedCredits > 0,
       totalCredits: Number(sem.totalCredits.toFixed(1)),
       completedCredits: Number(sem.completedCredits.toFixed(1))
@@ -11012,16 +17868,20 @@ async function getFullCoursesForStudent(studentId) {
       courseMap.set(cc.code.toUpperCase(), cc);
     }
   }
-  return Array.from(courseMap.values());
+  return Array.from(courseMap.values()).sort((a, b) => a.semester - b.semester || (a.code || "").localeCompare(b.code || ""));
 }
 router16.get("/", verifyAuthToken, async (req, res) => {
   if (!req.user) return res.status(401).json({ success: false, error: "Unauthorized" });
   try {
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const allCourses = await getFullCoursesForStudent(studentId);
-    const savedGrades = db.getStudentGrades(studentId) || {};
+    const savedGrades = db.getStudentGrades(studentId, rollNo) || {};
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    if (metrics.cgpa > 0) {
+      db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
+    }
     const documents = db.getStudentCGPADocs(studentId);
     const excludedCount = (db.getStudentExcludedCourses(studentId) || []).length;
     return res.json({
@@ -11059,6 +17919,7 @@ router16.post("/", verifyAuthToken, async (req, res) => {
       return res.status(400).json({ success: false, error: "Grades payload is required" });
     }
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const allCourses = await getFullCoursesForStudent(studentId);
     const formatted = {};
     for (const [courseCode, info] of Object.entries(grades)) {
@@ -11075,9 +17936,10 @@ router16.post("/", verifyAuthToken, async (req, res) => {
         };
       }
     }
-    const updated = db.saveStudentGrades(studentId, formatted);
+    const updated = db.saveStudentGrades(studentId, formatted, rollNo);
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, updated, currentSemester);
+    db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
     return res.json({
       success: true,
       message: "Course grades updated successfully",
@@ -11256,11 +18118,12 @@ router16.post("/paste-results", verifyAuthToken, async (req, res) => {
       }
     }
     if (Object.keys(formatted).length > 0) {
-      db.saveStudentGrades(studentId, formatted);
+      db.saveStudentGrades(studentId, formatted, req.user.studentId);
     }
-    const currentGrades = db.getStudentGrades(studentId) || {};
+    const currentGrades = db.getStudentGrades(studentId, req.user.studentId) || {};
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, currentGrades, currentSemester);
+    db.setStudentCGPA(studentId, metrics.cgpa, req.user.studentId);
     return res.json({
       success: true,
       message: `Successfully recorded ${Object.keys(formatted).length} course grades!`,
@@ -11288,11 +18151,8 @@ router16.post("/reset", verifyAuthToken, async (req, res) => {
   if (!req.user) return res.status(401).json({ success: false, error: "Unauthorized" });
   try {
     const studentId = req.user.id;
-    db.saveStudentGrades(studentId, {});
-    if (db["data"]?.studentGrades) {
-      db["data"].studentGrades[studentId] = {};
-      db.save();
-    }
+    const rollNo = req.user.studentId;
+    db.resetStudentGrades(studentId, rollNo);
     const allCourses = await getFullCoursesForStudent(studentId);
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, {}, currentSemester);
@@ -11363,6 +18223,176 @@ router16.post("/report-bug", verifyAuthToken, async (req, res) => {
 });
 var cgpa_default = router16;
 
+// src/server/routes/classTasks.ts
+init_db();
+import { Router as Router17 } from "express";
+var router17 = Router17();
+router17.get("/", optionalAuthToken, async (req, res) => {
+  try {
+    const { courseId, courseCode, semester, batchId, search, limit } = req.query;
+    let tasks = db.getClassTasks();
+    if (courseId) {
+      tasks = tasks.filter((t) => t.courseId === courseId || t.courseCode.toLowerCase() === String(courseId).toLowerCase());
+    }
+    if (courseCode) {
+      const codeNorm = String(courseCode).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      tasks = tasks.filter((t) => t.courseCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === codeNorm);
+    }
+    if (semester) {
+      const semNum = Number(semester);
+      tasks = tasks.filter((t) => t.semester === semNum);
+    }
+    if (batchId) {
+      tasks = tasks.filter((t) => !t.batchId || t.batchId === batchId);
+    }
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.toLowerCase().trim();
+      tasks = tasks.filter(
+        (t) => t.title.toLowerCase().includes(q) || t.courseCode.toLowerCase().includes(q) || t.courseTitle.toLowerCase().includes(q) || t.description && t.description.toLowerCase().includes(q) || t.facultyName && t.facultyName.toLowerCase().includes(q)
+      );
+    }
+    tasks = [...tasks].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id));
+    if (limit) {
+      const l = parseInt(String(limit), 10);
+      if (!isNaN(l) && l > 0) {
+        tasks = tasks.slice(0, l);
+      }
+    }
+    return res.json({ success: true, tasks, topics: tasks });
+  } catch (err) {
+    console.error("[ClassTasks GET Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to fetch class tasks" });
+  }
+});
+router17.get("/:id", optionalAuthToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tasks = db.getClassTasks();
+    const found = tasks.find((t) => t.id === id);
+    if (!found) {
+      return res.status(404).json({ success: false, error: "Class task not found" });
+    }
+    return res.json({ success: true, task: found, topic: found });
+  } catch (err) {
+    console.error("[ClassTask Detail Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to fetch class task" });
+  }
+});
+router17.post("/", verifyAuthToken, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
+  }
+  const isCRorAdmin = req.user.role === "ADMIN" || req.user.role === "CR" || req.user.isCR;
+  if (!isCRorAdmin) {
+    return res.status(403).json({ success: false, error: "Only Class Representatives (CR) and Admins can post class tasks" });
+  }
+  try {
+    const {
+      courseId,
+      courseCode,
+      courseTitle,
+      semester,
+      batchId,
+      date,
+      dueDate,
+      title,
+      description,
+      type,
+      priority,
+      facultyName,
+      attachmentUrl,
+      attachmentName,
+      topic
+      // fallback if sent as topic
+    } = req.body;
+    const taskTitle = title || topic;
+    if (!courseCode || !taskTitle) {
+      return res.status(400).json({ success: false, error: "Course code and task title are required" });
+    }
+    const newTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      courseId: courseId || `course-${courseCode.replace(/\s+/g, "-").toLowerCase()}`,
+      courseCode: String(courseCode).trim().toUpperCase(),
+      courseTitle: courseTitle || "Academic Course",
+      semester: Number(semester) || req.user.currentSemester || 5,
+      batchId: batchId || req.user.batchId || "batch-9",
+      date: date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+      dueDate: dueDate ? String(dueDate).trim() : void 0,
+      title: String(taskTitle).trim(),
+      description: description ? String(description).trim() : "",
+      type: type || "TASK",
+      priority: priority || "NORMAL",
+      facultyName: facultyName ? String(facultyName).trim() : void 0,
+      attachmentUrl: attachmentUrl || void 0,
+      attachmentName: attachmentName || void 0,
+      createdBy: req.user.id,
+      createdByName: req.user.name || "CR / Class Representative",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    db.addClassTask(newTask);
+    return res.status(201).json({
+      success: true,
+      message: "Class task posted successfully",
+      task: newTask,
+      topic: newTask
+    });
+  } catch (err) {
+    console.error("[ClassTask Create Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to create class task" });
+  }
+});
+router17.put("/:id", verifyAuthToken, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
+  }
+  const isCRorAdmin = req.user.role === "ADMIN" || req.user.role === "CR" || req.user.isCR;
+  if (!isCRorAdmin) {
+    return res.status(403).json({ success: false, error: "Only Class Representatives (CR) and Admins can edit class tasks" });
+  }
+  try {
+    const { id } = req.params;
+    const existing = db.getClassTasks().find((t) => t.id === id);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Class task not found" });
+    }
+    const updated = db.updateClassTask(id, req.body);
+    return res.json({
+      success: true,
+      message: "Class task updated successfully",
+      task: updated,
+      topic: updated
+    });
+  } catch (err) {
+    console.error("[ClassTask Update Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to update class task" });
+  }
+});
+router17.delete("/:id", verifyAuthToken, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
+  }
+  const isCRorAdmin = req.user.role === "ADMIN" || req.user.role === "CR" || req.user.isCR;
+  if (!isCRorAdmin) {
+    return res.status(403).json({ success: false, error: "Only Class Representatives (CR) and Admins can delete class tasks" });
+  }
+  try {
+    const { id } = req.params;
+    const existing = db.getClassTasks().find((t) => t.id === id);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Class task not found" });
+    }
+    db.deleteClassTask(id);
+    return res.json({
+      success: true,
+      message: "Class task deleted successfully"
+    });
+  } catch (err) {
+    console.error("[ClassTask Delete Error]:", err);
+    return res.status(500).json({ success: false, error: "Failed to delete class task" });
+  }
+});
+var classTasks_default = router17;
+
 // src/server/app.ts
 function createExpressApp() {
   const app2 = express();
@@ -11383,7 +18413,7 @@ function createExpressApp() {
     }
     next();
   });
-  app2.get(["/api", "/api/", "/api/health", "/api/status"], (req, res) => {
+  app2.get(["/api/health", "/api/status"], (req, res) => {
     try {
       res.json({
         success: true,
@@ -11424,6 +18454,8 @@ function createExpressApp() {
   app2.use("/api/supabase", supabaseConfig_default);
   app2.use("/api/retakes", retakes_default);
   app2.use("/api/cgpa", cgpa_default);
+  app2.use("/api/class-tasks", classTasks_default);
+  app2.use("/api/class-topics", classTasks_default);
   app2.use("/api/*", (req, res) => {
     res.status(404).json({
       success: false,

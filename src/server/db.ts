@@ -3055,30 +3055,7 @@ class JsonDB {
 
   public getClassTasks(): ClassTask[] {
     if (!this.data.classTasks) {
-      if (this.data.classTopics && Array.isArray(this.data.classTopics) && this.data.classTopics.length > 0) {
-        this.data.classTasks = this.data.classTopics.map((t: any) => ({
-          id: t.id,
-          courseId: t.courseId,
-          courseCode: t.courseCode,
-          courseTitle: t.courseTitle,
-          semester: t.semester,
-          batchId: t.batchId,
-          date: t.date,
-          dueDate: t.homework ? t.date : undefined,
-          title: t.topic || t.title || 'Class Task',
-          description: t.description || t.homework || '',
-          type: 'TASK' as const,
-          priority: 'NORMAL' as const,
-          facultyName: t.facultyName,
-          attachmentUrl: t.attachmentUrl,
-          attachmentName: t.attachmentName,
-          createdBy: t.createdBy,
-          createdByName: t.createdByName,
-          createdAt: t.createdAt,
-        }));
-      } else {
-        this.data.classTasks = [];
-      }
+      this.data.classTasks = [];
     }
     return this.data.classTasks;
   }

@@ -401,7 +401,7 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
                       : 'bg-white dark:bg-[#0F172A] border-slate-200/90 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs'
                   }`}
                 >
-                  {/* Top Meta Line: Course Badge + Title + Type + Delete */}
+                  {/* Top Meta Line: Course Badge + Title + Type */}
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3 w-full">
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Course Code */}
@@ -419,17 +419,6 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
                         {typeConfig.label}
                       </span>
                     </div>
-
-                    {/* Delete for CR/Admin */}
-                    {isCRorAdmin && (
-                      <button
-                        onClick={(e) => handleDelete(item.id, item.title, e)}
-                        title="Delete class task"
-                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-md transition-colors cursor-pointer ml-auto"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
                   </div>
 
                   {/* Title Row with Completion Checkbox - Full Card Width */}
@@ -440,7 +429,7 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
                       className={`mt-0.5 w-4.5 h-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
                         isCompleted
                           ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:bg-slate-800'
+                          : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 bg-white dark:slate-800'
                       }`}
                     >
                       {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -462,11 +451,25 @@ export const ClassTasksSection: React.FC<ClassTasksSectionProps> = ({
                     </div>
                   )}
 
-                  {/* Bottom Footer Metadata - Date and Attachment only (Teacher & Posted by removed) */}
+                  {/* Bottom Footer Metadata - Date with Delete Button beside it, and Attachment on right */}
                   <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 w-full">
-                    <div className="flex items-center gap-1.5 font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Date: <strong className="text-slate-700 dark:text-slate-200">{dateInfo.formatted || item.date}</strong></span>
+                    <div className="flex items-center gap-2.5 font-medium flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Date: <strong className="text-slate-700 dark:text-slate-200">{dateInfo.formatted || item.date}</strong></span>
+                      </div>
+
+                      {/* Delete Button for CR/Admin - placed right next to Date */}
+                      {isCRorAdmin && (
+                        <button
+                          onClick={(e) => handleDelete(item.id, item.title, e)}
+                          title="Delete class task"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-md transition-colors cursor-pointer text-[11px] font-semibold border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      )}
                     </div>
 
                     {/* Attachment Link */}

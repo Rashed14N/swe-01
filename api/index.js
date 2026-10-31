@@ -911,7 +911,7 @@ var init_database = __esm({
         usr_cr_1: "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
         usr_admin_1: "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
         usr_1786954698184: "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
-        usr_swe_admin_central: "$2b$10$Ld2T8TgWTURIVqyQkPKtuO.KkKy9fx3EV9JlDwo.XIkJNLBSliN3."
+        usr_swe_admin_central: "$2b$10$o3nnLrhry7J.9THu7viDLO0U7ld1bJzIoSgyn6i3rYgpKC40WZ58y"
       },
       batches: [
         {
@@ -1018,8 +1018,8 @@ var init_database = __esm({
         {
           id: "course-sem5-swe-211",
           code: "SWE-211",
-          title: "Computer Architecture",
           shortName: "CA",
+          title: "Computer Architecture",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1028,15 +1028,13 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-182",
           code: "SWE-182",
-          title: "Project on Python Development",
           shortName: "PPD",
+          title: "Project on Python Development",
           credits: 3,
           type: "PROJECT",
           semester: 3,
@@ -1046,15 +1044,13 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-221",
           code: "SWE-221",
-          title: "Algorithm",
           shortName: "ALGO",
+          title: "Algorithm",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1062,15 +1058,13 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-10"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem2-swe-122",
           code: "SWE-122",
-          title: "Structured Programming Lab",
           shortName: "SP LAB",
+          title: "Structured Programming Lab",
           credits: 1.5,
           type: "LAB",
           semester: 2,
@@ -1080,15 +1074,13 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-111",
           code: "SWE-111",
-          title: "Basic Electrical and Electronic Circuits",
           shortName: "BEEC",
+          title: "Basic Electrical and Electronic Circuits",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1097,15 +1089,13 @@ var init_database = __esm({
           batchIds: [
             "batch-10",
             "batch-8"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-112",
           code: "SWE-112",
-          title: "Basic Electrical and Electronic Circuits Lab",
           shortName: "BEEC LAB",
+          title: "Basic Electrical and Electronic Circuits Lab",
           credits: 1.5,
           type: "LAB",
           semester: 3,
@@ -1114,15 +1104,13 @@ var init_database = __esm({
           batchIds: [
             "batch-10",
             "batch-8"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-123",
           code: "SWE-123",
-          title: "Data Structures",
           shortName: "DS",
+          title: "Data Structures",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1132,15 +1120,13 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-124",
           code: "SWE-124",
-          title: "Data Structure Lab",
           shortName: "DS LAB",
+          title: "Data Structure Lab",
           credits: 1.5,
           type: "LAB",
           semester: 3,
@@ -1150,15 +1136,13 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem3-swe-235",
           code: "SWE-235",
-          title: "Management Information Systems",
           shortName: "MIS",
+          title: "Management Information Systems",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1168,15 +1152,13 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-222",
           code: "SWE-222",
-          title: "Algorithm Lab",
           shortName: "ALGO LAB",
+          title: "Algorithm Lab",
           credits: 1.5,
           type: "LAB",
           semester: 4,
@@ -1184,15 +1166,13 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-10"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-225",
           code: "SWE-225",
-          title: "Database Management System",
           shortName: "DBMS",
+          title: "Database Management System",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1200,15 +1180,13 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-10"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-226",
           code: "SWE-226",
-          title: "Database Management System Lab",
           shortName: "DBMS LAB",
+          title: "Database Management System Lab",
           credits: 1.5,
           type: "LAB",
           semester: 4,
@@ -1216,15 +1194,13 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-10"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-231",
           code: "SWE-231",
-          title: "Software Requirement Engineering",
           shortName: "SRE",
+          title: "Software Requirement Engineering",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1232,29 +1208,23 @@ var init_database = __esm({
           assignedFacultyName: "Wadia Iqbal Chowdhury",
           batchIds: [
             "batch-10"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem4-swe-311",
           code: "SWE-311",
-          title: "Theory of Computation",
           shortName: "TOC",
+          title: "Theory of Computation",
           credits: 3,
           type: "THEORY",
           semester: 4,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          batchIds: []
         },
         {
           id: "course-sem8-swe-422",
           code: "SWE-422",
-          title: "Mobile App Development Practice Lab",
           shortName: "MDP",
+          title: "Mobile App Development Practice Lab",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -1263,15 +1233,13 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem5-mat-211",
           code: "MAT-211",
-          title: "Numerical Analysis",
           shortName: "NA",
+          title: "Numerical Analysis",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1284,15 +1252,13 @@ var init_database = __esm({
             "batch-11",
             "batch-5",
             "batch-1792923073984"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem5-swe-223",
           code: "SWE-223",
-          title: "Object Oriented Programming",
           shortName: "OOP",
+          title: "Object Oriented Programming",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1301,15 +1267,13 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem5-swe-224",
           code: "SWE-224",
-          title: "Object Oriented Programming Lab",
           shortName: "OOP LAB",
+          title: "Object Oriented Programming Lab",
           credits: 1.5,
           type: "LAB",
           semester: 5,
@@ -1318,15 +1282,13 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem5-swe-230",
           code: "SWE-230",
-          title: "Problem Solving with Competitive Programming Lab-1",
           shortName: "CP-I",
+          title: "Problem Solving with Competitive Programming Lab-1",
           credits: 1.5,
           type: "LAB",
           semester: 5,
@@ -1335,31 +1297,25 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-ged-301",
           code: "GED-301",
-          title: "Basic Statistics and Probability",
           shortName: "BSP",
+          title: "Basic Statistics and Probability",
           credits: 3,
           type: "THEORY",
           semester: 6,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-232",
           code: "SWE-232",
-          title: "Problem Solving with Competitive Programming Lab-2",
           shortName: "CP-2",
+          title: "Problem Solving with Competitive Programming Lab-2",
           credits: 1.5,
           type: "LAB",
           semester: 6,
@@ -1369,63 +1325,49 @@ var init_database = __esm({
             "batch-7",
             "batch-8",
             "batch-5"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-315",
           code: "SWE-315",
-          title: "Artificial Intelligence",
           shortName: "AI",
+          title: "Artificial Intelligence",
           credits: 3,
           type: "THEORY",
           semester: 6,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-316",
           code: "SWE-316",
-          title: "Artificial Intelligence Lab",
           shortName: "AI LAB",
+          title: "Artificial Intelligence Lab",
           credits: 1.5,
           type: "LAB",
           semester: 6,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-324",
           code: "SWE-324",
-          title: "Software UI & UX Design Practice Lab",
           shortName: "UI & UX",
+          title: "Software UI & UX Design Practice Lab",
           credits: 1.5,
           type: "LAB",
           semester: 6,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem7-swe-313",
           code: "SWE-313",
-          title: "Computer Networking",
           shortName: "CN",
+          title: "Computer Networking",
           credits: 3,
           type: "THEORY",
           semester: 7,
@@ -1434,15 +1376,13 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem8-swe-461",
           code: "SWE-461",
-          title: "Introduction to Cryptography",
           shortName: "IC",
+          title: "Introduction to Cryptography",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -1451,15 +1391,13 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem7-swe-314",
           code: "SWE-314",
-          title: "Computer Networking Lab",
           shortName: "CN LAB",
+          title: "Computer Networking Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1468,15 +1406,13 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem7-swe-333",
           code: "SWE-333",
-          title: "Software Verification & Testing",
           shortName: "SVT",
+          title: "Software Verification & Testing",
           credits: 3,
           type: "THEORY",
           semester: 7,
@@ -1485,15 +1421,13 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem7-swe-334",
           code: "SWE-334",
-          title: "Software Verification & Testing Lab",
           shortName: "SVT LAB",
+          title: "Software Verification & Testing Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1502,31 +1436,25 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem7-swe-382",
           code: "SWE-382",
-          title: "Project on Web App Development",
           shortName: "WD",
+          title: "Project on Web App Development",
           credits: 3,
           type: "PROJECT",
           semester: 7,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
           batchIds: [
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem8-ged-403",
           code: "GED-403",
-          title: "Entrepreneurship Development",
           shortName: "ED",
+          title: "Entrepreneurship Development",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -1535,15 +1463,13 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem1-acm",
           code: "ACM",
-          title: "ACM Workshop",
           shortName: "ACM",
+          title: "ACM Workshop",
           credits: 3,
           type: "LAB",
           semester: 1,
@@ -1552,15 +1478,13 @@ var init_database = __esm({
           batchIds: [
             "batch-12",
             "batch-5"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem1-ged-101",
           code: "GED-101",
-          title: "Communicative English Language I",
           shortName: "CEL I",
+          title: "Communicative English Language I",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1570,15 +1494,13 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem1-ged-105",
           code: "GED-105",
-          title: "Bangladesh Studies",
           shortName: "BS",
+          title: "Bangladesh Studies",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1588,15 +1510,13 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem1-mat-111",
           code: "MAT-111",
-          title: "Differential & Integral Calculus",
           shortName: "DIC",
+          title: "Differential & Integral Calculus",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1606,15 +1526,13 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem1-swe-131",
           code: "SWE-131",
-          title: "Introduction to Software Engineering",
           shortName: "ISE",
+          title: "Introduction to Software Engineering",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1624,15 +1542,13 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem2-mat-112",
           code: "MAT-112",
-          title: "Linear Algebra & Differential Equations",
           shortName: "LADE",
+          title: "Linear Algebra & Differential Equations",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1642,15 +1558,13 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem2-mat-113",
           code: "MAT-113",
-          title: "Discrete Mathematics",
           shortName: "DM",
+          title: "Discrete Mathematics",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1660,15 +1574,13 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem2-phy-111",
           code: "PHY-111",
-          title: "Basic Physics",
           shortName: "BP",
+          title: "Basic Physics",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1678,15 +1590,13 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem2-swe-121",
           code: "SWE-121",
-          title: "Structured Programming",
           shortName: "SP",
+          title: "Structured Programming",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1696,15 +1606,13 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ],
-          syllabus: [],
-          createdAt: "2026-08-29T14:12:16.634071+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-234",
           code: "SWE-234",
-          title: "Software Architecture and Design Patterns Lab",
           shortName: "SADP Lab",
+          title: "Software Architecture and Design Patterns Lab",
           credits: 1.5,
           type: "LAB",
           semester: 6,
@@ -1712,15 +1620,13 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Sultana Chowdhury",
           batchIds: [
             "batch-8"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-06T18:01:36.549039+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-282",
           code: "SWE-282",
-          title: "Project on Java GUI Development Lab",
           shortName: "JGD Lab",
+          title: "Project on Java GUI Development Lab",
           credits: 2,
           type: "PROJECT",
           semester: 6,
@@ -1728,15 +1634,13 @@ var init_database = __esm({
           assignedFacultyName: "Fuad Ahmed",
           batchIds: [
             "batch-8"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-06T18:01:36.549039+00:00"
+          ]
         },
         {
           id: "course-sem6-swe-233",
           code: "SWE-233",
-          title: "Software Architecture and Design Patterns",
           shortName: "SADP",
+          title: "Software Architecture and Design Patterns",
           credits: 3,
           type: "THEORY",
           semester: 6,
@@ -1744,43 +1648,33 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Sultana Chowdhury",
           batchIds: [
             "batch-8"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-06T18:01:36.549039+00:00"
+          ]
         },
         {
           id: "course-sem9-swe-411",
           code: "SWE-411",
-          title: "Software Architecture & Enterprise Design",
           shortName: "SA",
+          title: "Software Architecture & Enterprise Design",
           credits: 3,
           type: "THEORY",
           semester: 9,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:03.474176+00:00"
+          batchIds: []
         },
         {
           id: "course-sem9-swe-412",
           code: "SWE-412",
-          title: "Software Architecture & Enterprise Design Lab",
           shortName: "SAL",
+          title: "Software Architecture & Enterprise Design Lab",
           credits: 1.5,
           type: "LAB",
           semester: 9,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:03.704503+00:00"
+          batchIds: []
         },
         {
           id: "course-sem9-swe-431",
           code: "SWE-431",
-          title: "Machine Learning & Predictive Systems",
           shortName: "ML",
+          title: "Machine Learning & Predictive Systems",
           credits: 3,
           type: "THEORY",
           semester: 9,
@@ -1788,183 +1682,133 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:03.881752+00:00"
+          ]
         },
         {
           id: "course-sem9-swe-400a",
           code: "SWE-400A",
-          title: "Capstone Project / Thesis (Phase-I)",
           shortName: "CP1",
+          title: "Capstone Project / Thesis (Phase-I)",
           credits: 2,
           type: "PROJECT",
           semester: 9,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:03.991863+00:00"
+          batchIds: []
         },
         {
           id: "course-sem10-swe-441",
           code: "SWE-441",
-          title: "Cloud Computing & DevOps Engineering",
           shortName: "CC",
+          title: "Cloud Computing & DevOps Engineering",
           credits: 3,
           type: "THEORY",
           semester: 10,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:04.38005+00:00"
+          batchIds: []
         },
         {
           id: "course-sem10-swe-442",
           code: "SWE-442",
-          title: "Cloud Computing & DevOps Practice Lab",
           shortName: "CCL",
+          title: "Cloud Computing & DevOps Practice Lab",
           credits: 1.5,
           type: "LAB",
           semester: 10,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:04.500783+00:00"
+          batchIds: []
         },
         {
           id: "course-sem10-swe-451",
           code: "SWE-451",
-          title: "Distributed Systems & Microservices",
           shortName: "DS",
+          title: "Distributed Systems & Microservices",
           credits: 3,
           type: "THEORY",
           semester: 10,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:04.601667+00:00"
+          batchIds: []
         },
         {
           id: "course-sem10-swe-400b",
           code: "SWE-400B",
-          title: "Capstone Project / Thesis (Phase-II)",
           shortName: "CP2",
+          title: "Capstone Project / Thesis (Phase-II)",
           credits: 2,
           type: "PROJECT",
           semester: 10,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:04.724233+00:00"
+          batchIds: []
         },
         {
           id: "course-sem11-swe-471",
           code: "SWE-471",
-          title: "Big Data Analytics & Data Engineering",
           shortName: "BDA",
+          title: "Big Data Analytics & Data Engineering",
           credits: 3,
           type: "THEORY",
           semester: 11,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:04.915508+00:00"
+          batchIds: []
         },
         {
           id: "course-sem11-swe-472",
           code: "SWE-472",
-          title: "Big Data Analytics Lab",
           shortName: "BDAL",
+          title: "Big Data Analytics Lab",
           credits: 1.5,
           type: "LAB",
           semester: 11,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.015344+00:00"
+          batchIds: []
         },
         {
           id: "course-sem11-swe-481",
           code: "SWE-481",
-          title: "Cyber Security, Privacy & Secure Coding",
           shortName: "CS",
+          title: "Cyber Security, Privacy & Secure Coding",
           credits: 3,
           type: "THEORY",
           semester: 11,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.146212+00:00"
+          batchIds: []
         },
         {
           id: "course-sem11-swe-400c",
           code: "SWE-400C",
-          title: "Capstone Project / Thesis (Phase-III)",
           shortName: "CP3",
+          title: "Capstone Project / Thesis (Phase-III)",
           credits: 2,
           type: "PROJECT",
           semester: 11,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.273783+00:00"
+          batchIds: []
         },
         {
           id: "course-sem12-swe-490",
           code: "SWE-490",
-          title: "Industrial Internship / Professional Attachment",
           shortName: "INT",
+          title: "Industrial Internship / Professional Attachment",
           credits: 6,
           type: "PROJECT",
           semester: 12,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.368817+00:00"
+          batchIds: []
         },
         {
           id: "course-sem12-swe-499",
           code: "SWE-499",
-          title: "Comprehensive Viva & Senior Defense",
           shortName: "VIV",
+          title: "Comprehensive Viva & Senior Defense",
           credits: 3,
           type: "THEORY",
           semester: 12,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.536285+00:00"
+          batchIds: []
         },
         {
           id: "course-sem12-ged-404",
           code: "GED-404",
-          title: "Professional Ethics, Law & Leadership",
           shortName: "PEL",
+          title: "Professional Ethics, Law & Leadership",
           credits: 3,
           type: "THEORY",
           semester: 12,
-          assignedFacultyId: null,
-          assignedFacultyName: null,
-          batchIds: [],
-          syllabus: [],
-          createdAt: "2026-10-16T05:21:05.632405+00:00"
+          batchIds: []
         },
         {
           id: "course-swe-342",
           code: "SWE-342",
-          title: "Data Mining Tools Lab",
           shortName: "DMT Lab",
+          title: "Data Mining Tools Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1972,15 +1816,13 @@ var init_database = __esm({
           assignedFacultyName: "Mridul Kanti Bhattacharjee",
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-27T03:39:03.370003+00:00"
+          ]
         },
         {
           id: "course-swe-322",
           code: "SWE-322",
-          title: "Web Programming Practice Lab",
           shortName: "WP Lab",
+          title: "Web Programming Practice Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1988,15 +1830,13 @@ var init_database = __esm({
           assignedFacultyName: "Lukman Hussain Nakib",
           batchIds: [
             "batch-7"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-27T03:39:03.370003+00:00"
+          ]
         },
         {
           id: "course-swe-443",
           code: "SWE-443",
-          title: "Neural Networks & Deep Learning",
           shortName: "NN&DL",
+          title: "Neural Networks & Deep Learning",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -2004,15 +1844,13 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-5"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-27T03:39:03.370003+00:00"
+          ]
         },
         {
           id: "course-swe-444",
           code: "SWE-444",
-          title: "Neural Networks & Deep Learning Lab",
           shortName: "NN&DL Lab",
+          title: "Neural Networks & Deep Learning Lab",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -2020,15 +1858,13 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-5"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-27T03:39:03.370003+00:00"
+          ]
         },
         {
-          id: "course-sem8-swe-432",
+          id: "course-swe-432",
           code: "SWE-432",
-          title: "Machine Learning Lab",
           shortName: "ML Lab",
+          title: "Machine Learning Lab",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -2036,9 +1872,7 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-6"
-          ],
-          syllabus: [],
-          createdAt: "2026-10-29T15:15:48.110916+00:00"
+          ]
         },
         {
           id: "course-sem8-swe-443",
@@ -3999,7 +3833,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 5th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Artificial Intelligence (SWE-315) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1uwN8jrTighrFG-v3bUrtwes70W3ERah1",
           fileName: "SWE-315_Final_Exam_AI-1-2-3-5.pdf",
@@ -4010,7 +3843,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 45,
           createdAt: "2026-10-06T16:18:28.006+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4027,7 +3859,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Algorithm (SWE-221) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1EXy9fYNhLjkqcy17eg3sBL6HK4DQtCwq",
           fileName: "SWE-221_Final_Exam_ALGO-1-2-3-4-5-6-7-8-9.pdf",
@@ -4038,7 +3869,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 49,
           createdAt: "2026-10-06T15:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4055,7 +3885,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 7th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Electrical and Electronic Circuits (SWE-111) covering 1st to 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1KexlSR0M0E-whSv-KrMiA2nb0tRiCmnl",
           fileName: "SWE-111_Final_Exam_BEEC-1-2-3-4-5-6-7.pdf",
@@ -4066,7 +3895,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 51,
           createdAt: "2026-10-06T14:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4083,7 +3911,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 5th, 7th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Programming (SWE-121) covering 1st, 2nd, 5th, 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Y_-fZS2q568yhcvP9W3XvL480om92J9U",
           fileName: "SWE-121_Final_Exam_BP-1-2-5-7.pdf",
@@ -4094,7 +3921,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 54,
           createdAt: "2026-10-06T13:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4111,7 +3937,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "9th, 10th, 11th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Bangladesh Studies (GED-105) covering 9th, 10th, 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=17nZog3x4B-uZSYvb2gwmDdUHB3jRbiEk",
           fileName: "GED-105_Final_Exam_BS-9-10-11.pdf",
@@ -4122,7 +3947,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 57,
           createdAt: "2026-10-06T12:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4139,7 +3963,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 5th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Science Physics (PHY-111) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1r39LWSFh3yEclcYQHkCSGX_0VNHEsRIX",
           fileName: "PHY-111_Final_Exam_BSP-1-2-3-5.pdf",
@@ -4150,7 +3973,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 60,
           createdAt: "2026-10-06T11:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4167,7 +3989,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Computer Architecture (SWE-211) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1LV8_bSwLCcOxELC4hNP_A7z3QxLLCk4H",
           fileName: "SWE-211_Final_Exam_CA-1-2-3-4-5.pdf",
@@ -4178,7 +3999,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 66,
           createdAt: "2026-10-06T10:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4195,7 +4015,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Computer Networking (SWE-313) covering 1st, 2nd, 3rd Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1EQpdG41vtXzw_tqZ_I4ToWjQoyHOJTAU",
           fileName: "SWE-313_Final_Exam_CN-1-2-3.pdf",
@@ -4206,7 +4025,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 67,
           createdAt: "2026-10-06T09:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4223,7 +4041,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Database Management System (SWE-225) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1wEoiJ2EKucqJU4OnIQ0Lfh2XJLQYUxgn",
           fileName: "SWE-225_Final_Exam_DBMS-1-2-3-4-5-6-7-8-9.pdf",
@@ -4234,7 +4051,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 69,
           createdAt: "2026-10-06T08:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4251,7 +4067,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 11th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Differential & Integral Calculus (MAT-111) covering 1st to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1OmmI8Y3dROArNTc-y8kkbJPkTpPxh8bE",
           fileName: "MAT-111_Final_Exam_DIC-1-2-5-6-7-8-9-10-11.pdf",
@@ -4262,7 +4077,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 72,
           createdAt: "2026-10-06T07:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4279,7 +4093,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1xx9zP-KMvrxAZPUDpiNVYUfSFNBlt4A9",
           fileName: "SWE-131_Final_Exam_DLD-1-2-3-4-5.pdf",
@@ -4290,7 +4103,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 75,
           createdAt: "2026-10-06T06:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4307,7 +4119,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "3rd & 4th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 3rd & 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1cNeF5fPOunSF5Z0_b6e4PXXgVsXSl0nW",
           fileName: "SWE-131_Final_Exam_DLD-3-4.pdf",
@@ -4318,7 +4129,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 78,
           createdAt: "2026-10-06T05:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4335,7 +4145,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 4th, 5th, 7th, 9th, 11th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Discrete Mathematics (MAT-113) covering 1st, 4th, 5th, 7th, 9th, 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1d-3g3BBM4z906vrLG7WV9AfjpjU7BH1v",
           fileName: "MAT-113_Final_Exam_DM-1-4-5-7-9-11.pdf",
@@ -4346,7 +4155,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 81,
           createdAt: "2026-10-06T04:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4363,7 +4171,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Data Structures (SWE-123) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1RKSA7J1Lfh2txTIOjaeHHEfcUnIhD_7a",
           fileName: "SWE-123_Final_Exam_DS-1-2-3-4-5-7-8-9.pdf",
@@ -4374,7 +4181,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 84,
           createdAt: "2026-10-06T03:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4391,7 +4197,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "2nd to 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Introduction to Software Engineering (SWE-131) covering 2nd to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1U_ipui70k8A8KkF1LsLWERZKlw4M8cHf",
           fileName: "SWE-131_Final_Exam_IS-2-3-4-5-7-9.pdf",
@@ -4402,7 +4207,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 89,
           createdAt: "2026-10-06T02:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4419,7 +4223,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "3rd to 11th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Linear Algebra & Differential Equations (MAT-112) covering 3rd to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1OWU_q3Eh3hR-7Fy9nwILNQLpY08o3vye",
           fileName: "MAT-112_Final_Exam_LADE-3-4-5-7-9-11.pdf",
@@ -4430,7 +4233,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 90,
           createdAt: "2026-10-06T01:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4447,7 +4249,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Management Information Systems (SWE-235) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Lsq18VRjasFUbvJd3kQgAaz7ARkVo9wf",
           fileName: "SWE-235_Final_Exam_MIS-1-2-3-4-5.pdf",
@@ -4458,7 +4259,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 93,
           createdAt: "2026-10-06T00:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4475,7 +4275,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 4th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Machine Learning (SWE-421) covering 1st to 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1LCdpQZzXp-c26PEBPRQNXhTNsp2LaBr4",
           fileName: "SWE-421_Final_Exam_ML-1-2-3-4.pdf",
@@ -4486,7 +4285,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 97,
           createdAt: "2026-10-05T23:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4503,7 +4301,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 6th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Numerical Analysis (MAT-211) covering 1st, 2nd, 3rd, 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=14p-jNgC3mSl8iCOokWPD_EuzHfMcBqs_",
           fileName: "MAT-211_Final_Exam_NA-1-2-3-6.pdf",
@@ -4514,7 +4311,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 101,
           createdAt: "2026-10-05T22:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4531,7 +4327,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 7th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Object Oriented Programming (SWE-223) covering 1st to 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Lee27f7JSg-5GwTUGM9BS-n20Ayp9_0Y",
           fileName: "SWE-223_Final_Exam_OOP-1-2-3-4-5-6-7.pdf",
@@ -4542,7 +4337,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 104,
           createdAt: "2026-10-05T21:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4559,7 +4353,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 4th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Operating Systems (SWE-311) covering 1st to 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1WdOWNWUXaMov2ErzP_Ae4q01yLzoiivS",
           fileName: "SWE-311_Final_Exam_OS-1-2-3-4.pdf",
@@ -4570,7 +4363,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 105,
           createdAt: "2026-10-05T20:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4587,7 +4379,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 6th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Architecture and Design Patterns (SWE-323) covering 1st to 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=14q3Bocpucr2p5khmlRPl5ik_1H24BzNQ",
           fileName: "SWE-323_Final_Exam_SADP-1-2-3-4-5-6.pdf",
@@ -4598,7 +4389,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 108,
           createdAt: "2026-10-05T19:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4615,7 +4405,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 11th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Structured Programming (SWE-121) covering 1st to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=153ttrkN29Ii50DfL0ak3zglTUUEC8Hzf",
           fileName: "SWE-121_Final_Exam_SP-1-2-5-7-9-11.pdf",
@@ -4626,7 +4415,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 111,
           createdAt: "2026-10-05T18:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4643,7 +4431,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Requirement Engineering (SWE-231) covering 1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1S8-aZpHfzrp0beMEtaoFBJwNShxWtlDn",
           fileName: "SWE-231_Final_Exam_SRE-1-2-3-4-5-8-9.pdf",
@@ -4654,7 +4441,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 114,
           createdAt: "2026-10-05T17:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4671,7 +4457,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 6th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Verification & Testing (SWE-333) covering 1st to 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Z1sJKW6vWJKYmhfzjFK7WckHGc9NLF5Q",
           fileName: "SWE-333_Final_Exam_SVT-1-2-4-5-6.pdf",
@@ -4682,7 +4467,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 117,
           createdAt: "2026-10-05T16:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4699,7 +4483,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
-          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Theory of Computation (SWE-311) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1WtMdKbadgkDgzhWfukVUO7bYDOXIvK2_",
           fileName: "SWE-311_Final_Exam_TOC-1-2-3-4-5-8-9.pdf",
@@ -4710,7 +4493,6 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 123,
           createdAt: "2026-10-05T15:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4727,8 +4509,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Nazia Hassan",
           targetBatch: "8",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1oedo0litzhyN33XSM6MtISNZZONSz1UL",
           fileName: "SWE-311_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4738,7 +4518,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-24T21:34:12.563+00:00",
           verifiedAt: "2026-09-24T21:34:12.563+00:00"
@@ -4753,10 +4532,7 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "CLASS_TEST",
-          facultyName: null,
           targetBatch: "8",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1lFBDfkKp5qxc89QKLBv5rE_TSpR5fEv2",
           fileName: "SWE-311_CLASS_TEST_2026.pdf",
           fileSize: "Google Drive",
@@ -4766,7 +4542,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:32:22.904+00:00",
           verifiedAt: "2026-09-24T21:32:22.904+00:00"
@@ -4781,10 +4556,7 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "8",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1M2magfWKdXAkAr34SQ3ngjUZrOpjeFoc",
           fileName: "SWE-231_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4794,7 +4566,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:31:09.748+00:00",
           verifiedAt: "2026-09-24T21:31:09.748+00:00"
@@ -4809,10 +4580,7 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "8",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1_qaMmZr6tsYEXvciKIGcqkoRmo2xE8m4",
           fileName: "SWE-231_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4822,7 +4590,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 1,
           createdAt: "2026-09-24T21:28:07.791+00:00",
           verifiedAt: "2026-09-24T21:28:07.791+00:00"
@@ -4837,10 +4604,7 @@ var init_database = __esm({
           semester: 3,
           academicYear: 2026,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "8",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1CnMVrbECQnEp3aIzVKePO2fboyN5R-GC",
           fileName: "SWE-123_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4850,7 +4614,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-24T21:26:24.094+00:00",
           verifiedAt: "2026-09-24T21:26:24.094+00:00"
@@ -4865,10 +4628,7 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "SWE Department",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc%3Fexport%3Ddownload%26id%3D1ZuUrK5ODAcWnFnJzQHgYmVgSmGaE_-5I",
           fileName: "SWE-225_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4878,7 +4638,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:24:51.351+00:00",
           verifiedAt: "2026-09-24T21:24:51.351+00:00"
@@ -4893,10 +4652,7 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2026,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "SWE Department",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=11GiVUBE0dK_VZXx9R-XJA-POB2nCmejY",
           fileName: "SWE-211_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4906,7 +4662,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 4,
           createdAt: "2026-09-24T21:22:46.311+00:00",
           verifiedAt: "2026-09-24T21:22:46.311+00:00"
@@ -4923,8 +4678,6 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Wadia Iqbal Chowdhury",
           targetBatch: "9th Batch",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1Bhd1EIB53YCTCWMt2rZU92gSc0ICC92X",
           fileName: "SWE-235_CLASS_TEST_2025.pdf",
           fileSize: "Google Drive",
@@ -4934,7 +4687,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 1,
           createdAt: "2026-09-04T18:02:34.996+00:00",
           verifiedAt: "2026-09-04T18:02:34.996+00:00"
@@ -4951,8 +4703,6 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Nasrin Akter Tanya",
           targetBatch: "SWE Department",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1kTMQmYqzfNekCYOzY4XYQC-i68Xtrnpz",
           fileName: "MAT_112_CLASS_TEST_2025.pdf",
           fileSize: "Google Drive",
@@ -4962,7 +4712,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-04T17:58:19.9+00:00",
           verifiedAt: "2026-09-04T17:58:19.9+00:00"
@@ -4979,8 +4728,6 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Wadia Iqbal Chowdury",
           targetBatch: "SWE Department",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1V2-4mt1nrrC8GrAaet_GRfPWMiRnM9wD",
           fileName: "SWE_235_CLASS_TEST_2026.pdf",
           fileSize: "Google Drive",
@@ -4990,7 +4737,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-04T16:10:20.326+00:00",
           verifiedAt: "2026-09-04T16:10:20.326+00:00"
@@ -5007,8 +4753,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Dr Jafor",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.com",
           fileName: "SWE_311_FINAL_2026.pdf",
           fileSize: "1.8 MB",
@@ -5018,10 +4762,8 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
-          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:41:41.727+00:00",
-          verifiedAt: null
+          createdAt: "2026-09-04T15:41:41.727+00:00"
         },
         {
           id: "res-1788535685406",
@@ -5033,10 +4775,7 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2023,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/file/d/test12345/view",
           fileName: "SWE_221_Final_Exam_2023.pdf",
           fileSize: "1.5 MB",
@@ -5046,10 +4785,8 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
-          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:28:05.406+00:00",
-          verifiedAt: null
+          createdAt: "2026-09-04T15:28:05.406+00:00"
         },
         {
           id: "res-1788535613979",
@@ -5061,10 +4798,7 @@ var init_database = __esm({
           semester: 6,
           academicYear: 2024,
           examType: "MIDTERM",
-          facultyName: null,
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/file/d/456/view",
           fileName: "SWE_411_Midterm_Exam_2024.pdf",
           fileSize: "1.5 MB",
@@ -5074,7 +4808,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-04T15:26:53.979+00:00",
           verifiedAt: "2026-09-04T15:26:53.979+00:00"
@@ -5089,10 +4822,7 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2024,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/file/d/123/view",
           fileName: "SWE_311_Final_Exam_2024.pdf",
           fileSize: "1.5 MB",
@@ -5102,10 +4832,8 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
-          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:26:47.222+00:00",
-          verifiedAt: null
+          createdAt: "2026-09-04T15:26:47.222+00:00"
         },
         {
           id: "res-1788439501149",
@@ -5117,10 +4845,7 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2025,
           examType: "FINAL",
-          facultyName: null,
           targetBatch: "SWE Administration",
-          labCategory: null,
-          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
           fileName: "SWE_311_FINAL_2025.pdf",
           fileSize: "Google Drive Cloud",
@@ -5130,7 +4855,6 @@ var init_database = __esm({
           uploaderName: "Department Admin",
           uploaderBatchName: "SWE Administration",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-03T12:45:01.149+00:00",
           verifiedAt: "2026-09-03T12:45:01.149+00:00"
@@ -5147,7 +4871,6 @@ var init_database = __esm({
           examType: "MIDTERM",
           facultyName: "Prof. Dr. Ahsan Habib",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
           description: "Midterm paper covering Recurrence relations, Divide & Conquer, MergeSort, QuickSort proofs.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_309_Midterm_2024.pdf",
@@ -5158,7 +4881,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-08-11T16:00:00+00:00",
           verifiedAt: "2026-08-31T18:27:59.713+00:00"
@@ -5172,7 +4894,6 @@ var init_database = __esm({
           courseTitle: "Computer Networks",
           semester: 5,
           academicYear: 2026,
-          examType: null,
           facultyName: "Ms. Nusrat Jahan",
           targetBatch: "SWE 9th Batch",
           labCategory: "SOURCE_CODE",
@@ -5186,7 +4907,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 31,
           createdAt: "2026-08-02T14:00:00+00:00",
           verifiedAt: "2026-08-03T10:00:00+00:00"
@@ -5203,7 +4923,6 @@ var init_database = __esm({
           examType: "QUIZ",
           facultyName: "Ms. Nusrat Jahan",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
           description: "Quiz paper covering OSI Model layers, TCP/IP Suite, and IP Subnetting calculations.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_311_Quiz1_2026.pdf",
@@ -5214,7 +4933,6 @@ var init_database = __esm({
           uploaderName: "Sadia Afrin",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 63,
           createdAt: "2026-07-28T14:00:00+00:00",
           verifiedAt: "2026-07-29T10:00:00+00:00"
@@ -5228,10 +4946,8 @@ var init_database = __esm({
           courseTitle: "Software Engineering",
           semester: 5,
           academicYear: 2026,
-          examType: null,
           facultyName: "Mr. Imran Hossain",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
           description: "Comprehensive handwritten and digitized lecture notes covering Agile, Scrum, Design Patterns, and SRS.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_307_Software_Engineering_Notes.pdf",
@@ -5242,7 +4958,6 @@ var init_database = __esm({
           uploaderName: "Sadia Afrin",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 92,
           createdAt: "2026-07-25T11:00:00+00:00",
           verifiedAt: "2026-07-26T09:00:00+00:00"
@@ -5259,7 +4974,6 @@ var init_database = __esm({
           examType: "MIDTERM",
           facultyName: "Mr. Imran Hossain",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
           description: "Midterm paper covering Software Development Life Cycle (SDLC), Agile Manifesto, and Use Case Diagrams.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_307_Midterm_2025.pdf",
@@ -5270,7 +4984,6 @@ var init_database = __esm({
           uploaderName: "Mahmudul Hasan (CR)",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 35,
           createdAt: "2026-07-22T09:00:00+00:00",
           verifiedAt: "2026-07-22T11:00:00+00:00"
@@ -5287,7 +5000,6 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Dr. Tanvir Rahman",
           targetBatch: "SWE 9th Batch",
-          labCategory: null,
           description: "Official Spring 2025 Final Examination question paper with answer hints for SQL & Normalization.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_305_Final_Exam_2025.pdf",
@@ -5298,7 +5010,6 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
-          rejectionReason: null,
           downloadCount: 48,
           createdAt: "2026-07-20T10:00:00+00:00",
           verifiedAt: "2026-07-21T12:00:00+00:00"
@@ -5315,9 +5026,7 @@ var init_database = __esm({
           phone: "+8801611829316",
           officeRoom: "Room 502",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-1.png",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-4",
@@ -5329,9 +5038,7 @@ var init_database = __esm({
           phone: "+8801730980003",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-4.png",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-mzuk",
@@ -5340,12 +5047,9 @@ var init_database = __esm({
           designation: "Assistant Professor",
           department: "Department of Software Engineering",
           email: "ziaul@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Room 405",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-27T03:39:03.493267+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-2",
@@ -5357,9 +5061,7 @@ var init_database = __esm({
           phone: "+8801627055017",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-2.png",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-3",
@@ -5371,9 +5073,7 @@ var init_database = __esm({
           phone: "+8801319931147",
           officeRoom: "Room 408",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-3.png",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-sam",
@@ -5382,12 +5082,9 @@ var init_database = __esm({
           designation: "Assistant Professor (English)",
           department: "Department of Software Engineering",
           email: "sam@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Room 402",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-27T03:39:03.493267+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-5",
@@ -5399,9 +5096,7 @@ var init_database = __esm({
           phone: "+8801758305093",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-5.png",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-11",
@@ -5412,10 +5107,8 @@ var init_database = __esm({
           email: "mridul@metrouni.edu.bd",
           phone: "+8801763784158",
           officeRoom: "",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-air",
@@ -5424,12 +5117,9 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Electrical & Electronic Engineering",
           email: "air@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Room 109",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-06T18:01:36.411797+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-cmw",
@@ -5438,12 +5128,9 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Software Engineering",
           email: "mahir.wahid@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Exten-2",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-06T17:38:47.04288+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-9",
@@ -5454,10 +5141,8 @@ var init_database = __esm({
           email: "dhiman@metrouni.edu.bd",
           phone: "+8801764619468",
           officeRoom: "",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-6",
@@ -5469,9 +5154,7 @@ var init_database = __esm({
           phone: "+8801724296767",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-6.jpg",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-10",
@@ -5482,10 +5165,8 @@ var init_database = __esm({
           email: "nakib@metrouni.edu.bd",
           phone: "+8801738779684",
           officeRoom: "Room 505",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-7",
@@ -5497,9 +5178,7 @@ var init_database = __esm({
           phone: "+8801777264878",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-7.jpg",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-ohr",
@@ -5508,12 +5187,9 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Software Engineering",
           email: "obaidur@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Room 301",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-06T17:44:53.289033+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-8",
@@ -5525,9 +5201,7 @@ var init_database = __esm({
           phone: "+8801783852026",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-8.jpg",
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          assignedCourses: []
         },
         {
           id: "fac-12",
@@ -5538,10 +5212,8 @@ var init_database = __esm({
           email: "tanya@metrouni.edu.bd",
           phone: "+8801716942150",
           officeRoom: "",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-08-29T13:59:05.137869+00:00"
+          photoUrl: "",
+          assignedCourses: []
         },
         {
           id: "fac-acm",
@@ -5550,12 +5222,9 @@ var init_database = __esm({
           designation: "Competitive Programming Trainer",
           department: "Department of Software Engineering",
           email: "acm@metrouni.edu.bd",
-          phone: null,
           officeRoom: "Room 301",
-          photoUrl: null,
-          specialization: null,
-          assignedCourses: [],
-          createdAt: "2026-10-27T03:39:03.493267+00:00"
+          photoUrl: "",
+          assignedCourses: []
         }
       ],
       notifications: [
@@ -6549,154 +6218,8 @@ var init_database = __esm({
         usr_94654d049d7e493ca4d71e1a433a00a6: []
       },
       bugReports: [],
-      classTopics: [
-        {
-          id: "topic-1",
-          courseId: "course-swe223",
-          courseCode: "SWE-223",
-          courseTitle: "Object Oriented Programming",
-          semester: 5,
-          batchId: "batch-9",
-          lectureNumber: "Lecture 14",
-          date: "2026-10-18",
-          topic: "Exception Handling & Custom Exceptions in Java",
-          description: "Covered try-catch-finally blocks, checked vs unchecked exceptions, throw and throws keywords, and creating custom application exception classes with real-life banking scenario.",
-          facultyName: "Dr. Mohammad Mizanur Rahman",
-          references: "Java How to Program (Deitel) Chapter 11, Slides 1-32",
-          homework: "Implement custom InsufficientFundsException and submit by next Tuesday",
-          createdBy: "usr_admin",
-          createdByName: "SWE Department CR",
-          createdAt: "2026-10-18T07:58:59.162Z"
-        },
-        {
-          id: "topic-2",
-          courseId: "course-swe211",
-          courseCode: "SWE-211",
-          courseTitle: "Computer Architecture",
-          semester: 5,
-          batchId: "batch-9",
-          lectureNumber: "Lecture 12",
-          date: "2026-10-17",
-          topic: "Cache Memory Mapping (Direct vs Set-Associative)",
-          description: "Detailed analysis of cache hit vs miss ratio, block replacement policies (LRU, FIFO), and numerical problems on 4-way set associative cache address calculation.",
-          facultyName: "Engr. Sarah Ahmed",
-          references: "Patterson & Hennessy Chapter 5, Handout Sheet #4",
-          homework: "Solve numerical exercise 5.4 & 5.7 from chapter end",
-          createdBy: "usr_admin",
-          createdByName: "SWE Department CR",
-          createdAt: "2026-10-17T07:58:59.162Z"
-        },
-        {
-          id: "topic-3",
-          courseId: "course-mat211",
-          courseCode: "MAT-211",
-          courseTitle: "Numerical Analysis",
-          semester: 5,
-          batchId: "batch-9",
-          lectureNumber: "Lecture 10",
-          date: "2026-10-16",
-          topic: "Newton-Raphson & Secant Method Convergence",
-          description: "Mathematical derivation of Newton-Raphson iteration formula, rate of quadratic convergence, pitfalls when f'(x)=0, and step-by-step approximation of roots up to 4 decimal places.",
-          facultyName: "Prof. Dr. Kabir Hossain",
-          references: "Introductory Methods of Numerical Analysis (Sastry)",
-          homework: "Complete root finding problem set #3 on graph paper",
-          createdBy: "usr_admin",
-          createdByName: "SWE Department CR",
-          createdAt: "2026-10-16T07:58:59.162Z"
-        },
-        {
-          id: "topic-4",
-          courseId: "course-swe224",
-          courseCode: "SWE-224",
-          courseTitle: "Object Oriented Programming Lab",
-          semester: 5,
-          batchId: "batch-9",
-          lectureNumber: "Lab Session 6",
-          date: "2026-10-15",
-          topic: "Swing GUI Development & ActionListener Integration",
-          description: "Hands-on laboratory session creating a modular Student Registration & Calculator form utilizing JFrame, JPanel, Layout Managers (BorderLayout, GridBagLayout), and event handling with lambda expressions.",
-          facultyName: "Tahmina Begum",
-          references: "Lab Manual Experiment 6, GitHub Starter Repository",
-          homework: "Push finished GUI project to individual GitHub repositories",
-          createdBy: "usr_admin",
-          createdByName: "SWE Department CR",
-          createdAt: "2026-10-15T07:58:59.162Z"
-        }
-      ],
-      classTasks: [
-        {
-          id: "task-1",
-          courseId: "course-sem5-swe-223",
-          courseCode: "SWE-223",
-          courseTitle: "Object Oriented Programming",
-          semester: 5,
-          batchId: "batch-9",
-          date: "2026-10-18",
-          dueDate: "2026-10-22",
-          title: "Assignment 2: Custom Exception Hierarchy & Banking System",
-          description: "Implement a custom InsufficientFundsException and InvalidAccountException. Write unit tests with try-catch-finally blocks as instructed in class today.",
-          type: "ASSIGNMENT",
-          priority: "IMPORTANT",
-          facultyName: "Dr. Mohammad Mizanur Rahman",
-          createdBy: "usr_admin",
-          createdByName: "SWE 9th Batch CR",
-          createdAt: "2026-10-18T16:32:58.513Z"
-        },
-        {
-          id: "task-2",
-          courseId: "course-sem5-swe-211",
-          courseCode: "SWE-211",
-          courseTitle: "Computer Architecture",
-          semester: 5,
-          batchId: "batch-9",
-          date: "2026-10-17",
-          dueDate: "2026-10-21",
-          title: "Homework: Cache Memory 4-Way Set Associative Problems",
-          description: "Solve numerical exercise 5.4 & 5.7 from Patterson & Hennessy Chapter 5. Bring solutions on paper for review next class.",
-          type: "HOMEWORK",
-          priority: "NORMAL",
-          facultyName: "Engr. Sarah Ahmed",
-          createdBy: "usr_admin",
-          createdByName: "SWE 9th Batch CR",
-          createdAt: "2026-10-18T16:32:58.513Z"
-        },
-        {
-          id: "task-3",
-          courseId: "course-sem5-swe-224",
-          courseCode: "SWE-224",
-          courseTitle: "Object Oriented Programming Lab",
-          semester: 5,
-          batchId: "batch-9",
-          date: "2026-10-16",
-          dueDate: "2026-10-23",
-          title: "Lab Report 6: Java Swing Registration Form Submission",
-          description: "Push your finalized Swing GUI Calculator & Registration application to GitHub and submit the repo URL in the department portal.",
-          type: "LAB_REPORT",
-          priority: "IMPORTANT",
-          facultyName: "Tahmina Begum",
-          createdBy: "usr_admin",
-          createdByName: "SWE 9th Batch CR",
-          createdAt: "2026-10-18T16:32:58.513Z"
-        },
-        {
-          id: "task-4",
-          courseId: "course-sem5-mat-211",
-          courseCode: "MAT-211",
-          courseTitle: "Numerical Analysis",
-          semester: 5,
-          batchId: "batch-9",
-          date: "2026-10-15",
-          dueDate: "2026-10-20",
-          title: "Class Update: Newton-Raphson Graph Paper Plotting",
-          description: "Sir asked everyone to bring graph paper and scientific calculators for finding real roots using Secant & Newton-Raphson methods next Tuesday.",
-          type: "CLASS_UPDATE",
-          priority: "NORMAL",
-          facultyName: "Prof. Dr. Kabir Hossain",
-          createdBy: "usr_admin",
-          createdByName: "SWE 9th Batch CR",
-          createdAt: "2026-10-18T16:32:58.513Z"
-        }
-      ]
+      classTopics: [],
+      classTasks: []
     };
   }
 });
@@ -9624,30 +9147,7 @@ var init_db = __esm({
       }
       getClassTasks() {
         if (!this.data.classTasks) {
-          if (this.data.classTopics && Array.isArray(this.data.classTopics) && this.data.classTopics.length > 0) {
-            this.data.classTasks = this.data.classTopics.map((t) => ({
-              id: t.id,
-              courseId: t.courseId,
-              courseCode: t.courseCode,
-              courseTitle: t.courseTitle,
-              semester: t.semester,
-              batchId: t.batchId,
-              date: t.date,
-              dueDate: t.homework ? t.date : void 0,
-              title: t.topic || t.title || "Class Task",
-              description: t.description || t.homework || "",
-              type: "TASK",
-              priority: "NORMAL",
-              facultyName: t.facultyName,
-              attachmentUrl: t.attachmentUrl,
-              attachmentName: t.attachmentName,
-              createdBy: t.createdBy,
-              createdByName: t.createdByName,
-              createdAt: t.createdAt
-            }));
-          } else {
-            this.data.classTasks = [];
-          }
+          this.data.classTasks = [];
         }
         return this.data.classTasks;
       }

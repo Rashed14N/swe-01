@@ -28,7 +28,8 @@ async function startServer() {
   const hostIndex = args.indexOf('--host');
   const cliHost = hostIndex !== -1 && args[hostIndex + 1] ? args[hostIndex + 1] : null;
 
-  const PORT = cliPort || Number(process.env.PORT) || 3000;
+  const isDev = process.env.NODE_ENV !== 'production';
+  const PORT = cliPort || (isDev ? 3000 : (Number(process.env.PORT) || 3000));
   const HOST = cliHost || process.env.HOST || '0.0.0.0';
 
   const httpServer = http.createServer(app);

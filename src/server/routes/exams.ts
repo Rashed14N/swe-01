@@ -15,6 +15,11 @@ import {
   createNotificationInDB,
 } from '../supabaseData';
 import { sendRetakeCourseUpdateEmail, sendExamAnnouncementEmail, getEnrolledStudentsForCourse } from '../emailService';
+import {
+  autoDispatchExamToEnrolledStudents,
+  formatExamWhatsAppMessage,
+  generateWhatsAppGroupShareLink,
+} from '../whatsappService';
 
 const normalizeCode = (val?: string) => (val || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
@@ -203,7 +208,23 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
       batchId: targetBatchId,
     });
 
-    console.log(`[Exam Creation] Found ${enrolledStudents.length} enrolled students for ${courseTitle}. Dispatching Resend emails...`);
+    const publisherName = `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`;
+
+    // 1. AUTOMATIC WHATSAPP ALERT DISPATCH to ALL students enrolled in this course (Regular + Retake)
+    // Runs automatically upon posting without admin needing to do anything manual
+    const waResult = await autoDispatchExamToEnrolledStudents({
+      enrolledStudents,
+      courseCode,
+      courseTitle,
+      examType: type,
+      examDate: date,
+      examTime: startTime,
+      room,
+      title,
+      description,
+      publisherName,
+      excludeUserId: req.user.id,
+    });
 
     let emailsDispatched = 0;
     for (const student of enrolledStudents) {
@@ -221,7 +242,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
         createdAt: new Date().toISOString(),
       }).catch(e => console.warn('[Exam In-App Notif Error]:', e));
 
-      // Resend Email notification to all enrolled students with Course Title, Exam Type, Exam Date
+      // Optional email notification if student email is present
       if (student.email) {
         sendExamAnnouncementEmail({
           to: student.email,
@@ -235,7 +256,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
           title,
           description,
           batchName: student.batchName || batchName,
-          publisherName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+          publisherName,
           enrollmentType: student.enrollmentType,
         }).catch(err => console.warn('[Exam Email Notice Error]:', err));
 
@@ -245,12 +266,29 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
     db.save();
 
-    db.addAuditLog(req.user.id, req.user.name, 'EXAM_CREATED', `${type}: ${title} (${targetBatchId})`);
+    db.addAuditLog(req.user.id, req.user.name, 'EXAM_CREATED', `${type}: ${title} (${targetBatchId}) - Auto WhatsApp to ${waResult.whatsAppDispatched} students`);
+
+    const formattedWAMessage = formatExamWhatsAppMessage({
+      to: '',
+      courseTitle,
+      courseCode,
+      examType: type,
+      examDate: date,
+      examTime: startTime,
+      room,
+      title,
+      description,
+      batchName,
+      publisherName,
+    });
 
     res.status(201).json({
       exam: created,
+      whatsAppDispatched: waResult.whatsAppDispatched,
+      totalEnrolled: waResult.totalStudents,
       emailsDispatched,
-      message: `Exam scheduled! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.`,
+      whatsappShareUrl: generateWhatsAppGroupShareLink(formattedWAMessage),
+      message: `Exam scheduled! Automatic WhatsApp alerts dispatched to ${waResult.whatsAppDispatched} enrolled students.`,
     });
   } catch (err: any) {
     console.error('[Exams API POST / Error]:', err);
@@ -306,6 +344,23 @@ router.put('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Auth
       batchId: existing.batchId,
     });
 
+    const publisherName = `${req.user!.name} (${req.user!.role === 'CR' ? 'Class Representative' : 'Admin'})`;
+
+    // AUTOMATIC WHATSAPP ALERT DISPATCH for updated exam schedule
+    const waResult = await autoDispatchExamToEnrolledStudents({
+      enrolledStudents,
+      courseCode: targetCode,
+      courseTitle: targetTitle,
+      examType: `${examType} (UPDATED)`,
+      examDate,
+      examTime,
+      room: effectiveRoom,
+      title: examTitle,
+      description: effectiveDescription,
+      publisherName,
+      excludeUserId: req.user!.id,
+    });
+
     for (const student of enrolledStudents) {
       if (student.id === req.user!.id) continue;
 
@@ -333,17 +388,31 @@ router.put('/:id', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Auth
           title: `Updated: ${examTitle}`,
           description: effectiveDescription,
           batchName: student.batchName || batch?.name,
-          publisherName: `${req.user!.name} (${req.user!.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+          publisherName,
           enrollmentType: student.enrollmentType,
         }).catch(err => console.warn('[Exam Update Email Error]:', err));
       }
     }
     db.save();
 
-    res.json({ exam: updated });
+    res.json({
+      exam: updated,
+      whatsAppDispatched: waResult.whatsAppDispatched,
+      message: `Exam updated! Auto WhatsApp alerts sent to ${waResult.whatsAppDispatched} enrolled students.`,
+    });
   } catch (err: any) {
     console.error('[Exams API PUT /:id Error]:', err);
     res.status(500).json({ error: err?.message || 'Server error updating exam' });
+  }
+});
+
+// GET /api/exams/whatsapp-logs (CR & ADMIN only)
+router.get('/whatsapp-logs', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const logs = db.getWhatsAppLogs();
+    res.json({ success: true, logs });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: 'Failed to fetch WhatsApp logs' });
   }
 });
 

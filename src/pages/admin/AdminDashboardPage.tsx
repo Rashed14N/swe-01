@@ -17,6 +17,8 @@ import {
   Database,
   CheckCircle2,
   AlertTriangle,
+  BarChart3,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -197,6 +199,36 @@ export const AdminDashboardPage: React.FC = () => {
         })}
       </div>
 
+      {/* Feature Usage & Behavioral Insights Spotlight Banner */}
+      <div className="bg-gradient-to-r from-violet-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white border border-violet-500/30 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="p-3 bg-violet-500/20 rounded-xl border border-violet-400/30 shrink-0">
+            <TrendingUp className="w-6 h-6 text-violet-300" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-violet-400/20 text-violet-200 border border-violet-400/30 px-2 py-0.5 rounded-full">
+                Student Behavior Intelligence
+              </span>
+              <span className="text-xs text-slate-300 font-mono">Realtime Tracking</span>
+            </div>
+            <h3 className="text-base font-bold text-white">
+              Feature Adoption & User Trend Analytics
+            </h3>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Track which students are using which features (Routine, CGPA, Notices, Faculty, CR Tasks, WhatsApp Alerts), observe 7-day usage trends, and review actionable recommendations to improve underutilized tools.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/analytics"
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs transition-all shadow-sm active:scale-95 border border-violet-400/40"
+        >
+          <BarChart3 className="w-4 h-4" />
+          Open Feature Analytics
+        </Link>
+      </div>
+
       {/* Split Section: Quick Action Nav & Live Audit Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Hub Navigation */}
@@ -280,6 +312,15 @@ export const AdminDashboardPage: React.FC = () => {
                 <FileCheck className="w-4 h-4 text-cyan-500" /> Resource Moderation
               </span>
               <span className="text-[11px] text-slate-400 font-mono">Review</span>
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-violet-50/70 border border-violet-100 hover:border-violet-300 transition-all font-medium text-violet-900 hover:text-violet-700"
+            >
+              <span className="flex items-center gap-2.5">
+                <BarChart3 className="w-4 h-4 text-violet-600" /> Feature Usage & Trends
+              </span>
+              <span className="text-[10px] text-violet-700 font-bold bg-violet-200/70 px-1.5 py-0.5 rounded">LIVE TRACK</span>
             </Link>
           </div>
         </div>

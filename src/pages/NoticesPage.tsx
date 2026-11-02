@@ -4,6 +4,8 @@ import { DepartmentNotice } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
+import { NoticesSkeleton } from '../components/skeletons/NoticesSkeleton';
+import { fetchNoticesFromSupabase } from '../services/supabaseDataService';
 
 export const NoticesPage: React.FC = () => {
   const [notices, setNotices] = useState<DepartmentNotice[]>([]);
@@ -13,17 +15,29 @@ export const NoticesPage: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   useEffect(() => {
-    setIsLoading(true);
-    const params = new URLSearchParams();
-    if (category) params.append('category', category);
-
-    fetch(`/api/notices?${params.toString()}`)
-      .then(res => safeParseJson(res))
-      .then(data => setNotices(data.notices || []))
-      .catch((err) => {
+    let isMounted = true;
+    (async () => {
+      try {
+        if (!category) {
+          const data = await fetchNoticesFromSupabase();
+          if (isMounted) setNotices(data || []);
+        } else {
+          const res = await fetch(`/api/notices?category=${encodeURIComponent(category)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (isMounted) setNotices(json.notices || []);
+          }
+        }
+      } catch (err) {
         console.warn('Could not fetch notices:', err);
-      })
-      .finally(() => setIsLoading(false));
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
   }, [category]);
 
   const filteredNotices = notices.filter(n =>
@@ -66,7 +80,7 @@ export const NoticesPage: React.FC = () => {
       />
 
       {isLoading ? (
-        <div className="py-12 text-center text-xs text-slate-400">Loading notices...</div>
+        <NoticesSkeleton count={4} />
       ) : (
         <div className="space-y-4">
           {filteredNotices.length === 0 ? (

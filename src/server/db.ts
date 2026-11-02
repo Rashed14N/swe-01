@@ -32,6 +32,39 @@ export interface DBData {
   studentExcludedCourses?: Record<string, string[]>;
   classTopics?: any[];
   classTasks?: ClassTask[];
+  whatsAppLogs?: WhatsAppLog[];
+  featureUsageLogs?: FeatureUsageEvent[];
+}
+
+export interface FeatureUsageEvent {
+  id: string;
+  userId: string;
+  userName: string;
+  studentId?: string;
+  userRole: string;
+  batchId?: string;
+  batchName?: string;
+  featureKey: string;
+  featureName: string;
+  category: 'ACADEMIC' | 'ASSESSMENT' | 'COMMUNICATION' | 'RESOURCE' | 'PERSONAL' | 'MANAGEMENT';
+  actionType: 'VIEW' | 'ACTION';
+  actionDetail?: string;
+  path: string;
+  durationSec: number;
+  deviceType: 'Mobile' | 'Desktop';
+  timestamp: string;
+}
+
+export interface WhatsAppLog {
+  id: string;
+  recipientPhone: string;
+  studentName?: string;
+  courseCode: string;
+  examType: string;
+  messagePreview: string;
+  status: 'DELIVERED' | 'SENT' | 'SIMULATED' | 'FAILED';
+  gateway?: string;
+  timestamp: string;
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -3107,6 +3140,44 @@ class JsonDB {
 
   public deleteClassTopic(id: string): boolean {
     return this.deleteClassTask(id);
+  }
+
+  public getWhatsAppLogs(): WhatsAppLog[] {
+    if (!this.data.whatsAppLogs) {
+      this.data.whatsAppLogs = [];
+    }
+    return this.data.whatsAppLogs;
+  }
+
+  public addWhatsAppLog(log: WhatsAppLog): WhatsAppLog {
+    if (!this.data.whatsAppLogs) {
+      this.data.whatsAppLogs = [];
+    }
+    this.data.whatsAppLogs.unshift(log);
+    if (this.data.whatsAppLogs.length > 300) {
+      this.data.whatsAppLogs = this.data.whatsAppLogs.slice(0, 300);
+    }
+    this.save();
+    return log;
+  }
+
+  public getFeatureUsageLogs(): FeatureUsageEvent[] {
+    if (!this.data.featureUsageLogs) {
+      this.data.featureUsageLogs = [];
+    }
+    return this.data.featureUsageLogs;
+  }
+
+  public addFeatureUsageLog(event: FeatureUsageEvent): FeatureUsageEvent {
+    if (!this.data.featureUsageLogs) {
+      this.data.featureUsageLogs = [];
+    }
+    this.data.featureUsageLogs.unshift(event);
+    if (this.data.featureUsageLogs.length > 2000) {
+      this.data.featureUsageLogs = this.data.featureUsageLogs.slice(0, 2000);
+    }
+    this.save();
+    return event;
   }
 }
 

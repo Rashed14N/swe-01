@@ -13,6 +13,11 @@ import {
   createNotificationInDB,
 } from '../supabaseData';
 import { sendRetakeCourseUpdateEmail, sendExamAnnouncementEmail, getEnrolledStudentsForCourse } from '../emailService';
+import {
+  autoDispatchExamToEnrolledStudents,
+  formatExamWhatsAppMessage,
+  generateWhatsAppGroupShareLink,
+} from '../whatsappService';
 
 const router = Router();
 
@@ -135,6 +140,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
     const batchObj = allBatches.find(b => b.id === targetBatchId);
     const batchLabel = batchObj?.name || 'Academic Batch';
 
+    let waResult = { totalStudents: 0, whatsAppDispatched: 0, skippedNoPhone: 0 };
+
     if (isExamAnnouncement) {
       let effectiveCourseTitle = rawCourseTitle ? String(rawCourseTitle).trim() : '';
       let effectiveCourseCode = rawCourseCode ? String(rawCourseCode).trim() : '';
@@ -192,7 +199,22 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
         batchId: targetBatchId,
       });
 
-      console.log(`[Exam Announcement] Found ${enrolledStudents.length} enrolled students for ${effectiveCourseTitle}. Dispatching Resend emails...`);
+      const publisherName = `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`;
+
+      // 1. AUTOMATIC WHATSAPP ALERT DISPATCH to ALL enrolled students
+      waResult = await autoDispatchExamToEnrolledStudents({
+        enrolledStudents,
+        courseCode: effectiveCourseCode,
+        courseTitle: effectiveCourseTitle,
+        examType: effectiveExamType,
+        examDate: effectiveExamDate,
+        examTime: effectiveExamTime,
+        room: effectiveRoom,
+        title,
+        description,
+        publisherName,
+        excludeUserId: req.user.id,
+      });
 
       for (const student of enrolledStudents) {
         // Create in-app notification
@@ -207,7 +229,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
           createdAt: new Date().toISOString(),
         }).catch(e => console.warn('[Exam In-App Notif Error]:', e));
 
-        // Send Resend email with Course Title, Exam Type, Exam Date
+        // Optional email notification
         if (student.email) {
           sendExamAnnouncementEmail({
             to: student.email,
@@ -221,7 +243,7 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
             title,
             description,
             batchName: student.batchName || batchLabel,
-            publisherName: `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`,
+            publisherName,
             enrollmentType: student.enrollmentType,
           }).catch(err => console.warn('[Exam Announcement Email Error]:', err));
 
@@ -253,9 +275,11 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
     res.status(201).json({
       announcement: created,
       isExamAnnouncement,
+      whatsAppDispatched: isExamAnnouncement ? waResult.whatsAppDispatched : 0,
+      totalEnrolled: isExamAnnouncement ? waResult.totalStudents : 0,
       emailsDispatched,
       message: isExamAnnouncement
-        ? `Exam announcement published! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.`
+        ? `Exam announcement published! Auto WhatsApp alerts sent to ${waResult.whatsAppDispatched} enrolled students.`
         : 'Announcement published successfully!',
     });
   } catch (err: any) {

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Trash2, Edit3, Clock, Search, Bell, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, Plus, Trash2, Edit3, Clock, Search, Bell, AlertCircle, CheckCircle2, MessageSquare, Share2, Sparkles, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Exam } from '../../types';
 import { ALL_ROOMS } from '../../constants/rooms';
+import { WhatsAppAnnouncementPreview } from '../../components/announcements/WhatsAppAnnouncementPreview';
+import { autoFlushPendingOpenWaQueue } from '../../services/openWaClient';
 
 export const CRExamsPage: React.FC = () => {
   const { user, token } = useAuth();
@@ -16,6 +18,7 @@ export const CRExamsPage: React.FC = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'EDIT' | 'WHATSAPP_PREVIEW'>('EDIT');
   const [form, setForm] = useState({
     courseTitle: 'Database Systems',
     courseCode: 'SWE 305',
@@ -65,7 +68,10 @@ export const CRExamsPage: React.FC = () => {
       });
 
       if (res.ok) {
-        addToast('success', 'Exam scheduled & notification sent to batch!');
+        const data = await res.json();
+        const waCount = data?.whatsAppDispatched !== undefined ? data.whatsAppDispatched : 0;
+        autoFlushPendingOpenWaQueue();
+        addToast('success', `Exam scheduled! Auto WhatsApp alerts dispatched to ${waCount} enrolled students.`);
         setIsModalOpen(false);
         fetchExams();
       } else {
@@ -211,12 +217,29 @@ export const CRExamsPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-750 text-[10px] font-bold rounded flex items-center gap-1 border border-emerald-200">
+                    <MessageSquare className="w-3 h-3 text-emerald-600" /> Auto WhatsApp
+                  </span>
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                      `📢 *SWE EXAM ALERT*\n📌 ${exam.type} - ${exam.title}\n📚 ${exam.courseTitle} (${exam.courseCode})\n📅 Date: ${exam.date} • ${exam.startTime || 'TBA'}\n🏛️ Room: ${exam.room || 'TBA'}\n🌐 portal.swe.edu.bd/exams`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 text-emerald-700 hover:bg-emerald-50 text-[11px] font-bold rounded flex items-center gap-1 transition-colors"
+                    title="Share to WhatsApp Group"
+                  >
+                    <Share2 className="w-3 h-3" /> Share
+                  </a>
+                </div>
+
                 <button
                   onClick={() => handleDelete(exam.id)}
                   className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
                 >
-                  <Trash2 className="w-3.5 h-3.5" /> Cancel Exam
+                  <Trash2 className="w-3.5 h-3.5" /> Cancel
                 </button>
               </div>
             </div>
@@ -227,132 +250,213 @@ export const CRExamsPage: React.FC = () => {
       {/* CREATE EXAM MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Schedule Upcoming Assessment</h3>
-
-            <form onSubmit={handleSave} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Course Code *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.courseCode}
-                    onChange={e => setForm({ ...form, courseCode: e.target.value })}
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Course Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.courseTitle}
-                    onChange={e => setForm({ ...form, courseTitle: e.target.value })}
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Assessment Type *</label>
-                  <select
-                    value={form.type}
-                    onChange={e => setForm({ ...form, type: e.target.value as any })}
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  >
-                    <option value="QUIZ">Quiz</option>
-                    <option value="CLASS_TEST">Class Test</option>
-                    <option value="MIDTERM">Midterm</option>
-                    <option value="FINAL">Final Exam</option>
-                    <option value="LAB_EXAM">Lab Exam</option>
-                    <option value="VIVA">Viva</option>
-                    <option value="PRESENTATION">Presentation</option>
-                    <option value="ASSIGNMENT">Assignment Deadline</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Exam Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Midterm Examination"
-                    value={form.title}
-                    onChange={e => setForm({ ...form, title: e.target.value })}
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={form.date}
-                    onChange={e => setForm({ ...form, date: e.target.value })}
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Start Time</label>
-                  <input
-                    type="text"
-                    value={form.startTime}
-                    onChange={e => setForm({ ...form, startTime: e.target.value })}
-                    placeholder="10:00 AM"
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Room</label>
-                  <input
-                    type="text"
-                    list="cr-exam-rooms-list"
-                    value={form.room}
-                    onChange={e => setForm({ ...form, room: e.target.value })}
-                    placeholder="e.g. Room 502, XL 1, Exten-2"
-                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                  />
-                  <datalist id="cr-exam-rooms-list">
-                    {ALL_ROOMS.map(r => (
-                      <option key={r} value={r} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Syllabus / Special Notes</label>
-                <textarea
-                  rows={2}
-                  value={form.description}
-                  onChange={e => setForm({ ...form, description: e.target.value })}
-                  className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
-                />
+                <h3 className="text-base font-bold text-slate-900">Schedule Upcoming Assessment</h3>
+                <p className="text-xs text-slate-500">Auto-dispatches WhatsApp notifications to enrolled students</p>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg"
+                  onClick={() => setModalTab('EDIT')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    modalTab === 'EDIT'
+                      ? 'bg-white text-blue-600 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
-                  Cancel
+                  📝 Details
                 </button>
                 <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs"
+                  type="button"
+                  onClick={() => setModalTab('WHATSAPP_PREVIEW')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    modalTab === 'WHATSAPP_PREVIEW'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
-                  {isSubmitting ? 'Scheduling...' : 'Schedule Exam'}
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>WhatsApp Card</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 </button>
               </div>
-            </form>
+            </div>
+
+            {modalTab === 'WHATSAPP_PREVIEW' ? (
+              <div className="space-y-4">
+                <WhatsAppAnnouncementPreview
+                  courseTitle={form.courseTitle}
+                  courseCode={form.courseCode}
+                  examType={form.type}
+                  examDate={form.date}
+                  examTime={form.startTime}
+                  room={form.room}
+                  title={form.title}
+                  description={form.description}
+                  batchName={user?.batchName || 'SWE 9th Batch'}
+                  publisherName={`${user?.name} (Class Representative)`}
+                  onSend={handleSave as any}
+                  isSending={isSubmitting}
+                />
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setModalTab('EDIT')}
+                    className="flex items-center gap-1 text-xs text-slate-600 font-bold hover:text-slate-900"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Edit Details
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSave} className="space-y-3 text-xs">
+                {/* 100% Automated WhatsApp Notice Banner */}
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>Zero Admin Effort: Auto-Dispatched via WhatsApp</span>
+                  </div>
+                  <p className="text-emerald-700 text-[11px] leading-relaxed">
+                    এই পরীক্ষা পোস্ট করার সাথে সাথে enrolled সকল Students (Regular ব্যাচ ও Retake/Improvement ব্যাচ) অটোমেটিকভাবে তাদের WhatsApp এ নোটিফিকেশন পেয়ে যাবে।
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Course Code *</label>
+                    <input
+                      type="text"
+                      required
+                      value={form.courseCode}
+                      onChange={e => setForm({ ...form, courseCode: e.target.value })}
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Course Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={form.courseTitle}
+                      onChange={e => setForm({ ...form, courseTitle: e.target.value })}
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Assessment Type *</label>
+                    <select
+                      value={form.type}
+                      onChange={e => setForm({ ...form, type: e.target.value as any })}
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    >
+                      <option value="QUIZ">Quiz</option>
+                      <option value="CLASS_TEST">Class Test</option>
+                      <option value="MIDTERM">Midterm</option>
+                      <option value="FINAL">Final Exam</option>
+                      <option value="LAB_EXAM">Lab Exam</option>
+                      <option value="VIVA">Viva</option>
+                      <option value="PRESENTATION">Presentation</option>
+                      <option value="ASSIGNMENT">Assignment Deadline</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Exam Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Midterm Examination"
+                      value={form.title}
+                      onChange={e => setForm({ ...form, title: e.target.value })}
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={form.date}
+                      onChange={e => setForm({ ...form, date: e.target.value })}
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Start Time</label>
+                    <input
+                      type="text"
+                      value={form.startTime}
+                      onChange={e => setForm({ ...form, startTime: e.target.value })}
+                      placeholder="10:00 AM"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Room</label>
+                    <input
+                      type="text"
+                      list="cr-exam-rooms-list"
+                      value={form.room}
+                      onChange={e => setForm({ ...form, room: e.target.value })}
+                      placeholder="e.g. Room 502, XL 1, Exten-2"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                    />
+                    <datalist id="cr-exam-rooms-list">
+                      {ALL_ROOMS.map(r => (
+                        <option key={r} value={r} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Syllabus / Special Notes</label>
+                  <textarea
+                    rows={2}
+                    value={form.description}
+                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-slate-900"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-between gap-2 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setModalTab('WHATSAPP_PREVIEW')}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg border border-emerald-200 transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      Preview WhatsApp Card
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs cursor-pointer"
+                    >
+                      {isSubmitting ? 'Scheduling & Dispatching...' : 'Schedule & Auto-Dispatch WhatsApp'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

@@ -10,6 +10,8 @@ import { PageHeader } from '../components/common/PageHeader';
 import { ALL_ROOMS, CATEGORIZED_ROOMS } from '../constants/rooms';
 import { RoutineExportModal } from '../components/routine/RoutineExportModal';
 import { deduplicateAndMergeRoutineSlots } from '../utils/routineUtils';
+import { RoutineGridSkeleton } from '../components/skeletons/RoutineSkeleton';
+import { fetchRoutinesFromSupabase } from '../services/supabaseDataService';
 
 export const RoutinePage: React.FC = () => {
   const { token, user } = useAuth();
@@ -39,20 +41,16 @@ export const RoutinePage: React.FC = () => {
 
   const canEdit = user?.role === 'ADMIN' || user?.role === 'CR';
 
-  const fetchRoutines = () => {
+  const fetchRoutines = async () => {
     if (!token) return;
-    setIsLoading(true);
-    fetch(`/api/routines?batchId=${user?.batchId || 'batch-9'}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => safeParseJson(res))
-      .then(data => {
-        setRoutines(deduplicateAndMergeRoutineSlots(data.routines || []));
-      })
-      .catch((err) => {
-        console.warn('Could not fetch routines:', err);
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      const data = await fetchRoutinesFromSupabase(user?.batchId || 'batch-9');
+      setRoutines(deduplicateAndMergeRoutineSlots(data || []));
+    } catch (err) {
+      console.warn('Could not fetch routines:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -170,7 +168,7 @@ export const RoutinePage: React.FC = () => {
       </PageHeader>
 
       {isLoading ? (
-        <div className="py-12 text-center text-xs text-slate-400">Loading routine grid...</div>
+        <RoutineGridSkeleton />
       ) : (
         <VisualRoutineGrid
           routines={routines}

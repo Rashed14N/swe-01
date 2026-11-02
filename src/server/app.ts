@@ -18,6 +18,8 @@ import supabaseRoutes from './routes/supabaseConfig';
 import retakeRoutes from './routes/retakes';
 import cgpaRoutes from './routes/cgpa';
 import classTaskRoutes from './routes/classTasks';
+import whatsappRoutes from './routes/whatsapp';
+import analyticsRoutes from './routes/analytics';
 
 export function createExpressApp() {
   const app = express();
@@ -92,6 +94,8 @@ export function createExpressApp() {
   app.use('/api/cgpa', cgpaRoutes);
   app.use('/api/class-tasks', classTaskRoutes);
   app.use('/api/class-topics', classTaskRoutes);
+  app.use('/api/whatsapp', whatsappRoutes);
+  app.use('/api/analytics', analyticsRoutes);
 
   // API 404 catch-all: ensures unmatched /api/* requests return standard JSON 404
   app.use('/api/*', (req, res) => {

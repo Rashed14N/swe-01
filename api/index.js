@@ -710,6 +710,22 @@ var init_database = __esm({
           updatedAt: "2026-09-06T03:17:23.401+00:00"
         },
         {
+          id: "usr_593f18bab5444d5785d312869415f9a3",
+          studentId: "231134021",
+          name: "Sharmin Akter Smrity",
+          email: "smrityse021@gmail.com",
+          phone: "01932286790",
+          role: "STUDENT",
+          batchId: "batch-6",
+          batchName: "SWE 6th Batch",
+          currentSemester: 8,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-10-25T09:22:01.509327+00:00",
+          updatedAt: "2026-10-25T09:22:02.817+00:00"
+        },
+        {
           id: "usr_f79d575d88e346a3928d99dcd943e57d",
           studentId: "241134025",
           name: "Athar muhtasim Mahdi",
@@ -758,6 +774,22 @@ var init_database = __esm({
           updatedAt: "2026-09-25T06:51:29.405+00:00"
         },
         {
+          id: "usr_f6ebe8e32ca64431902b1bd46316a562",
+          studentId: "252134008",
+          name: "umme tasnim joba",
+          email: "ummetasnim89@gmail.com",
+          phone: "01745959262",
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-11-01T12:59:40.117397+00:00",
+          updatedAt: "2026-11-01T12:59:48.466+00:00"
+        },
+        {
           id: "usr_e77702669a144283be0071f47704a2b7",
           studentId: "252134012",
           name: "Md Hossain Akhiar",
@@ -804,6 +836,22 @@ var init_database = __esm({
           points: 110,
           createdAt: "2026-08-18T10:01:34.07871+00:00",
           updatedAt: "2026-09-30T05:46:32.955+00:00"
+        },
+        {
+          id: "usr_97710dac6a2a44a782b6da225df27017",
+          studentId: "252134039",
+          name: "Tabassum Saima",
+          email: "tabassum.sayma2004@gmail.com",
+          phone: null,
+          role: "STUDENT",
+          batchId: "batch-9",
+          batchName: "SWE 9th Batch",
+          currentSemester: 5,
+          profileImage: "/avatars/pangolin-cream-2.svg",
+          status: "ACTIVE",
+          points: 0,
+          createdAt: "2026-11-01T18:12:08.801752+00:00",
+          updatedAt: "2026-11-01T18:12:09.415+00:00"
         },
         {
           id: "usr_a917725e3b30440cbecf040af72c6fc0",
@@ -884,22 +932,6 @@ var init_database = __esm({
           points: 0,
           createdAt: "2026-08-28T08:37:49.437338+00:00",
           updatedAt: "2026-08-28T08:37:49.437338+00:00"
-        },
-        {
-          id: "usr_593f18bab5444d5785d312869415f9a3",
-          studentId: "231134021",
-          name: "Sharmin Akter Smrity",
-          email: "smrityse021@gmail.com",
-          phone: "01932286790",
-          role: "STUDENT",
-          batchId: "batch-6",
-          batchName: "SWE 6th Batch",
-          currentSemester: 8,
-          profileImage: "/avatars/pangolin-cream-2.svg",
-          status: "ACTIVE",
-          points: 0,
-          createdAt: "2026-10-25T09:22:01.509327+00:00",
-          updatedAt: "2026-10-25T09:22:02.817+00:00"
         }
       ],
       passwords: {
@@ -911,7 +943,7 @@ var init_database = __esm({
         usr_cr_1: "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
         usr_admin_1: "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
         usr_1786954698184: "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
-        usr_swe_admin_central: "$2b$10$o3nnLrhry7J.9THu7viDLO0U7ld1bJzIoSgyn6i3rYgpKC40WZ58y"
+        usr_swe_admin_central: "$2b$10$JhSRPsm7GrDFPk/o5n8lP.5//6IiawnU7UXoL5YCbsJ4.Kd53qVSS"
       },
       batches: [
         {
@@ -1018,8 +1050,8 @@ var init_database = __esm({
         {
           id: "course-sem5-swe-211",
           code: "SWE-211",
-          shortName: "CA",
           title: "Computer Architecture",
+          shortName: "CA",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1028,13 +1060,15 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-182",
           code: "SWE-182",
-          shortName: "PPD",
           title: "Project on Python Development",
+          shortName: "PPD",
           credits: 3,
           type: "PROJECT",
           semester: 3,
@@ -1044,13 +1078,15 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-221",
           code: "SWE-221",
-          shortName: "ALGO",
           title: "Algorithm",
+          shortName: "ALGO",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1058,13 +1094,15 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-10"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem2-swe-122",
           code: "SWE-122",
-          shortName: "SP LAB",
           title: "Structured Programming Lab",
+          shortName: "SP LAB",
           credits: 1.5,
           type: "LAB",
           semester: 2,
@@ -1074,13 +1112,15 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-111",
           code: "SWE-111",
-          shortName: "BEEC",
           title: "Basic Electrical and Electronic Circuits",
+          shortName: "BEEC",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1089,13 +1129,15 @@ var init_database = __esm({
           batchIds: [
             "batch-10",
             "batch-8"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-112",
           code: "SWE-112",
-          shortName: "BEEC LAB",
           title: "Basic Electrical and Electronic Circuits Lab",
+          shortName: "BEEC LAB",
           credits: 1.5,
           type: "LAB",
           semester: 3,
@@ -1104,13 +1146,15 @@ var init_database = __esm({
           batchIds: [
             "batch-10",
             "batch-8"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-123",
           code: "SWE-123",
-          shortName: "DS",
           title: "Data Structures",
+          shortName: "DS",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1120,13 +1164,15 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-124",
           code: "SWE-124",
-          shortName: "DS LAB",
           title: "Data Structure Lab",
+          shortName: "DS LAB",
           credits: 1.5,
           type: "LAB",
           semester: 3,
@@ -1136,13 +1182,15 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem3-swe-235",
           code: "SWE-235",
-          shortName: "MIS",
           title: "Management Information Systems",
+          shortName: "MIS",
           credits: 3,
           type: "THEORY",
           semester: 3,
@@ -1152,13 +1200,15 @@ var init_database = __esm({
             "batch-10",
             "batch-11",
             "batch-1792923073984"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-222",
           code: "SWE-222",
-          shortName: "ALGO LAB",
           title: "Algorithm Lab",
+          shortName: "ALGO LAB",
           credits: 1.5,
           type: "LAB",
           semester: 4,
@@ -1166,13 +1216,15 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-10"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-225",
           code: "SWE-225",
-          shortName: "DBMS",
           title: "Database Management System",
+          shortName: "DBMS",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1180,13 +1232,15 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-10"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-226",
           code: "SWE-226",
-          shortName: "DBMS LAB",
           title: "Database Management System Lab",
+          shortName: "DBMS LAB",
           credits: 1.5,
           type: "LAB",
           semester: 4,
@@ -1194,13 +1248,15 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-10"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-231",
           code: "SWE-231",
-          shortName: "SRE",
           title: "Software Requirement Engineering",
+          shortName: "SRE",
           credits: 3,
           type: "THEORY",
           semester: 4,
@@ -1208,23 +1264,29 @@ var init_database = __esm({
           assignedFacultyName: "Wadia Iqbal Chowdhury",
           batchIds: [
             "batch-10"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem4-swe-311",
           code: "SWE-311",
-          shortName: "TOC",
           title: "Theory of Computation",
+          shortName: "TOC",
           credits: 3,
           type: "THEORY",
           semester: 4,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem8-swe-422",
           code: "SWE-422",
-          shortName: "MDP",
           title: "Mobile App Development Practice Lab",
+          shortName: "MDP",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -1233,13 +1295,15 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem5-mat-211",
           code: "MAT-211",
-          shortName: "NA",
           title: "Numerical Analysis",
+          shortName: "NA",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1252,13 +1316,15 @@ var init_database = __esm({
             "batch-11",
             "batch-5",
             "batch-1792923073984"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem5-swe-223",
           code: "SWE-223",
-          shortName: "OOP",
           title: "Object Oriented Programming",
+          shortName: "OOP",
           credits: 3,
           type: "THEORY",
           semester: 5,
@@ -1267,13 +1333,15 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem5-swe-224",
           code: "SWE-224",
-          shortName: "OOP LAB",
           title: "Object Oriented Programming Lab",
+          shortName: "OOP LAB",
           credits: 1.5,
           type: "LAB",
           semester: 5,
@@ -1282,13 +1350,15 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem5-swe-230",
           code: "SWE-230",
-          shortName: "CP-I",
           title: "Problem Solving with Competitive Programming Lab-1",
+          shortName: "CP-I",
           credits: 1.5,
           type: "LAB",
           semester: 5,
@@ -1297,25 +1367,31 @@ var init_database = __esm({
           batchIds: [
             "batch-8",
             "batch-9"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-ged-301",
           code: "GED-301",
-          shortName: "BSP",
           title: "Basic Statistics and Probability",
+          shortName: "BSP",
           credits: 3,
           type: "THEORY",
           semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-swe-232",
           code: "SWE-232",
-          shortName: "CP-2",
           title: "Problem Solving with Competitive Programming Lab-2",
+          shortName: "CP-2",
           credits: 1.5,
           type: "LAB",
           semester: 6,
@@ -1325,49 +1401,63 @@ var init_database = __esm({
             "batch-7",
             "batch-8",
             "batch-5"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-swe-315",
           code: "SWE-315",
-          shortName: "AI",
           title: "Artificial Intelligence",
+          shortName: "AI",
           credits: 3,
           type: "THEORY",
           semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-swe-316",
           code: "SWE-316",
-          shortName: "AI LAB",
           title: "Artificial Intelligence Lab",
+          shortName: "AI LAB",
           credits: 1.5,
           type: "LAB",
           semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-swe-324",
           code: "SWE-324",
-          shortName: "UI & UX",
           title: "Software UI & UX Design Practice Lab",
+          shortName: "UI & UX",
           credits: 1.5,
           type: "LAB",
           semester: 6,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem7-swe-313",
           code: "SWE-313",
-          shortName: "CN",
           title: "Computer Networking",
+          shortName: "CN",
           credits: 3,
           type: "THEORY",
           semester: 7,
@@ -1376,13 +1466,15 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem8-swe-461",
           code: "SWE-461",
-          shortName: "IC",
           title: "Introduction to Cryptography",
+          shortName: "IC",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -1391,13 +1483,15 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem7-swe-314",
           code: "SWE-314",
-          shortName: "CN LAB",
           title: "Computer Networking Lab",
+          shortName: "CN LAB",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1406,13 +1500,15 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem7-swe-333",
           code: "SWE-333",
-          shortName: "SVT",
           title: "Software Verification & Testing",
+          shortName: "SVT",
           credits: 3,
           type: "THEORY",
           semester: 7,
@@ -1421,13 +1517,15 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem7-swe-334",
           code: "SWE-334",
-          shortName: "SVT LAB",
           title: "Software Verification & Testing Lab",
+          shortName: "SVT LAB",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1436,25 +1534,31 @@ var init_database = __esm({
           batchIds: [
             "batch-6",
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem7-swe-382",
           code: "SWE-382",
-          shortName: "WD",
           title: "Project on Web App Development",
+          shortName: "WD",
           credits: 3,
           type: "PROJECT",
           semester: 7,
+          assignedFacultyId: null,
+          assignedFacultyName: null,
           batchIds: [
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem8-ged-403",
           code: "GED-403",
-          shortName: "ED",
           title: "Entrepreneurship Development",
+          shortName: "ED",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -1463,13 +1567,15 @@ var init_database = __esm({
           batchIds: [
             "batch-5",
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem1-acm",
           code: "ACM",
-          shortName: "ACM",
           title: "ACM Workshop",
+          shortName: "ACM",
           credits: 3,
           type: "LAB",
           semester: 1,
@@ -1478,13 +1584,15 @@ var init_database = __esm({
           batchIds: [
             "batch-12",
             "batch-5"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem1-ged-101",
           code: "GED-101",
-          shortName: "CEL I",
           title: "Communicative English Language I",
+          shortName: "CEL I",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1494,13 +1602,15 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem1-ged-105",
           code: "GED-105",
-          shortName: "BS",
           title: "Bangladesh Studies",
+          shortName: "BS",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1510,13 +1620,15 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem1-mat-111",
           code: "MAT-111",
-          shortName: "DIC",
           title: "Differential & Integral Calculus",
+          shortName: "DIC",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1526,13 +1638,15 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem1-swe-131",
           code: "SWE-131",
-          shortName: "ISE",
           title: "Introduction to Software Engineering",
+          shortName: "ISE",
           credits: 3,
           type: "THEORY",
           semester: 1,
@@ -1542,13 +1656,15 @@ var init_database = __esm({
             "batch-12",
             "batch-13",
             "batch-1788450159710"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem2-mat-112",
           code: "MAT-112",
-          shortName: "LADE",
           title: "Linear Algebra & Differential Equations",
+          shortName: "LADE",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1558,13 +1674,15 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem2-mat-113",
           code: "MAT-113",
-          shortName: "DM",
           title: "Discrete Mathematics",
+          shortName: "DM",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1574,13 +1692,15 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem2-phy-111",
           code: "PHY-111",
-          shortName: "BP",
           title: "Basic Physics",
+          shortName: "BP",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1590,13 +1710,15 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem2-swe-121",
           code: "SWE-121",
-          shortName: "SP",
           title: "Structured Programming",
+          shortName: "SP",
           credits: 3,
           type: "THEORY",
           semester: 2,
@@ -1606,13 +1728,15 @@ var init_database = __esm({
             "batch-11",
             "batch-1788449554669",
             "batch-12"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-08-29T14:12:16.634071+00:00"
         },
         {
           id: "course-sem6-swe-234",
           code: "SWE-234",
-          shortName: "SADP Lab",
           title: "Software Architecture and Design Patterns Lab",
+          shortName: "SADP Lab",
           credits: 1.5,
           type: "LAB",
           semester: 6,
@@ -1620,13 +1744,15 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Sultana Chowdhury",
           batchIds: [
             "batch-8"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
         },
         {
           id: "course-sem6-swe-282",
           code: "SWE-282",
-          shortName: "JGD Lab",
           title: "Project on Java GUI Development Lab",
+          shortName: "JGD Lab",
           credits: 2,
           type: "PROJECT",
           semester: 6,
@@ -1634,13 +1760,15 @@ var init_database = __esm({
           assignedFacultyName: "Fuad Ahmed",
           batchIds: [
             "batch-8"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
         },
         {
           id: "course-sem6-swe-233",
           code: "SWE-233",
-          shortName: "SADP",
           title: "Software Architecture and Design Patterns",
+          shortName: "SADP",
           credits: 3,
           type: "THEORY",
           semester: 6,
@@ -1648,33 +1776,43 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Sultana Chowdhury",
           batchIds: [
             "batch-8"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-06T18:01:36.549039+00:00"
         },
         {
           id: "course-sem9-swe-411",
           code: "SWE-411",
-          shortName: "SA",
           title: "Software Architecture & Enterprise Design",
+          shortName: "SA",
           credits: 3,
           type: "THEORY",
           semester: 9,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.474176+00:00"
         },
         {
           id: "course-sem9-swe-412",
           code: "SWE-412",
-          shortName: "SAL",
           title: "Software Architecture & Enterprise Design Lab",
+          shortName: "SAL",
           credits: 1.5,
           type: "LAB",
           semester: 9,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.704503+00:00"
         },
         {
           id: "course-sem9-swe-431",
           code: "SWE-431",
-          shortName: "ML",
           title: "Machine Learning & Predictive Systems",
+          shortName: "ML",
           credits: 3,
           type: "THEORY",
           semester: 9,
@@ -1682,133 +1820,183 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.881752+00:00"
         },
         {
           id: "course-sem9-swe-400a",
           code: "SWE-400A",
-          shortName: "CP1",
           title: "Capstone Project / Thesis (Phase-I)",
+          shortName: "CP1",
           credits: 2,
           type: "PROJECT",
           semester: 9,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:03.991863+00:00"
         },
         {
           id: "course-sem10-swe-441",
           code: "SWE-441",
-          shortName: "CC",
           title: "Cloud Computing & DevOps Engineering",
+          shortName: "CC",
           credits: 3,
           type: "THEORY",
           semester: 10,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.38005+00:00"
         },
         {
           id: "course-sem10-swe-442",
           code: "SWE-442",
-          shortName: "CCL",
           title: "Cloud Computing & DevOps Practice Lab",
+          shortName: "CCL",
           credits: 1.5,
           type: "LAB",
           semester: 10,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.500783+00:00"
         },
         {
           id: "course-sem10-swe-451",
           code: "SWE-451",
-          shortName: "DS",
           title: "Distributed Systems & Microservices",
+          shortName: "DS",
           credits: 3,
           type: "THEORY",
           semester: 10,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.601667+00:00"
         },
         {
           id: "course-sem10-swe-400b",
           code: "SWE-400B",
-          shortName: "CP2",
           title: "Capstone Project / Thesis (Phase-II)",
+          shortName: "CP2",
           credits: 2,
           type: "PROJECT",
           semester: 10,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.724233+00:00"
         },
         {
           id: "course-sem11-swe-471",
           code: "SWE-471",
-          shortName: "BDA",
           title: "Big Data Analytics & Data Engineering",
+          shortName: "BDA",
           credits: 3,
           type: "THEORY",
           semester: 11,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:04.915508+00:00"
         },
         {
           id: "course-sem11-swe-472",
           code: "SWE-472",
-          shortName: "BDAL",
           title: "Big Data Analytics Lab",
+          shortName: "BDAL",
           credits: 1.5,
           type: "LAB",
           semester: 11,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.015344+00:00"
         },
         {
           id: "course-sem11-swe-481",
           code: "SWE-481",
-          shortName: "CS",
           title: "Cyber Security, Privacy & Secure Coding",
+          shortName: "CS",
           credits: 3,
           type: "THEORY",
           semester: 11,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.146212+00:00"
         },
         {
           id: "course-sem11-swe-400c",
           code: "SWE-400C",
-          shortName: "CP3",
           title: "Capstone Project / Thesis (Phase-III)",
+          shortName: "CP3",
           credits: 2,
           type: "PROJECT",
           semester: 11,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.273783+00:00"
         },
         {
           id: "course-sem12-swe-490",
           code: "SWE-490",
-          shortName: "INT",
           title: "Industrial Internship / Professional Attachment",
+          shortName: "INT",
           credits: 6,
           type: "PROJECT",
           semester: 12,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.368817+00:00"
         },
         {
           id: "course-sem12-swe-499",
           code: "SWE-499",
-          shortName: "VIV",
           title: "Comprehensive Viva & Senior Defense",
+          shortName: "VIV",
           credits: 3,
           type: "THEORY",
           semester: 12,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.536285+00:00"
         },
         {
           id: "course-sem12-ged-404",
           code: "GED-404",
-          shortName: "PEL",
           title: "Professional Ethics, Law & Leadership",
+          shortName: "PEL",
           credits: 3,
           type: "THEORY",
           semester: 12,
-          batchIds: []
+          assignedFacultyId: null,
+          assignedFacultyName: null,
+          batchIds: [],
+          syllabus: [],
+          createdAt: "2026-10-16T05:21:05.632405+00:00"
         },
         {
           id: "course-swe-342",
           code: "SWE-342",
-          shortName: "DMT Lab",
           title: "Data Mining Tools Lab",
+          shortName: "DMT Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1816,13 +2004,15 @@ var init_database = __esm({
           assignedFacultyName: "Mridul Kanti Bhattacharjee",
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
         },
         {
           id: "course-swe-322",
           code: "SWE-322",
-          shortName: "WP Lab",
           title: "Web Programming Practice Lab",
+          shortName: "WP Lab",
           credits: 1.5,
           type: "LAB",
           semester: 7,
@@ -1830,13 +2020,15 @@ var init_database = __esm({
           assignedFacultyName: "Lukman Hussain Nakib",
           batchIds: [
             "batch-7"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
         },
         {
           id: "course-swe-443",
           code: "SWE-443",
-          shortName: "NN&DL",
           title: "Neural Networks & Deep Learning",
+          shortName: "NN&DL",
           credits: 3,
           type: "THEORY",
           semester: 8,
@@ -1844,13 +2036,15 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-5"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
         },
         {
           id: "course-swe-444",
           code: "SWE-444",
-          shortName: "NN&DL Lab",
           title: "Neural Networks & Deep Learning Lab",
+          shortName: "NN&DL Lab",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -1858,13 +2052,15 @@ var init_database = __esm({
           assignedFacultyName: "Al Akram Chowdhury",
           batchIds: [
             "batch-5"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-27T03:39:03.370003+00:00"
         },
         {
-          id: "course-swe-432",
+          id: "course-sem8-swe-432",
           code: "SWE-432",
-          shortName: "ML Lab",
           title: "Machine Learning Lab",
+          shortName: "ML Lab",
           credits: 1.5,
           type: "LAB",
           semester: 8,
@@ -1872,7 +2068,9 @@ var init_database = __esm({
           assignedFacultyName: "Nazia Hassan Nisa",
           batchIds: [
             "batch-6"
-          ]
+          ],
+          syllabus: [],
+          createdAt: "2026-10-29T15:15:48.110916+00:00"
         },
         {
           id: "course-sem8-swe-443",
@@ -3767,6 +3965,38 @@ var init_database = __esm({
           createdBy: "usr_68bf253ad3a242e79a883bb46ce99787",
           createdByName: "Rashedul Hasan Mojumdar",
           createdAt: "2026-08-28T07:51:20.961+00:00"
+        },
+        {
+          id: "exam-1793448548006",
+          batchId: "batch-9",
+          courseId: "course-sem5-swe-211",
+          courseCode: "SWE-211",
+          courseTitle: "Computer Architecture",
+          type: "CLASS_TEST",
+          title: "Class Test 1",
+          date: "2026-11-02",
+          startTime: "3:00 PM",
+          room: "Exam Hall 3",
+          description: "Number System",
+          createdBy: "usr_68bf253ad3a242e79a883bb46ce99787",
+          createdByName: "Rashedul Hasan Mojumdar",
+          createdAt: "2026-10-31T12:09:08.006+00:00"
+        },
+        {
+          id: "exam-1793589599737",
+          batchId: "batch-9",
+          courseId: "course-gen",
+          courseCode: "SWE-225",
+          courseTitle: "Database Management System",
+          type: "MIDTERM",
+          title: "SQL & Normalization Midterm",
+          date: "2026-10-25",
+          startTime: "10:30 AM",
+          room: "Room 502",
+          description: "Chapters 1 to 4 coverage. ER Diagram and Normalization.",
+          createdBy: "usr_swe_admin_central",
+          createdByName: "Rashedul Hasan Mojumdar",
+          createdAt: "2026-11-02T03:19:59.737+00:00"
         }
       ],
       announcements: [],
@@ -3833,6 +4063,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 5th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Artificial Intelligence (SWE-315) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1uwN8jrTighrFG-v3bUrtwes70W3ERah1",
           fileName: "SWE-315_Final_Exam_AI-1-2-3-5.pdf",
@@ -3843,6 +4074,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 45,
           createdAt: "2026-10-06T16:18:28.006+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3859,6 +4091,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Algorithm (SWE-221) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1EXy9fYNhLjkqcy17eg3sBL6HK4DQtCwq",
           fileName: "SWE-221_Final_Exam_ALGO-1-2-3-4-5-6-7-8-9.pdf",
@@ -3869,6 +4102,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 49,
           createdAt: "2026-10-06T15:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3885,6 +4119,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 7th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Electrical and Electronic Circuits (SWE-111) covering 1st to 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1KexlSR0M0E-whSv-KrMiA2nb0tRiCmnl",
           fileName: "SWE-111_Final_Exam_BEEC-1-2-3-4-5-6-7.pdf",
@@ -3895,6 +4130,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 51,
           createdAt: "2026-10-06T14:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3911,6 +4147,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 5th, 7th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Programming (SWE-121) covering 1st, 2nd, 5th, 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Y_-fZS2q568yhcvP9W3XvL480om92J9U",
           fileName: "SWE-121_Final_Exam_BP-1-2-5-7.pdf",
@@ -3921,6 +4158,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 54,
           createdAt: "2026-10-06T13:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3937,6 +4175,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "9th, 10th, 11th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Bangladesh Studies (GED-105) covering 9th, 10th, 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=17nZog3x4B-uZSYvb2gwmDdUHB3jRbiEk",
           fileName: "GED-105_Final_Exam_BS-9-10-11.pdf",
@@ -3947,6 +4186,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 57,
           createdAt: "2026-10-06T12:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3963,6 +4203,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 5th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Basic Science Physics (PHY-111) covering 1st, 2nd, 3rd, 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1r39LWSFh3yEclcYQHkCSGX_0VNHEsRIX",
           fileName: "PHY-111_Final_Exam_BSP-1-2-3-5.pdf",
@@ -3973,6 +4214,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 60,
           createdAt: "2026-10-06T11:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -3989,6 +4231,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Computer Architecture (SWE-211) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1LV8_bSwLCcOxELC4hNP_A7z3QxLLCk4H",
           fileName: "SWE-211_Final_Exam_CA-1-2-3-4-5.pdf",
@@ -3999,6 +4242,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 66,
           createdAt: "2026-10-06T10:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4015,6 +4259,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Computer Networking (SWE-313) covering 1st, 2nd, 3rd Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1EQpdG41vtXzw_tqZ_I4ToWjQoyHOJTAU",
           fileName: "SWE-313_Final_Exam_CN-1-2-3.pdf",
@@ -4025,6 +4270,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 67,
           createdAt: "2026-10-06T09:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4041,6 +4287,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Database Management System (SWE-225) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1wEoiJ2EKucqJU4OnIQ0Lfh2XJLQYUxgn",
           fileName: "SWE-225_Final_Exam_DBMS-1-2-3-4-5-6-7-8-9.pdf",
@@ -4051,6 +4298,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 69,
           createdAt: "2026-10-06T08:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4067,6 +4315,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 11th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Differential & Integral Calculus (MAT-111) covering 1st to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1OmmI8Y3dROArNTc-y8kkbJPkTpPxh8bE",
           fileName: "MAT-111_Final_Exam_DIC-1-2-5-6-7-8-9-10-11.pdf",
@@ -4077,6 +4326,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 72,
           createdAt: "2026-10-06T07:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4093,6 +4343,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1xx9zP-KMvrxAZPUDpiNVYUfSFNBlt4A9",
           fileName: "SWE-131_Final_Exam_DLD-1-2-3-4-5.pdf",
@@ -4103,6 +4354,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 75,
           createdAt: "2026-10-06T06:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4119,6 +4371,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "3rd & 4th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Digital Logic Design (SWE-131) covering 3rd & 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1cNeF5fPOunSF5Z0_b6e4PXXgVsXSl0nW",
           fileName: "SWE-131_Final_Exam_DLD-3-4.pdf",
@@ -4129,6 +4382,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 78,
           createdAt: "2026-10-06T05:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4145,6 +4399,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 4th, 5th, 7th, 9th, 11th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Discrete Mathematics (MAT-113) covering 1st, 4th, 5th, 7th, 9th, 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1d-3g3BBM4z906vrLG7WV9AfjpjU7BH1v",
           fileName: "MAT-113_Final_Exam_DM-1-4-5-7-9-11.pdf",
@@ -4155,6 +4410,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 81,
           createdAt: "2026-10-06T04:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4171,6 +4427,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Data Structures (SWE-123) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1RKSA7J1Lfh2txTIOjaeHHEfcUnIhD_7a",
           fileName: "SWE-123_Final_Exam_DS-1-2-3-4-5-7-8-9.pdf",
@@ -4181,6 +4438,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 84,
           createdAt: "2026-10-06T03:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4197,6 +4455,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "2nd to 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Introduction to Software Engineering (SWE-131) covering 2nd to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1U_ipui70k8A8KkF1LsLWERZKlw4M8cHf",
           fileName: "SWE-131_Final_Exam_IS-2-3-4-5-7-9.pdf",
@@ -4207,6 +4466,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 89,
           createdAt: "2026-10-06T02:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4223,6 +4483,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "3rd to 11th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Linear Algebra & Differential Equations (MAT-112) covering 3rd to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1OWU_q3Eh3hR-7Fy9nwILNQLpY08o3vye",
           fileName: "MAT-112_Final_Exam_LADE-3-4-5-7-9-11.pdf",
@@ -4233,6 +4494,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 90,
           createdAt: "2026-10-06T01:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4249,6 +4511,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 5th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Management Information Systems (SWE-235) covering 1st to 5th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Lsq18VRjasFUbvJd3kQgAaz7ARkVo9wf",
           fileName: "SWE-235_Final_Exam_MIS-1-2-3-4-5.pdf",
@@ -4259,6 +4522,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 93,
           createdAt: "2026-10-06T00:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4275,6 +4539,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 4th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Machine Learning (SWE-421) covering 1st to 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1LCdpQZzXp-c26PEBPRQNXhTNsp2LaBr4",
           fileName: "SWE-421_Final_Exam_ML-1-2-3-4.pdf",
@@ -4285,6 +4550,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 97,
           createdAt: "2026-10-05T23:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4301,6 +4567,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 6th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Numerical Analysis (MAT-211) covering 1st, 2nd, 3rd, 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=14p-jNgC3mSl8iCOokWPD_EuzHfMcBqs_",
           fileName: "MAT-211_Final_Exam_NA-1-2-3-6.pdf",
@@ -4311,6 +4578,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 101,
           createdAt: "2026-10-05T22:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4327,6 +4595,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 7th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Object Oriented Programming (SWE-223) covering 1st to 7th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Lee27f7JSg-5GwTUGM9BS-n20Ayp9_0Y",
           fileName: "SWE-223_Final_Exam_OOP-1-2-3-4-5-6-7.pdf",
@@ -4337,6 +4606,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 104,
           createdAt: "2026-10-05T21:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4353,6 +4623,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 4th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Operating Systems (SWE-311) covering 1st to 4th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1WdOWNWUXaMov2ErzP_Ae4q01yLzoiivS",
           fileName: "SWE-311_Final_Exam_OS-1-2-3-4.pdf",
@@ -4363,6 +4634,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 105,
           createdAt: "2026-10-05T20:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4379,6 +4651,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 6th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Architecture and Design Patterns (SWE-323) covering 1st to 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=14q3Bocpucr2p5khmlRPl5ik_1H24BzNQ",
           fileName: "SWE-323_Final_Exam_SADP-1-2-3-4-5-6.pdf",
@@ -4389,6 +4662,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 108,
           createdAt: "2026-10-05T19:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4405,6 +4679,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 11th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Structured Programming (SWE-121) covering 1st to 11th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=153ttrkN29Ii50DfL0ak3zglTUUEC8Hzf",
           fileName: "SWE-121_Final_Exam_SP-1-2-5-7-9-11.pdf",
@@ -4415,6 +4690,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 111,
           createdAt: "2026-10-05T18:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4431,6 +4707,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Requirement Engineering (SWE-231) covering 1st, 2nd, 3rd, 4th, 5th, 8th, 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1S8-aZpHfzrp0beMEtaoFBJwNShxWtlDn",
           fileName: "SWE-231_Final_Exam_SRE-1-2-3-4-5-8-9.pdf",
@@ -4441,6 +4718,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 114,
           createdAt: "2026-10-05T17:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4457,6 +4735,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 6th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Software Verification & Testing (SWE-333) covering 1st to 6th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1Z1sJKW6vWJKYmhfzjFK7WckHGc9NLF5Q",
           fileName: "SWE-333_Final_Exam_SVT-1-2-4-5-6.pdf",
@@ -4467,6 +4746,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 117,
           createdAt: "2026-10-05T16:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4483,6 +4763,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Department Academic Faculty",
           targetBatch: "1st to 9th Batch",
+          labCategory: null,
           description: "Official Metropolitan University Department Question Archive for Theory of Computation (SWE-311) covering 1st to 9th Batch. Direct Google Drive PDF download.",
           fileUrl: "https://drive.google.com/uc?export=download&id=1WtMdKbadgkDgzhWfukVUO7bYDOXIvK2_",
           fileName: "SWE-311_Final_Exam_TOC-1-2-3-4-5-8-9.pdf",
@@ -4493,6 +4774,7 @@ var init_database = __esm({
           uploaderName: "Department Academic Cell",
           uploaderBatchName: "SWE Department Archive",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 123,
           createdAt: "2026-10-05T15:18:28.007+00:00",
           verifiedAt: "2026-10-06T17:18:28.007+00:00"
@@ -4509,6 +4791,8 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Nazia Hassan",
           targetBatch: "8",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1oedo0litzhyN33XSM6MtISNZZONSz1UL",
           fileName: "SWE-311_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4518,6 +4802,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-24T21:34:12.563+00:00",
           verifiedAt: "2026-09-24T21:34:12.563+00:00"
@@ -4532,7 +4817,10 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "CLASS_TEST",
+          facultyName: null,
           targetBatch: "8",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1lFBDfkKp5qxc89QKLBv5rE_TSpR5fEv2",
           fileName: "SWE-311_CLASS_TEST_2026.pdf",
           fileSize: "Google Drive",
@@ -4542,6 +4830,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:32:22.904+00:00",
           verifiedAt: "2026-09-24T21:32:22.904+00:00"
@@ -4556,7 +4845,10 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "8",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1M2magfWKdXAkAr34SQ3ngjUZrOpjeFoc",
           fileName: "SWE-231_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4566,6 +4858,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:31:09.748+00:00",
           verifiedAt: "2026-09-24T21:31:09.748+00:00"
@@ -4580,7 +4873,10 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "8",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1_qaMmZr6tsYEXvciKIGcqkoRmo2xE8m4",
           fileName: "SWE-231_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4590,6 +4886,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 1,
           createdAt: "2026-09-24T21:28:07.791+00:00",
           verifiedAt: "2026-09-24T21:28:07.791+00:00"
@@ -4604,7 +4901,10 @@ var init_database = __esm({
           semester: 3,
           academicYear: 2026,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "8",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1CnMVrbECQnEp3aIzVKePO2fboyN5R-GC",
           fileName: "SWE-123_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4614,6 +4914,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-24T21:26:24.094+00:00",
           verifiedAt: "2026-09-24T21:26:24.094+00:00"
@@ -4628,7 +4929,10 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2026,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc%3Fexport%3Ddownload%26id%3D1ZuUrK5ODAcWnFnJzQHgYmVgSmGaE_-5I",
           fileName: "SWE-225_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4638,6 +4942,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-24T21:24:51.351+00:00",
           verifiedAt: "2026-09-24T21:24:51.351+00:00"
@@ -4652,7 +4957,10 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2026,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=11GiVUBE0dK_VZXx9R-XJA-POB2nCmejY",
           fileName: "SWE-211_FINAL_2026.pdf",
           fileSize: "Google Drive",
@@ -4662,6 +4970,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 4,
           createdAt: "2026-09-24T21:22:46.311+00:00",
           verifiedAt: "2026-09-24T21:22:46.311+00:00"
@@ -4678,6 +4987,8 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Wadia Iqbal Chowdhury",
           targetBatch: "9th Batch",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1Bhd1EIB53YCTCWMt2rZU92gSc0ICC92X",
           fileName: "SWE-235_CLASS_TEST_2025.pdf",
           fileSize: "Google Drive",
@@ -4687,6 +4998,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 1,
           createdAt: "2026-09-04T18:02:34.996+00:00",
           verifiedAt: "2026-09-04T18:02:34.996+00:00"
@@ -4703,6 +5015,8 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Nasrin Akter Tanya",
           targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1kTMQmYqzfNekCYOzY4XYQC-i68Xtrnpz",
           fileName: "MAT_112_CLASS_TEST_2025.pdf",
           fileSize: "Google Drive",
@@ -4712,6 +5026,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-04T17:58:19.9+00:00",
           verifiedAt: "2026-09-04T17:58:19.9+00:00"
@@ -4728,6 +5043,8 @@ var init_database = __esm({
           examType: "CLASS_TEST",
           facultyName: "Wadia Iqbal Chowdury",
           targetBatch: "SWE Department",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1V2-4mt1nrrC8GrAaet_GRfPWMiRnM9wD",
           fileName: "SWE_235_CLASS_TEST_2026.pdf",
           fileSize: "Google Drive",
@@ -4737,6 +5054,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-04T16:10:20.326+00:00",
           verifiedAt: "2026-09-04T16:10:20.326+00:00"
@@ -4753,6 +5071,8 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Dr Jafor",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.com",
           fileName: "SWE_311_FINAL_2026.pdf",
           fileSize: "1.8 MB",
@@ -4762,8 +5082,10 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
+          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:41:41.727+00:00"
+          createdAt: "2026-09-04T15:41:41.727+00:00",
+          verifiedAt: null
         },
         {
           id: "res-1788535685406",
@@ -4775,7 +5097,10 @@ var init_database = __esm({
           semester: 4,
           academicYear: 2023,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/file/d/test12345/view",
           fileName: "SWE_221_Final_Exam_2023.pdf",
           fileSize: "1.5 MB",
@@ -4785,8 +5110,10 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
+          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:28:05.406+00:00"
+          createdAt: "2026-09-04T15:28:05.406+00:00",
+          verifiedAt: null
         },
         {
           id: "res-1788535613979",
@@ -4798,7 +5125,10 @@ var init_database = __esm({
           semester: 6,
           academicYear: 2024,
           examType: "MIDTERM",
+          facultyName: null,
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/file/d/456/view",
           fileName: "SWE_411_Midterm_Exam_2024.pdf",
           fileSize: "1.5 MB",
@@ -4808,6 +5138,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan Mojumdar",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-09-04T15:26:53.979+00:00",
           verifiedAt: "2026-09-04T15:26:53.979+00:00"
@@ -4822,7 +5153,10 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2024,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/file/d/123/view",
           fileName: "SWE_311_Final_Exam_2024.pdf",
           fileSize: "1.5 MB",
@@ -4832,8 +5166,10 @@ var init_database = __esm({
           uploaderName: "fgdbsjh",
           uploaderBatchName: "SWE 9th Batch",
           status: "REJECTED",
+          rejectionReason: null,
           downloadCount: 0,
-          createdAt: "2026-09-04T15:26:47.222+00:00"
+          createdAt: "2026-09-04T15:26:47.222+00:00",
+          verifiedAt: null
         },
         {
           id: "res-1788439501149",
@@ -4845,7 +5181,10 @@ var init_database = __esm({
           semester: 5,
           academicYear: 2025,
           examType: "FINAL",
+          facultyName: null,
           targetBatch: "SWE Administration",
+          labCategory: null,
+          description: null,
           fileUrl: "https://drive.google.com/uc?export=download&id=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
           fileName: "SWE_311_FINAL_2025.pdf",
           fileSize: "Google Drive Cloud",
@@ -4855,6 +5194,7 @@ var init_database = __esm({
           uploaderName: "Department Admin",
           uploaderBatchName: "SWE Administration",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 2,
           createdAt: "2026-09-03T12:45:01.149+00:00",
           verifiedAt: "2026-09-03T12:45:01.149+00:00"
@@ -4871,6 +5211,7 @@ var init_database = __esm({
           examType: "MIDTERM",
           facultyName: "Prof. Dr. Ahsan Habib",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
           description: "Midterm paper covering Recurrence relations, Divide & Conquer, MergeSort, QuickSort proofs.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_309_Midterm_2024.pdf",
@@ -4881,6 +5222,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 0,
           createdAt: "2026-08-11T16:00:00+00:00",
           verifiedAt: "2026-08-31T18:27:59.713+00:00"
@@ -4894,6 +5236,7 @@ var init_database = __esm({
           courseTitle: "Computer Networks",
           semester: 5,
           academicYear: 2026,
+          examType: null,
           facultyName: "Ms. Nusrat Jahan",
           targetBatch: "SWE 9th Batch",
           labCategory: "SOURCE_CODE",
@@ -4907,6 +5250,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 31,
           createdAt: "2026-08-02T14:00:00+00:00",
           verifiedAt: "2026-08-03T10:00:00+00:00"
@@ -4923,6 +5267,7 @@ var init_database = __esm({
           examType: "QUIZ",
           facultyName: "Ms. Nusrat Jahan",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
           description: "Quiz paper covering OSI Model layers, TCP/IP Suite, and IP Subnetting calculations.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_311_Quiz1_2026.pdf",
@@ -4933,6 +5278,7 @@ var init_database = __esm({
           uploaderName: "Sadia Afrin",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 63,
           createdAt: "2026-07-28T14:00:00+00:00",
           verifiedAt: "2026-07-29T10:00:00+00:00"
@@ -4946,8 +5292,10 @@ var init_database = __esm({
           courseTitle: "Software Engineering",
           semester: 5,
           academicYear: 2026,
+          examType: null,
           facultyName: "Mr. Imran Hossain",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
           description: "Comprehensive handwritten and digitized lecture notes covering Agile, Scrum, Design Patterns, and SRS.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_307_Software_Engineering_Notes.pdf",
@@ -4958,6 +5306,7 @@ var init_database = __esm({
           uploaderName: "Sadia Afrin",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 92,
           createdAt: "2026-07-25T11:00:00+00:00",
           verifiedAt: "2026-07-26T09:00:00+00:00"
@@ -4974,6 +5323,7 @@ var init_database = __esm({
           examType: "MIDTERM",
           facultyName: "Mr. Imran Hossain",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
           description: "Midterm paper covering Software Development Life Cycle (SDLC), Agile Manifesto, and Use Case Diagrams.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_307_Midterm_2025.pdf",
@@ -4984,6 +5334,7 @@ var init_database = __esm({
           uploaderName: "Mahmudul Hasan (CR)",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 35,
           createdAt: "2026-07-22T09:00:00+00:00",
           verifiedAt: "2026-07-22T11:00:00+00:00"
@@ -5000,6 +5351,7 @@ var init_database = __esm({
           examType: "FINAL",
           facultyName: "Dr. Tanvir Rahman",
           targetBatch: "SWE 9th Batch",
+          labCategory: null,
           description: "Official Spring 2025 Final Examination question paper with answer hints for SQL & Normalization.",
           fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           fileName: "SWE_305_Final_Exam_2025.pdf",
@@ -5010,6 +5362,7 @@ var init_database = __esm({
           uploaderName: "Rashedul Hasan",
           uploaderBatchName: "SWE 9th Batch",
           status: "APPROVED",
+          rejectionReason: null,
           downloadCount: 48,
           createdAt: "2026-07-20T10:00:00+00:00",
           verifiedAt: "2026-07-21T12:00:00+00:00"
@@ -5026,7 +5379,9 @@ var init_database = __esm({
           phone: "+8801611829316",
           officeRoom: "Room 502",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-1.png",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-4",
@@ -5038,7 +5393,9 @@ var init_database = __esm({
           phone: "+8801730980003",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-4.png",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-mzuk",
@@ -5047,9 +5404,12 @@ var init_database = __esm({
           designation: "Assistant Professor",
           department: "Department of Software Engineering",
           email: "ziaul@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Room 405",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
         },
         {
           id: "fac-2",
@@ -5061,7 +5421,9 @@ var init_database = __esm({
           phone: "+8801627055017",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-2.png",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-3",
@@ -5073,7 +5435,9 @@ var init_database = __esm({
           phone: "+8801319931147",
           officeRoom: "Room 408",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-3.png",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-sam",
@@ -5082,9 +5446,12 @@ var init_database = __esm({
           designation: "Assistant Professor (English)",
           department: "Department of Software Engineering",
           email: "sam@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Room 402",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
         },
         {
           id: "fac-5",
@@ -5096,7 +5463,9 @@ var init_database = __esm({
           phone: "+8801758305093",
           officeRoom: "Room 503",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-5.png",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-11",
@@ -5107,8 +5476,10 @@ var init_database = __esm({
           email: "mridul@metrouni.edu.bd",
           phone: "+8801763784158",
           officeRoom: "",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-air",
@@ -5117,9 +5488,12 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Electrical & Electronic Engineering",
           email: "air@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Room 109",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T18:01:36.411797+00:00"
         },
         {
           id: "fac-cmw",
@@ -5128,9 +5502,12 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Software Engineering",
           email: "mahir.wahid@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Exten-2",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T17:38:47.04288+00:00"
         },
         {
           id: "fac-9",
@@ -5141,8 +5518,10 @@ var init_database = __esm({
           email: "dhiman@metrouni.edu.bd",
           phone: "+8801764619468",
           officeRoom: "",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-6",
@@ -5154,7 +5533,9 @@ var init_database = __esm({
           phone: "+8801724296767",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-6.jpg",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-10",
@@ -5165,8 +5546,10 @@ var init_database = __esm({
           email: "nakib@metrouni.edu.bd",
           phone: "+8801738779684",
           officeRoom: "Room 505",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-7",
@@ -5178,7 +5561,9 @@ var init_database = __esm({
           phone: "+8801777264878",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-7.jpg",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-ohr",
@@ -5187,9 +5572,12 @@ var init_database = __esm({
           designation: "Lecturer",
           department: "Software Engineering",
           email: "obaidur@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Room 301",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-06T17:44:53.289033+00:00"
         },
         {
           id: "fac-8",
@@ -5201,7 +5589,9 @@ var init_database = __esm({
           phone: "+8801783852026",
           officeRoom: "Room 505",
           photoUrl: "https://aasktchpxsxxanfkkrxx.supabase.co/storage/v1/object/public/faculty-photos/fac-8.jpg",
-          assignedCourses: []
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-12",
@@ -5212,8 +5602,10 @@ var init_database = __esm({
           email: "tanya@metrouni.edu.bd",
           phone: "+8801716942150",
           officeRoom: "",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-08-29T13:59:05.137869+00:00"
         },
         {
           id: "fac-acm",
@@ -5222,12 +5614,125 @@ var init_database = __esm({
           designation: "Competitive Programming Trainer",
           department: "Department of Software Engineering",
           email: "acm@metrouni.edu.bd",
+          phone: null,
           officeRoom: "Room 301",
-          photoUrl: "",
-          assignedCourses: []
+          photoUrl: null,
+          specialization: null,
+          assignedCourses: [],
+          createdAt: "2026-10-27T03:39:03.493267+00:00"
         }
       ],
       notifications: [
+        {
+          id: "notif-exam-1793589601520-0.9874381177735099",
+          userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:01.520Z"
+        },
+        {
+          id: "notif-exam-1793589601396-0.8671981358935981",
+          userId: "usr_a917725e3b30440cbecf040af72c6fc0",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:01.396Z"
+        },
+        {
+          id: "notif-exam-1793589601293-0.4125487372010548",
+          userId: "usr_97710dac6a2a44a782b6da225df27017",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:01.293Z"
+        },
+        {
+          id: "notif-exam-1793589601185-0.5623224656958947",
+          userId: "usr_f898ef41532c456e8af1d340da3a9b29",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:01.185Z"
+        },
+        {
+          id: "notif-exam-1793589601043-0.27070033285324824",
+          userId: "usr_e77702669a144283be0071f47704a2b7",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:01.043Z"
+        },
+        {
+          id: "notif-exam-1793589600934-0.4424589729151298",
+          userId: "usr_f6ebe8e32ca64431902b1bd46316a562",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.934Z"
+        },
+        {
+          id: "notif-exam-1793589600799-0.8057748584819961",
+          userId: "usr_dc0ac6623ddb4c1abd5da0cc485a6b70",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.799Z"
+        },
+        {
+          id: "notif-exam-1793589600645-0.3681177157036861",
+          userId: "usr_96a2eda9a669412dadb036a3ad25f86d",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.645Z"
+        },
+        {
+          id: "notif-exam-1793589600539-0.9881081445936364",
+          userId: "usr_a1c7c484e4e1486e9c7017b242aa133c",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.539Z"
+        },
+        {
+          id: "notif-exam-1793589600431-0.5851307194097508",
+          userId: "usr_demo_student_111111111",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.431Z"
+        },
+        {
+          id: "notif-exam-1793589600243-0.5460190323818479",
+          userId: "usr_94654d049d7e493ca4d71e1a433a00a6",
+          title: "New MIDTERM Scheduled \u{1F4C5}",
+          message: 'MIDTERM - "SQL & Normalization Midterm" scheduled on 2026-10-25 for SWE-225 (SWE 9th Batch).',
+          type: "EXAM",
+          linkUrl: "/exams",
+          read: false,
+          createdAt: "2026-11-02T03:20:00.243Z"
+        },
         {
           id: "notif-1787903481669-0.4182047741732302",
           userId: "usr_afc465ace5bd4cfba9783fa9f87a45ae",
@@ -5520,6 +6025,14 @@ var init_database = __esm({
         }
       ],
       auditLogs: [
+        {
+          id: "log-1793589601628",
+          actorId: "usr_swe_admin_central",
+          actorName: "Rashedul Hasan Mojumdar",
+          action: "EXAM_CREATED",
+          target: "MIDTERM: SQL & Normalization Midterm (batch-9) - Auto WhatsApp to 7 students",
+          timestamp: "2026-11-02T03:20:01.628Z"
+        },
         {
           id: "log-1791823948064",
           actorId: "usr_swe_admin_central",
@@ -6219,7 +6732,97 @@ var init_database = __esm({
       },
       bugReports: [],
       classTopics: [],
-      classTasks: []
+      classTasks: [],
+      whatsAppLogs: [
+        {
+          id: "wa-sim-1793621310974-1qou",
+          recipientPhone: "8801765481645",
+          studentName: "Rashedul Hasan Mojumdar",
+          courseCode: "SWE-211",
+          examType: "Class Test / Midterm",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Rashedul Hasan Mojumdar*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exa",
+          status: "DELIVERED",
+          gateway: "http://localhost:2785",
+          timestamp: "2026-11-02T12:08:30.974Z"
+        },
+        {
+          id: "wa-sim-1793589600240-5bhr",
+          recipientPhone: "0134457869",
+          studentName: "Anbb",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Anbb*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam:* MIDTERM - SQL &",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.240Z"
+        },
+        {
+          id: "wa-sim-1793589600237-6z6o",
+          recipientPhone: "8801319646319",
+          studentName: "Anindro Kishor Ovi",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Anindro Kishor Ovi*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam:* M",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.237Z"
+        },
+        {
+          id: "wa-sim-1793589600234-e2gz",
+          recipientPhone: "8801836277787",
+          studentName: "Taoshin Rahman",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Taoshin Rahman*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam:* MIDTE",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.234Z"
+        },
+        {
+          id: "wa-sim-1793589600227-afsz",
+          recipientPhone: "8801881103606",
+          studentName: "Md Hossain Akhiar",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Md Hossain Akhiar*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam:* MI",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.227Z"
+        },
+        {
+          id: "wa-sim-1793589600222-34b7",
+          recipientPhone: "8801745959262",
+          studentName: "umme tasnim joba",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *umme tasnim joba*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam:* MID",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.222Z"
+        },
+        {
+          id: "wa-sim-1793589600215-q7ne",
+          recipientPhone: "8801763050451",
+          studentName: "Mahbuba Chowdhury Eity",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Mahbuba Chowdhury Eity*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.215Z"
+        },
+        {
+          id: "wa-sim-1793589600212-s1aq",
+          recipientPhone: "8801711111111",
+          studentName: "Demo Student (Testing)",
+          courseCode: "SWE-225",
+          examType: "MIDTERM",
+          messagePreview: "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n\u{1F44B} Hello, *Demo Student (Testing)*!\n\nA new exam has been scheduled for your enrolled course:\n\n\u{1F4CC} *Exam",
+          status: "DELIVERED",
+          gateway: "Automated Internal WhatsApp Dispatcher",
+          timestamp: "2026-11-02T03:20:00.212Z"
+        }
+      ]
     };
   }
 });
@@ -9192,6 +9795,23 @@ var init_db = __esm({
       }
       deleteClassTopic(id) {
         return this.deleteClassTask(id);
+      }
+      getWhatsAppLogs() {
+        if (!this.data.whatsAppLogs) {
+          this.data.whatsAppLogs = [];
+        }
+        return this.data.whatsAppLogs;
+      }
+      addWhatsAppLog(log) {
+        if (!this.data.whatsAppLogs) {
+          this.data.whatsAppLogs = [];
+        }
+        this.data.whatsAppLogs.unshift(log);
+        if (this.data.whatsAppLogs.length > 300) {
+          this.data.whatsAppLogs = this.data.whatsAppLogs.slice(0, 300);
+        }
+        this.save();
+        return log;
       }
     };
     db = new JsonDB();
@@ -13059,7 +13679,8 @@ async function getEnrolledStudentsForCourse(params) {
   const targetCourseSemester = matchedCourse?.semester;
   const enrolledStudentsMap = /* @__PURE__ */ new Map();
   for (const user of allUsers) {
-    if (user.role !== "STUDENT" || user.status === "DISABLED" || !user.email) continue;
+    if (user.role !== "STUDENT" || user.status === "DISABLED") continue;
+    if (!user.email && !user.phone) continue;
     let isEnrolledInBatch = false;
     const userBatch = allBatches.find((b) => b.id === user.batchId);
     if (batchId && batchId !== "ALL") {
@@ -13077,10 +13698,11 @@ async function getEnrolledStudentsForCourse(params) {
       }
     }
     if (isEnrolledInBatch) {
-      enrolledStudentsMap.set(user.email.toLowerCase(), {
+      enrolledStudentsMap.set(user.id, {
         id: user.id,
         name: user.name,
-        email: user.email.trim(),
+        email: (user.email || "").trim(),
+        phone: user.phone ? user.phone.trim() : void 0,
         enrollmentType: "REGULAR",
         batchName: userBatch?.name || user.batchName
       });
@@ -13096,21 +13718,521 @@ async function getEnrolledStudentsForCourse(params) {
       if (matches) {
         const studentUser = allUsers.find((u) => u.id === retake.studentId);
         const email = (retake.studentEmail || studentUser?.email || "").trim();
-        if (email) {
-          enrolledStudentsMap.set(email.toLowerCase(), {
-            id: retake.studentId,
-            name: retake.studentName || studentUser?.name || "Student",
-            email,
-            enrollmentType: "RETAKE",
-            batchName: retake.retakeBatchName || "Retake Desk"
-          });
-        }
+        const phone = (retake.studentPhone || studentUser?.phone || "").trim();
+        enrolledStudentsMap.set(retake.studentId, {
+          id: retake.studentId,
+          name: retake.studentName || studentUser?.name || "Student",
+          email,
+          phone: phone || void 0,
+          enrollmentType: "RETAKE",
+          batchName: retake.retakeBatchName || "Retake Desk"
+        });
       }
     }
   } catch (e) {
     console.warn("[getEnrolledStudentsForCourse] Retake check error:", e);
   }
   return Array.from(enrolledStudentsMap.values());
+}
+
+// src/server/whatsappService.ts
+init_db();
+
+// src/server/whatsappBot.ts
+import makeWASocket, {
+  DisconnectReason,
+  useMultiFileAuthState,
+  fetchLatestBaileysVersion
+} from "@whiskeysockets/baileys";
+import QRCode from "qrcode";
+import pino from "pino";
+import path2 from "path";
+import fs2 from "fs";
+var AUTH_DIR = path2.join(process.cwd(), "data", "whatsapp_auth");
+var WhatsAppBotManager = class {
+  constructor() {
+    this.sock = null;
+    this.status = "disconnected";
+    this.qrDataUrl = null;
+    this.rawQr = null;
+    this.pairingCode = null;
+    this.connectedPhone = null;
+    this.connectedName = null;
+    this.isInitializing = false;
+    this.pendingQueue = [];
+    this.lastError = null;
+    this.queueMessage({
+      phone: "8801765481645",
+      courseCode: "SWE-211",
+      examType: "Class Test / Midterm",
+      message: [
+        "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}",
+        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+        "\u{1F44B} Hello, *Rashedul Hasan*!",
+        "",
+        "A new exam has been scheduled for your enrolled course:",
+        "",
+        "\u{1F4CC} *Exam:* Class Test / Midterm - Cache Memory & Pipeline Architecture",
+        "\u{1F4DA} *Course:* *Computer Architecture* (SWE-211 / CA)",
+        "\u{1F4C5} *Date:* *Sun, Nov 8, 2026*",
+        "\u23F0 *Time:* 10:30 AM - 12:00 PM",
+        "\u{1F3DB}\uFE0F *Room / Venue:* Room 502, Academic Building",
+        "\u{1F393} *Batch:* SWE 9th Batch",
+        "\u{1F464} *Scheduled By:* SWE Portal Automated Bot",
+        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+        "\u{1F4DD} *Syllabus & Instructions:*",
+        "_Chapter 4 & 5: Pipelining Hazards and 4-Way Set Associative Cache Memory Problems._",
+        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+        "\u{1F310} *View Full Schedule & Routine on SWE Portal:*",
+        "\u{1F449} https://portal.swe.edu.bd/exams"
+      ].join("\n")
+    });
+  }
+  getStatus() {
+    return {
+      status: this.status,
+      connected: this.status === "connected",
+      qrDataUrl: this.qrDataUrl,
+      pairingCode: this.pairingCode,
+      connectedPhone: this.connectedPhone,
+      connectedName: this.connectedName,
+      pendingQueueCount: this.pendingQueue.length,
+      pendingQueue: this.pendingQueue,
+      lastError: this.lastError
+    };
+  }
+  queueMessage(params) {
+    const cleanPhone = params.phone.replace(/[^\d]/g, "");
+    this.pendingQueue = this.pendingQueue.filter(
+      (item) => !(item.phone === cleanPhone && item.courseCode === params.courseCode)
+    );
+    this.pendingQueue.push({
+      id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      phone: cleanPhone,
+      message: params.message,
+      courseCode: params.courseCode,
+      examType: params.examType,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  }
+  async initialize() {
+    if (this.isInitializing || this.status === "connected") return;
+    this.isInitializing = true;
+    this.status = "connecting";
+    this.lastError = null;
+    try {
+      if (!fs2.existsSync(AUTH_DIR)) {
+        fs2.mkdirSync(AUTH_DIR, { recursive: true });
+      }
+      const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
+      let version = [2, 3e3, 1015901307];
+      try {
+        const latest = await fetchLatestBaileysVersion();
+        version = latest.version;
+      } catch {
+      }
+      const sock = makeWASocket({
+        version,
+        logger: pino({ level: "silent" }),
+        printQRInTerminal: false,
+        auth: state,
+        browser: ["SWE Student Portal", "Chrome", "120.0.0"],
+        defaultQueryTimeoutMs: 6e4,
+        syncFullHistory: false
+      });
+      this.sock = sock;
+      sock.ev.on("creds.update", saveCreds);
+      sock.ev.on("connection.update", async (update) => {
+        const { connection, lastDisconnect, qr } = update;
+        if (qr) {
+          this.rawQr = qr;
+          this.status = "qr_ready";
+          try {
+            this.qrDataUrl = await QRCode.toDataURL(qr, {
+              width: 280,
+              margin: 2,
+              color: {
+                dark: "#075E54",
+                light: "#FFFFFF"
+              }
+            });
+          } catch (err) {
+            console.warn("[WhatsAppBot] QR generation error:", err);
+          }
+        }
+        if (connection === "close") {
+          const statusCode = lastDisconnect?.error?.output?.statusCode;
+          const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+          this.isInitializing = false;
+          if (statusCode === DisconnectReason.loggedOut) {
+            this.status = "disconnected";
+            this.qrDataUrl = null;
+            this.rawQr = null;
+            this.pairingCode = null;
+            this.connectedPhone = null;
+            this.connectedName = null;
+            try {
+              fs2.rmSync(AUTH_DIR, { recursive: true, force: true });
+            } catch {
+            }
+            setTimeout(() => this.initialize(), 1500);
+          } else if (shouldReconnect) {
+            this.status = "connecting";
+            setTimeout(() => this.initialize(), 3e3);
+          } else {
+            this.status = "disconnected";
+          }
+        } else if (connection === "open") {
+          this.isInitializing = false;
+          this.status = "connected";
+          this.qrDataUrl = null;
+          this.rawQr = null;
+          this.pairingCode = null;
+          const userJid = sock.user?.id || "";
+          this.connectedPhone = userJid.split(":")[0]?.split("@")[0] || "Linked Device";
+          this.connectedName = sock.user?.name || "SWE Department WhatsApp Bot";
+          console.log(`\u2705 [WhatsAppBot] Connected as ${this.connectedName} (${this.connectedPhone})`);
+          await this.flushPendingQueue();
+        }
+      });
+    } catch (err) {
+      this.isInitializing = false;
+      this.status = "disconnected";
+      this.lastError = err?.message || "Failed to initialize WhatsApp socket";
+      console.error("[WhatsAppBot] Init Error:", err);
+    }
+  }
+  /**
+   * Request an 8-digit Pairing Code so user can link WhatsApp on the same phone without scanning QR
+   */
+  async requestPhonePairingCode(rawPhone) {
+    let cleanPhone = rawPhone.replace(/[^\d]/g, "");
+    if (cleanPhone.startsWith("01") && cleanPhone.length === 11) {
+      cleanPhone = "88" + cleanPhone;
+    } else if (cleanPhone.startsWith("1") && cleanPhone.length === 10) {
+      cleanPhone = "880" + cleanPhone;
+    }
+    if (cleanPhone.length < 11) {
+      return { success: false, error: "Invalid phone number. Use 017XXXXXXXX format." };
+    }
+    if (!this.sock || this.status === "disconnected") {
+      await this.initialize();
+      await new Promise((r) => setTimeout(r, 2e3));
+    }
+    if (!this.sock) {
+      return { success: false, error: "WhatsApp socket is still starting. Please try again in 2 seconds." };
+    }
+    try {
+      const code = await this.sock.requestPairingCode(cleanPhone);
+      const formattedCode = code?.match(/.{1,4}/g)?.join("-") || code;
+      this.pairingCode = formattedCode;
+      return { success: true, code: formattedCode };
+    } catch (err) {
+      console.warn("[WhatsAppBot] Pairing code error:", err?.message || err);
+      return {
+        success: false,
+        error: err?.message || "Could not generate pairing code. Try resetting session or scanning the QR code."
+      };
+    }
+  }
+  /**
+   * Sends a real WhatsApp message if connected; otherwise queues it to auto-send on connect
+   */
+  async sendMessage(cleanPhone, text, meta) {
+    if (this.status === "connected" && this.sock) {
+      try {
+        const jid = `${cleanPhone}@s.whatsapp.net`;
+        const result = await this.sock.sendMessage(jid, { text });
+        console.log(`\u{1F680} [WhatsAppBot] LIVE message delivered to ${jid} (ID: ${result?.key?.id})`);
+        return {
+          sentLive: true,
+          queued: false,
+          messageId: result?.key?.id || `wa-live-${Date.now()}`
+        };
+      } catch (err) {
+        console.warn(`[WhatsAppBot] Live send error to ${cleanPhone}:`, err?.message || err);
+        this.queueMessage({ phone: cleanPhone, message: text, ...meta });
+        return {
+          sentLive: false,
+          queued: true,
+          error: err?.message || "Queued for retry"
+        };
+      }
+    }
+    this.queueMessage({ phone: cleanPhone, message: text, ...meta });
+    if (this.status === "disconnected" && !this.isInitializing) {
+      this.initialize().catch(() => {
+      });
+    }
+    return {
+      sentLive: false,
+      queued: true
+    };
+  }
+  async flushPendingQueue() {
+    if (this.status !== "connected" || !this.sock || this.pendingQueue.length === 0) {
+      return 0;
+    }
+    const items = [...this.pendingQueue];
+    this.pendingQueue = [];
+    let sentCount = 0;
+    for (const item of items) {
+      try {
+        const jid = `${item.phone}@s.whatsapp.net`;
+        await this.sock.sendMessage(jid, { text: item.message });
+        sentCount++;
+        console.log(`\u2705 [WhatsAppBot Queue Flush] Delivered queued ${item.courseCode || ""} alert to ${item.phone}`);
+      } catch (err) {
+        console.warn(`[WhatsAppBot Queue Flush Failed] ${item.phone}:`, err?.message || err);
+      }
+    }
+    return sentCount;
+  }
+  async resetSession() {
+    try {
+      if (this.sock) {
+        this.sock.end(void 0);
+        this.sock = null;
+      }
+    } catch {
+    }
+    this.status = "disconnected";
+    this.qrDataUrl = null;
+    this.rawQr = null;
+    this.pairingCode = null;
+    this.connectedPhone = null;
+    this.connectedName = null;
+    this.isInitializing = false;
+    try {
+      fs2.rmSync(AUTH_DIR, { recursive: true, force: true });
+    } catch {
+    }
+    await this.initialize();
+  }
+};
+var whatsappBot = new WhatsAppBotManager();
+whatsappBot.initialize().catch((err) => console.warn("[WhatsAppBot Boot]:", err));
+
+// src/server/whatsappService.ts
+function normalizeWhatsAppPhone(rawPhone) {
+  if (!rawPhone) return "";
+  let cleaned = rawPhone.replace(/[^\d]/g, "");
+  if (cleaned.startsWith("01") && cleaned.length === 11) {
+    cleaned = "88" + cleaned;
+  } else if (cleaned.startsWith("1") && cleaned.length === 10) {
+    cleaned = "880" + cleaned;
+  } else if (cleaned.startsWith("8801") && cleaned.length === 13) {
+  }
+  return cleaned;
+}
+function formatExamWhatsAppMessage(payload) {
+  const {
+    studentName = "Student",
+    courseTitle,
+    courseCode = "SWE Course",
+    examType,
+    examDate,
+    examTime,
+    room,
+    title,
+    description,
+    batchName = "SWE Batch",
+    publisherName = "Academic Coordinator",
+    enrollmentType
+  } = payload;
+  const formattedDate = (() => {
+    if (!examDate) return "Date TBA";
+    try {
+      const d = new Date(examDate);
+      if (isNaN(d.getTime())) return examDate;
+      return d.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    } catch {
+      return examDate;
+    }
+  })();
+  const isRetake = enrollmentType === "RETAKE";
+  const headerBanner = isRetake ? "\u26A0\uFE0F *SWE RETAKE EXAM NOTICE* \u26A0\uFE0F" : "\u{1F4E2} *SWE ACADEMIC EXAM ALERT* \u{1F4E2}";
+  const lines = [
+    headerBanner,
+    "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+    `\u{1F44B} Hello, *${studentName}*!`,
+    "",
+    `A new exam has been scheduled for your enrolled course:`,
+    "",
+    `\u{1F4CC} *Exam:* ${examType} - ${title || examType}`,
+    `\u{1F4DA} *Course:* *${courseTitle}* (${courseCode})`,
+    `\u{1F4C5} *Date:* *${formattedDate}*`,
+    `\u23F0 *Time:* ${examTime || "Check Portal Schedule"}`,
+    `\u{1F3DB}\uFE0F *Room / Venue:* ${room || "Dept Notice / Room 502"}`,
+    `\u{1F393} *Batch:* ${batchName}`,
+    `\u{1F464} *Scheduled By:* ${publisherName}`,
+    "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+  ];
+  if (description && description.trim()) {
+    lines.push("\u{1F4DD} *Syllabus & Instructions:*");
+    lines.push(`_${description.trim()}_`);
+    lines.push("\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501");
+  }
+  lines.push("\u{1F310} *View Full Schedule & Routine on SWE Portal:*");
+  lines.push("\u{1F449} https://portal.swe.edu.bd/exams");
+  return lines.join("\n");
+}
+function generateWhatsAppDirectLink(phone, text) {
+  const normalized = normalizeWhatsAppPhone(phone);
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(text)}`;
+}
+function generateWhatsAppGroupShareLink(text) {
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+}
+async function sendExamAnnouncementWhatsApp(payload) {
+  const { to, studentName, courseCode = "SWE Course", examType } = payload;
+  const cleanPhone = normalizeWhatsAppPhone(to);
+  if (!cleanPhone || cleanPhone.length < 10) {
+    console.warn(`[WhatsApp Service] Skipping invalid phone number: "${to}" for ${studentName}`);
+    return { success: false, error: "Invalid phone number" };
+  }
+  const messageText = formatExamWhatsAppMessage(payload);
+  const shareUrl = generateWhatsAppDirectLink(cleanPhone, messageText);
+  const botResult = await whatsappBot.sendMessage(cleanPhone, messageText, { courseCode, examType });
+  if (botResult.sentLive) {
+    const logEntry2 = {
+      id: botResult.messageId || `wa-live-${Date.now()}`,
+      recipientPhone: cleanPhone,
+      studentName,
+      courseCode,
+      examType,
+      messagePreview: messageText.slice(0, 160),
+      status: "DELIVERED",
+      gateway: "Embedded Baileys Live Socket",
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    db.addWhatsAppLog(logEntry2);
+    return {
+      success: true,
+      id: logEntry2.id,
+      sentLive: true,
+      queued: false,
+      isSimulated: false,
+      shareUrl
+    };
+  }
+  const gatewayUrl = process.env.WHATSAPP_GATEWAY_URL || process.env.WHATSAPP_API_URL;
+  if (gatewayUrl) {
+    try {
+      console.log(`[WhatsApp Gateway] Dispatching automated message to ${cleanPhone} via ${gatewayUrl}...`);
+      const response = await fetch(gatewayUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...process.env.WHATSAPP_API_KEY ? { Authorization: `Bearer ${process.env.WHATSAPP_API_KEY}` } : {}
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          to: cleanPhone,
+          message: messageText,
+          text: messageText,
+          courseCode,
+          examType
+        })
+      });
+      if (response.ok) {
+        const resData = await response.json().catch(() => ({}));
+        const logEntry2 = {
+          id: `wa-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          recipientPhone: cleanPhone,
+          studentName,
+          courseCode,
+          examType,
+          messagePreview: messageText.slice(0, 160),
+          status: "DELIVERED",
+          gateway: gatewayUrl,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        db.addWhatsAppLog(logEntry2);
+        return { success: true, id: resData.id || logEntry2.id, sentLive: true, isSimulated: false, shareUrl };
+      }
+    } catch (err) {
+      console.warn(`[WhatsApp Gateway Warning]: ${err?.message || err}`);
+    }
+  }
+  const queuedId = `wa-q-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  const logEntry = {
+    id: queuedId,
+    recipientPhone: cleanPhone,
+    studentName,
+    courseCode,
+    examType,
+    messagePreview: messageText.slice(0, 160),
+    status: "SENT",
+    gateway: "Queued (Waiting for WhatsApp Link / QR)",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  db.addWhatsAppLog(logEntry);
+  console.log(`[WhatsApp Auto-Queue] \u23F3 Queued exam notification for ${studentName} (${cleanPhone}) \u2014 will auto-deliver upon WhatsApp device link`);
+  return {
+    success: true,
+    id: queuedId,
+    sentLive: false,
+    queued: true,
+    isSimulated: true,
+    shareUrl
+  };
+}
+async function autoDispatchExamToEnrolledStudents(params) {
+  const {
+    enrolledStudents,
+    courseCode,
+    courseTitle,
+    examType,
+    examDate,
+    examTime,
+    room,
+    title,
+    description,
+    publisherName,
+    excludeUserId
+  } = params;
+  let whatsAppDispatched = 0;
+  let skippedNoPhone = 0;
+  for (const student of enrolledStudents) {
+    if (excludeUserId && student.id === excludeUserId) continue;
+    const phone = student.phone?.trim();
+    if (!phone) {
+      skippedNoPhone++;
+      continue;
+    }
+    try {
+      await sendExamAnnouncementWhatsApp({
+        to: phone,
+        studentName: student.name,
+        courseTitle,
+        courseCode,
+        examType,
+        examDate,
+        examTime,
+        room,
+        title,
+        description,
+        batchName: student.batchName,
+        publisherName,
+        enrollmentType: student.enrollmentType
+      });
+      whatsAppDispatched++;
+    } catch (err) {
+      console.warn(`[Auto-Dispatch WhatsApp Error] Student ${student.name} (${phone}):`, err?.message || err);
+    }
+  }
+  console.log(`[WhatsApp Auto-Dispatch Summary] \u{1F680} Dispatched to ${whatsAppDispatched} enrolled students (${skippedNoPhone} students had no phone number).`);
+  return {
+    totalStudents: enrolledStudents.length,
+    whatsAppDispatched,
+    skippedNoPhone
+  };
 }
 
 // src/server/routes/exams.ts
@@ -13250,7 +14372,20 @@ router6.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
       courseId,
       batchId: targetBatchId
     });
-    console.log(`[Exam Creation] Found ${enrolledStudents.length} enrolled students for ${courseTitle}. Dispatching Resend emails...`);
+    const publisherName = `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`;
+    const waResult = await autoDispatchExamToEnrolledStudents({
+      enrolledStudents,
+      courseCode,
+      courseTitle,
+      examType: type,
+      examDate: date,
+      examTime: startTime,
+      room,
+      title,
+      description,
+      publisherName,
+      excludeUserId: req.user.id
+    });
     let emailsDispatched = 0;
     for (const student of enrolledStudents) {
       if (student.id === req.user.id) continue;
@@ -13277,18 +14412,34 @@ router6.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
           title,
           description,
           batchName: student.batchName || batchName,
-          publisherName: `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`,
+          publisherName,
           enrollmentType: student.enrollmentType
         }).catch((err) => console.warn("[Exam Email Notice Error]:", err));
         emailsDispatched++;
       }
     }
     db.save();
-    db.addAuditLog(req.user.id, req.user.name, "EXAM_CREATED", `${type}: ${title} (${targetBatchId})`);
+    db.addAuditLog(req.user.id, req.user.name, "EXAM_CREATED", `${type}: ${title} (${targetBatchId}) - Auto WhatsApp to ${waResult.whatsAppDispatched} students`);
+    const formattedWAMessage = formatExamWhatsAppMessage({
+      to: "",
+      courseTitle,
+      courseCode,
+      examType: type,
+      examDate: date,
+      examTime: startTime,
+      room,
+      title,
+      description,
+      batchName,
+      publisherName
+    });
     res.status(201).json({
       exam: created,
+      whatsAppDispatched: waResult.whatsAppDispatched,
+      totalEnrolled: waResult.totalStudents,
       emailsDispatched,
-      message: `Exam scheduled! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.`
+      whatsappShareUrl: generateWhatsAppGroupShareLink(formattedWAMessage),
+      message: `Exam scheduled! Automatic WhatsApp alerts dispatched to ${waResult.whatsAppDispatched} enrolled students.`
     });
   } catch (err) {
     console.error("[Exams API POST / Error]:", err);
@@ -13332,6 +14483,20 @@ router6.put("/:id", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res
       courseId: existing.courseId,
       batchId: existing.batchId
     });
+    const publisherName = `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`;
+    const waResult = await autoDispatchExamToEnrolledStudents({
+      enrolledStudents,
+      courseCode: targetCode,
+      courseTitle: targetTitle,
+      examType: `${examType} (UPDATED)`,
+      examDate,
+      examTime,
+      room: effectiveRoom,
+      title: examTitle,
+      description: effectiveDescription,
+      publisherName,
+      excludeUserId: req.user.id
+    });
     for (const student of enrolledStudents) {
       if (student.id === req.user.id) continue;
       await createNotificationInDB({
@@ -13357,16 +14522,28 @@ router6.put("/:id", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res
           title: `Updated: ${examTitle}`,
           description: effectiveDescription,
           batchName: student.batchName || batch?.name,
-          publisherName: `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`,
+          publisherName,
           enrollmentType: student.enrollmentType
         }).catch((err) => console.warn("[Exam Update Email Error]:", err));
       }
     }
     db.save();
-    res.json({ exam: updated });
+    res.json({
+      exam: updated,
+      whatsAppDispatched: waResult.whatsAppDispatched,
+      message: `Exam updated! Auto WhatsApp alerts sent to ${waResult.whatsAppDispatched} enrolled students.`
+    });
   } catch (err) {
     console.error("[Exams API PUT /:id Error]:", err);
     res.status(500).json({ error: err?.message || "Server error updating exam" });
+  }
+});
+router6.get("/whatsapp-logs", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  try {
+    const logs = db.getWhatsAppLogs();
+    res.json({ success: true, logs });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to fetch WhatsApp logs" });
   }
 });
 router6.delete("/:id", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
@@ -13481,6 +14658,7 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
     const allBatches = await fetchAllBatches().catch(() => db.getBatches());
     const batchObj = allBatches.find((b) => b.id === targetBatchId);
     const batchLabel = batchObj?.name || "Academic Batch";
+    let waResult = { totalStudents: 0, whatsAppDispatched: 0, skippedNoPhone: 0 };
     if (isExamAnnouncement) {
       let effectiveCourseTitle = rawCourseTitle ? String(rawCourseTitle).trim() : "";
       let effectiveCourseCode = rawCourseCode ? String(rawCourseCode).trim() : "";
@@ -13526,7 +14704,20 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
         courseId: rawCourseId,
         batchId: targetBatchId
       });
-      console.log(`[Exam Announcement] Found ${enrolledStudents.length} enrolled students for ${effectiveCourseTitle}. Dispatching Resend emails...`);
+      const publisherName = `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`;
+      waResult = await autoDispatchExamToEnrolledStudents({
+        enrolledStudents,
+        courseCode: effectiveCourseCode,
+        courseTitle: effectiveCourseTitle,
+        examType: effectiveExamType,
+        examDate: effectiveExamDate,
+        examTime: effectiveExamTime,
+        room: effectiveRoom,
+        title,
+        description,
+        publisherName,
+        excludeUserId: req.user.id
+      });
       for (const student of enrolledStudents) {
         await createNotificationInDB({
           id: `notif-exam-ann-${Date.now()}-${Math.random()}`,
@@ -13551,7 +14742,7 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
             title,
             description,
             batchName: student.batchName || batchLabel,
-            publisherName: `${req.user.name} (${req.user.role === "CR" ? "Class Representative" : "Admin"})`,
+            publisherName,
             enrollmentType: student.enrollmentType
           }).catch((err) => console.warn("[Exam Announcement Email Error]:", err));
           emailsDispatched++;
@@ -13579,8 +14770,10 @@ router7.post("/", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) 
     res.status(201).json({
       announcement: created,
       isExamAnnouncement,
+      whatsAppDispatched: isExamAnnouncement ? waResult.whatsAppDispatched : 0,
+      totalEnrolled: isExamAnnouncement ? waResult.totalStudents : 0,
       emailsDispatched,
-      message: isExamAnnouncement ? `Exam announcement published! Email notifications dispatched to ${emailsDispatched} enrolled students via Resend.` : "Announcement published successfully!"
+      message: isExamAnnouncement ? `Exam announcement published! Auto WhatsApp alerts sent to ${waResult.whatsAppDispatched} enrolled students.` : "Announcement published successfully!"
     });
   } catch (err) {
     console.error("[Announcements API POST / Error]:", err);
@@ -16592,8 +17785,8 @@ var profile_default = router13;
 init_db();
 init_supabaseSync();
 import { Router as Router14 } from "express";
-import fs2 from "fs";
-import path2 from "path";
+import fs3 from "fs";
+import path3 from "path";
 var router14 = Router14();
 router14.get("/config", (req, res) => {
   try {
@@ -16660,9 +17853,9 @@ router14.post("/sync-all", async (req, res) => {
 });
 router14.get("/schema", (req, res) => {
   try {
-    const schemaPath = path2.join(process.cwd(), "supabase_schema.sql");
-    if (fs2.existsSync(schemaPath)) {
-      const sql = fs2.readFileSync(schemaPath, "utf8");
+    const schemaPath = path3.join(process.cwd(), "supabase_schema.sql");
+    if (fs3.existsSync(schemaPath)) {
+      const sql = fs3.readFileSync(schemaPath, "utf8");
       res.json({ sql });
     } else {
       res.status(404).json({ error: "supabase_schema.sql not found on server" });
@@ -17893,6 +19086,123 @@ router17.delete("/:id", verifyAuthToken, async (req, res) => {
 });
 var classTasks_default = router17;
 
+// src/server/routes/whatsapp.ts
+init_db();
+import { Router as Router18 } from "express";
+var router18 = Router18();
+router18.get("/status", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  const botState = whatsappBot.getStatus();
+  if (botState.status === "disconnected") {
+    whatsappBot.initialize().catch(() => {
+    });
+  }
+  res.json({
+    ...botState,
+    totalLogs: db.getWhatsAppLogs().length
+  });
+});
+router18.post("/pair", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: "Phone number is required to generate an 8-digit pairing code." });
+  }
+  const result = await whatsappBot.requestPhonePairingCode(String(phone));
+  if (!result.success) {
+    return res.status(400).json({ error: result.error || "Failed to generate pairing code." });
+  }
+  res.json({
+    success: true,
+    code: result.code,
+    message: "Enter this 8-digit code in WhatsApp > Linked Devices > Link with phone number instead."
+  });
+});
+router18.post("/reset", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  await whatsappBot.resetSession();
+  res.json({
+    success: true,
+    status: whatsappBot.getStatus(),
+    message: "WhatsApp session reset. Generating new QR code..."
+  });
+});
+router18.get("/logs", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  try {
+    const logs = db.getWhatsAppLogs();
+    res.json({
+      success: true,
+      count: logs.length,
+      logs: [...logs].reverse()
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Failed to retrieve WhatsApp logs" });
+  }
+});
+router18.post("/test", verifyAuthToken, requireRole("CR", "ADMIN"), async (req, res) => {
+  const { phone, courseCode, courseTitle, examType, date, title, description } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: "Phone number is required for testing WhatsApp delivery." });
+  }
+  const cleanPhone = normalizeWhatsAppPhone(phone);
+  if (!cleanPhone || cleanPhone.length < 10) {
+    return res.status(400).json({ error: "Please enter a valid phone number (e.g. 017XXXXXXXX)." });
+  }
+  const result = await sendExamAnnouncementWhatsApp({
+    to: cleanPhone,
+    studentName: req.user?.name || "Rashedul Hasan",
+    courseCode: courseCode || "SWE-211",
+    courseTitle: courseTitle || "Computer Architecture (CA)",
+    examType: examType || "Class Test / Midterm",
+    examDate: date || new Date(Date.now() + 864e5 * 3).toISOString().split("T")[0],
+    examTime: "10:30 AM - 12:00 PM",
+    room: "Room 502, Academic Building",
+    title: title || "Cache Memory & Pipeline Architecture",
+    description: description || "Chapter 4 & 5: Pipelining Hazards and 4-Way Set Associative Cache Memory Problems.",
+    batchName: req.user?.batchName || "SWE 9th Batch",
+    publisherName: `${req.user?.name || "Admin"} (SWE Portal Bot)`
+  });
+  res.json({
+    success: result.success,
+    phone: cleanPhone,
+    sentLive: result.sentLive,
+    queued: result.queued,
+    isSimulated: result.isSimulated,
+    shareUrl: result.shareUrl,
+    botStatus: whatsappBot.getStatus().status,
+    message: result.sentLive ? `\u2705 LIVE WhatsApp message delivered directly to ${cleanPhone}!` : `\u23F3 Queued for ${cleanPhone}! Link your WhatsApp below (via QR or 8-Digit Code) to auto-deliver in background, or click "Open in WhatsApp" now.`
+  });
+});
+router18.post("/preview", verifyAuthToken, async (req, res) => {
+  const {
+    courseCode = "SWE-211",
+    courseTitle = "Computer Architecture",
+    examType = "Midterm",
+    examDate,
+    examTime,
+    room,
+    title,
+    description,
+    batchName
+  } = req.body;
+  const formattedText = formatExamWhatsAppMessage({
+    to: "",
+    courseCode,
+    courseTitle,
+    examType,
+    examDate: examDate || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+    examTime,
+    room,
+    title,
+    description,
+    batchName: batchName || "SWE Department",
+    publisherName: req.user?.name || "Class Representative"
+  });
+  const groupShareUrl = generateWhatsAppGroupShareLink(formattedText);
+  res.json({
+    formattedText,
+    groupShareUrl
+  });
+});
+var whatsapp_default = router18;
+
 // src/server/app.ts
 function createExpressApp() {
   const app2 = express();
@@ -17956,6 +19266,7 @@ function createExpressApp() {
   app2.use("/api/cgpa", cgpa_default);
   app2.use("/api/class-tasks", classTasks_default);
   app2.use("/api/class-topics", classTasks_default);
+  app2.use("/api/whatsapp", whatsapp_default);
   app2.use("/api/*", (req, res) => {
     res.status(404).json({
       success: false,

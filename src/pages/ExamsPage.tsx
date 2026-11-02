@@ -11,6 +11,8 @@ import { Exam, ExamType } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { ALL_ROOMS } from '../constants/rooms';
 import { getEffectiveSemester } from '../utils/semester';
+import { ExamsMobileSkeleton, ExamsTableSkeleton } from '../components/skeletons/ExamsSkeleton';
+import { fetchExamsFromSupabase } from '../services/supabaseDataService';
 
 export const ExamsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -51,18 +53,16 @@ export const ExamsPage: React.FC = () => {
   const [room, setRoom] = useState('Exam Hall 3');
   const [description, setDescription] = useState('');
 
-  const fetchExams = () => {
+  const fetchExams = async () => {
     if (!token) return;
-    setIsLoading(true);
-    fetch(`/api/exams?batchId=${user?.batchId || 'batch-9'}&includePast=true`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => safeParseJson(res))
-      .then((data) => setExams(data.exams || []))
-      .catch((err) => {
-        console.warn('Could not fetch exams:', err);
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      const data = await fetchExamsFromSupabase(user?.batchId || 'batch-9');
+      setExams(data as any || []);
+    } catch (err) {
+      console.warn('Could not fetch exams:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -274,7 +274,7 @@ export const ExamsPage: React.FC = () => {
         {/* Mobile Card View (block md:hidden) */}
         <div className="block md:hidden divide-y divide-[#E5EBF3] dark:divide-slate-800 p-3 space-y-3">
           {isLoading ? (
-            <div className="py-8 text-center text-slate-400 text-xs">Loading exam schedule...</div>
+            <ExamsMobileSkeleton count={4} />
           ) : filteredExams.length === 0 ? (
             <div className="py-12 px-4 text-center flex flex-col items-center justify-center">
               {typeFilter ? (
@@ -423,14 +423,11 @@ export const ExamsPage: React.FC = () => {
                 {canManage && <th className="px-5 py-3.5 text-right w-24">ACTIONS</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={canManage ? 7 : 6} className="px-5 py-10 text-center text-slate-400">
-                    Loading exam schedule...
-                  </td>
-                </tr>
-              ) : filteredExams.length === 0 ? (
+            {isLoading ? (
+              <ExamsTableSkeleton rows={5} canManage={canManage} />
+            ) : (
+              <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
+                {filteredExams.length === 0 ? (
                 <tr>
                   <td colSpan={canManage ? 7 : 6} className="px-5 py-14 text-center">
                     <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
@@ -599,9 +596,9 @@ export const ExamsPage: React.FC = () => {
                       )}
                     </tr>
                   );
-                })
-              )}
-            </tbody>
+                }))}
+              </tbody>
+            )}
           </table>
         </div>
       </div>

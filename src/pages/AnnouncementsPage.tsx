@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Megaphone, Plus, Archive, Trash2, Mail, Calendar, Clock, Sparkles, Eye, ArrowLeft, Image, FileUp, X, ChevronDown, ChevronUp, BellOff } from 'lucide-react';
+import { Megaphone, Plus, Archive, Trash2, Mail, MessageSquare, Calendar, Clock, Sparkles, Eye, ArrowLeft, Image, FileUp, X, ChevronDown, ChevronUp, BellOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Modal } from '../components/common/Modal';
@@ -9,7 +9,10 @@ import { PageHeader } from '../components/common/PageHeader';
 import { BatchAnnouncement, AnnouncementPriority, Batch, Course } from '../types';
 import { safeParseJson } from '../lib/apiClient';
 import { EmailAnnouncementPreview } from '../components/announcements/EmailAnnouncementPreview';
+import { WhatsAppAnnouncementPreview } from '../components/announcements/WhatsAppAnnouncementPreview';
 import { getEffectiveSemester } from '../utils/semester';
+import { AnnouncementsSkeleton, AnnouncementsTableSkeleton } from '../components/skeletons/AnnouncementsSkeleton';
+import { fetchAnnouncementsFromSupabase } from '../services/supabaseDataService';
 
 export const AnnouncementsPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -44,7 +47,7 @@ export const AnnouncementsPage: React.FC = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'EDIT' | 'PREVIEW'>('EDIT');
+  const [modalTab, setModalTab] = useState<'EDIT' | 'WHATSAPP_PREVIEW' | 'EMAIL_PREVIEW'>('EDIT');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form State
@@ -259,8 +262,9 @@ export const AnnouncementsPage: React.FC = () => {
 
       if (res.ok) {
         const data = await safeParseJson(res);
-        if (data?.emailsDispatched && data.emailsDispatched > 0) {
-          addToast('success', `Exam announcement published! Email notifications dispatched to ${data.emailsDispatched} enrolled students via Resend.`);
+        if (data?.whatsAppDispatched !== undefined || (data?.emailsDispatched && data.emailsDispatched > 0)) {
+          const count = data.whatsAppDispatched || data.emailsDispatched || 0;
+          addToast('success', `Exam announcement published! Auto WhatsApp alerts dispatched to ${count} enrolled students.`);
         } else {
           addToast('success', data?.message || 'Announcement Published!');
         }
@@ -359,7 +363,7 @@ export const AnnouncementsPage: React.FC = () => {
       {!canManage ? (
         <div className="space-y-4">
           {isLoading ? (
-            <div className="py-12 text-center text-xs text-slate-400">Loading announcements...</div>
+            <AnnouncementsSkeleton count={4} />
           ) : filteredAnnouncements.length === 0 ? (
             <div className="bg-white dark:bg-[#0F172A] p-10 sm:p-14 text-center rounded-2xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] space-y-3.5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-black tracking-wide shadow-sm">
@@ -462,7 +466,7 @@ export const AnnouncementsPage: React.FC = () => {
           {/* Mobile Card List (block md:hidden) */}
           <div className="block md:hidden divide-y divide-[#E5EBF3] dark:divide-slate-800 p-3 space-y-3">
             {isLoading ? (
-              <div className="py-8 text-center text-slate-400 text-xs">Loading announcements...</div>
+              <AnnouncementsSkeleton count={3} />
             ) : filteredAnnouncements.length === 0 ? (
               <div className="py-12 px-4 text-center space-y-3">
                 <div className="w-11 h-11 mx-auto rounded-full bg-black text-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
@@ -520,14 +524,11 @@ export const AnnouncementsPage: React.FC = () => {
                   <th className="px-5 py-3.5 text-right w-20">ACTIONS</th>
                 </tr>
               </thead>
+            {isLoading ? (
+              <AnnouncementsTableSkeleton rows={4} />
+            ) : (
               <tbody className="divide-y divide-[#E5EBF3] dark:divide-slate-800 text-xs">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={4} className="px-5 py-10 text-center text-slate-400">
-                      Loading announcements table...
-                    </td>
-                  </tr>
-                ) : filteredAnnouncements.length === 0 ? (
+                {filteredAnnouncements.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-5 py-12 text-center">
                       <div className="space-y-2 max-w-md mx-auto">
@@ -584,6 +585,7 @@ export const AnnouncementsPage: React.FC = () => {
                   ))
                 )}
               </tbody>
+            )}
             </table>
           </div>
         </div>
@@ -594,9 +596,9 @@ export const AnnouncementsPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Publish Announcement"
-        maxWidth={modalTab === 'PREVIEW' ? '4xl' : '2xl'}
+        maxWidth={modalTab !== 'EDIT' ? '4xl' : '2xl'}
       >
-        {/* Tab Switcher: Compose vs Visual Email Preview */}
+        {/* Tab Switcher: Compose vs Visual WhatsApp/Email Preview */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
@@ -612,27 +614,66 @@ export const AnnouncementsPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setModalTab('PREVIEW')}
+              onClick={() => setModalTab('WHATSAPP_PREVIEW')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                modalTab === 'PREVIEW'
-                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                modalTab === 'WHATSAPP_PREVIEW'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
               }`}
             >
-              <Eye className="w-3.5 h-3.5 text-blue-600" />
-              <span>Visual Email Preview</span>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>WhatsApp Alert</span>
               {isExamRelated && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalTab('EMAIL_PREVIEW')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                modalTab === 'EMAIL_PREVIEW'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>Email</span>
             </button>
           </div>
 
           <div className="text-[11px] text-slate-500 hidden sm:block">
-            {isExamRelated ? '⚡ Exam Alert Email will be dispatched' : 'Standard Announcement'}
+            {isExamRelated ? '⚡ Auto-WhatsApp Notice Active' : 'Standard Announcement'}
           </div>
         </div>
 
-        {modalTab === 'PREVIEW' ? (
+        {modalTab === 'WHATSAPP_PREVIEW' ? (
+          <div className="space-y-4">
+            <WhatsAppAnnouncementPreview
+              courseTitle={courseTitle || 'Course Title'}
+              courseCode={courseCode}
+              examType={examType}
+              examDate={examDate}
+              examTime={examTime}
+              room={room}
+              title={title}
+              description={description}
+              batchName={batches.find(b => b.id === targetBatchId)?.name || 'SWE Batch'}
+              publisherName={`${user?.name} (${user?.role === 'CR' ? 'Class Representative' : 'Admin'})`}
+              onSend={handleSubmit}
+              isSending={isLoading}
+            />
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalTab('EDIT')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-xs cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Editing
+              </button>
+            </div>
+          </div>
+        ) : modalTab === 'EMAIL_PREVIEW' ? (
           <div className="space-y-4">
             <EmailAnnouncementPreview
               courseTitle={courseTitle || 'Course Title'}
@@ -702,31 +743,37 @@ export const AnnouncementsPage: React.FC = () => {
           </div>
 
           {/* EXAM ANNOUNCEMENT SECTION */}
-          <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl space-y-3">
+          <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 rounded-xl space-y-3">
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={isExamRelated}
                   onChange={(e) => setIsExamRelated(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700"
+                  className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 dark:border-slate-700"
                 />
-                <span className="font-bold text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   Is this an Exam / Quiz Announcement?
                 </span>
               </label>
               {isExamRelated && (
-                <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] flex items-center gap-1">
-                  <Mail className="w-3 h-3" /> Resend Active
+                <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1">
+                  <MessageSquare className="w-3 h-3" /> Auto-WhatsApp Active
                 </span>
               )}
             </div>
 
             {isExamRelated && (
-              <div className="space-y-3 pt-2 border-t border-blue-200/80 dark:border-blue-900/60 animate-in fade-in duration-150">
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-200 dark:border-blue-950 text-[11px] text-slate-600 dark:text-slate-300">
-                  ⚡ <strong>Automated Resend Email:</strong> All students currently enrolled in this course (including batch students & retake students) will receive an official exam notification in their email with <strong>Course Title, Exam Type, and Exam Date</strong>!
+              <div className="space-y-3 pt-2 border-t border-emerald-200/80 dark:border-emerald-900/60 animate-in fade-in duration-150">
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-emerald-200 dark:border-emerald-950 text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+                  <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    100% Automated WhatsApp Dispatch:
+                  </div>
+                  <p>
+                    All enrolled students in this course (including retake and improvement students) will automatically receive an official exam notice directly on their WhatsApp. Admin or CR does not need to send anything manually!
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -968,11 +1015,11 @@ export const AnnouncementsPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setModalTab('PREVIEW')}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-xs font-bold rounded-lg border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer"
+                onClick={() => setModalTab('WHATSAPP_PREVIEW')}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5" />
-                Preview Email
+                <MessageSquare className="w-3.5 h-3.5" />
+                Preview WhatsApp Alert
               </button>
               <button
                 type="submit"

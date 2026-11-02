@@ -48,6 +48,8 @@ import { AdminRoutinePage } from './pages/admin/AdminRoutinePage';
 import { AdminNoticesPage } from './pages/admin/AdminNoticesPage';
 import { AdminResourceVerificationPage } from './pages/admin/AdminResourceVerificationPage';
 import { AdminActivityLogPage } from './pages/admin/AdminActivityLogPage';
+import { AdminFeatureAnalyticsPage } from './pages/admin/AdminFeatureAnalyticsPage';
+import { autoFlushPendingOpenWaQueue } from './services/openWaClient';
 
 /**
  * Root Route Navigator:
@@ -71,6 +73,12 @@ const RootRedirect: React.FC = () => {
 };
 
 export const App: React.FC = () => {
+  React.useEffect(() => {
+    autoFlushPendingOpenWaQueue();
+    const timer = setInterval(autoFlushPendingOpenWaQueue, 8000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -381,6 +389,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['ADMIN']}>
                     <AdminSemestersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminFeatureAnalyticsPage />
                   </ProtectedRoute>
                 }
               />

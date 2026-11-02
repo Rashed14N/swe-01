@@ -431,7 +431,7 @@ export async function getEnrolledStudentsForCourse(params: {
   courseTitle?: string;
   courseId?: string;
   batchId?: string;
-}): Promise<Array<{ id: string; name: string; email: string; enrollmentType: 'REGULAR' | 'RETAKE'; batchName?: string }>> {
+}): Promise<Array<{ id: string; name: string; email: string; phone?: string; enrollmentType: 'REGULAR' | 'RETAKE'; batchName?: string }>> {
   const { courseCode, courseTitle, courseId, batchId } = params;
   const normalize = (v?: string) => (v || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
@@ -452,12 +452,13 @@ export async function getEnrolledStudentsForCourse(params: {
   );
 
   const targetCourseSemester = matchedCourse?.semester;
-  const enrolledStudentsMap = new Map<string, { id: string; name: string; email: string; enrollmentType: 'REGULAR' | 'RETAKE'; batchName?: string }>();
+  const enrolledStudentsMap = new Map<string, { id: string; name: string; email: string; phone?: string; enrollmentType: 'REGULAR' | 'RETAKE'; batchName?: string }>();
 
   // 1. Regular Batch Enrollment
   // Match active students in the target batch or batches in this semester
   for (const user of allUsers) {
-    if (user.role !== 'STUDENT' || user.status === 'DISABLED' || !user.email) continue;
+    if (user.role !== 'STUDENT' || user.status === 'DISABLED') continue;
+    if (!user.email && !user.phone) continue;
 
     let isEnrolledInBatch = false;
     const userBatch = allBatches.find(b => b.id === user.batchId);
@@ -478,10 +479,11 @@ export async function getEnrolledStudentsForCourse(params: {
     }
 
     if (isEnrolledInBatch) {
-      enrolledStudentsMap.set(user.email.toLowerCase(), {
+      enrolledStudentsMap.set(user.id, {
         id: user.id,
         name: user.name,
-        email: user.email.trim(),
+        email: (user.email || '').trim(),
+        phone: user.phone ? user.phone.trim() : undefined,
         enrollmentType: 'REGULAR',
         batchName: userBatch?.name || user.batchName,
       });
@@ -505,15 +507,16 @@ export async function getEnrolledStudentsForCourse(params: {
       if (matches) {
         const studentUser = allUsers.find(u => u.id === retake.studentId);
         const email = (retake.studentEmail || studentUser?.email || '').trim();
-        if (email) {
-          enrolledStudentsMap.set(email.toLowerCase(), {
-            id: retake.studentId,
-            name: retake.studentName || studentUser?.name || 'Student',
-            email,
-            enrollmentType: 'RETAKE',
-            batchName: retake.retakeBatchName || 'Retake Desk',
-          });
-        }
+        const phone = ((retake as any).studentPhone || studentUser?.phone || '').trim();
+        
+        enrolledStudentsMap.set(retake.studentId, {
+          id: retake.studentId,
+          name: retake.studentName || studentUser?.name || 'Student',
+          email,
+          phone: phone || undefined,
+          enrollmentType: 'RETAKE',
+          batchName: retake.retakeBatchName || 'Retake Desk',
+        });
       }
     }
   } catch (e) {

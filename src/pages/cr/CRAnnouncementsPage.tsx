@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Megaphone, Plus, Trash2, Edit3, Eye, Archive, Clock, Search, AlertCircle, CheckCircle, Calendar, Mail, Sparkles, ArrowLeft, Image, FileUp, X } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Edit3, Eye, Archive, Clock, Search, AlertCircle, CheckCircle, Calendar, Mail, MessageSquare, Sparkles, ArrowLeft, Image, FileUp, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { BatchAnnouncement, Course } from '../../types';
 import { EmailAnnouncementPreview } from '../../components/announcements/EmailAnnouncementPreview';
+import { WhatsAppAnnouncementPreview } from '../../components/announcements/WhatsAppAnnouncementPreview';
 
 export const CRAnnouncementsPage: React.FC = () => {
   const { user, token } = useAuth();
@@ -17,7 +18,7 @@ export const CRAnnouncementsPage: React.FC = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'EDIT' | 'PREVIEW'>('EDIT');
+  const [modalTab, setModalTab] = useState<'EDIT' | 'WHATSAPP_PREVIEW' | 'EMAIL_PREVIEW'>('EDIT');
   const [editingAnn, setEditingAnn] = useState<BatchAnnouncement | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -166,8 +167,9 @@ export const CRAnnouncementsPage: React.FC = () => {
 
       if (res.ok) {
         const data = await res.json();
-        if (data?.emailsDispatched && data.emailsDispatched > 0) {
-          addToast('success', `Exam announcement saved! Email notifications dispatched to ${data.emailsDispatched} enrolled students via Resend.`);
+        if (data?.whatsAppDispatched !== undefined || (data?.emailsDispatched && data.emailsDispatched > 0)) {
+          const count = data.whatsAppDispatched || data.emailsDispatched || 0;
+          addToast('success', `Exam announcement saved! Automatic WhatsApp alerts dispatched to ${count} enrolled students.`);
         } else {
           addToast('success', 'Announcement saved successfully!');
         }
@@ -344,7 +346,7 @@ export const CRAnnouncementsPage: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className={`bg-white w-full rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4 max-h-[92vh] overflow-y-auto ${
-            modalTab === 'PREVIEW' ? 'max-w-4xl' : 'max-w-xl'
+            modalTab !== 'EDIT' ? 'max-w-4xl' : 'max-w-xl'
           }`}>
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-bold text-slate-900">
@@ -366,23 +368,62 @@ export const CRAnnouncementsPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalTab('PREVIEW')}
+                  onClick={() => setModalTab('WHATSAPP_PREVIEW')}
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    modalTab === 'PREVIEW'
-                      ? 'bg-white text-blue-600 shadow-2xs'
+                    modalTab === 'WHATSAPP_PREVIEW'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Eye className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Email Preview</span>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>WhatsApp Alert</span>
                   {isExamRelated && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalTab('EMAIL_PREVIEW')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    modalTab === 'EMAIL_PREVIEW'
+                      ? 'bg-blue-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Email</span>
                 </button>
               </div>
             </div>
 
-            {modalTab === 'PREVIEW' ? (
+            {modalTab === 'WHATSAPP_PREVIEW' ? (
+              <div className="space-y-4">
+                <WhatsAppAnnouncementPreview
+                  courseTitle={courseTitle || 'Course Title'}
+                  courseCode={courseCode}
+                  examType={examType}
+                  examDate={examDate}
+                  examTime={examTime}
+                  room={room}
+                  title={form.title}
+                  description={form.description}
+                  batchName={user?.batchName || 'SWE 9th Batch'}
+                  publisherName={`${user?.name} (Class Representative)`}
+                  onSend={handleSave}
+                  isSending={isSubmitting}
+                />
+                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setModalTab('EDIT')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Back to Editing
+                  </button>
+                </div>
+              </div>
+            ) : modalTab === 'EMAIL_PREVIEW' ? (
               <div className="space-y-4">
                 <EmailAnnouncementPreview
                   courseTitle={courseTitle || 'Course Title'}
@@ -412,31 +453,37 @@ export const CRAnnouncementsPage: React.FC = () => {
             ) : (
               <form onSubmit={handleSave} className="space-y-3 text-xs">
               {/* EXAM ANNOUNCEMENT SECTION */}
-              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-3">
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={isExamRelated}
                       onChange={(e) => setIsExamRelated(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
                     />
-                    <span className="font-bold text-xs text-blue-900 flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-blue-600" />
+                    <span className="font-bold text-xs text-emerald-950 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-emerald-600" />
                       Is this an Exam / Quiz Announcement?
                     </span>
                   </label>
                   {isExamRelated && (
-                    <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px] flex items-center gap-1">
-                      <Mail className="w-3 h-3" /> Resend Active
+                    <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1">
+                      <MessageSquare className="w-3 h-3" /> Auto-WhatsApp Active
                     </span>
                   )}
                 </div>
 
                 {isExamRelated && (
-                  <div className="space-y-3 pt-2 border-t border-blue-200 animate-in fade-in duration-150">
-                    <div className="p-2 bg-white rounded-lg border border-blue-200 text-[11px] text-slate-600">
-                      ⚡ <strong>Automated Resend Email:</strong> All students currently enrolled in this course (including batch students & retake students) will receive an official exam notification in their email with <strong>Course Title, Exam Type, and Exam Date</strong>!
+                  <div className="space-y-3 pt-2 border-t border-emerald-200 animate-in fade-in duration-150">
+                    <div className="p-2.5 bg-white rounded-lg border border-emerald-200 text-[11px] text-slate-700 space-y-1">
+                      <div className="font-bold text-emerald-900 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                        100% Automated WhatsApp Dispatch:
+                      </div>
+                      <p>
+                        এই কোর্সে রেজিস্টার্ড বা এনরোল্ড সকল শিক্ষার্থী (Regular ব্যাচ ও Retake/Improvement ব্যাচ) পোস্ট করার সাথে সাথেই স্বয়ংক্রিয়ভাবে তাদের WhatsApp নম্বরে পরীক্ষার নোটিশ পেয়ে যাবে। কোনো অ্যাডমিন ম্যানুয়াল কাজের দরকার নেই।
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -668,11 +715,11 @@ export const CRAnnouncementsPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setModalTab('PREVIEW')}
-                    className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                    onClick={() => setModalTab('WHATSAPP_PREVIEW')}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg border border-emerald-200 transition-colors cursor-pointer"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    Preview Email
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Preview WhatsApp Alert
                   </button>
                   <button
                     type="submit"

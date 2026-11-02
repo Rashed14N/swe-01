@@ -1,0 +1,20 @@
+{
+  "name": "swe-whatsapp-gateway",
+  "version": "1.0.0",
+  "description": "Free Open-Source WhatsApp Gateway for SWE Portal automated exam notifications using Baileys",
+  "main": "gateway.js",
+  "scripts": {
+    "start": "node gateway.js",
+    "dev": "nodemon gateway.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.8",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pino": "^9.0.0",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

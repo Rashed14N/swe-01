@@ -27,6 +27,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
 import { UploadQuestionModal } from '../components/resources/UploadQuestionModal';
 import { getInstantDownloadUrl } from '../lib/driveUtils';
+import { QuestionBankGridSkeleton, QuestionBankTableSkeleton } from '../components/skeletons/QuestionBankSkeleton';
 
 export const QuestionBankPage: React.FC = () => {
   const { token, currentUser, user } = useAuth();
@@ -441,10 +442,24 @@ export const QuestionBankPage: React.FC = () => {
 
       {/* Loading & Empty States */}
       {isLoading ? (
-        <div className="py-16 text-center text-xs text-[#64748B] bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800">
-          <div className="w-6 h-6 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          Loading question paper repository...
-        </div>
+        viewMode === 'grid' ? (
+          <QuestionBankGridSkeleton count={8} />
+        ) : (
+          <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 overflow-hidden shadow-xs">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#F2F6FB] dark:bg-[#121D30] border-b border-[#DCE6F2] dark:border-slate-800 text-[11px] font-extrabold text-[#0A2147] dark:text-white uppercase tracking-wider">
+                  <th className="px-5 py-3.5 w-28">CODE</th>
+                  <th className="px-5 py-3.5">COURSE TITLE & TOPIC</th>
+                  <th className="px-5 py-3.5 w-32">EXAM TYPE</th>
+                  <th className="px-5 py-3.5 w-24">YEAR</th>
+                  <th className="px-5 py-3.5 text-right w-24">ACTION</th>
+                </tr>
+              </thead>
+              <QuestionBankTableSkeleton rows={6} />
+            </table>
+          </div>
+        )
       ) : processedQuestions.length === 0 ? (
         <div className="py-16 text-center bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 p-8 space-y-3">
           <FileText className="w-10 h-10 text-[#CBD8E8] dark:text-slate-700 mx-auto" />

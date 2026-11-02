@@ -7,6 +7,7 @@ import { ResourceDetailModal } from '../components/common/ResourceDetailModal';
 import { ContributorLeaderboard } from '../components/resources/ContributorLeaderboard';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
+import { NotesSkeleton } from '../components/skeletons/NotesSkeleton';
 
 export const NotesPage: React.FC = () => {
   const { token } = useAuth();
@@ -89,7 +90,7 @@ export const NotesPage: React.FC = () => {
       {/* Structured Resource List */}
       <div className="bg-white dark:bg-[#0F172A] rounded-xl border border-[#D8E2EE] dark:border-slate-800 shadow-[0_1px_2px_rgba(15,35,70,0.04),0_6px_18px_rgba(15,35,70,0.07)] p-4 divide-y divide-[#E5EBF3] dark:divide-slate-800">
         {isLoading ? (
-          <div className="py-12 text-center text-xs text-slate-400">Loading notes repository...</div>
+          <NotesSkeleton count={5} />
         ) : filteredNotes.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No lecture notes match your search criteria.

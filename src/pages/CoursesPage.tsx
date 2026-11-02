@@ -6,10 +6,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import type { Course, ClassTask } from '../types';
-import { safeParseJson } from '../lib/apiClient';
 import { PageHeader } from '../components/common/PageHeader';
 import { FilterBar } from '../components/common/FilterBar';
+import { safeParseJson } from '../lib/apiClient';
 import { getEffectiveSemester } from '../utils/semester';
+import { CourseCatalogSkeleton } from '../components/skeletons/CourseCatalogSkeleton';
+import { fetchWithCache } from '../services/dataCache';
 
 export const CoursesPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -35,15 +37,15 @@ export const CoursesPage: React.FC = () => {
     }
   }, [user]);
 
-  // Fetch courses
+  // Fetch courses with fast caching
   useEffect(() => {
     if (!token) return;
-    setIsLoading(true);
-    fetch('/api/courses?all=true', {
+    fetchWithCache<{ courses: Course[] }>('/api/courses?all=true', {
       headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => safeParseJson(res))
-      .then((data) => setAllCourses(data.courses || []))
+    }, 60000)
+      .then((data) => {
+        setAllCourses(data?.courses || []);
+      })
       .catch((err) => {
         console.warn('Could not fetch courses:', err);
       })
@@ -175,9 +177,7 @@ export const CoursesPage: React.FC = () => {
 
       {/* 6. Courses Grid */}
       {isLoading ? (
-        <div className="py-12 text-center text-xs font-semibold text-slate-400">
-          Loading course catalog...
-        </div>
+        <CourseCatalogSkeleton count={6} />
       ) : filteredCourses.length === 0 ? (
         <div className="bg-white dark:bg-[#0F172A] rounded-2xl p-12 border border-[#D8E2EE] dark:border-slate-800 text-center text-xs text-slate-400 space-y-2">
           <BookOpen className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />

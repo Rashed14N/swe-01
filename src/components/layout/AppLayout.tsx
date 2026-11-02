@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 import { ToastContainer } from '../common/ToastContainer';
+import { useAuth } from '../../context/AuthContext';
+import { trackFeatureUsage } from '../../services/analyticsTracker';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,6 +13,41 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation();
+  const { user, token } = useAuth();
+  const lastPathRef = useRef<string>(location.pathname);
+  const enterTimeRef = useRef<number>(Date.now());
+
+  // Track feature usage on location change
+  useEffect(() => {
+    const prevPath = lastPathRef.current;
+    const durationSec = Math.round((Date.now() - enterTimeRef.current) / 1000);
+
+    // Track previously visited path with its real duration if user spent > 2 seconds
+    if (prevPath && durationSec >= 2 && user) {
+      trackFeatureUsage({
+        user,
+        token,
+        path: prevPath,
+        actionType: 'VIEW',
+        durationSec: Math.min(300, durationSec),
+      });
+    }
+
+    lastPathRef.current = location.pathname;
+    enterTimeRef.current = Date.now();
+
+    // Track entry to the new path
+    if (user) {
+      trackFeatureUsage({
+        user,
+        token,
+        path: location.pathname,
+        actionType: 'VIEW',
+        durationSec: 15,
+      });
+    }
+  }, [location.pathname, user, token]);
 
   useEffect(() => {
     const handleCloseSidebar = () => {

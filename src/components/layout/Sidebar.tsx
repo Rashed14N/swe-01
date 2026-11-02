@@ -6,7 +6,7 @@ import {
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
   History, GraduationCap, SlidersHorizontal, RotateCcw, Award,
-  Bug
+  Bug, Activity
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { ReportBugModal } from '../common/ReportBugModal';
@@ -155,6 +155,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
                   <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Announcements</span>}
+                </NavLink>
+                <NavLink to="/admin/analytics" className={navLinkClass} onClick={onCloseMobile}>
+                  <Activity strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
+                  {!isCollapsed && <span>Feature Analytics</span>}
                 </NavLink>
                 <NavLink to="/admin/activity" className={navLinkClass} onClick={onCloseMobile}>
                   <History strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />

@@ -201,23 +201,8 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
 
       const publisherName = `${req.user.name} (${req.user.role === 'CR' ? 'Class Representative' : 'Admin'})`;
 
-      // 1. AUTOMATIC WHATSAPP ALERT DISPATCH to ALL enrolled students
-      waResult = await autoDispatchExamToEnrolledStudents({
-        enrolledStudents,
-        courseCode: effectiveCourseCode,
-        courseTitle: effectiveCourseTitle,
-        examType: effectiveExamType,
-        examDate: effectiveExamDate,
-        examTime: effectiveExamTime,
-        room: effectiveRoom,
-        title,
-        description,
-        publisherName,
-        excludeUserId: req.user.id,
-      });
-
       for (const student of enrolledStudents) {
-        // Create in-app notification
+        // Create in-app portal notification only (no WhatsApp, no email)
         await createNotificationInDB({
           id: `notif-exam-ann-${Date.now()}-${Math.random()}`,
           userId: student.id,
@@ -228,30 +213,9 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
           read: false,
           createdAt: new Date().toISOString(),
         }).catch(e => console.warn('[Exam In-App Notif Error]:', e));
-
-        // Optional email notification
-        if (student.email) {
-          sendExamAnnouncementEmail({
-            to: student.email,
-            studentName: student.name,
-            courseTitle: effectiveCourseTitle,
-            courseCode: effectiveCourseCode,
-            examType: effectiveExamType,
-            examDate: effectiveExamDate,
-            examTime: effectiveExamTime,
-            room: effectiveRoom,
-            title,
-            description,
-            batchName: student.batchName || batchLabel,
-            publisherName,
-            enrollmentType: student.enrollmentType,
-          }).catch(err => console.warn('[Exam Announcement Email Error]:', err));
-
-          emailsDispatched++;
-        }
       }
     } else if (sendNotification === true) {
-      // General announcement notifications
+      // General announcement portal notifications
       const allUsers = await fetchAllUsers().catch(() => []);
       const batchStudents = allUsers.filter(u =>
         (targetBatchId === 'ALL' || u.batchId === targetBatchId) && u.id !== req.user!.id
@@ -275,12 +239,10 @@ router.post('/', verifyAuthToken, requireRole('CR', 'ADMIN'), async (req: Authen
     res.status(201).json({
       announcement: created,
       isExamAnnouncement,
-      whatsAppDispatched: isExamAnnouncement ? waResult.whatsAppDispatched : 0,
-      totalEnrolled: isExamAnnouncement ? waResult.totalStudents : 0,
-      emailsDispatched,
-      message: isExamAnnouncement
-        ? `Exam announcement published! Auto WhatsApp alerts sent to ${waResult.whatsAppDispatched} enrolled students.`
-        : 'Announcement published successfully!',
+      whatsAppDispatched: 0,
+      totalEnrolled: 0,
+      emailsDispatched: 0,
+      message: 'Announcement published successfully!',
     });
   } catch (err: any) {
     console.error('[Announcements API POST / Error]:', err);

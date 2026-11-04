@@ -269,156 +269,22 @@ function buildExamAnnouncementHtml(payload: ExamAnnouncementEmailPayload, sandbo
   `;
 }
 
+export const EMAIL_MESSAGING_ENABLED = false;
+
 /**
  * Sends an email via Resend to a student registered for a retake/improvement course
  */
-export async function sendRetakeCourseUpdateEmail(payload: CourseUpdateEmailPayload): Promise<{ success: boolean; id?: string; error?: string; note?: string }> {
-  const { to, courseCode, title } = payload;
-  const resend = getResendClient();
-
-  const subject = `[SWE Alert] ${courseCode}: ${title}`;
-  const htmlContent = buildHtmlTemplate(payload);
-
-  if (!resend) {
-    console.log(`[Resend Email Simulated] (RESEND_API_KEY not configured). Would send to: ${to}, Subject: "${subject}", Update: "${title}"`);
-    return { success: true, id: 'simulated-resend-id' };
-  }
-
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'SWE Academic Desk <onboarding@resend.dev>';
-
-  try {
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: [to],
-      subject,
-      html: htmlContent,
-    });
-
-    if (result.error) {
-      throw new Error(result.error.message || 'Resend error');
-    }
-
-    console.log(`[Resend Email Sent] Successfully sent update to ${to} (ID: ${result.data?.id})`);
-    return { success: true, id: result.data?.id };
-  } catch (err: any) {
-    const errorMessage = String(err?.message || err);
-    console.warn(`[Resend Email Attempt Failed] for ${to}:`, errorMessage);
-
-    const ownerEmail = 'rashedulhasanrashed0@gmail.com';
-    const isSandboxRestriction =
-      errorMessage.includes('only send testing emails to your own email address') ||
-      errorMessage.includes('validation_error') ||
-      errorMessage.includes('verify a domain');
-
-    if (isSandboxRestriction && to.toLowerCase() !== ownerEmail.toLowerCase()) {
-      try {
-        console.log(`[Resend Fallback] Delivering notification to verified account owner (${ownerEmail}) with intended recipient: ${to}`);
-        const fallbackNote = `Intended recipient was <strong>${to}</strong>. Delivered to registered Resend account (<code>${ownerEmail}</code>) because the default Resend sandbox domain (<code>onboarding@resend.dev</code>) restricts delivery to the verified account owner. To deliver directly to external inboxes like <code>${to}</code>, verify a custom domain at resend.com/domains.`;
-        
-        const fallbackHtml = buildHtmlTemplate(payload, fallbackNote);
-        const fallbackSubject = `[SWE Alert] (For ${to}) ${courseCode}: ${title}`;
-
-        const fallbackResult = await resend.emails.send({
-          from: fromEmail,
-          to: [ownerEmail],
-          subject: fallbackSubject,
-          html: fallbackHtml,
-        });
-
-        if (fallbackResult.data?.id) {
-          console.log(`[Resend Fallback Success] ID: ${fallbackResult.data.id}`);
-          return {
-            success: true,
-            id: fallbackResult.data.id,
-            note: `Delivered to verified Resend account (${ownerEmail}) for intended recipient (${to})`,
-          };
-        }
-      } catch (fallbackErr: any) {
-        console.error('[Resend Fallback Error]:', fallbackErr?.message || fallbackErr);
-      }
-    }
-
-    return { success: false, error: errorMessage };
-  }
+export async function sendRetakeCourseUpdateEmail(_payload: CourseUpdateEmailPayload): Promise<{ success: boolean; id?: string; error?: string; note?: string }> {
+  // Turned off - no emails sent
+  return { success: false, error: 'Email messaging is turned off by administrator' };
 }
 
 /**
  * Sends an official Exam Announcement email via Resend to ANY student enrolled in the course.
- * Contains:
- * - Course Title
- * - Exam Type
- * - Exam Date
- * - Exam Time / Room / Description
  */
-export async function sendExamAnnouncementEmail(payload: ExamAnnouncementEmailPayload): Promise<{ success: boolean; id?: string; error?: string; note?: string }> {
-  const { to, courseTitle, courseCode, examType, examDate } = payload;
-  const resend = getResendClient();
-
-  const displayCourse = courseCode ? `${courseTitle} (${courseCode})` : courseTitle;
-  const subject = `[SWE Exam Announcement] ${displayCourse}: ${examType} on ${examDate}`;
-  const htmlContent = buildExamAnnouncementHtml(payload);
-
-  if (!resend) {
-    console.log(`[Resend Exam Email Simulated] (RESEND_API_KEY not configured). Would send to: ${to}, Subject: "${subject}"`);
-    return { success: true, id: 'simulated-resend-id' };
-  }
-
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'SWE Academic Desk <onboarding@resend.dev>';
-
-  try {
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: [to],
-      subject,
-      html: htmlContent,
-    });
-
-    if (result.error) {
-      throw new Error(result.error.message || 'Resend error');
-    }
-
-    console.log(`[Resend Exam Email Sent] Successfully sent exam alert to ${to} (ID: ${result.data?.id})`);
-    return { success: true, id: result.data?.id };
-  } catch (err: any) {
-    const errorMessage = String(err?.message || err);
-    console.warn(`[Resend Exam Email Attempt Failed] for ${to}:`, errorMessage);
-
-    const ownerEmail = 'rashedulhasanrashed0@gmail.com';
-    const isSandboxRestriction =
-      errorMessage.includes('only send testing emails to your own email address') ||
-      errorMessage.includes('validation_error') ||
-      errorMessage.includes('verify a domain');
-
-    if (isSandboxRestriction && to.toLowerCase() !== ownerEmail.toLowerCase()) {
-      try {
-        console.log(`[Resend Fallback] Delivering exam alert to verified account owner (${ownerEmail}) with intended recipient: ${to}`);
-        const fallbackNote = `Intended recipient was <strong>${to}</strong>. Delivered to registered Resend account (<code>${ownerEmail}</code>) because the default Resend sandbox domain (<code>onboarding@resend.dev</code>) restricts delivery to the verified account owner. To deliver directly to external inboxes like <code>${to}</code>, verify a custom domain at resend.com/domains.`;
-        
-        const fallbackHtml = buildExamAnnouncementHtml(payload, fallbackNote);
-        const fallbackSubject = `[SWE Exam Alert] (For ${to}) ${displayCourse}: ${examType} on ${examDate}`;
-
-        const fallbackResult = await resend.emails.send({
-          from: fromEmail,
-          to: [ownerEmail],
-          subject: fallbackSubject,
-          html: fallbackHtml,
-        });
-
-        if (fallbackResult.data?.id) {
-          console.log(`[Resend Fallback Success] ID: ${fallbackResult.data.id}`);
-          return {
-            success: true,
-            id: fallbackResult.data.id,
-            note: `Delivered to verified Resend account (${ownerEmail}) for intended recipient (${to})`,
-          };
-        }
-      } catch (fallbackErr: any) {
-        console.error('[Resend Fallback Error]:', fallbackErr?.message || fallbackErr);
-      }
-    }
-
-    return { success: false, error: errorMessage };
-  }
+export async function sendExamAnnouncementEmail(_payload: ExamAnnouncementEmailPayload): Promise<{ success: boolean; id?: string; error?: string; note?: string }> {
+  // Turned off - no emails sent
+  return { success: false, error: 'Email messaging is turned off by administrator' };
 }
 
 /**

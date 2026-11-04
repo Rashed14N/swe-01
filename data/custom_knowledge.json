@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "kb-custom-1793758771900-i67g",
+      "category": "CAMPUS_AND_CONTACTS",
+      "title": "Campus Bus Route 2 (Shibgonj to Campus)",
+      "keywords": [
+        "bus",
+        "shibgonj",
+        "campus bus",
+        "বাস",
+        "শিবগঞ্জ"
+      ],
+      "summary": "Campus bus route 2 departs Shibgonj Point at 8:15 AM and 9:45 AM directly to Bateshwar campus. Free for all students with university ID.",
+      "details": "Bus stops: Shibgonj -> Tilagor -> Bateshwar campus. Return trips depart campus at 2:00 PM and 5:15 PM.",
+      "bulletPoints": [],
+      "actionPath": "/faq",
+      "actionLabel": "View Bus Schedule",
+      "isCustom": true,
+      "createdAt": "2026-11-04T02:19:31.900Z",
+      "updatedAt": "2026-11-04T02:19:31.900Z"
+    }
+  ],
+  "hiddenIds": []
+}

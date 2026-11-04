@@ -166,13 +166,7 @@ export const CRAnnouncementsPage: React.FC = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        if (data?.whatsAppDispatched !== undefined || (data?.emailsDispatched && data.emailsDispatched > 0)) {
-          const count = data.whatsAppDispatched || data.emailsDispatched || 0;
-          addToast('success', `Exam announcement saved! Automatic WhatsApp alerts dispatched to ${count} enrolled students.`);
-        } else {
-          addToast('success', 'Announcement saved successfully!');
-        }
+        addToast('success', 'Announcement saved successfully to portal feed!');
         setIsModalOpen(false);
         fetchAnnouncements();
       } else {
@@ -345,113 +339,21 @@ export const CRAnnouncementsPage: React.FC = () => {
       {/* CREATE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`bg-white w-full rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4 max-h-[92vh] overflow-y-auto ${
-            modalTab !== 'EDIT' ? 'max-w-4xl' : 'max-w-xl'
-          }`}>
+          <div className="bg-white w-full rounded-2xl shadow-xl border border-[#E2E8F0] p-6 space-y-4 max-h-[92vh] overflow-y-auto max-w-xl">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-bold text-slate-900">
                 {editingAnn ? 'Edit Announcement' : 'Create Batch Announcement'}
               </h3>
-
-              {/* Tab Switcher: Compose vs Visual Email Preview */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setModalTab('EDIT')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    modalTab === 'EDIT'
-                      ? 'bg-white text-blue-600 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  📝 Compose
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalTab('WHATSAPP_PREVIEW')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    modalTab === 'WHATSAPP_PREVIEW'
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>WhatsApp Alert</span>
-                  {isExamRelated && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalTab('EMAIL_PREVIEW')}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    modalTab === 'EMAIL_PREVIEW'
-                      ? 'bg-blue-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Email</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                ✕
+              </button>
             </div>
 
-            {modalTab === 'WHATSAPP_PREVIEW' ? (
-              <div className="space-y-4">
-                <WhatsAppAnnouncementPreview
-                  courseTitle={courseTitle || 'Course Title'}
-                  courseCode={courseCode}
-                  examType={examType}
-                  examDate={examDate}
-                  examTime={examTime}
-                  room={room}
-                  title={form.title}
-                  description={form.description}
-                  batchName={user?.batchName || 'SWE 9th Batch'}
-                  publisherName={`${user?.name} (Class Representative)`}
-                  onSend={handleSave}
-                  isSending={isSubmitting}
-                />
-                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setModalTab('EDIT')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Back to Editing
-                  </button>
-                </div>
-              </div>
-            ) : modalTab === 'EMAIL_PREVIEW' ? (
-              <div className="space-y-4">
-                <EmailAnnouncementPreview
-                  courseTitle={courseTitle || 'Course Title'}
-                  courseCode={courseCode}
-                  examType={examType}
-                  examDate={examDate}
-                  examTime={examTime}
-                  room={room}
-                  title={form.title}
-                  description={form.description}
-                  batchName={user?.batchName || 'SWE 9th Batch'}
-                  publisherName={`${user?.name} (Class Representative)`}
-                  onSend={handleSave}
-                  isSending={isSubmitting}
-                />
-                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setModalTab('EDIT')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-900 font-bold text-xs cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Back to Editing
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSave} className="space-y-3 text-xs">
+            <form onSubmit={handleSave} className="space-y-3 text-xs">
               {/* EXAM ANNOUNCEMENT SECTION */}
               <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
@@ -467,11 +369,6 @@ export const CRAnnouncementsPage: React.FC = () => {
                       Is this an Exam / Quiz Announcement?
                     </span>
                   </label>
-                  {isExamRelated && (
-                    <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1">
-                      <MessageSquare className="w-3 h-3" /> Auto-WhatsApp Active
-                    </span>
-                  )}
                 </div>
 
                 {isExamRelated && (
@@ -714,14 +611,6 @@ export const CRAnnouncementsPage: React.FC = () => {
                 </button>
                 <div className="flex items-center gap-2">
                   <button
-                    type="button"
-                    onClick={() => setModalTab('WHATSAPP_PREVIEW')}
-                    className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg border border-emerald-200 transition-colors cursor-pointer"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    Preview WhatsApp Alert
-                  </button>
-                  <button
                     type="submit"
                     disabled={isSubmitting}
                     className="px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold rounded-lg shadow-xs cursor-pointer"
@@ -731,7 +620,6 @@ export const CRAnnouncementsPage: React.FC = () => {
                 </div>
               </div>
             </form>
-          )}
           </div>
         </div>
       )}

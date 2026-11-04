@@ -442,6 +442,84 @@ class AdminApiClient {
   async getBugReports(): Promise<any[]> {
     return this.request<any[]>('/bug-reports');
   }
+
+  // ==========================================
+  // CHATBOT KNOWLEDGE BASE & FAQ SNIPPETS
+  // ==========================================
+  async getKnowledgeBase(category?: string, search?: string): Promise<{
+    items: any[];
+    stats: { total: number; custom: number; builtIn: number };
+  }> {
+    const params = new URLSearchParams();
+    if (category && category !== 'ALL') params.append('category', category);
+    if (search && search.trim()) params.append('search', search.trim());
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    const headers = await this.getAuthHeaders();
+    const res = await fetch(`/api/knowledge-base${query}`, { headers });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to fetch knowledge base');
+    }
+    return {
+      items: json.data || [],
+      stats: json.stats || { total: (json.data || []).length, custom: 0, builtIn: (json.data || []).length },
+    };
+  }
+
+  async createKnowledgeSnippet(snippet: any): Promise<any> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch('/api/knowledge-base', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(snippet),
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to create snippet');
+    }
+    return json.data;
+  }
+
+  async updateKnowledgeSnippet(id: string, updates: any): Promise<any> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch(`/api/knowledge-base/${id}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to update snippet');
+    }
+    return json.data;
+  }
+
+  async deleteKnowledgeSnippet(id: string): Promise<void> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch(`/api/knowledge-base/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to delete snippet');
+    }
+  }
+
+  async testKnowledgeQuery(query: string): Promise<any> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch('/api/knowledge-base/test', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error || 'Failed to test query');
+    }
+    return json;
+  }
 }
 
 export const adminApiClient = new AdminApiClient();

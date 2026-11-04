@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNavbar } from './TopNavbar';
 import { ToastContainer } from '../common/ToastContainer';
+import { AcademicChatbot } from '../chatbot/AcademicChatbot';
 import { useAuth } from '../../context/AuthContext';
 import { trackFeatureUsage } from '../../services/analyticsTracker';
 
@@ -80,6 +81,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </main>
       </div>
 
+      <AcademicChatbot />
       <ToastContainer />
     </div>
   );

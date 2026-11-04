@@ -6,7 +6,7 @@ import {
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
   History, GraduationCap, SlidersHorizontal, RotateCcw, Award,
-  Bug, Activity
+  Bug, Activity, BrainCircuit
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { ReportBugModal } from '../common/ReportBugModal';
@@ -151,6 +151,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink to="/admin/notices" className={navLinkClass} onClick={onCloseMobile}>
                   <Bell strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Dept Notices</span>}
+                </NavLink>
+                <NavLink to="/admin/knowledge-base" className={navLinkClass} onClick={onCloseMobile}>
+                  <BrainCircuit strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-purple-600 dark:text-purple-400" />
+                  {!isCollapsed && <span>Chatbot Knowledge</span>}
                 </NavLink>
                 <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
                   <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />

@@ -49,7 +49,7 @@ import { AdminNoticesPage } from './pages/admin/AdminNoticesPage';
 import { AdminResourceVerificationPage } from './pages/admin/AdminResourceVerificationPage';
 import { AdminActivityLogPage } from './pages/admin/AdminActivityLogPage';
 import { AdminFeatureAnalyticsPage } from './pages/admin/AdminFeatureAnalyticsPage';
-import { autoFlushPendingOpenWaQueue } from './services/openWaClient';
+import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage';
 
 /**
  * Root Route Navigator:
@@ -73,12 +73,6 @@ const RootRedirect: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-  React.useEffect(() => {
-    autoFlushPendingOpenWaQueue();
-    const timer = setInterval(autoFlushPendingOpenWaQueue, 8000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -405,6 +399,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['ADMIN']}>
                     <AdminActivityLogPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/knowledge-base"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminKnowledgeBasePage />
                   </ProtectedRoute>
                 }
               />

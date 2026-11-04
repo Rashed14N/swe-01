@@ -696,6 +696,9 @@ export function mapUserToSupabase(user: User): any {
 }
 
 export async function fetchAllUsers(): Promise<User[]> {
+  const cached = getCached<User[]>('users');
+  if (cached) return cached;
+
   const local = db.getData();
   const supabase = getServerSupabase();
   if (supabase) {
@@ -705,6 +708,7 @@ export async function fetchAllUsers(): Promise<User[]> {
         const users = data.map(mapUserFromSupabase);
         local.users = users;
         try { db.save(); } catch {}
+        setCached('users', users);
         return users;
       }
       if (error) console.warn('[Supabase fetchAllUsers Note]: Falling back to local store.', error.message || error);
@@ -712,7 +716,9 @@ export async function fetchAllUsers(): Promise<User[]> {
       console.warn('[Supabase fetchAllUsers Exception]: Falling back to local store.', e?.message || e);
     }
   }
-  return local.users && local.users.length > 0 ? local.users : [];
+  const fallback = local.users && local.users.length > 0 ? local.users : [];
+  if (fallback.length > 0) setCached('users', fallback);
+  return fallback;
 }
 
 export async function fetchUserByIdOrStudentId(idOrStudentId: string): Promise<User | null> {
@@ -746,6 +752,7 @@ export async function fetchUserByIdOrStudentId(idOrStudentId: string): Promise<U
 }
 
 export async function createUserInDB(user: User): Promise<User> {
+  invalidateCache('users');
   const local = db.getData();
   if (!local.users) local.users = [];
   local.users = local.users.filter(u => u.id !== user.id);
@@ -774,6 +781,7 @@ export async function createUserInDB(user: User): Promise<User> {
 }
 
 export async function updateUserInDB(id: string, updates: Partial<User>): Promise<User> {
+  invalidateCache('users');
   const local = db.getData();
   if (!local.users) local.users = [];
   let existing = local.users.find(u => u.id === id || u.studentId.toLowerCase() === id.toLowerCase());
@@ -823,6 +831,7 @@ export async function updateUserInDB(id: string, updates: Partial<User>): Promis
 }
 
 export async function deleteUserFromDB(id: string): Promise<boolean> {
+  invalidateCache('users');
   const local = db.getData();
   if (local.users) {
     local.users = local.users.filter(u => u.id !== id && u.studentId !== id);

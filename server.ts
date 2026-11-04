@@ -53,9 +53,38 @@ async function startServer() {
     });
   }
 
-  httpServer.listen(PORT, HOST, () => {
-    console.log(`🚀 SWE Portal Server running on http://${HOST}:${PORT}`);
+  let retries = 0;
+  const maxRetries = 10;
+
+  const listenWithRetry = () => {
+    httpServer.listen(PORT, HOST, () => {
+      console.log(`🚀 SWE Portal Server running on http://${HOST}:${PORT}`);
+    });
+  };
+
+  httpServer.on('error', (err: any) => {
+    if (err?.code === 'EADDRINUSE' && retries < maxRetries) {
+      retries++;
+      console.warn(`Port ${PORT} in use, retrying in 500ms (${retries}/${maxRetries})...`);
+      setTimeout(() => {
+        httpServer.close();
+        listenWithRetry();
+      }, 500);
+      return;
+    }
+    console.error('HTTP Server Error:', err);
   });
+
+  const shutdown = () => {
+    httpServer.close(() => {
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+
+  listenWithRetry();
 }
 
 startServer().catch(err => {

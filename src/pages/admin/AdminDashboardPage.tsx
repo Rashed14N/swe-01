@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   BarChart3,
   TrendingUp,
+  BrainCircuit,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -312,6 +313,17 @@ export const AdminDashboardPage: React.FC = () => {
                 <FileCheck className="w-4 h-4 text-cyan-500" /> Resource Moderation
               </span>
               <span className="text-[11px] text-slate-400 font-mono">Review</span>
+            </Link>
+            <Link
+              to="/admin/knowledge-base"
+              className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all font-medium text-slate-700 hover:text-purple-600"
+            >
+              <span className="flex items-center gap-2.5">
+                <BrainCircuit className="w-4 h-4 text-purple-600" /> Chatbot Knowledge Base
+              </span>
+              <span className="text-[10px] text-purple-700 font-bold bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
+                AI RAG
+              </span>
             </Link>
             <Link
               to="/admin/analytics"

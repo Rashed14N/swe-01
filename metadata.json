@@ -1,6 +1,6 @@
 {
   "name": "SWE Portal",
-  "description": "Software Engineering Department Academic Portal with batch isolation, routines, courses, exams, announcements, question bank, and contribution workflows.",
+  "description": "Department of Software Engineering academic portal for Metropolitan University students and faculty. Access daily class routines, course materials, exam schedules, and study resources.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { FeatureFlagProvider } from './context/FeatureFlagContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -50,6 +51,7 @@ import { AdminResourceVerificationPage } from './pages/admin/AdminResourceVerifi
 import { AdminActivityLogPage } from './pages/admin/AdminActivityLogPage';
 import { AdminFeatureAnalyticsPage } from './pages/admin/AdminFeatureAnalyticsPage';
 import { AdminKnowledgeBasePage } from './pages/admin/AdminKnowledgeBasePage';
+import { AdminFeaturesPage } from './pages/admin/AdminFeaturesPage';
 
 /**
  * Root Route Navigator:
@@ -77,8 +79,9 @@ export const App: React.FC = () => {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <NotificationProvider>
-            <BrowserRouter>
+          <FeatureFlagProvider>
+            <NotificationProvider>
+              <BrowserRouter>
             <Routes>
               {/* ========================================================= */}
               {/* 1. PUBLIC & AUTH ROUTES                                   */}
@@ -116,7 +119,7 @@ export const App: React.FC = () => {
               <Route
                 path="/routine"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="routine">
                     <RoutinePage />
                   </ProtectedRoute>
                 }
@@ -124,7 +127,7 @@ export const App: React.FC = () => {
               <Route
                 path="/courses"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="courses">
                     <CoursesPage />
                   </ProtectedRoute>
                 }
@@ -132,7 +135,7 @@ export const App: React.FC = () => {
               <Route
                 path="/courses/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="courses">
                     <CourseDetailPage />
                   </ProtectedRoute>
                 }
@@ -140,7 +143,7 @@ export const App: React.FC = () => {
               <Route
                 path="/retake-courses"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="retake_courses">
                     <RetakeCoursesPage />
                   </ProtectedRoute>
                 }
@@ -164,7 +167,7 @@ export const App: React.FC = () => {
               <Route
                 path="/exams"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="exams">
                     <ExamsPage />
                   </ProtectedRoute>
                 }
@@ -172,7 +175,7 @@ export const App: React.FC = () => {
               <Route
                 path="/announcements"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="announcements">
                     <AnnouncementsPage />
                   </ProtectedRoute>
                 }
@@ -186,7 +189,7 @@ export const App: React.FC = () => {
               <Route
                 path="/resources/questions"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="question_bank">
                     <QuestionBankPage />
                   </ProtectedRoute>
                 }
@@ -208,7 +211,7 @@ export const App: React.FC = () => {
               <Route
                 path="/faq"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="faq">
                     <FAQPage />
                   </ProtectedRoute>
                 }
@@ -217,7 +220,7 @@ export const App: React.FC = () => {
               <Route
                 path="/faculty"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="faculty">
                     <FacultyPage />
                   </ProtectedRoute>
                 }
@@ -225,7 +228,7 @@ export const App: React.FC = () => {
               <Route
                 path="/notices"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="notices">
                     <NoticesPage />
                   </ProtectedRoute>
                 }
@@ -241,7 +244,7 @@ export const App: React.FC = () => {
               <Route
                 path="/cgpa"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute featureKey="cgpa">
                     <CGPAPage />
                   </ProtectedRoute>
                 }
@@ -269,7 +272,7 @@ export const App: React.FC = () => {
               <Route
                 path="/cr/announcements"
                 element={
-                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
+                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']} featureKey="announcements">
                     <CRAnnouncementsPage />
                   </ProtectedRoute>
                 }
@@ -277,7 +280,7 @@ export const App: React.FC = () => {
               <Route
                 path="/cr/exams"
                 element={
-                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
+                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']} featureKey="exams">
                     <CRExamsPage />
                   </ProtectedRoute>
                 }
@@ -285,7 +288,7 @@ export const App: React.FC = () => {
               <Route
                 path="/cr/routine-requests"
                 element={
-                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
+                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']} featureKey="cr_routine_requests">
                     <CRRoutineRequestsPage />
                   </ProtectedRoute>
                 }
@@ -293,7 +296,7 @@ export const App: React.FC = () => {
               <Route
                 path="/cr/retakes"
                 element={
-                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']}>
+                  <ProtectedRoute allowedRoles={['CR', 'ADMIN']} featureKey="retake_courses">
                     <CRRetakesPage />
                   </ProtectedRoute>
                 }
@@ -410,17 +413,26 @@ export const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/features"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminFeaturesPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* ========================================================= */}
               {/* 5. CATCH-ALL IN-APP 404 ROUTE                            */}
               {/* ========================================================= */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </BrowserRouter>
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </ErrorBoundary>
+              </BrowserRouter>
+            </NotificationProvider>
+          </FeatureFlagProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

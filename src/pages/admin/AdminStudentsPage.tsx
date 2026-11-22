@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Users, Plus, Upload, Search, Filter, Key, Edit, Shield,
-  CheckCircle2, XCircle, AlertCircle, FileSpreadsheet, RefreshCw, ChevronLeft, ChevronRight
+  CheckCircle2, XCircle, AlertCircle, FileSpreadsheet, RefreshCw, ChevronLeft, ChevronRight, Activity, Clock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { User, Batch, UserRole } from '../../types';
 import { formatStudentId } from '../../utils/studentId';
+import { UserActivityDossierModal } from '../../components/admin/UserActivityDossierModal';
+import {
+  UserUsageDossier,
+  formatDuration,
+  formatRelativeTime,
+  formatExactDateTime,
+  getActivityStatusMeta,
+} from '../../utils/usageFormat';
 
 export const AdminStudentsPage: React.FC = () => {
   const { token } = useAuth();
@@ -50,6 +58,9 @@ export const AdminStudentsPage: React.FC = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
+  const [usageMap, setUsageMap] = useState<Record<string, UserUsageDossier>>({});
+  const [activeDossier, setActiveDossier] = useState<UserUsageDossier | null>(null);
+  const [isDossierLoading, setIsDossierLoading] = useState(false);
 
   // Forms
   const [addForm, setAddForm] = useState({
@@ -102,6 +113,51 @@ export const AdminStudentsPage: React.FC = () => {
       })
       .catch(console.error);
   }, [token]);
+
+  // Fetch per-user live usage summaries once for table indicators
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/analytics/overview', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(json => {
+        if (!json?.userBreakdown) return;
+        const map: Record<string, UserUsageDossier> = {};
+        for (const u of json.userBreakdown as UserUsageDossier[]) {
+          map[u.userId] = u;
+          if (u.studentId) map[u.studentId] = u;
+        }
+        setUsageMap(map);
+      })
+      .catch(() => {});
+  }, [token]);
+
+  const openStudentActivity = async (st: User) => {
+    const cached = usageMap[st.id] || (st.studentId ? usageMap[st.studentId] : undefined) || null;
+    if (cached) setActiveDossier(cached);
+    setIsDossierLoading(true);
+    try {
+      const res = await fetch(`/api/analytics/user/${encodeURIComponent(st.id)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) {
+          setActiveDossier(json.data);
+          setUsageMap(prev => ({
+            ...prev,
+            [st.id]: json.data,
+            ...(st.studentId ? { [st.studentId]: json.data } : {}),
+          }));
+        }
+      } else if (!cached) {
+        addToast('error', 'Failed to load user activity details');
+      }
+    } catch {
+      if (!cached) addToast('error', 'Network error loading user activity');
+    } finally {
+      setIsDossierLoading(false);
+    }
+  };
 
   // Fetch 20 students per page with server-side PostgreSQL search and filters
   const fetchStudents = async () => {
@@ -420,27 +476,53 @@ export const AdminStudentsPage: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => {
-                        setSelectedStudent(st);
-                        const b = batches.find(x => x.id === st.batchId);
-                        setEditForm({
-                          studentId: st.studentId,
-                          name: st.name,
-                          email: st.email || '',
-                          phone: st.phone || '',
-                          batchId: st.batchId || '',
-                          currentSemester: b?.currentSemester ?? (st.currentSemester || 1),
-                          role: st.role,
-                          status: st.status || 'ACTIVE',
-                        });
-                        setIsEditModalOpen(true);
-                      }}
-                      className="text-blue-600 font-bold hover:underline"
-                    >
-                      Manage
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openStudentActivity(st)}
+                        className="text-emerald-700 font-bold hover:underline inline-flex items-center gap-1"
+                      >
+                        <Activity className="w-3 h-3" />
+                        Usage
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedStudent(st);
+                          const b = batches.find(x => x.id === st.batchId);
+                          setEditForm({
+                            studentId: st.studentId,
+                            name: st.name,
+                            email: st.email || '',
+                            phone: st.phone || '',
+                            batchId: st.batchId || '',
+                            currentSemester: b?.currentSemester ?? (st.currentSemester || 1),
+                            role: st.role,
+                            status: st.status || 'ACTIVE',
+                          });
+                          setIsEditModalOpen(true);
+                        }}
+                        className="text-blue-600 font-bold hover:underline"
+                      >
+                        Manage
+                      </button>
+                    </div>
                   </div>
+                  {(() => {
+                    const usage = usageMap[st.id] || (st.studentId ? usageMap[st.studentId] : undefined);
+                    if (!usage) return null;
+                    const stMeta = getActivityStatusMeta(usage.activityStatus);
+                    return (
+                      <div className="flex items-center justify-between text-[10.5px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg">
+                        <span className="inline-flex items-center gap-1.5 font-semibold">
+                          <span className={`w-1.5 h-1.5 rounded-full ${stMeta.dotClass}`} />
+                          {formatRelativeTime(usage.lastActive, usage.isOnline)}
+                        </span>
+                        <span className="font-bold text-slate-700">
+                          Used: {formatDuration(usage.totalDurationSec)}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
@@ -454,6 +536,7 @@ export const AdminStudentsPage: React.FC = () => {
                   <th className="px-4 py-3">Full Name</th>
                   <th className="px-4 py-3">Batch & Semester</th>
                   <th className="px-4 py-3">CGPA</th>
+                  <th className="px-4 py-3">Usage &amp; Last Active</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3 text-right">Actions</th>
@@ -489,6 +572,39 @@ export const AdminStudentsPage: React.FC = () => {
                         </span>
                       )}
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {(() => {
+                        const usage = usageMap[st.id] || (st.studentId ? usageMap[st.studentId] : undefined);
+                        if (!usage || usage.activityStatus === 'NEVER') {
+                          return (
+                            <span className="text-[11px] text-slate-400 font-medium">Never used</span>
+                          );
+                        }
+                        const stMeta = getActivityStatusMeta(usage.activityStatus);
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => openStudentActivity(st)}
+                            className="text-left group cursor-pointer"
+                            title={`Last active: ${formatExactDateTime(usage.lastActive)}`}
+                          >
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-800 group-hover:text-blue-600">
+                              <span className={`w-2 h-2 rounded-full ${stMeta.dotClass}`} />
+                              <span>{formatRelativeTime(usage.lastActive, usage.isOnline)}</span>
+                            </div>
+                            <div className="text-[10.5px] text-slate-500 mt-0.5 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              <span>Total: <strong className="text-slate-700">{formatDuration(usage.totalDurationSec)}</strong></span>
+                              {usage.todayDurationSec > 0 && (
+                                <span className="text-emerald-600 font-semibold">
+                                  · Today {formatDuration(usage.todayDurationSec)}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })()}
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-0.5 text-[10px] font-bold rounded ${
@@ -511,7 +627,15 @@ export const AdminStudentsPage: React.FC = () => {
                         {st.status || 'ACTIVE'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right space-x-2">
+                    <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => openStudentActivity(st)}
+                        className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors cursor-pointer"
+                        title="View User Activity & Usage Info"
+                      >
+                        <Activity className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleToggleCR(st)}
                         className="px-2 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded text-[11px] transition-colors"
@@ -960,6 +1084,23 @@ export const AdminStudentsPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* USER ACTIVITY & USAGE DOSSIER MODAL */}
+      <UserActivityDossierModal
+        user={activeDossier}
+        isLoading={isDossierLoading}
+        onClose={() => {
+          setActiveDossier(null);
+          setIsDossierLoading(false);
+        }}
+        onRefresh={
+          activeDossier
+            ? () => {
+                const matched = students.find(s => s.id === activeDossier.userId);
+                if (matched) openStudentActivity(matched);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 };

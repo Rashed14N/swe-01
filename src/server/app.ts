@@ -22,6 +22,7 @@ import whatsappRoutes from './routes/whatsapp';
 import analyticsRoutes from './routes/analytics';
 import chatbotRoutes from './routes/chatbot';
 import knowledgeBaseRoutes from './routes/knowledgeBase';
+import featureRoutes from './routes/features';
 
 export function createExpressApp() {
   const app = express();
@@ -100,6 +101,7 @@ export function createExpressApp() {
   app.use('/api/analytics', analyticsRoutes);
   app.use('/api/chatbot', chatbotRoutes);
   app.use('/api/knowledge-base', knowledgeBaseRoutes);
+  app.use('/api/features', featureRoutes);
 
   // API 404 catch-all: ensures unmatched /api/* requests return standard JSON 404
   app.use('/api/*', (req, res) => {

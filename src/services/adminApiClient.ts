@@ -520,6 +520,79 @@ class AdminApiClient {
     }
     return json;
   }
+
+  // ==========================================
+  // PORTAL FEATURE FLAGS (FEATURE ON/OFF)
+  // ==========================================
+  async getFeatureFlags(): Promise<{
+    items: any[];
+    stats: { total: number; enabled: number; disabled: number };
+  }> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch('/api/features', { headers });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to load feature controls');
+    }
+    const items = json.data || [];
+    return {
+      items,
+      stats: json.stats || {
+        total: items.length,
+        enabled: items.filter((f: any) => f.enabled).length,
+        disabled: items.filter((f: any) => !f.enabled).length,
+      },
+    };
+  }
+
+  async updateFeatureFlag(
+    key: string,
+    payload: { enabled?: boolean; disabledMessage?: string }
+  ): Promise<{ item: any; allFeatures: any[] }> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch(`/api/features/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to update feature state');
+    }
+    return {
+      item: json.data,
+      allFeatures: json.allFeatures || [],
+    };
+  }
+
+  async bulkUpdateFeatureFlags(
+    features: Array<{ key: string; enabled: boolean; disabledMessage?: string }>
+  ): Promise<any[]> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch('/api/features', {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ features }),
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to update features');
+    }
+    return json.data || [];
+  }
+
+  async resetFeatureFlags(): Promise<any[]> {
+    const headers = await this.getAuthHeaders();
+    const res = await fetch('/api/features/reset', {
+      method: 'POST',
+      headers,
+    });
+    const json = await safeParseJson(res);
+    if (!res.ok || json.success === false) {
+      throw new Error(json.error?.message || json.message || 'Failed to reset feature controls');
+    }
+    return json.data || [];
+  }
 }
 
 export const adminApiClient = new AdminApiClient();

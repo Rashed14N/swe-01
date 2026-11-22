@@ -203,6 +203,63 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
     timestamp TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 14. STUDENT CGPA TABLE (Persistent Grades, Custom Courses & Excluded Courses)
+CREATE TABLE IF NOT EXISTS public.student_cgpa (
+    student_id TEXT PRIMARY KEY,
+    roll_no TEXT,
+    grades JSONB NOT NULL DEFAULT '{}'::jsonb,
+    custom_courses JSONB NOT NULL DEFAULT '[]'::jsonb,
+    excluded_courses JSONB NOT NULL DEFAULT '[]'::jsonb,
+    cgpa NUMERIC(4,2) NOT NULL DEFAULT 0.00,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.student_cgpa ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow read access on student_cgpa" ON public.student_cgpa;
+CREATE POLICY "Allow read access on student_cgpa"
+    ON public.student_cgpa FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow all modifications on student_cgpa" ON public.student_cgpa;
+CREATE POLICY "Allow all modifications on student_cgpa"
+    ON public.student_cgpa FOR ALL USING (true) WITH CHECK (true);
+
+-- 15. USER USAGE PROFILES TABLE (Persistent Per-User Activity, Duration & Last Active)
+CREATE TABLE IF NOT EXISTS public.user_usage_profiles (
+    user_id TEXT PRIMARY KEY,
+    student_id TEXT,
+    user_name TEXT NOT NULL,
+    email TEXT,
+    user_role TEXT NOT NULL DEFAULT 'STUDENT',
+    batch_id TEXT,
+    batch_name TEXT,
+    total_duration_sec INTEGER NOT NULL DEFAULT 0,
+    total_sessions INTEGER NOT NULL DEFAULT 0,
+    total_views INTEGER NOT NULL DEFAULT 0,
+    total_actions INTEGER NOT NULL DEFAULT 0,
+    mobile_events INTEGER NOT NULL DEFAULT 0,
+    desktop_events INTEGER NOT NULL DEFAULT 0,
+    first_seen_at TIMESTAMPTZ DEFAULT NOW(),
+    last_active_at TIMESTAMPTZ DEFAULT NOW(),
+    last_session_id TEXT,
+    last_path TEXT DEFAULT '/dashboard',
+    last_feature_key TEXT DEFAULT 'DASHBOARD',
+    last_feature_name TEXT DEFAULT 'Student Dashboard',
+    last_device TEXT DEFAULT 'Desktop',
+    last_browser TEXT,
+    last_os TEXT,
+    feature_stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+    daily_stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+    recent_events JSONB NOT NULL DEFAULT '[]'::jsonb,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.user_usage_profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow read access on user_usage_profiles" ON public.user_usage_profiles;
+CREATE POLICY "Allow read access on user_usage_profiles"
+    ON public.user_usage_profiles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow all modifications on user_usage_profiles" ON public.user_usage_profiles;
+CREATE POLICY "Allow all modifications on user_usage_profiles"
+    ON public.user_usage_profiles FOR ALL USING (true) WITH CHECK (true);
+
 -- ==============================================================================
 -- POSTGRESQL TRIGGER: AUTOMATICALLY SYNC AUTH.USERS -> PUBLIC.USERS
 -- ==============================================================================

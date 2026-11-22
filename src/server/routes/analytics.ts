@@ -1,15 +1,23 @@
 import { Router, Response } from 'express';
-import { db, FeatureUsageEvent } from '../db';
-import { optionalAuthToken, verifyAuthToken, AuthenticatedRequest } from '../auth';
+import { db } from '../db';
+import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { requireRole } from '../middleware';
 import { fetchAllUsers } from '../supabaseData';
+import { fetchAllStudentCGPAsFromSupabase } from '../cgpaStore';
+import {
+  recordUserUsageEvent,
+  listAllUsageProfiles,
+  getUserUsageProfile,
+  StoredUserUsageProfile,
+} from '../analyticsStore';
+import type { User } from '../../types';
 
 const router = Router();
 
 export const PORTAL_FEATURES: Array<{
   key: string;
   name: string;
-  category: FeatureUsageEvent['category'];
+  category: 'ACADEMIC' | 'ASSESSMENT' | 'COMMUNICATION' | 'RESOURCE' | 'PERSONAL' | 'MANAGEMENT';
   defaultPath: string;
 }> = [
   { key: 'DASHBOARD', name: 'Student Dashboard', category: 'ACADEMIC', defaultPath: '/dashboard' },
@@ -17,180 +25,321 @@ export const PORTAL_FEATURES: Array<{
   { key: 'COURSES', name: 'Courses & Curriculum', category: 'ACADEMIC', defaultPath: '/courses' },
   { key: 'COURSE_DETAIL', name: 'Course Topics & Tasks', category: 'ACADEMIC', defaultPath: '/courses/:id' },
   { key: 'EXAMS', name: 'Exams & Assessment Tracker', category: 'ASSESSMENT', defaultPath: '/exams' },
-  { key: 'QUESTION_BANK', name: 'Question Bank & Notes', category: 'RESOURCE', defaultPath: '/question-bank' },
+  { key: 'QUESTION_BANK', name: 'Question Bank & Notes', category: 'RESOURCE', defaultPath: '/resources/questions' },
   { key: 'CGPA', name: 'CGPA & Grade Calculator', category: 'ASSESSMENT', defaultPath: '/cgpa' },
   { key: 'ANNOUNCEMENTS', name: 'Batch Announcements', category: 'COMMUNICATION', defaultPath: '/announcements' },
   { key: 'NOTICES', name: 'Department Notices', category: 'COMMUNICATION', defaultPath: '/notices' },
-  { key: 'RETAKES', name: 'Retake & Improvement Desk', category: 'ACADEMIC', defaultPath: '/retakes' },
+  { key: 'RETAKES', name: 'Retake & Improvement Desk', category: 'ACADEMIC', defaultPath: '/retake-courses' },
   { key: 'FACULTY', name: 'Faculty Directory', category: 'ACADEMIC', defaultPath: '/faculty' },
   { key: 'FAQ', name: 'Academic FAQ & Help', category: 'RESOURCE', defaultPath: '/faq' },
   { key: 'PROFILE', name: 'Student Profile & Docs', category: 'PERSONAL', defaultPath: '/profile' },
   { key: 'CR_TOOLS', name: 'CR Management Desk', category: 'MANAGEMENT', defaultPath: '/cr/dashboard' },
+  { key: 'ADMIN_PANEL', name: 'Admin Management Panel', category: 'MANAGEMENT', defaultPath: '/admin/dashboard' },
 ];
 
-/**
- * Seeds baseline usage events from real registered users if the analytics store is empty
- */
-async function ensureBaselineAnalyticsSeeded() {
-  const existing = db.getFeatureUsageLogs();
-  if (existing && existing.length > 0) return;
+const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // Active in last 5 minutes = Online Now
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-  const users = await fetchAllUsers().catch(() => db.getUsers());
-  const activeStudents = users.filter(u => u.role !== 'ADMIN');
-  if (activeStudents.length === 0) return;
+function getLast7DateKeys(nowMs: number): Array<{ date: string; label: string }> {
+  const days: Array<{ date: string; label: string }> = [];
+  for (let d = 6; d >= 0; d--) {
+    const dt = new Date(nowMs - d * DAY_MS);
+    days.push({
+      date: dt.toISOString().slice(0, 10),
+      label: dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+    });
+  }
+  return days;
+}
 
-  const now = Date.now();
-  const weightedFeatures = [
-    { key: 'ROUTINE', weight: 24, avgDur: 68, actions: ['Checked Today Routine', 'Exported Routine PDF', 'Switched Day Filter'] },
-    { key: 'DASHBOARD', weight: 20, avgDur: 45, actions: ['Viewed Upcoming Classes', 'Quick Course Jump'] },
-    { key: 'EXAMS', weight: 16, avgDur: 82, actions: ['Checked Midterm Countdown', 'Viewed Exam Syllabus'] },
-    { key: 'COURSES', weight: 12, avgDur: 95, actions: ['Browsed Semester Curriculum', 'Opened Course Outline'] },
-    { key: 'QUESTION_BANK', weight: 10, avgDur: 140, actions: ['Downloaded Past Question PDF', 'Filtered by Course Code', 'Uploaded Lecture Note'] },
-    { key: 'CGPA', weight: 7, avgDur: 165, actions: ['Calculated Target CGPA', 'Saved Semester Grades'] },
-    { key: 'ANNOUNCEMENTS', weight: 5, avgDur: 52, actions: ['Read Batch Notice', 'Expanded Exam Alert'] },
-    { key: 'FACULTY', weight: 3, avgDur: 38, actions: ['Copied Teacher Email', 'Checked Office Room'] },
-    { key: 'RETAKES', weight: 2, avgDur: 75, actions: ['Checked Retake Eligibility'] },
-    { key: 'FAQ', weight: 1, avgDur: 30, actions: ['Searched Academic Rules'] },
-  ];
+function buildUserDossier(
+  user: Partial<User> & { id: string; name: string },
+  profile: StoredUserUsageProfile | undefined,
+  cgpaValue: number,
+  nowMs: number,
+  last7Days: Array<{ date: string; label: string }>
+) {
+  const todayKey = new Date(nowMs).toISOString().slice(0, 10);
+  const lastActiveIso = profile?.lastActiveAt || null;
+  const lastActiveMs = lastActiveIso ? new Date(lastActiveIso).getTime() : 0;
+  const isOnline = Boolean(lastActiveMs && nowMs - lastActiveMs <= ONLINE_THRESHOLD_MS);
 
-  const seedEvents: FeatureUsageEvent[] = [];
-
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
-    const dayBaseMs = now - dayOffset * 86400 * 1000;
-    const eventsForDay = 14 + (6 - dayOffset) * 3;
-
-    for (let i = 0; i < eventsForDay; i++) {
-      const student = activeStudents[(i + dayOffset * 3) % activeStudents.length];
-      // Pick feature by weight
-      const roll = ((i * 17 + dayOffset * 13) % 100);
-      let cumulative = 0;
-      let chosen = weightedFeatures[0];
-      for (const wf of weightedFeatures) {
-        cumulative += wf.weight;
-        if (roll < cumulative) {
-          chosen = wf;
-          break;
-        }
-      }
-
-      const meta = PORTAL_FEATURES.find(f => f.key === chosen.key) || PORTAL_FEATURES[0];
-      const isAction = i % 3 === 0;
-      const actionDetail = isAction
-        ? chosen.actions[(i + dayOffset) % chosen.actions.length]
-        : `Viewed ${meta.name}`;
-
-      const timestamp = new Date(dayBaseMs - (i * 1800 * 1000) % (14 * 3600 * 1000)).toISOString();
-      const durationSec = Math.max(12, chosen.avgDur + ((i * 19) % 45) - 20);
-      const deviceType: 'Mobile' | 'Desktop' = (i + dayOffset) % 4 === 0 ? 'Desktop' : 'Mobile';
-
-      seedEvents.push({
-        id: `evt-seed-${dayOffset}-${i}`,
-        userId: student.id,
-        userName: student.name,
-        studentId: student.studentId,
-        userRole: student.role || 'STUDENT',
-        batchId: student.batchId || 'batch-9',
-        batchName: student.batchName || 'SWE 9th Batch',
-        featureKey: meta.key,
-        featureName: meta.name,
-        category: meta.category,
-        actionType: isAction ? 'ACTION' : 'VIEW',
-        actionDetail,
-        path: meta.defaultPath,
-        durationSec,
-        deviceType,
-        timestamp,
-      });
-    }
+  let activityStatus: 'ONLINE' | 'TODAY' | 'THIS_WEEK' | 'INACTIVE' | 'NEVER' = 'NEVER';
+  if (isOnline) {
+    activityStatus = 'ONLINE';
+  } else if (lastActiveIso && lastActiveIso.slice(0, 10) === todayKey) {
+    activityStatus = 'TODAY';
+  } else if (lastActiveMs && nowMs - lastActiveMs <= 7 * DAY_MS) {
+    activityStatus = 'THIS_WEEK';
+  } else if (lastActiveMs > 0) {
+    activityStatus = 'INACTIVE';
   }
 
-  // Sort newest first
-  seedEvents.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-  for (let idx = seedEvents.length - 1; idx >= 0; idx--) {
-    db.addFeatureUsageLog(seedEvents[idx]);
-  }
+  const totalDurationSec = profile?.totalDurationSec || 0;
+  const totalSessions = profile?.totalSessions || 0;
+  const totalViews = profile?.totalViews || 0;
+  const totalActions = profile?.totalActions || 0;
+  const totalEvents = totalViews + totalActions;
+  const avgSessionDurationSec =
+    totalSessions > 0 ? Math.round(totalDurationSec / totalSessions) : 0;
+
+  const todayStats = profile?.dailyStats?.[todayKey];
+  const todayDurationSec = todayStats?.durationSec || 0;
+  const todayEvents = (todayStats?.views || 0) + (todayStats?.actions || 0);
+
+  let last7DaysDurationSec = 0;
+  let last7DaysSessions = 0;
+  const dailyActivity = last7Days.map(day => {
+    const stat = profile?.dailyStats?.[day.date];
+    const dur = stat?.durationSec || 0;
+    const sess = stat?.sessions || 0;
+    last7DaysDurationSec += dur;
+    last7DaysSessions += sess;
+    return {
+      date: day.date,
+      label: day.label,
+      durationSec: dur,
+      views: stat?.views || 0,
+      actions: stat?.actions || 0,
+      sessions: sess,
+    };
+  });
+
+  const featureUsage = Object.values(profile?.featureStats || {})
+    .map(f => {
+      const count = (f.views || 0) + (f.actions || 0);
+      return {
+        featureKey: f.featureKey,
+        featureName: f.featureName,
+        category: f.category,
+        views: f.views || 0,
+        actions: f.actions || 0,
+        count,
+        durationSec: f.durationSec || 0,
+        lastUsedAt: f.lastUsedAt,
+        percent:
+          totalDurationSec > 0
+            ? Math.round(((f.durationSec || 0) / totalDurationSec) * 100)
+            : totalEvents > 0
+            ? Math.round((count / totalEvents) * 100)
+            : 0,
+      };
+    })
+    .sort((a, b) => b.durationSec - a.durationSec || b.count - a.count);
+
+  const favoriteFeature = featureUsage[0]?.featureName || (profile ? profile.lastFeatureName : 'Not Used Yet');
+  const topFeatures = featureUsage.slice(0, 5).map(f => ({
+    name: f.featureName,
+    count: f.count,
+    durationSec: f.durationSec,
+    percent: f.percent,
+  }));
+
+  const mobileEvents = profile?.mobileEvents || 0;
+  const desktopEvents = profile?.desktopEvents || 0;
+  const devicePreference =
+    mobileEvents === 0 && desktopEvents === 0
+      ? profile?.lastDevice || 'Unknown'
+      : mobileEvents >= desktopEvents
+      ? 'Mobile'
+      : 'Desktop';
+
+  return {
+    userId: user.id,
+    userName: user.name || profile?.userName || 'Student',
+    studentId: user.studentId || profile?.studentId || '',
+    email: user.email || profile?.email || '',
+    phone: user.phone || '',
+    userRole: user.role || profile?.userRole || 'STUDENT',
+    batchId: user.batchId || profile?.batchId || '',
+    batchName: user.batchName || profile?.batchName || 'SWE Batch',
+    currentSemester: user.currentSemester ?? 0,
+    accountStatus: user.status || 'ACTIVE',
+    profileImage: user.profileImage || '',
+    cgpa: Number(cgpaValue || 0),
+    registeredAt: user.createdAt || null,
+
+    // Live activity & time metrics
+    isOnline,
+    activityStatus,
+    totalDurationSec,
+    totalTimeMinutes: totalDurationSec > 0 ? Math.max(1, Math.round(totalDurationSec / 60)) : 0,
+    todayDurationSec,
+    todayEvents,
+    last7DaysDurationSec,
+    last7DaysSessions,
+    avgSessionDurationSec,
+    totalSessions,
+    totalViews,
+    totalActions,
+    totalEvents,
+    firstSeenAt: profile?.firstSeenAt || null,
+    lastActive: lastActiveIso,
+    lastPath: profile?.lastPath || null,
+    lastFeatureKey: profile?.lastFeatureKey || null,
+    lastFeatureName: profile?.lastFeatureName || null,
+    lastDevice: profile?.lastDevice || null,
+    lastBrowser: profile?.lastBrowser || null,
+    lastOs: profile?.lastOs || null,
+    devicePreference,
+    mobileEvents,
+    desktopEvents,
+    favoriteFeature,
+    topFeatures,
+    featureUsage,
+    dailyActivity,
+    recentActions: (profile?.recentEvents || []).slice(0, 40),
+  };
 }
 
 /**
  * POST /api/analytics/track
- * Non-blocking endpoint that records a feature visit, duration, or interactive action
+ * Authenticated real-time tracking endpoint for page views, interactive actions, and active-time heartbeats.
  */
-router.post('/track', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/track', verifyAuthToken, async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
   try {
     const {
-      userId,
-      userName,
-      studentId,
-      userRole,
-      batchId,
-      batchName,
       featureKey,
       featureName,
       category,
       actionType = 'VIEW',
       actionDetail,
-      path = '/',
-      durationSec = 25,
+      path = '/dashboard',
+      durationSec = 0,
       deviceType = 'Desktop',
-    } = req.body;
+      browser,
+      os,
+      sessionId,
+    } = req.body || {};
 
-    const effectiveUser = req.user;
-    const finalUserId = effectiveUser?.id || userId || 'anon';
-    const finalUserName = effectiveUser?.name || userName || 'Guest Student';
-    if (finalUserId === 'anon' && !userName) {
-      return res.json({ success: true, skipped: true });
-    }
-
+    const cleanPath = String(path || '/dashboard').slice(0, 200);
     const meta = PORTAL_FEATURES.find(f => f.key === featureKey) || {
-      key: featureKey || 'DASHBOARD',
-      name: featureName || 'Portal Feature',
-      category: (category as FeatureUsageEvent['category']) || 'ACADEMIC',
-      defaultPath: path,
+      key: String(featureKey || 'DASHBOARD').slice(0, 40),
+      name: String(featureName || 'Portal Page').slice(0, 80),
+      category: (category as any) || 'ACADEMIC',
+      defaultPath: cleanPath,
     };
 
-    const event: FeatureUsageEvent = {
-      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      userId: finalUserId,
-      userName: finalUserName,
-      studentId: effectiveUser?.studentId || studentId || '',
-      userRole: effectiveUser?.role || userRole || 'STUDENT',
-      batchId: effectiveUser?.batchId || batchId || 'batch-9',
-      batchName: effectiveUser?.batchName || batchName || 'SWE Batch',
+    const normalizedActionType: 'VIEW' | 'ACTION' | 'HEARTBEAT' =
+      actionType === 'ACTION'
+        ? 'ACTION'
+        : actionType === 'HEARTBEAT'
+        ? 'HEARTBEAT'
+        : 'VIEW';
+
+    const profile = await recordUserUsageEvent({
+      userId: req.user.id,
+      studentId: req.user.studentId,
+      userName: req.user.name,
+      email: req.user.email,
+      userRole: req.user.role,
+      batchId: req.user.batchId,
+      batchName: req.user.batchName,
       featureKey: meta.key,
-      featureName: featureName || meta.name,
+      featureName: String(featureName || meta.name).slice(0, 80),
       category: meta.category,
-      actionType: actionType === 'ACTION' ? 'ACTION' : 'VIEW',
-      actionDetail: actionDetail || `Used ${meta.name}`,
-      path: String(path),
-      durationSec: Math.min(600, Math.max(5, Number(durationSec) || 25)),
+      path: cleanPath,
+      actionType: normalizedActionType,
+      actionDetail: String(actionDetail || `Visited ${meta.name}`).slice(0, 160),
+      durationSec: Math.min(600, Math.max(0, Math.round(Number(durationSec) || 0))),
       deviceType: deviceType === 'Mobile' ? 'Mobile' : 'Desktop',
-      timestamp: new Date().toISOString(),
-    };
+      browser: browser ? String(browser).slice(0, 40) : undefined,
+      os: os ? String(os).slice(0, 40) : undefined,
+      sessionId: sessionId ? String(sessionId).slice(0, 80) : undefined,
+    });
 
-    db.addFeatureUsageLog(event);
-    res.json({ success: true, eventId: event.id });
+    return res.json({
+      success: true,
+      totalDurationSec: profile.totalDurationSec,
+      lastActiveAt: profile.lastActiveAt,
+    });
   } catch (err: any) {
-    res.status(200).json({ success: false });
+    console.error('[Analytics Track Error]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to record usage event' });
   }
 });
 
 /**
  * GET /api/analytics/overview
- * Comprehensive product & user behavior analytics for Admin
+ * Complete real-time user activity, usage duration, last active timestamps, and feature analytics for Admin.
  */
 router.get('/overview', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    await ensureBaselineAnalyticsSeeded();
+    const forceRefresh = req.query.refresh === '1' || req.query.refresh === 'true';
+    const [allUsers, usageProfiles, supabaseCgpaMap] = await Promise.all([
+      fetchAllUsers().catch(() => db.getUsers()),
+      listAllUsageProfiles(forceRefresh),
+      fetchAllStudentCGPAsFromSupabase().catch(() => ({} as Record<string, number>)),
+    ]);
 
-    const logs = db.getFeatureUsageLogs();
-    const allUsers = await fetchAllUsers().catch(() => db.getUsers());
-    const totalRegisteredStudents = Math.max(1, allUsers.filter(u => u.role !== 'ADMIN').length);
+    const nowMs = Date.now();
+    const last7Days = getLast7DateKeys(nowMs);
+    const recent3Keys = new Set(last7Days.slice(-3).map(d => d.date));
+    const older4Keys = new Set(last7Days.slice(0, 4).map(d => d.date));
 
-    const now = Date.now();
-    const threeDaysAgoIso = new Date(now - 3 * 86400 * 1000).toISOString();
-    const sixDaysAgoIso = new Date(now - 6 * 86400 * 1000).toISOString();
+    // Index usage profiles by userId and studentId
+    const profileByUserId = new Map<string, StoredUserUsageProfile>();
+    const profileByStudentId = new Map<string, StoredUserUsageProfile>();
+    for (const p of usageProfiles) {
+      profileByUserId.set(p.userId, p);
+      if (p.studentId) profileByStudentId.set(p.studentId, p);
+    }
 
-    // 1. Feature Breakdown
+    // Merge all registered users with persisted usage profiles
+    const seenUserIds = new Set<string>();
+    const userBreakdown: ReturnType<typeof buildUserDossier>[] = [];
+
+    for (const u of allUsers) {
+      seenUserIds.add(u.id);
+      const prof = profileByUserId.get(u.id) || (u.studentId ? profileByStudentId.get(u.studentId) : undefined);
+      const cgpaVal =
+        supabaseCgpaMap[u.id] ??
+        (u.studentId ? supabaseCgpaMap[u.studentId] : undefined) ??
+        db.getStudentCGPA(u.id, u.studentId) ??
+        0;
+      userBreakdown.push(buildUserDossier(u, prof, cgpaVal, nowMs, last7Days));
+    }
+
+    // Include any tracked profile not yet in allUsers list (e.g. demo or newly synced account)
+    for (const p of usageProfiles) {
+      if (seenUserIds.has(p.userId)) continue;
+      const cgpaVal =
+        supabaseCgpaMap[p.userId] ??
+        (p.studentId ? supabaseCgpaMap[p.studentId] : undefined) ??
+        0;
+      userBreakdown.push(
+        buildUserDossier(
+          {
+            id: p.userId,
+            name: p.userName,
+            studentId: p.studentId,
+            email: p.email,
+            role: (p.userRole as any) || 'STUDENT',
+            batchId: p.batchId,
+            batchName: p.batchName,
+          },
+          p,
+          cgpaVal,
+          nowMs,
+          last7Days
+        )
+      );
+    }
+
+    // Default sort: Online first, then most recently active, then total time spent
+    userBreakdown.sort((a, b) => {
+      if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
+      if (a.lastActive && b.lastActive) return b.lastActive.localeCompare(a.lastActive);
+      if (a.lastActive) return -1;
+      if (b.lastActive) return 1;
+      return b.totalDurationSec - a.totalDurationSec;
+    });
+
+    // Aggregate Feature Breakdown from real usage profiles
     const featureMap = new Map<
       string,
       {
@@ -202,9 +351,7 @@ router.get('/overview', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req:
         totalActions: number;
         totalDurationSec: number;
         uniqueUserIds: Set<string>;
-        recentHalfCount: number;
-        olderHalfCount: number;
-        userCounts: Map<string, { name: string; count: number; batchName: string }>;
+        topUsers: Array<{ userId: string; name: string; count: number; durationSec: number; batchName: string }>;
       }
     >();
 
@@ -218,132 +365,146 @@ router.get('/overview', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req:
         totalActions: 0,
         totalDurationSec: 0,
         uniqueUserIds: new Set(),
-        recentHalfCount: 0,
-        olderHalfCount: 0,
-        userCounts: new Map(),
+        topUsers: [],
       });
     }
 
-    // 2. Per-User Breakdown
-    const userMap = new Map<
+    let totalEventsAll = 0;
+    let totalDurationAll = 0;
+    let totalSessionsAll = 0;
+    let mobileEventsAll = 0;
+    let desktopEventsAll = 0;
+    let onlineNowCount = 0;
+    let activeTodayCount = 0;
+    let activeThisWeekCount = 0;
+    let neverUsedCount = 0;
+    let trackedUsersCount = 0;
+
+    // Daily trend map
+    const dailyAgg: Record<string, { views: number; actions: number; durationSec: number; users: Set<string> }> = {};
+    for (const d of last7Days) {
+      dailyAgg[d.date] = { views: 0, actions: 0, durationSec: 0, users: new Set() };
+    }
+
+    // Batch aggregation
+    const batchMap = new Map<
       string,
       {
-        userId: string;
-        userName: string;
-        studentId: string;
-        userRole: string;
         batchName: string;
+        totalUsers: number;
+        activeUsers: number;
+        onlineUsers: number;
         totalEvents: number;
         totalDurationSec: number;
-        mobileCount: number;
-        desktopCount: number;
-        lastActive: string;
         featureCounts: Record<string, number>;
-        recentActions: Array<{ featureName: string; actionDetail: string; timestamp: string; durationSec: number }>;
       }
     >();
 
-    let mobileEvents = 0;
-    let desktopEvents = 0;
-    let totalDurationAll = 0;
+    const recentStream: Array<any> = [];
 
-    for (const ev of logs) {
-      totalDurationAll += ev.durationSec || 20;
-      if (ev.deviceType === 'Mobile') mobileEvents++;
-      else desktopEvents++;
-
-      // Feature stats
-      let fStat = featureMap.get(ev.featureKey);
-      if (!fStat) {
-        fStat = {
-          featureKey: ev.featureKey,
-          featureName: ev.featureName,
-          category: ev.category || 'ACADEMIC',
-          totalEvents: 0,
-          totalViews: 0,
-          totalActions: 0,
-          totalDurationSec: 0,
-          uniqueUserIds: new Set(),
-          recentHalfCount: 0,
-          olderHalfCount: 0,
-          userCounts: new Map(),
-        };
-        featureMap.set(ev.featureKey, fStat);
+    for (const u of userBreakdown) {
+      if (u.isOnline) onlineNowCount++;
+      if (u.activityStatus === 'ONLINE' || u.activityStatus === 'TODAY') activeTodayCount++;
+      if (u.activityStatus === 'ONLINE' || u.activityStatus === 'TODAY' || u.activityStatus === 'THIS_WEEK') {
+        activeThisWeekCount++;
       }
+      if (u.activityStatus === 'NEVER') neverUsedCount++;
+      else trackedUsersCount++;
 
-      fStat.totalEvents++;
-      if (ev.actionType === 'ACTION') fStat.totalActions++;
-      else fStat.totalViews++;
-      fStat.totalDurationSec += ev.durationSec || 20;
-      fStat.uniqueUserIds.add(ev.userId);
+      totalEventsAll += u.totalEvents;
+      totalDurationAll += u.totalDurationSec;
+      totalSessionsAll += u.totalSessions;
+      mobileEventsAll += u.mobileEvents;
+      desktopEventsAll += u.desktopEvents;
 
-      if (ev.timestamp >= threeDaysAgoIso) {
-        fStat.recentHalfCount++;
-      } else if (ev.timestamp >= sixDaysAgoIso) {
-        fStat.olderHalfCount++;
-      }
-
-      const prevU = fStat.userCounts.get(ev.userId) || {
-        name: ev.userName,
-        count: 0,
-        batchName: ev.batchName || 'SWE Batch',
-      };
-      prevU.count++;
-      fStat.userCounts.set(ev.userId, prevU);
-
-      // User stats
-      let uStat = userMap.get(ev.userId);
-      if (!uStat) {
-        uStat = {
-          userId: ev.userId,
-          userName: ev.userName,
-          studentId: ev.studentId || '',
-          userRole: ev.userRole || 'STUDENT',
-          batchName: ev.batchName || 'SWE 9th Batch',
+      // Batch stats
+      const bName = u.batchName || 'Unassigned Batch';
+      let bStat = batchMap.get(bName);
+      if (!bStat) {
+        bStat = {
+          batchName: bName,
+          totalUsers: 0,
+          activeUsers: 0,
+          onlineUsers: 0,
           totalEvents: 0,
           totalDurationSec: 0,
-          mobileCount: 0,
-          desktopCount: 0,
-          lastActive: ev.timestamp,
           featureCounts: {},
-          recentActions: [],
         };
-        userMap.set(ev.userId, uStat);
+        batchMap.set(bName, bStat);
+      }
+      bStat.totalUsers += 1;
+      if (u.activityStatus !== 'NEVER') bStat.activeUsers += 1;
+      if (u.isOnline) bStat.onlineUsers += 1;
+      bStat.totalEvents += u.totalEvents;
+      bStat.totalDurationSec += u.totalDurationSec;
+
+      for (const f of u.featureUsage) {
+        bStat.featureCounts[f.featureName] = (bStat.featureCounts[f.featureName] || 0) + f.count;
+        let fStat = featureMap.get(f.featureKey);
+        if (!fStat) {
+          fStat = {
+            featureKey: f.featureKey,
+            featureName: f.featureName,
+            category: f.category || 'ACADEMIC',
+            totalEvents: 0,
+            totalViews: 0,
+            totalActions: 0,
+            totalDurationSec: 0,
+            uniqueUserIds: new Set(),
+            topUsers: [],
+          };
+          featureMap.set(f.featureKey, fStat);
+        }
+        fStat.totalEvents += f.count;
+        fStat.totalViews += f.views;
+        fStat.totalActions += f.actions;
+        fStat.totalDurationSec += f.durationSec;
+        fStat.uniqueUserIds.add(u.userId);
+        fStat.topUsers.push({
+          userId: u.userId,
+          name: u.userName,
+          count: f.count,
+          durationSec: f.durationSec,
+          batchName: u.batchName,
+        });
       }
 
-      uStat.totalEvents++;
-      uStat.totalDurationSec += ev.durationSec || 20;
-      if (ev.deviceType === 'Mobile') uStat.mobileCount++;
-      else uStat.desktopCount++;
-      if (ev.timestamp > uStat.lastActive) uStat.lastActive = ev.timestamp;
-      uStat.featureCounts[ev.featureName] = (uStat.featureCounts[ev.featureName] || 0) + 1;
-      if (uStat.recentActions.length < 8) {
-        uStat.recentActions.push({
-          featureName: ev.featureName,
-          actionDetail: ev.actionDetail || `Visited ${ev.featureName}`,
-          timestamp: ev.timestamp,
-          durationSec: ev.durationSec || 20,
+      for (const d of u.dailyActivity) {
+        const agg = dailyAgg[d.date];
+        if (!agg) continue;
+        agg.views += d.views;
+        agg.actions += d.actions;
+        agg.durationSec += d.durationSec;
+        if (d.views > 0 || d.actions > 0 || d.durationSec > 0) {
+          agg.users.add(u.userId);
+        }
+      }
+
+      for (const ev of u.recentActions.slice(0, 10)) {
+        recentStream.push({
+          ...ev,
+          userId: u.userId,
+          userName: u.userName,
+          studentId: u.studentId,
+          userRole: u.userRole,
+          batchName: u.batchName,
         });
       }
     }
 
-    const totalEvents = Math.max(1, logs.length);
+    recentStream.sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+
+    const totalRegisteredStudents = Math.max(1, allUsers.filter(u => u.role !== 'ADMIN').length);
+    const safeTotalEvents = Math.max(1, totalEventsAll);
 
     const featureBreakdown = Array.from(featureMap.values())
       .map(f => {
         const uniqueUsers = f.uniqueUserIds.size;
         const avgDurationSec = f.totalEvents > 0 ? Math.round(f.totalDurationSec / f.totalEvents) : 0;
         const adoptionRatePercent = Math.min(100, Math.round((uniqueUsers / totalRegisteredStudents) * 100));
-        const sharePercent = Math.round((f.totalEvents / totalEvents) * 100);
-        const trendPercent =
-          f.olderHalfCount > 0
-            ? Math.round(((f.recentHalfCount - f.olderHalfCount) / f.olderHalfCount) * 100)
-            : f.recentHalfCount > 0
-            ? 25
-            : 0;
-
-        const topUsers = Array.from(f.userCounts.values())
-          .sort((a, b) => b.count - a.count)
+        const sharePercent = totalEventsAll > 0 ? Math.round((f.totalEvents / safeTotalEvents) * 100) : 0;
+        const topUsers = f.topUsers
+          .sort((a, b) => b.durationSec - a.durationSec || b.count - a.count)
           .slice(0, 3);
 
         return {
@@ -353,130 +514,115 @@ router.get('/overview', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req:
           totalEvents: f.totalEvents,
           totalViews: f.totalViews,
           totalActions: f.totalActions,
+          totalDurationSec: f.totalDurationSec,
           uniqueUsers,
           avgDurationSec,
           adoptionRatePercent,
           sharePercent,
-          trendPercent,
+          trendPercent: 0,
           topUsers,
         };
       })
-      .sort((a, b) => b.totalEvents - a.totalEvents);
-
-    const userBreakdown = Array.from(userMap.values())
-      .map(u => {
-        const sortedFeatures = Object.entries(u.featureCounts).sort((a, b) => b[1] - a[1]);
-        const favoriteFeature = sortedFeatures[0]?.[0] || 'Student Dashboard';
-        const topFeaturesList = sortedFeatures.slice(0, 4).map(([name, count]) => ({
-          name,
-          count,
-          percent: Math.round((count / Math.max(1, u.totalEvents)) * 100),
-        }));
-
-        return {
-          userId: u.userId,
-          userName: u.userName,
-          studentId: u.studentId,
-          userRole: u.userRole,
-          batchName: u.batchName,
-          totalEvents: u.totalEvents,
-          totalTimeMinutes: Math.max(1, Math.round(u.totalDurationSec / 60)),
-          favoriteFeature,
-          devicePreference: u.mobileCount >= u.desktopCount ? 'Mobile' : 'Desktop',
-          lastActive: u.lastActive,
-          topFeatures: topFeaturesList,
-          recentActions: u.recentActions,
-        };
-      })
-      .sort((a, b) => b.totalEvents - a.totalEvents);
-
-    // 3. Batch-wise Comparison
-    const batchMap = new Map<
-      string,
-      { batchName: string; activeUserIds: Set<string>; totalEvents: number; featureCounts: Record<string, number> }
-    >();
-    for (const ev of logs) {
-      const bName = ev.batchName || 'SWE 9th Batch';
-      let bStat = batchMap.get(bName);
-      if (!bStat) {
-        bStat = { batchName: bName, activeUserIds: new Set(), totalEvents: 0, featureCounts: {} };
-        batchMap.set(bName, bStat);
-      }
-      bStat.activeUserIds.add(ev.userId);
-      bStat.totalEvents++;
-      bStat.featureCounts[ev.featureName] = (bStat.featureCounts[ev.featureName] || 0) + 1;
-    }
+      .sort((a, b) => b.totalDurationSec - a.totalDurationSec || b.totalEvents - a.totalEvents);
 
     const batchComparison = Array.from(batchMap.values())
       .map(b => {
-        const topF = Object.entries(b.featureCounts).sort((a, b2) => b2[1] - a[1])[0]?.[0] || 'Class Routine';
+        const topF =
+          Object.entries(b.featureCounts).sort((a, b2) => b2[1] - a[1])[0]?.[0] || 'No Activity Yet';
         return {
           batchName: b.batchName,
-          activeUsers: b.activeUserIds.size,
+          totalUsers: b.totalUsers,
+          activeUsers: b.activeUsers,
+          onlineUsers: b.onlineUsers,
           totalEvents: b.totalEvents,
+          totalDurationSec: b.totalDurationSec,
           topFeature: topF,
         };
       })
-      .sort((a, b) => b.totalEvents - a.totalEvents);
+      .sort((a, b) => b.totalDurationSec - a.totalDurationSec || b.activeUsers - a.activeUsers);
 
-    // 4. 7-Day Daily Trend
-    const dailyTrends: Array<{ date: string; label: string; views: number; actions: number; uniqueUsers: number }> = [];
-    for (let d = 6; d >= 0; d--) {
-      const dateObj = new Date(now - d * 86400 * 1000);
-      const dateStr = dateObj.toISOString().split('T')[0];
-      const label = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      const dayEvents = logs.filter(e => e.timestamp.startsWith(dateStr));
-      const uniqueSet = new Set(dayEvents.map(e => e.userId));
-      dailyTrends.push({
-        date: dateStr,
-        label,
-        views: dayEvents.filter(e => e.actionType === 'VIEW').length,
-        actions: dayEvents.filter(e => e.actionType === 'ACTION').length,
-        uniqueUsers: uniqueSet.size,
-      });
+    const dailyTrends = last7Days.map(d => {
+      const agg = dailyAgg[d.date];
+      return {
+        date: d.date,
+        label: d.label,
+        views: agg.views,
+        actions: agg.actions,
+        durationSec: agg.durationSec,
+        uniqueUsers: agg.users.size,
+      };
+    });
+
+    const totalDeviceHits = mobileEventsAll + desktopEventsAll;
+    const mobileUsagePercent =
+      totalDeviceHits > 0 ? Math.round((mobileEventsAll / totalDeviceHits) * 100) : 0;
+    const desktopUsagePercent = totalDeviceHits > 0 ? 100 - mobileUsagePercent : 0;
+
+    // Recent trend comparison (last 3 days vs previous 4 days)
+    let recentDuration = 0;
+    let olderDuration = 0;
+    for (const d of dailyTrends) {
+      if (recent3Keys.has(d.date)) recentDuration += d.durationSec;
+      else if (older4Keys.has(d.date)) olderDuration += d.durationSec;
     }
 
-    // 5. Smart Product & UX Improvement Recommendations
-    const mostUsed = featureBreakdown[0];
-    const leastUsed = featureBreakdown.filter(f => f.featureKey !== 'CR_TOOLS').slice(-2);
-    const mobileRatio = Math.round((mobileEvents / totalEvents) * 100);
+    const mostUsed = featureBreakdown.find(f => f.totalEvents > 0);
+    const leastUsed = featureBreakdown
+      .filter(f => f.featureKey !== 'CR_TOOLS' && f.featureKey !== 'ADMIN_PANEL')
+      .slice(-2);
 
     const recommendations = [
       {
-        id: 'rec-mobile',
+        id: 'rec-engagement',
         priority: 'HIGH',
-        title: `${mobileRatio}% of Students Access Portal via Mobile Devices`,
-        finding: `Most students check "${mostUsed?.featureName || 'Class Routine'}" and "Exams" from their phones right before classes.`,
-        action: 'Keep 1-tap actions (like Today’s Routine card, WhatsApp Exam Alerts, and quick PDF downloads) pinned at the top of the mobile viewport.',
-        metric: `${mobileRatio}% Mobile Traffic`,
+        title: `${activeTodayCount} Users Active Today (${onlineNowCount} Online Now)`,
+        finding: `${trackedUsersCount} out of ${userBreakdown.length} registered accounts have recorded real usage sessions so far. ${neverUsedCount} users have not used the portal yet.`,
+        action: 'Share quick-access portal links in batch WhatsApp groups to bring inactive students onto daily routine and exam schedules.',
+        metric: `${Math.round((trackedUsersCount / Math.max(1, userBreakdown.length)) * 100)}% Adoption`,
       },
       {
-        id: 'rec-low-adoption',
+        id: 'rec-device',
         priority: 'MEDIUM',
-        title: `Boost Adoption of "${leastUsed[0]?.featureName || 'Academic FAQ'}" & "${leastUsed[1]?.featureName || 'Retake Desk'}"`,
-        finding: `These features account for less than ${ (leastUsed[0]?.sharePercent || 2) + (leastUsed[1]?.sharePercent || 2) }% of total portal interactions.`,
-        action: 'Add contextual quick-links to Question Bank & Retake Registration directly inside Course Detail and Exam Schedule cards to drive organic discovery.',
-        metric: `${leastUsed[0]?.adoptionRatePercent || 15}% Adoption Rate`,
+        title:
+          totalDeviceHits > 0
+            ? `${mobileUsagePercent}% Mobile vs ${desktopUsagePercent}% Desktop Traffic`
+            : 'Real-Time Device Tracking Active',
+        finding: mostUsed
+          ? `Students spend the most time on "${mostUsed.featureName}" (${Math.round(mostUsed.totalDurationSec / 60)}m total tracked across ${mostUsed.uniqueUsers} users).`
+          : 'Live tracking is now recording exact time spent and device preferences as users navigate the portal.',
+        action: 'Keep top actions (Today Routine, Exam Countdown, CGPA Editor) fast and thumb-friendly on mobile screens.',
+        metric: totalDeviceHits > 0 ? `${mobileUsagePercent}% Mobile` : 'Live',
       },
       {
-        id: 'rec-high-retention',
+        id: 'rec-trend',
         priority: 'OPPORTUNITY',
-        title: `High Time-on-Page in CGPA Calculator & Question Bank (~2.5 mins/session)`,
-        finding: `Students spend the longest time per session calculating grades and browsing past exam papers.`,
-        action: 'Encourage CRs to upload verified Midterm/Final question PDFs for every semester to multiply weekly student retention.',
-        metric: `Top Stickiness`,
+        title:
+          recentDuration >= olderDuration
+            ? 'Steady Portal Usage Momentum Over Last 3 Days'
+            : `Boost Discovery of "${leastUsed[0]?.featureName || 'Academic FAQ'}"`,
+        finding: `Total tracked active time across all users is ${Math.round(totalDurationAll / 60)} minutes over ${totalSessionsAll} sessions.`,
+        action: 'Use the User Activity tab to inspect individual student engagement, last seen time, and favorite modules.',
+        metric: `${totalSessionsAll} Sessions`,
       },
     ];
 
-    res.json({
+    return res.json({
       summary: {
-        totalEvents: logs.length,
-        activeUsersCount: userMap.size,
+        totalEvents: totalEventsAll,
+        totalSessions: totalSessionsAll,
+        totalTrackedDurationSec: totalDurationAll,
+        activeUsersCount: trackedUsersCount,
+        onlineNowCount,
+        activeTodayCount,
+        activeThisWeekCount,
+        neverUsedCount,
+        totalRegisteredUsers: userBreakdown.length,
         totalRegisteredStudents,
-        avgSessionDurationSec: Math.round(totalDurationAll / totalEvents),
-        mobileUsagePercent: mobileRatio,
-        desktopUsagePercent: 100 - mobileRatio,
-        mostUsedFeature: mostUsed?.featureName || 'Class Routine & Schedule',
+        avgSessionDurationSec:
+          totalSessionsAll > 0 ? Math.round(totalDurationAll / totalSessionsAll) : 0,
+        mobileUsagePercent,
+        desktopUsagePercent,
+        mostUsedFeature: mostUsed?.featureName || 'No Activity Yet',
         leastUsedFeature: leastUsed[0]?.featureName || 'Academic FAQ & Help',
       },
       featureBreakdown,
@@ -484,11 +630,66 @@ router.get('/overview', verifyAuthToken, requireRole('ADMIN', 'CR'), async (req:
       batchComparison,
       dailyTrends,
       recommendations,
-      recentStream: logs.slice(0, 60),
+      recentStream: recentStream.slice(0, 80),
     });
   } catch (err: any) {
     console.error('[Analytics Overview Error]:', err);
-    res.status(500).json({ error: 'Failed to load feature analytics' });
+    return res.status(500).json({ error: 'Failed to load feature analytics' });
+  }
+});
+
+/**
+ * GET /api/analytics/user/:userId
+ * Returns complete activity & usage dossier for a specific user (Admin only).
+ */
+router.get('/user/:userId', verifyAuthToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const targetUserId = String(req.params.userId || '').trim();
+    if (!targetUserId) {
+      return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+
+    const [allUsers, profile, supabaseCgpaMap] = await Promise.all([
+      fetchAllUsers().catch(() => db.getUsers()),
+      getUserUsageProfile(targetUserId),
+      fetchAllStudentCGPAsFromSupabase().catch(() => ({} as Record<string, number>)),
+    ]);
+
+    const user = allUsers.find(u => u.id === targetUserId || u.studentId === targetUserId);
+    if (!user && !profile) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const nowMs = Date.now();
+    const last7Days = getLast7DateKeys(nowMs);
+    const resolvedId = user?.id || profile!.userId;
+    const resolvedRoll = user?.studentId || profile?.studentId || '';
+    const cgpaVal =
+      supabaseCgpaMap[resolvedId] ??
+      (resolvedRoll ? supabaseCgpaMap[resolvedRoll] : undefined) ??
+      db.getStudentCGPA(resolvedId, resolvedRoll) ??
+      0;
+
+    const dossier = buildUserDossier(
+      user || {
+        id: profile!.userId,
+        name: profile!.userName,
+        studentId: profile!.studentId,
+        email: profile!.email,
+        role: (profile!.userRole as any) || 'STUDENT',
+        batchId: profile!.batchId,
+        batchName: profile!.batchName,
+      },
+      profile || undefined,
+      cgpaVal,
+      nowMs,
+      last7Days
+    );
+
+    return res.json({ success: true, data: dossier });
+  } catch (err: any) {
+    console.error('[Analytics User Detail Error]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to load user activity details' });
   }
 });
 

@@ -5,50 +5,108 @@ import { TopNavbar } from './TopNavbar';
 import { ToastContainer } from '../common/ToastContainer';
 import { AcademicChatbot } from '../chatbot/AcademicChatbot';
 import { useAuth } from '../../context/AuthContext';
+import { useFeatureFlags } from '../../context/FeatureFlagContext';
 import { trackFeatureUsage } from '../../services/analyticsTracker';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+const HEARTBEAT_INTERVAL_MS = 30_000; // Flush exact active seconds every 30s
+
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const { user, token } = useAuth();
-  const lastPathRef = useRef<string>(location.pathname);
-  const enterTimeRef = useRef<number>(Date.now());
+  const { isFeatureEnabled } = useFeatureFlags();
 
-  // Track feature usage on location change
+  const activePathRef = useRef<string>(location.pathname);
+  const lastFlushTimeRef = useRef<number>(Date.now());
+  const userRef = useRef(user);
+  const tokenRef = useRef(token);
+
   useEffect(() => {
-    const prevPath = lastPathRef.current;
-    const durationSec = Math.round((Date.now() - enterTimeRef.current) / 1000);
+    userRef.current = user;
+    tokenRef.current = token;
+  }, [user, token]);
 
-    // Track previously visited path with its real duration if user spent > 2 seconds
-    if (prevPath && durationSec >= 2 && user) {
+  // Helper to flush exact elapsed active seconds since lastFlushTimeRef without double counting
+  const flushActiveDuration = (pathOverride?: string) => {
+    const activeUser = userRef.current;
+    const activeToken = tokenRef.current;
+    if (!activeUser || !activeToken) return;
+
+    const now = Date.now();
+    const elapsedSec = Math.round((now - lastFlushTimeRef.current) / 1000);
+    lastFlushTimeRef.current = now;
+
+    if (elapsedSec >= 2) {
       trackFeatureUsage({
-        user,
-        token,
-        path: prevPath,
-        actionType: 'VIEW',
-        durationSec: Math.min(300, durationSec),
+        user: activeUser,
+        token: activeToken,
+        path: pathOverride || activePathRef.current,
+        actionType: 'HEARTBEAT',
+        durationSec: Math.min(300, elapsedSec),
       });
     }
+  };
 
-    lastPathRef.current = location.pathname;
-    enterTimeRef.current = Date.now();
+  // 1. Track route navigation: flush previous route's real duration, then record entry to new route
+  useEffect(() => {
+    if (!user || !token) return;
 
-    // Track entry to the new path
-    if (user) {
-      trackFeatureUsage({
-        user,
-        token,
-        path: location.pathname,
-        actionType: 'VIEW',
-        durationSec: 15,
-      });
+    const prevPath = activePathRef.current;
+    if (prevPath && prevPath !== location.pathname) {
+      flushActiveDuration(prevPath);
     }
-  }, [location.pathname, user, token]);
+
+    activePathRef.current = location.pathname;
+    lastFlushTimeRef.current = Date.now();
+
+    trackFeatureUsage({
+      user,
+      token,
+      path: location.pathname,
+      actionType: 'VIEW',
+      durationSec: 0,
+    });
+  }, [location.pathname, user?.id, token]);
+
+  // 2. Periodic active-time heartbeat + visibilitychange + pagehide flush
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        flushActiveDuration();
+      } else {
+        // Keep clock aligned while tab is hidden so background time is not counted
+        lastFlushTimeRef.current = Date.now();
+      }
+    }, HEARTBEAT_INTERVAL_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushActiveDuration();
+      } else {
+        lastFlushTimeRef.current = Date.now();
+      }
+    };
+
+    const handlePageHide = () => {
+      flushActiveDuration();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [user?.id, token]);
 
   useEffect(() => {
     const handleCloseSidebar = () => {
@@ -81,9 +139,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </main>
       </div>
 
-      <AcademicChatbot />
+      {isFeatureEnabled('chatbot') && <AcademicChatbot />}
       <ToastContainer />
     </div>
   );
 };
-

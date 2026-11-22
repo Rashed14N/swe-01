@@ -13,6 +13,7 @@ import {
   fetchAllUsers,
 } from '../supabaseData';
 import { searchAcademicKnowledge, KnowledgeItem } from '../knowledgeBase';
+import { getFeatureFlag } from '../featureFlags';
 
 const router = Router();
 
@@ -1830,6 +1831,14 @@ RULES:
  */
 router.post('/message', optionalAuthToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const chatbotFlag = getFeatureFlag('chatbot');
+    if (chatbotFlag && !chatbotFlag.enabled) {
+      return res.status(503).json({
+        error: chatbotFlag.disabledMessage || 'The SWE AI Assistant is temporarily turned off by the administrator.',
+        featureDisabled: true,
+      });
+    }
+
     const { message, history = [] } = req.body as {
       message?: string;
       history?: ChatTurn[];

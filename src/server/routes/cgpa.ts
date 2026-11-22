@@ -2,6 +2,13 @@ import { Router, Response } from 'express';
 import { db } from '../db';
 import { verifyAuthToken, AuthenticatedRequest } from '../auth';
 import { fetchAllCourses } from '../supabaseData';
+import {
+  loadStudentCGPA,
+  saveStudentCGPA,
+  normalizeCourseCode,
+  StoredStudentCGPA,
+  StoredGradeEntry,
+} from '../cgpaStore';
 import type { Course } from '../../types';
 
 const router = Router();
@@ -20,21 +27,37 @@ export const MU_GRADING_SCALE = [
   { grade: 'F',  minMarks: 0,  gradePoint: 0.00, remarks: 'Fail' },
 ];
 
+const VALID_GRADES = new Set([
+  'A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'F', 'N/A', 'NOT_PUBLISHED',
+]);
+
 export function lookupGradePoint(gradeStr: string): number {
   const normalized = (gradeStr || '').trim().toUpperCase();
   const found = MU_GRADING_SCALE.find(g => g.grade === normalized);
   return found ? found.gradePoint : 0;
 }
 
+function isAcmItem(c: { code?: string; title?: string }): boolean {
+  const code = (c.code || '').toUpperCase();
+  const title = (c.title || '').toUpperCase();
+  return code === 'ACM' || code.startsWith('ACM-') || code.includes('ACM') || title.includes('ACM');
+}
+
 function calculateMetrics(
   courses: Course[],
-  studentGrades: Record<string, { grade: string; gradePoint: number; semester?: number }>,
+  studentGrades: Record<string, StoredGradeEntry>,
   currentSemester: number
 ) {
   // Exclude ACM (ACM has no academic credit, not counted in any result/CGPA calculation)
-  const academicCourses = courses.filter(
-    c => c.code.toUpperCase() !== 'ACM' && !c.code.toUpperCase().startsWith('ACM-') && !c.code.toUpperCase().includes('ACM') && !c.title.toUpperCase().includes('ACM')
-  );
+  const academicCourses = courses.filter(c => !isAcmItem(c));
+
+  // Build normalized lookup table so "SWE-111", "SWE 111", "swe-111" all match reliably
+  const normalizedGrades: Record<string, StoredGradeEntry> = {};
+  for (const [key, val] of Object.entries(studentGrades || {})) {
+    if (!val) continue;
+    normalizedGrades[key] = val;
+    normalizedGrades[normalizeCourseCode(key)] = val;
+  }
 
   // Sort courses by semester, then by code
   const sorted = [...academicCourses].sort((a, b) => {
@@ -53,11 +76,22 @@ function calculateMetrics(
     const cred = Number(c.credits) || 3.0;
     totalDegreeCredits += cred;
 
-    const gradeInfo = studentGrades[c.code] || studentGrades[c.id];
-    const hasGrade = !!gradeInfo && gradeInfo.grade && gradeInfo.grade !== 'N/A' && gradeInfo.grade !== 'NOT_PUBLISHED';
+    const gradeInfo =
+      normalizedGrades[normalizeCourseCode(c.code)] ||
+      normalizedGrades[c.code] ||
+      normalizedGrades[c.id];
+
+    const hasGrade =
+      !!gradeInfo &&
+      !!gradeInfo.grade &&
+      gradeInfo.grade !== 'N/A' &&
+      gradeInfo.grade !== 'NOT_PUBLISHED';
 
     if (hasGrade) {
-      const gp = typeof gradeInfo.gradePoint === 'number' ? gradeInfo.gradePoint : lookupGradePoint(gradeInfo.grade);
+      const gp =
+        typeof gradeInfo.gradePoint === 'number' && Number.isFinite(gradeInfo.gradePoint)
+          ? gradeInfo.gradePoint
+          : lookupGradePoint(gradeInfo.grade);
       totalQualityPoints += cred * gp;
       totalGradedCredits += cred;
       gradedCourseCount += 1;
@@ -95,7 +129,8 @@ function calculateMetrics(
     };
   });
 
-  const cgpa = totalGradedCredits > 0 ? Number((totalQualityPoints / totalGradedCredits).toFixed(2)) : 0.00;
+  const cgpa =
+    totalGradedCredits > 0 ? Number((totalQualityPoints / totalGradedCredits).toFixed(2)) : 0.0;
 
   let academicStanding = 'Regular Student';
   if (cgpa >= 3.85) academicStanding = "Dean's High Honours • First Class";
@@ -106,21 +141,25 @@ function calculateMetrics(
   else if (cgpa > 0) academicStanding = 'Academic Warning / Probation';
   else academicStanding = 'No Published Grades Yet';
 
-  // Semester by semester breakdown (1 through 8)
-  const semesterMap: Record<number, {
-    semester: number;
-    semesterName: string;
-    courses: typeof enrichedCourses;
-    totalCredits: number;
-    completedCredits: number;
-    gradedCredits: number;
-    qualityPoints: number;
-    sgpa: number | null;
-    isPublished: boolean;
-  }> = {};
+  // Semester by semester breakdown (1 through 12)
+  const semesterMap: Record<
+    number,
+    {
+      semester: number;
+      semesterName: string;
+      courses: typeof enrichedCourses;
+      totalCredits: number;
+      completedCredits: number;
+      gradedCredits: number;
+      qualityPoints: number;
+      sgpa: number | null;
+      isPublished: boolean;
+    }
+  > = {};
 
   for (let s = 1; s <= 12; s++) {
-    const semName = s === 1 ? '1st Semester' : s === 2 ? '2nd Semester' : s === 3 ? '3rd Semester' : `${s}th Semester`;
+    const semName =
+      s === 1 ? '1st Semester' : s === 2 ? '2nd Semester' : s === 3 ? '3rd Semester' : `${s}th Semester`;
     semesterMap[s] = {
       semester: s,
       semesterName: semName,
@@ -170,10 +209,14 @@ function calculateMetrics(
   const semesterBreakdown = Object.values(semesterMap)
     .sort((a, b) => a.semester - b.semester)
     .map(sem => {
-      const sgpa = sem.gradedCredits > 0 ? Number((sem.qualityPoints / sem.gradedCredits).toFixed(2)) : null;
+      const sgpa =
+        sem.gradedCredits > 0 ? Number((sem.qualityPoints / sem.gradedCredits).toFixed(2)) : null;
       runningQualityPoints += sem.qualityPoints;
       runningGradedCredits += sem.gradedCredits;
-      const cumulativeCgpa = runningGradedCredits > 0 ? Number((runningQualityPoints / runningGradedCredits).toFixed(2)) : null;
+      const cumulativeCgpa =
+        runningGradedCredits > 0
+          ? Number((runningQualityPoints / runningGradedCredits).toFixed(2))
+          : null;
 
       return {
         ...sem,
@@ -190,9 +233,9 @@ function calculateMetrics(
     totalGradedCredits: Number(totalGradedCredits.toFixed(1)),
     totalCompletedCredits: Number(totalCompletedCredits.toFixed(1)),
     totalDegreeCredits: Number(totalDegreeCredits.toFixed(1)) || 148.0,
-    totalCourses: courses.length,
+    totalCourses: enrichedCourses.length,
     gradedCourseCount,
-    pendingCourseCount: courses.length - gradedCourseCount,
+    pendingCourseCount: Math.max(0, enrichedCourses.length - gradedCourseCount),
     completedSemestersCount,
     currentBatchSemester: currentSemester,
     academicStanding,
@@ -201,31 +244,57 @@ function calculateMetrics(
   };
 }
 
-async function getFullCoursesForStudent(studentId: string): Promise<Course[]> {
+async function getFullCoursesForRecord(record: StoredStudentCGPA): Promise<Course[]> {
   const rawCourses = await fetchAllCourses();
-  const baseCourses = rawCourses.filter(
-    c => c.code.toUpperCase() !== 'ACM' && !c.code.toUpperCase().startsWith('ACM-') && !c.code.toUpperCase().includes('ACM') && !c.title.toUpperCase().includes('ACM')
+  const baseCourses = rawCourses.filter(c => !isAcmItem(c));
+  const excludedSet = new Set(
+    (record.excludedCourses || []).map(c => normalizeCourseCode(c))
   );
-  const excludedCodes = (db.getStudentExcludedCourses(studentId) || []).map(c => c.toUpperCase());
-  const customCourses = db.getStudentCustomCourses(studentId) || [];
+  const customCourses = record.customCourses || [];
 
   const courseMap = new Map<string, Course>();
 
   // Add base courses that haven't been excluded by the student
   for (const c of baseCourses) {
-    if (!excludedCodes.includes(c.code.toUpperCase())) {
-      courseMap.set(c.code.toUpperCase(), c);
+    const key = normalizeCourseCode(c.code);
+    if (!excludedSet.has(key)) {
+      courseMap.set(key, c);
     }
   }
 
   // Add or override custom courses
   for (const cc of customCourses) {
-    if (!excludedCodes.includes(cc.code.toUpperCase())) {
-      courseMap.set(cc.code.toUpperCase(), cc);
+    const key = normalizeCourseCode(cc.code);
+    if (!excludedSet.has(key)) {
+      courseMap.set(key, cc);
     }
   }
 
-  return Array.from(courseMap.values()).sort((a, b) => (a.semester - b.semester) || (a.code || '').localeCompare(b.code || ''));
+  return Array.from(courseMap.values()).sort(
+    (a, b) => (a.semester - b.semester) || (a.code || '').localeCompare(b.code || '')
+  );
+}
+
+function buildSummaryPayload(
+  metrics: ReturnType<typeof calculateMetrics>,
+  req: AuthenticatedRequest,
+  record: StoredStudentCGPA
+) {
+  return {
+    cgpa: metrics.cgpa,
+    totalCompletedCredits: metrics.totalCompletedCredits,
+    totalGradedCredits: metrics.totalGradedCredits,
+    totalDegreeCredits: metrics.totalDegreeCredits,
+    totalCourses: metrics.totalCourses,
+    gradedCourseCount: metrics.gradedCourseCount,
+    pendingCourseCount: metrics.pendingCourseCount,
+    completedSemestersCount: metrics.completedSemestersCount,
+    currentSemester: req.user?.currentSemester || 5,
+    batchName: req.user?.batchName || 'SWE Batch',
+    academicStanding: metrics.academicStanding,
+    sessionName: 'Autumn 2026',
+    excludedCount: (record.excludedCourses || []).length,
+  };
 }
 
 // GET /api/cgpa
@@ -235,35 +304,19 @@ router.get('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Response
   try {
     const studentId = req.user.id;
     const rollNo = req.user.studentId;
-    const allCourses = await getFullCoursesForStudent(studentId);
-    // Student's personal saved grades only
-    const savedGrades = db.getStudentGrades(studentId, rollNo) || {};
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const allCourses = await getFullCoursesForRecord(record);
     const currentSemester = req.user.currentSemester || 5;
 
-    const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    const metrics = calculateMetrics(allCourses, record.grades, currentSemester);
     if (metrics.cgpa > 0) {
       db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
     }
     const documents = db.getStudentCGPADocs(studentId);
-    const excludedCount = (db.getStudentExcludedCourses(studentId) || []).length;
 
     return res.json({
       success: true,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        batchName: req.user.batchName || 'SWE Batch',
-        academicStanding: metrics.academicStanding,
-        sessionName: 'Autumn 2026',
-        excludedCount,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, record),
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
       documents,
@@ -281,50 +334,80 @@ router.post('/', verifyAuthToken, async (req: AuthenticatedRequest, res: Respons
 
   try {
     const { grades } = req.body;
-    if (!grades || typeof grades !== 'object') {
+    if (!grades || typeof grades !== 'object' || Array.isArray(grades)) {
       return res.status(400).json({ success: false, error: 'Grades payload is required' });
+    }
+
+    const entries = Object.entries(grades as Record<string, any>);
+    if (entries.length > 200) {
+      return res.status(400).json({ success: false, error: 'Too many course grades in one request' });
     }
 
     const studentId = req.user.id;
     const rollNo = req.user.studentId;
-    const allCourses = await getFullCoursesForStudent(studentId);
-    const formatted: Record<string, { grade: string; gradePoint: number; semester?: number }> = {};
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const allCourses = await getFullCoursesForRecord(record);
+    const nextGrades: Record<string, StoredGradeEntry> = { ...record.grades };
+    const now = new Date().toISOString();
 
-    for (const [courseCode, info] of Object.entries(grades as Record<string, any>)) {
-      const grade = typeof info === 'string' ? info : info.grade;
+    for (const [courseCode, info] of entries) {
+      const normalizedCode = normalizeCourseCode(courseCode);
+      if (!normalizedCode || normalizedCode.length > 40) continue;
+
+      const rawGrade = typeof info === 'string' ? info : info?.grade;
+      const grade = String(rawGrade || '').trim().toUpperCase();
+
       if (!grade || grade === 'N/A' || grade === 'NOT_PUBLISHED') {
-        formatted[courseCode] = { grade: 'N/A', gradePoint: 0 };
-      } else {
-        const gp = typeof info.gradePoint === 'number' ? info.gradePoint : lookupGradePoint(grade);
-        const course = allCourses.find(c => c.code.toUpperCase() === courseCode.toUpperCase());
-        formatted[courseCode] = {
-          grade: grade.trim().toUpperCase(),
-          gradePoint: gp,
-          semester: course?.semester,
-        };
+        delete nextGrades[normalizedCode];
+        delete nextGrades[courseCode];
+        continue;
       }
+
+      if (!VALID_GRADES.has(grade)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid grade "${grade}" for course ${courseCode}`,
+        });
+      }
+
+      const gp =
+        typeof info === 'object' && typeof info?.gradePoint === 'number' && Number.isFinite(info.gradePoint)
+          ? Math.max(0, Math.min(4, info.gradePoint))
+          : lookupGradePoint(grade);
+      const course = allCourses.find(c => normalizeCourseCode(c.code) === normalizedCode);
+
+      nextGrades[normalizedCode] = {
+        grade,
+        gradePoint: gp,
+        semester: course?.semester,
+        updatedAt: now,
+      };
     }
 
-    const updated = db.saveStudentGrades(studentId, formatted, rollNo);
     const currentSemester = req.user.currentSemester || 5;
-    const metrics = calculateMetrics(allCourses, updated, currentSemester);
-    db.setStudentCGPA(studentId, metrics.cgpa, rollNo);
+    const metrics = calculateMetrics(allCourses, nextGrades, currentSemester);
+
+    const updatedRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      grades: nextGrades,
+      cgpa: metrics.cgpa,
+      updatedAt: now,
+    };
+
+    const saveResult = await saveStudentCGPA(updatedRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to save grades to cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
       message: 'Course grades updated successfully',
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, updatedRecord),
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
     });
@@ -340,24 +423,35 @@ router.post('/course', verifyAuthToken, async (req: AuthenticatedRequest, res: R
 
   try {
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const { code, title, shortName, credits, semester, type, grade, gradePoint } = req.body;
 
     if (!code || !title) {
       return res.status(400).json({ success: false, error: 'Course code and title are required' });
     }
 
-    const cleanCode = String(code).trim().toUpperCase();
-    const cleanCredits = Number(credits) || 3.0;
-    const cleanSemester = Number(semester) || 1;
+    const cleanCode = normalizeCourseCode(String(code));
+    if (!cleanCode || cleanCode.length > 30) {
+      return res.status(400).json({ success: false, error: 'Invalid course code' });
+    }
+
+    const cleanTitle = String(title).trim().slice(0, 150);
+    const cleanCredits = Math.max(0.5, Math.min(12, Number(credits) || 3.0));
+    const cleanSemester = Math.max(1, Math.min(12, Math.round(Number(semester) || 1)));
+
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const now = new Date().toISOString();
 
     // Un-exclude if it was previously excluded
-    db.unexcludeCourseForStudent(studentId, cleanCode);
+    const nextExcluded = (record.excludedCourses || []).filter(
+      c => normalizeCourseCode(c) !== cleanCode
+    );
 
     const courseObj: Course = {
       id: `custom-${cleanCode.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
       code: cleanCode,
-      title: String(title).trim(),
-      shortName: shortName ? String(shortName).trim().toUpperCase() : cleanCode,
+      title: cleanTitle,
+      shortName: shortName ? String(shortName).trim().toUpperCase().slice(0, 30) : cleanCode,
       credits: cleanCredits,
       semester: cleanSemester,
       type: type === 'LAB' ? 'LAB' : 'THEORY',
@@ -366,39 +460,61 @@ router.post('/course', verifyAuthToken, async (req: AuthenticatedRequest, res: R
     };
     (courseObj as any).isCustom = true;
 
-    db.saveStudentCustomCourse(studentId, courseObj);
-
-    if (grade && grade !== 'N/A' && grade !== 'NOT_PUBLISHED') {
-      const gp = typeof gradePoint === 'number' ? gradePoint : lookupGradePoint(grade);
-      db.saveStudentGrades(studentId, {
-        [cleanCode]: {
-          grade: grade.trim().toUpperCase(),
-          gradePoint: gp,
-          semester: cleanSemester,
-        },
-      });
+    const nextCustom = [...(record.customCourses || [])];
+    const existingIdx = nextCustom.findIndex(
+      c => normalizeCourseCode(c.code) === cleanCode
+    );
+    if (existingIdx >= 0) {
+      nextCustom[existingIdx] = { ...nextCustom[existingIdx], ...courseObj };
+    } else {
+      nextCustom.push(courseObj);
     }
 
-    const allCourses = await getFullCoursesForStudent(studentId);
-    const savedGrades = db.getStudentGrades(studentId) || {};
+    const nextGrades: Record<string, StoredGradeEntry> = { ...record.grades };
+    if (grade && grade !== 'N/A' && grade !== 'NOT_PUBLISHED') {
+      const cleanGrade = String(grade).trim().toUpperCase();
+      if (!VALID_GRADES.has(cleanGrade)) {
+        return res.status(400).json({ success: false, error: `Invalid grade "${cleanGrade}"` });
+      }
+      const gp =
+        typeof gradePoint === 'number' && Number.isFinite(gradePoint)
+          ? Math.max(0, Math.min(4, gradePoint))
+          : lookupGradePoint(cleanGrade);
+      nextGrades[cleanCode] = {
+        grade: cleanGrade,
+        gradePoint: gp,
+        semester: cleanSemester,
+        updatedAt: now,
+      };
+    }
+
+    const draftRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      grades: nextGrades,
+      customCourses: nextCustom,
+      excludedCourses: nextExcluded,
+      updatedAt: now,
+    };
+
+    const allCourses = await getFullCoursesForRecord(draftRecord);
     const currentSemester = req.user.currentSemester || 5;
-    const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    const metrics = calculateMetrics(allCourses, draftRecord.grades, currentSemester);
+    draftRecord.cgpa = metrics.cgpa;
+
+    const saveResult = await saveStudentCGPA(draftRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to save course to cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
       message: `Course ${cleanCode} added to your curriculum!`,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, draftRecord),
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
     });
@@ -414,37 +530,49 @@ router.delete('/course/:code', verifyAuthToken, async (req: AuthenticatedRequest
 
   try {
     const studentId = req.user.id;
-    const courseCode = req.params.code.trim().toUpperCase();
+    const rollNo = req.user.studentId;
+    const courseCode = normalizeCourseCode(req.params.code);
 
-    // 1. Remove from studentCustomCourses if it was custom
-    db.deleteStudentCustomCourse(studentId, courseCode);
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const now = new Date().toISOString();
 
-    // 2. Add to studentExcludedCourses so it disappears from this student's view
-    db.excludeCourseForStudent(studentId, courseCode);
+    const nextCustom = (record.customCourses || []).filter(
+      c => normalizeCourseCode(c.code) !== courseCode
+    );
+    const nextExcluded = Array.from(
+      new Set([...(record.excludedCourses || []).map(normalizeCourseCode), courseCode])
+    );
+    const nextGrades = { ...record.grades };
+    delete nextGrades[courseCode];
+    delete nextGrades[req.params.code];
 
-    // 3. Clear grades for this course
-    db.saveStudentGrades(studentId, { [courseCode]: { grade: 'N/A', gradePoint: 0 } });
+    const draftRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      grades: nextGrades,
+      customCourses: nextCustom,
+      excludedCourses: nextExcluded,
+      updatedAt: now,
+    };
 
-    const allCourses = await getFullCoursesForStudent(studentId);
-    const savedGrades = db.getStudentGrades(studentId) || {};
+    const allCourses = await getFullCoursesForRecord(draftRecord);
     const currentSemester = req.user.currentSemester || 5;
-    const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    const metrics = calculateMetrics(allCourses, draftRecord.grades, currentSemester);
+    draftRecord.cgpa = metrics.cgpa;
+
+    const saveResult = await saveStudentCGPA(draftRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to update curriculum in cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
       message: `Course ${courseCode} removed from your curriculum`,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, draftRecord),
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
     });
@@ -460,30 +588,37 @@ router.post('/course/restore', verifyAuthToken, async (req: AuthenticatedRequest
 
   try {
     const studentId = req.user.id;
-    db.resetExcludedCoursesForStudent(studentId);
+    const rollNo = req.user.studentId;
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const now = new Date().toISOString();
 
-    const allCourses = await getFullCoursesForStudent(studentId);
-    const savedGrades = db.getStudentGrades(studentId) || {};
+    const draftRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      excludedCourses: [],
+      updatedAt: now,
+    };
+
+    const allCourses = await getFullCoursesForRecord(draftRecord);
     const currentSemester = req.user.currentSemester || 5;
-    const metrics = calculateMetrics(allCourses, savedGrades, currentSemester);
+    const metrics = calculateMetrics(allCourses, draftRecord.grades, currentSemester);
+    draftRecord.cgpa = metrics.cgpa;
+
+    const saveResult = await saveStudentCGPA(draftRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to restore curriculum in cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
       message: 'Standard curriculum restored for your batch',
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, draftRecord),
     });
   } catch (err: any) {
     console.error('[Restore Courses Error]:', err);
@@ -497,55 +632,67 @@ router.post('/paste-results', verifyAuthToken, async (req: AuthenticatedRequest,
 
   try {
     const studentId = req.user.id;
+    const rollNo = req.user.studentId;
     const { results } = req.body; // Map of courseCode -> grade
 
-    if (!results || typeof results !== 'object') {
+    if (!results || typeof results !== 'object' || Array.isArray(results)) {
       return res.status(400).json({ success: false, error: 'Results payload is required' });
     }
 
-    const allCourses = await getFullCoursesForStudent(studentId);
-    const formatted: Record<string, { grade: string; gradePoint: number; semester?: number }> = {};
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const allCourses = await getFullCoursesForRecord(record);
+    const nextGrades: Record<string, StoredGradeEntry> = { ...record.grades };
+    const now = new Date().toISOString();
+    let recordedCount = 0;
 
     for (const [courseCode, gradeRaw] of Object.entries(results as Record<string, string>)) {
-      if (courseCode.toUpperCase() === 'ACM' || courseCode.toUpperCase().startsWith('ACM-') || courseCode.toUpperCase().includes('ACM')) {
+      const normalizedCode = normalizeCourseCode(courseCode);
+      if (
+        !normalizedCode ||
+        normalizedCode === 'ACM' ||
+        normalizedCode.startsWith('ACM-') ||
+        normalizedCode.includes('ACM')
+      ) {
         continue;
       }
       const grade = String(gradeRaw).trim().toUpperCase();
-      if (grade && grade !== 'N/A') {
+      if (grade && grade !== 'N/A' && VALID_GRADES.has(grade)) {
         const gp = lookupGradePoint(grade);
-        const course = allCourses.find(c => c.code.toUpperCase() === courseCode.toUpperCase());
-        formatted[courseCode.toUpperCase()] = {
+        const course = allCourses.find(c => normalizeCourseCode(c.code) === normalizedCode);
+        nextGrades[normalizedCode] = {
           grade,
           gradePoint: gp,
           semester: course?.semester,
+          updatedAt: now,
         };
+        recordedCount += 1;
       }
     }
 
-    if (Object.keys(formatted).length > 0) {
-      db.saveStudentGrades(studentId, formatted, req.user.studentId);
-    }
-
-    const currentGrades = db.getStudentGrades(studentId, req.user.studentId) || {};
     const currentSemester = req.user.currentSemester || 5;
-    const metrics = calculateMetrics(allCourses, currentGrades, currentSemester);
-    db.setStudentCGPA(studentId, metrics.cgpa, req.user.studentId);
+    const metrics = calculateMetrics(allCourses, nextGrades, currentSemester);
+
+    const updatedRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      grades: nextGrades,
+      cgpa: metrics.cgpa,
+      updatedAt: now,
+    };
+
+    const saveResult = await saveStudentCGPA(updatedRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to save pasted results to cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
-      message: `Successfully recorded ${Object.keys(formatted).length} course grades!`,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      message: `Successfully recorded ${recordedCount} course grades!`,
+      cgpaSummary: buildSummaryPayload(metrics, req, updatedRecord),
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
     });
@@ -562,29 +709,36 @@ router.post('/reset', verifyAuthToken, async (req: AuthenticatedRequest, res: Re
   try {
     const studentId = req.user.id;
     const rollNo = req.user.studentId;
-    db.resetStudentGrades(studentId, rollNo);
+    const record = await loadStudentCGPA(studentId, rollNo);
+    const now = new Date().toISOString();
 
-    const allCourses = await getFullCoursesForStudent(studentId);
+    const updatedRecord: StoredStudentCGPA = {
+      ...record,
+      studentId,
+      rollNo,
+      grades: {},
+      cgpa: 0,
+      updatedAt: now,
+    };
+
+    const allCourses = await getFullCoursesForRecord(updatedRecord);
     const currentSemester = req.user.currentSemester || 5;
     const metrics = calculateMetrics(allCourses, {}, currentSemester);
+
+    const saveResult = await saveStudentCGPA(updatedRecord);
+    if ((process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !saveResult.persistedToSupabase) {
+      return res.status(503).json({
+        success: false,
+        error: 'Unable to reset grades in cloud database right now. Please try again.',
+      });
+    }
 
     return res.json({
       success: true,
       message: 'All course grades reset to 0.00',
       courses: metrics.enrichedCourses,
       semesterBreakdown: metrics.semesterBreakdown,
-      cgpaSummary: {
-        cgpa: metrics.cgpa,
-        totalCompletedCredits: metrics.totalCompletedCredits,
-        totalGradedCredits: metrics.totalGradedCredits,
-        totalDegreeCredits: metrics.totalDegreeCredits,
-        totalCourses: metrics.totalCourses,
-        gradedCourseCount: metrics.gradedCourseCount,
-        pendingCourseCount: metrics.pendingCourseCount,
-        completedSemestersCount: metrics.completedSemestersCount,
-        currentSemester,
-        academicStanding: metrics.academicStanding,
-      },
+      cgpaSummary: buildSummaryPayload(metrics, req, updatedRecord),
     });
   } catch (err: any) {
     console.error('[CGPA Reset Error]:', err);

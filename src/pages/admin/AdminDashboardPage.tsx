@@ -20,6 +20,7 @@ import {
   BarChart3,
   TrendingUp,
   BrainCircuit,
+  Power,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -323,6 +324,17 @@ export const AdminDashboardPage: React.FC = () => {
               </span>
               <span className="text-[10px] text-purple-700 font-bold bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
                 AI RAG
+              </span>
+            </Link>
+            <Link
+              to="/admin/features"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-rose-50/70 border border-rose-100 hover:border-rose-300 transition-all font-medium text-rose-900 hover:text-rose-700"
+            >
+              <span className="flex items-center gap-2.5">
+                <Power className="w-4 h-4 text-rose-600" /> Feature On/Off Controls
+              </span>
+              <span className="text-[10px] text-rose-700 font-bold bg-rose-200/70 px-1.5 py-0.5 rounded">
+                TOGGLES
               </span>
             </Link>
             <Link

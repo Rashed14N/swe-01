@@ -6,11 +6,12 @@ import {
   UserCheck, Shield, ChevronLeft, ChevronRight, Sparkles,
   Layers, Settings, X, ChevronDown, ShieldCheck, FileCheck,
   History, GraduationCap, SlidersHorizontal, RotateCcw, Award,
-  Bug, Activity, BrainCircuit
+  Bug, Activity, BrainCircuit, Power
 } from 'lucide-react';
 import { SweLogo } from '../common/SweLogo';
 import { ReportBugModal } from '../common/ReportBugModal';
 import { useAuth } from '../../context/AuthContext';
+import { useFeatureFlags, FeatureKey } from '../../context/FeatureFlagContext';
 import { getEffectiveSemester } from '../../utils/semester';
 
 interface SidebarProps {
@@ -27,9 +28,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { user } = useAuth();
+  const { isFeatureEnabled } = useFeatureFlags();
   const [isReportBugModalOpen, setIsReportBugModalOpen] = useState(false);
 
   const isRole = (role: string) => user?.role === role;
+  const isAdmin = isRole('ADMIN');
+  const canShowFeature = (key: FeatureKey) => isFeatureEnabled(key) || isAdmin;
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2.5 rounded-xl text-xs font-sans tracking-tight transition-all duration-150 ease-out active:scale-[0.98] ${
@@ -37,6 +41,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ? 'bg-[#EFF6FF] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-semibold shadow-2xs [&>svg]:stroke-[2.6px]'
         : 'text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium [&>svg]:stroke-[2.4px]'
     }`;
+
+  const featureNavLinkClass = (key: FeatureKey) => (state: { isActive: boolean }) =>
+    `${navLinkClass(state)}${!isFeatureEnabled(key) ? ' opacity-60' : ''}`;
+
+  const renderOffBadge = (key: FeatureKey) =>
+    !isCollapsed && isAdmin && !isFeatureEnabled(key) ? (
+      <span className="ml-auto px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">
+        OFF
+      </span>
+    ) : null;
+
+  const showMyBatchSection = (
+    ['routine', 'courses', 'retake_courses', 'exams', 'announcements'] as FeatureKey[]
+  ).some(canShowFeature);
+  const showResourcesSection = (['question_bank', 'faq'] as FeatureKey[]).some(canShowFeature);
+  const showDepartmentSection = (['notices', 'faculty'] as FeatureKey[]).some(canShowFeature);
 
   return (
     <>
@@ -160,6 +180,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Announcements</span>}
                 </NavLink>
+                <NavLink to="/admin/features" className={navLinkClass} onClick={onCloseMobile}>
+                  <Power strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
+                  {!isCollapsed && <span>Feature Controls</span>}
+                </NavLink>
                 <NavLink to="/admin/analytics" className={navLinkClass} onClick={onCloseMobile}>
                   <Activity strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-rose-600 dark:text-rose-400" />
                   {!isCollapsed && <span>Feature Analytics</span>}
@@ -185,22 +209,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <Shield strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
                   {!isCollapsed && <span>CR Control Desk</span>}
                 </NavLink>
-                <NavLink to="/cr/announcements" className={navLinkClass} onClick={onCloseMobile}>
-                  <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
-                  {!isCollapsed && <span>Batch Notices</span>}
-                </NavLink>
-                <NavLink to="/cr/exams" className={navLinkClass} onClick={onCloseMobile}>
-                  <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
-                  {!isCollapsed && <span>Schedule Exams</span>}
-                </NavLink>
-                <NavLink to="/cr/routine-requests" className={navLinkClass} onClick={onCloseMobile}>
-                  <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
-                  {!isCollapsed && <span>Routine Requests</span>}
-                </NavLink>
-                <NavLink to="/cr/retakes" className={navLinkClass} onClick={onCloseMobile}>
-                  <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
-                  {!isCollapsed && <span>Retake Students</span>}
-                </NavLink>
+                {canShowFeature('announcements') && (
+                  <NavLink to="/cr/announcements" className={featureNavLinkClass('announcements')} onClick={onCloseMobile}>
+                    <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
+                    {!isCollapsed && <span className="truncate">Batch Notices</span>}
+                    {renderOffBadge('announcements')}
+                  </NavLink>
+                )}
+                {canShowFeature('exams') && (
+                  <NavLink to="/cr/exams" className={featureNavLinkClass('exams')} onClick={onCloseMobile}>
+                    <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
+                    {!isCollapsed && <span className="truncate">Schedule Exams</span>}
+                    {renderOffBadge('exams')}
+                  </NavLink>
+                )}
+                {canShowFeature('cr_routine_requests') && (
+                  <NavLink to="/cr/routine-requests" className={featureNavLinkClass('cr_routine_requests')} onClick={onCloseMobile}>
+                    <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
+                    {!isCollapsed && <span className="truncate">Routine Requests</span>}
+                    {renderOffBadge('cr_routine_requests')}
+                  </NavLink>
+                )}
+                {canShowFeature('retake_courses') && (
+                  <NavLink to="/cr/retakes" className={featureNavLinkClass('retake_courses')} onClick={onCloseMobile}>
+                    <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600" />
+                    {!isCollapsed && <span className="truncate">Retake Students</span>}
+                    {renderOffBadge('retake_courses')}
+                  </NavLink>
+                )}
               </div>
             </div>
           )}
@@ -208,73 +244,106 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
           {/* MY BATCH */}
-          <div>
-            {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
-                MY BATCH
-              </span>
-            )}
-            <div className="space-y-1">
-              <NavLink to="/routine" className={navLinkClass} onClick={onCloseMobile}>
-                <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Routine</span>}
-              </NavLink>
-              <NavLink to="/courses" className={navLinkClass} onClick={onCloseMobile}>
-                <BookOpen strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Courses</span>}
-              </NavLink>
-              <NavLink to="/retake-courses" className={navLinkClass} onClick={onCloseMobile}>
-                <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600 dark:text-amber-400" />
-                {!isCollapsed && <span>Retake / Improvement</span>}
-              </NavLink>
-              <NavLink to="/exams" className={navLinkClass} onClick={onCloseMobile}>
-                <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Exams Schedules</span>}
-              </NavLink>
-              <NavLink to="/announcements" className={navLinkClass} onClick={onCloseMobile}>
-                <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Announcements</span>}
-              </NavLink>
+          {showMyBatchSection && (
+            <div>
+              {!isCollapsed && (
+                <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
+                  MY BATCH
+                </span>
+              )}
+              <div className="space-y-1">
+                {canShowFeature('routine') && (
+                  <NavLink to="/routine" className={featureNavLinkClass('routine')} onClick={onCloseMobile}>
+                    <Calendar strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Routine</span>}
+                    {renderOffBadge('routine')}
+                  </NavLink>
+                )}
+                {canShowFeature('courses') && (
+                  <NavLink to="/courses" className={featureNavLinkClass('courses')} onClick={onCloseMobile}>
+                    <BookOpen strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Courses</span>}
+                    {renderOffBadge('courses')}
+                  </NavLink>
+                )}
+                {canShowFeature('retake_courses') && (
+                  <NavLink to="/retake-courses" className={featureNavLinkClass('retake_courses')} onClick={onCloseMobile}>
+                    <RotateCcw strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-amber-600 dark:text-amber-400" />
+                    {!isCollapsed && <span className="truncate">Retake / Improvement</span>}
+                    {renderOffBadge('retake_courses')}
+                  </NavLink>
+                )}
+                {canShowFeature('exams') && (
+                  <NavLink to="/exams" className={featureNavLinkClass('exams')} onClick={onCloseMobile}>
+                    <Clock strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Exams Schedules</span>}
+                    {renderOffBadge('exams')}
+                  </NavLink>
+                )}
+                {canShowFeature('announcements') && (
+                  <NavLink to="/announcements" className={featureNavLinkClass('announcements')} onClick={onCloseMobile}>
+                    <Megaphone strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Announcements</span>}
+                    {renderOffBadge('announcements')}
+                  </NavLink>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* RESOURCES */}
-          <div>
-            {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
-                RESOURCES
-              </span>
-            )}
-            <div className="space-y-1">
-              <NavLink to="/resources/questions" className={navLinkClass} onClick={onCloseMobile}>
-                <GraduationCap strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Question Bank</span>}
-              </NavLink>
-              <NavLink to="/faq" className={navLinkClass} onClick={onCloseMobile}>
-                <HelpCircle strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>FAQ</span>}
-              </NavLink>
+          {showResourcesSection && (
+            <div>
+              {!isCollapsed && (
+                <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
+                  RESOURCES
+                </span>
+              )}
+              <div className="space-y-1">
+                {canShowFeature('question_bank') && (
+                  <NavLink to="/resources/questions" className={featureNavLinkClass('question_bank')} onClick={onCloseMobile}>
+                    <GraduationCap strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Question Bank</span>}
+                    {renderOffBadge('question_bank')}
+                  </NavLink>
+                )}
+                {canShowFeature('faq') && (
+                  <NavLink to="/faq" className={featureNavLinkClass('faq')} onClick={onCloseMobile}>
+                    <HelpCircle strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">FAQ</span>}
+                    {renderOffBadge('faq')}
+                  </NavLink>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* DEPARTMENT */}
-          <div>
-            {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
-                DEPARTMENT
-              </span>
-            )}
-            <div className="space-y-1">
-              <NavLink to="/notices" className={navLinkClass} onClick={onCloseMobile}>
-                <Bell strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Department Notice</span>}
-              </NavLink>
-              <NavLink to="/faculty" className={navLinkClass} onClick={onCloseMobile}>
-                <Users strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
-                {!isCollapsed && <span>Faculty</span>}
-              </NavLink>
+          {showDepartmentSection && (
+            <div>
+              {!isCollapsed && (
+                <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
+                  DEPARTMENT
+                </span>
+              )}
+              <div className="space-y-1">
+                {canShowFeature('notices') && (
+                  <NavLink to="/notices" className={featureNavLinkClass('notices')} onClick={onCloseMobile}>
+                    <Bell strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Department Notice</span>}
+                    {renderOffBadge('notices')}
+                  </NavLink>
+                )}
+                {canShowFeature('faculty') && (
+                  <NavLink to="/faculty" className={featureNavLinkClass('faculty')} onClick={onCloseMobile}>
+                    <Users strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
+                    {!isCollapsed && <span className="truncate">Faculty</span>}
+                    {renderOffBadge('faculty')}
+                  </NavLink>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ACCOUNT */}
           <div>
@@ -288,37 +357,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Settings strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0" />
                 {!isCollapsed && <span>Profile & Settings</span>}
               </NavLink>
-              <NavLink to="/cgpa" className={navLinkClass} onClick={onCloseMobile}>
-                <Award strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#2563EB] dark:text-blue-400" />
-                {!isCollapsed && <span>My CGPA</span>}
-              </NavLink>
+              {canShowFeature('cgpa') && (
+                <NavLink to="/cgpa" className={featureNavLinkClass('cgpa')} onClick={onCloseMobile}>
+                  <Award strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#2563EB] dark:text-blue-400" />
+                  {!isCollapsed && <span className="truncate">My CGPA</span>}
+                  {renderOffBadge('cgpa')}
+                </NavLink>
+              )}
             </div>
           </div>
 
           {/* REPORT BAR */}
-          <div>
-            {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
-                REPORT BAR
-              </span>
-            )}
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsReportBugModalOpen(true);
-                  onCloseMobile();
-                }}
-                className={`w-full flex items-center gap-3 ${
-                  isCollapsed ? 'justify-center px-0' : 'px-3'
-                } py-2.5 rounded-xl text-xs font-sans tracking-tight transition-all duration-150 ease-out active:scale-[0.98] text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium group cursor-pointer text-left [&>svg]:stroke-[2.4px]`}
-                title={isCollapsed ? 'Report Bug' : undefined}
-              >
-                <Bug strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#64748B] dark:text-slate-400 group-hover:text-[#0F172A] dark:group-hover:text-slate-100 transition-colors" />
-                {!isCollapsed && <span>Report Bug</span>}
-              </button>
+          {canShowFeature('bug_report') && (
+            <div>
+              {!isCollapsed && (
+                <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] dark:text-slate-500 block mb-1">
+                  REPORT BAR
+                </span>
+              )}
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReportBugModalOpen(true);
+                    onCloseMobile();
+                  }}
+                  className={`w-full flex items-center gap-3 ${
+                    isCollapsed ? 'justify-center px-0' : 'px-3'
+                  } py-2.5 rounded-xl text-xs font-sans tracking-tight transition-all duration-150 ease-out active:scale-[0.98] text-[#64748B] dark:text-slate-400 hover:bg-[#F8FAFC] dark:hover:bg-slate-800/60 hover:text-[#0F172A] dark:hover:text-slate-100 font-medium group cursor-pointer text-left [&>svg]:stroke-[2.4px]${
+                    !isFeatureEnabled('bug_report') ? ' opacity-60' : ''
+                  }`}
+                  title={isCollapsed ? 'Report Bug' : undefined}
+                >
+                  <Bug strokeWidth={2.5} className="w-[18px] h-[18px] shrink-0 text-[#64748B] dark:text-slate-400 group-hover:text-[#0F172A] dark:group-hover:text-slate-100 transition-colors" />
+                  {!isCollapsed && <span className="truncate">Report Bug</span>}
+                  {renderOffBadge('bug_report')}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </aside>
 

@@ -3,6 +3,8 @@ import { getServerSupabase } from '../supabaseSync';
 import { db } from '../db';
 import { sortFacultyByHierarchy } from '../../types';
 import { invalidateCache, uploadBase64ImageToStorage } from '../supabaseData';
+import { CGPA_STORE_AUDIT_ACTION, fetchAllStudentCGPAsFromSupabase } from '../cgpaStore';
+import { USAGE_STORE_AUDIT_ACTION } from '../analyticsStore';
 import type {
   User,
   Batch,
@@ -93,7 +95,13 @@ export async function getAdminStats() {
     supabase.from('resources').select('*', { count: 'exact', head: true }),
     supabase.from('resources').select('*', { count: 'exact', head: true }).eq('status', 'PENDING'),
     supabase.from('notifications').select('*', { count: 'exact', head: true }),
-    supabase.from('audit_logs').select('id, actor_id, actor_name, action, target, details, timestamp').order('timestamp', { ascending: false }).limit(15),
+    supabase
+      .from('audit_logs')
+      .select('id, actor_id, actor_name, action, target, details, timestamp')
+      .neq('action', CGPA_STORE_AUDIT_ACTION)
+      .neq('action', USAGE_STORE_AUDIT_ACTION)
+      .order('timestamp', { ascending: false })
+      .limit(15),
   ]);
 
   const totalUsers = usersTotalRes.count ?? 0;
@@ -212,6 +220,7 @@ export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Prom
 
       const { data, count, error } = await query;
       if (!error && data) {
+        const supabaseCgpaMap = await fetchAllStudentCGPAsFromSupabase().catch(() => ({} as Record<string, number>));
         const users = data.map((row: any): User => ({
           id: row.id,
           studentId: row.student_id,
@@ -225,7 +234,7 @@ export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Prom
           profileImage: row.profile_image || undefined,
           status: row.status as 'ACTIVE' | 'DISABLED',
           points: Number(row.points || 0),
-          cgpa: db.getStudentCGPA(row.id, row.student_id),
+          cgpa: supabaseCgpaMap[row.id] ?? supabaseCgpaMap[row.student_id] ?? db.getStudentCGPA(row.id, row.student_id),
           createdAt: row.created_at || new Date().toISOString(),
           updatedAt: row.updated_at || new Date().toISOString(),
         }));
@@ -2102,6 +2111,8 @@ export async function getAllAuditLogs(limit: number = 100): Promise<AuditLog[]> 
   const { data, error } = await supabase
     .from('audit_logs')
     .select('*')
+    .neq('action', CGPA_STORE_AUDIT_ACTION)
+    .neq('action', USAGE_STORE_AUDIT_ACTION)
     .order('timestamp', { ascending: false })
     .limit(limit);
 

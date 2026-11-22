@@ -5,6 +5,7 @@
       "studentId": "000000000",
       "name": "abc",
       "email": "abc@test.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
@@ -20,6 +21,7 @@
       "studentId": "111111008",
       "name": "8 Test",
       "email": "8test@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-8",
       "batchName": "SWE 8th Batch",
@@ -51,6 +53,7 @@
       "studentId": "123",
       "name": "fgdbsjh",
       "email": "skdjfhjhf@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
@@ -82,6 +85,7 @@
       "studentId": "241134025",
       "name": "Athar muhtasim Mahdi",
       "email": "atharmuhtasimmahdi@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-6",
       "batchName": "SWE 9th Batch",
@@ -97,6 +101,7 @@
       "studentId": "252134001",
       "name": "Test Account",
       "email": "test@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
@@ -260,7 +265,7 @@
       "role": "ADMIN",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
-      "currentSemester": 0,
+      "currentSemester": 5,
       "profileImage": "/avatars/peanut.svg",
       "status": "ACTIVE",
       "points": 110,
@@ -368,6 +373,7 @@
       "studentId": "252134039",
       "name": "Tabassum Saima",
       "email": "tabassum.sayma2004@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
@@ -447,6 +453,7 @@
       "studentId": "253134003",
       "name": "Tasfia Chowdhory",
       "email": "tasuuu25@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-10",
       "batchName": "SWE 10th Batch",
@@ -510,6 +517,7 @@
       "studentId": "253134028",
       "name": "Taslima Jannat Maida",
       "email": "maidaahmed206@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-10",
       "batchName": "SWE 10th Batch",
@@ -525,6 +533,7 @@
       "studentId": "253134034",
       "name": "Nowshin Jannat Chowdhury",
       "email": "jannatchowdhury670@gmail.com",
+      "phone": null,
       "role": "STUDENT",
       "batchId": "batch-10",
       "batchName": "SWE 10th Batch",
@@ -560,7 +569,7 @@
       "role": "ADMIN",
       "batchId": "batch-9",
       "batchName": "SWE Administration",
-      "currentSemester": 0,
+      "currentSemester": 8,
       "profileImage": "/avatars/pangolin-cream-2.svg",
       "status": "ACTIVE",
       "points": 1000,
@@ -571,8 +580,13 @@
       "id": "user-test-1787906269004",
       "studentId": "STD-TEST-1787906269004",
       "name": "Test Student",
+      "email": null,
+      "phone": null,
       "role": "STUDENT",
+      "batchId": null,
+      "batchName": null,
       "currentSemester": 1,
+      "profileImage": null,
       "status": "ACTIVE",
       "points": 0,
       "createdAt": "2026-08-28T08:37:49.437338+00:00",
@@ -588,7 +602,7 @@
     "usr_cr_1": "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
     "usr_admin_1": "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
     "usr_1786954698184": "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
-    "usr_swe_admin_central": "$2b$10$8bOmaX15ZmcOHw1Y7vBoLOKLz/zgHdwtKfaTjbD7asm2zC4PKszhS"
+    "usr_swe_admin_central": "$2b$10$LPgrVjHDxxyjtyzqbpjdVOBx29kZ1Oh1Q894hJiRQC9y4wDWamP2i"
   },
   "batches": [
     {
@@ -3653,7 +3667,6 @@
       "category": "EXAM",
       "publishDate": "2026-08-28",
       "isImportant": true,
-      "attachmentUrl": null,
       "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
       "createdByName": "Rashedul Hasan Mojumdar",
       "createdAt": "2026-08-28T07:51:21.439+00:00"
@@ -3665,7 +3678,6 @@
       "category": "HOLIDAY",
       "publishDate": "2026-08-09",
       "isImportant": true,
-      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-09T11:00:00+00:00"
@@ -3677,7 +3689,6 @@
       "category": "REGISTRATION",
       "publishDate": "2026-08-08",
       "isImportant": true,
-      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-08T10:00:00+00:00"
@@ -3689,7 +3700,6 @@
       "category": "SEMINAR",
       "publishDate": "2026-08-05",
       "isImportant": false,
-      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-05T08:00:00+00:00"
@@ -9713,6 +9723,109 @@
         }
       ],
       "updatedAt": "2026-11-22T16:57:37.754Z"
+    },
+    "usr_demo_student_111111111": {
+      "userId": "usr_demo_student_111111111",
+      "studentId": "111111111",
+      "userName": "Demo Student (Testing)",
+      "email": "student@swe.demo",
+      "userRole": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "totalDurationSec": 170,
+      "totalSessions": 2,
+      "totalViews": 3,
+      "totalActions": 0,
+      "mobileEvents": 0,
+      "desktopEvents": 3,
+      "firstSeenAt": "2026-11-22T16:59:06.257Z",
+      "lastActiveAt": "2026-11-22T17:14:14.023Z",
+      "lastSessionId": "sess_1795367572554_j06kas",
+      "lastPath": "/dashboard",
+      "lastFeatureKey": "DASHBOARD",
+      "lastFeatureName": "Student Dashboard",
+      "lastDevice": "Desktop",
+      "lastBrowser": "Firefox",
+      "lastOs": "Windows",
+      "featureStats": {
+        "DASHBOARD": {
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "views": 3,
+          "actions": 0,
+          "durationSec": 170,
+          "lastUsedAt": "2026-11-22T17:14:14.023Z"
+        }
+      },
+      "dailyStats": {
+        "2026-11-22": {
+          "date": "2026-11-22",
+          "durationSec": 170,
+          "views": 3,
+          "actions": 0,
+          "sessions": 2
+        }
+      },
+      "recentEvents": [
+        {
+          "id": "evt-1795367575248-zqvdf",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 60,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:14:14.023Z"
+        },
+        {
+          "id": "evt-1795367421890-z5mzg",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 50,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:11:47.714Z"
+        },
+        {
+          "id": "evt-1795366746262-5o06v",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 60,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:01:58.905Z"
+        },
+        {
+          "id": "evt-1795366746257-yn1la",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 0,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T16:59:06.257Z"
+        }
+      ],
+      "updatedAt": "2026-11-22T17:14:14.023Z"
     }
   }
 }

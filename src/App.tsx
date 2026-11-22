@@ -62,7 +62,14 @@ const RootRedirect: React.FC = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
-    return null; // Protected/Public guards handle loading state seamlessly
+    return (
+      <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center p-4">
+        <div className="flex items-center gap-2.5 text-xs font-bold text-[#0A2147]">
+          <span className="w-4 h-4 rounded-full border-2 border-[#1769E8] border-t-transparent animate-spin" />
+          <span>Loading SWE Portal...</span>
+        </div>
+      </div>
+    );
   }
 
   if (isAuthenticated && user) {

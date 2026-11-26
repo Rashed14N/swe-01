@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { safeFetchJson } from '../lib/apiClient';
 
 export type FeatureKey =
   | 'routine'
@@ -46,11 +47,9 @@ export const FeatureFlagProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const refreshFeatures = useCallback(async () => {
     try {
-      const res = await fetch('/api/features', {
+      const json = await safeFetchJson('/api/features', {
         headers: { 'Cache-Control': 'no-cache' },
       });
-      if (!res.ok) return;
-      const json = await res.json();
       if (json && Array.isArray(json.data)) {
         setFeatures(json.data);
       }

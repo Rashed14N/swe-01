@@ -15,6 +15,7 @@ import {
   formatExactDateTime,
   getActivityStatusMeta,
 } from '../../utils/usageFormat';
+import { safeFetchJson, safeParseJsonOrFallback } from '../../lib/apiClient';
 
 export const AdminStudentsPage: React.FC = () => {
   const { token } = useAuth();
@@ -29,6 +30,7 @@ export const AdminStudentsPage: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [batchFilter, setBatchFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [lastSeenFilter, setLastSeenFilter] = useState('');
 
   // Pagination State (20 students per page from Supabase PostgreSQL)
   const [page, setPage] = useState(1);
@@ -49,7 +51,7 @@ export const AdminStudentsPage: React.FC = () => {
   // Reset to page 1 on search or filter change
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, batchFilter, roleFilter]);
+  }, [debouncedSearch, batchFilter, roleFilter, lastSeenFilter]);
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -97,10 +99,9 @@ export const AdminStudentsPage: React.FC = () => {
   // Fetch Batches once
   useEffect(() => {
     if (!token) return;
-    fetch('/api/admin/batches', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    safeFetchJson('/api/admin/batches', { headers: { Authorization: `Bearer ${token}` } })
       .then(data => {
-        const batchList = data.batches || data.data || (Array.isArray(data) ? data : []);
+        const batchList = data?.batches || data?.data || (Array.isArray(data) ? data : []);
         setBatches(batchList);
         if (Array.isArray(batchList) && batchList.length > 0) {
           setAddForm(prev => ({
@@ -111,14 +112,13 @@ export const AdminStudentsPage: React.FC = () => {
           setCsvDefaultBatchId(batchList[0].id);
         }
       })
-      .catch(console.error);
+      .catch(err => console.warn('[AdminStudentsPage] Batches fetch notice:', err?.message || err));
   }, [token]);
 
   // Fetch per-user live usage summaries once for table indicators
   useEffect(() => {
     if (!token) return;
-    fetch('/api/analytics/overview', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => (r.ok ? r.json() : null))
+    safeFetchJson('/api/analytics/overview', { headers: { Authorization: `Bearer ${token}` } })
       .then(json => {
         if (!json?.userBreakdown) return;
         const map: Record<string, UserUsageDossier> = {};
@@ -136,19 +136,16 @@ export const AdminStudentsPage: React.FC = () => {
     if (cached) setActiveDossier(cached);
     setIsDossierLoading(true);
     try {
-      const res = await fetch(`/api/analytics/user/${encodeURIComponent(st.id)}`, {
+      const json = await safeFetchJson(`/api/analytics/user/${encodeURIComponent(st.id)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json?.data) {
-          setActiveDossier(json.data);
-          setUsageMap(prev => ({
-            ...prev,
-            [st.id]: json.data,
-            ...(st.studentId ? { [st.studentId]: json.data } : {}),
-          }));
-        }
+      if (json?.data) {
+        setActiveDossier(json.data);
+        setUsageMap(prev => ({
+          ...prev,
+          [st.id]: json.data,
+          ...(st.studentId ? { [st.studentId]: json.data } : {}),
+        }));
       } else if (!cached) {
         addToast('error', 'Failed to load user activity details');
       }
@@ -172,21 +169,19 @@ export const AdminStudentsPage: React.FC = () => {
       if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
       if (batchFilter) params.append('batchId', batchFilter);
       if (roleFilter) params.append('role', roleFilter);
+      if (lastSeenFilter) params.append('lastSeen', lastSeenFilter);
 
-      const res = await fetch(`/api/admin/students?${params.toString()}`, {
+      const json = await safeFetchJson(`/api/admin/students?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (currentReq !== reqIdRef.current) return;
-        const result = json.data || json;
-        const studentList = result.users || result.students || (Array.isArray(result) ? result : []);
-        setStudents(studentList);
-        setTotalStudents(result.total ?? studentList.length);
-        setTotalPages(result.totalPages ?? Math.max(1, Math.ceil((result.total ?? studentList.length) / 20)));
-      }
-    } catch (e) {
-      console.error(e);
+      if (currentReq !== reqIdRef.current) return;
+      const result = json?.data || json || {};
+      const studentList = result.users || result.students || (Array.isArray(result) ? result : []);
+      setStudents(studentList);
+      setTotalStudents(result.total ?? studentList.length);
+      setTotalPages(result.totalPages ?? Math.max(1, Math.ceil((result.total ?? studentList.length) / 20)));
+    } catch (e: any) {
+      console.warn('[AdminStudentsPage] Fetch students notice:', e?.message || e);
     } finally {
       if (currentReq === reqIdRef.current) {
         setIsLoading(false);
@@ -198,7 +193,7 @@ export const AdminStudentsPage: React.FC = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, [token, debouncedSearch, batchFilter, roleFilter, page]);
+  }, [token, debouncedSearch, batchFilter, roleFilter, lastSeenFilter, page]);
 
   // Handlers
   const handleAddStudent = async (e: React.FormEvent) => {
@@ -379,45 +374,89 @@ export const AdminStudentsPage: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="grid md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs">
-        <div className="md:col-span-2 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by student ID, name, or email..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
-          />
+      <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-2xs space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+          <div className="sm:col-span-2 lg:col-span-4 relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by student ID, name, or email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <select
+              value={batchFilter}
+              onChange={e => setBatchFilter(e.target.value)}
+              aria-label="Filter by Batch"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
+            >
+              <option value="">All Batches</option>
+              {batches.map(b => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="lg:col-span-2">
+            <select
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              aria-label="Filter by Role"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
+            >
+              <option value="">All Roles</option>
+              <option value="STUDENT">Regular Student</option>
+              <option value="CR">Class Representative (CR)</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          <div className="lg:col-span-3 relative">
+            <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select
+              value={lastSeenFilter}
+              onChange={e => setLastSeenFilter(e.target.value)}
+              aria-label="Filter by Last Seen"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg pl-8 pr-3 py-2 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
+            >
+              <option value="">Last Seen: All</option>
+              <option value="RECENT_FIRST">Most Recently Seen</option>
+              <option value="ONLINE">Online Now (≤ 5m)</option>
+              <option value="TODAY">Active Today</option>
+              <option value="LAST_24H">Last 24 Hours</option>
+              <option value="THIS_WEEK">Last 7 Days</option>
+              <option value="LAST_30D">Last 30 Days</option>
+              <option value="INACTIVE">Inactive (7+ Days)</option>
+              <option value="NEVER">Never Used</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <select
-            value={batchFilter}
-            onChange={e => setBatchFilter(e.target.value)}
-            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-slate-900"
-          >
-            <option value="">All Batches</option>
-            {batches.map(b => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <select
-            value={roleFilter}
-            onChange={e => setRoleFilter(e.target.value)}
-            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs text-slate-900"
-          >
-            <option value="">All Roles</option>
-            <option value="STUDENT">Regular Student</option>
-            <option value="CR">Class Representative (CR)</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </div>
+        {(searchQuery || batchFilter || roleFilter || lastSeenFilter) && (
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+            <span className="tabular-nums">
+              Showing <strong className="text-slate-800">{totalStudents}</strong> matching student{totalStudents === 1 ? '' : 's'}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setBatchFilter('');
+                setRoleFilter('');
+                setLastSeenFilter('');
+              }}
+              className="text-blue-600 hover:text-blue-700 font-semibold hover:underline cursor-pointer"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Roster Container (Mobile Cards + Desktop Table) */}

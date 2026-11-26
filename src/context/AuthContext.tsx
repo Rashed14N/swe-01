@@ -74,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/batches');
       if (res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) return;
         const data = await res.json();
         const batches: Batch[] = Array.isArray(data.batches) ? data.batches : [];
         const match = batches.find(b => 

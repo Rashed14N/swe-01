@@ -97,6 +97,22 @@
       "updatedAt": "2026-10-31T10:07:22.373+00:00"
     },
     {
+      "id": "usr_d071c635348343afbb02ff5491c67713",
+      "studentId": "251134010",
+      "name": "Ahsan Habib",
+      "email": "ahsanhabib1267@gmail.com",
+      "phone": "01631531859",
+      "role": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 5,
+      "profileImage": "/avatars/pangolin-cream-2.svg",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-11-22T17:52:32.661901+00:00",
+      "updatedAt": "2026-11-22T17:52:33.541+00:00"
+    },
+    {
       "id": "usr_96a2eda9a669412dadb036a3ad25f86d",
       "studentId": "252134001",
       "name": "Test Account",
@@ -159,6 +175,22 @@
       "points": 0,
       "createdAt": "2026-11-22T16:14:24.557214+00:00",
       "updatedAt": "2026-11-22T16:14:24.55+00:00"
+    },
+    {
+      "id": "usr_08b800bff3564e33a2fb583043e89740",
+      "studentId": "252134007",
+      "name": "Debasish",
+      "email": "debax56@gmail.com",
+      "phone": "01830560358",
+      "role": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 5,
+      "profileImage": "/avatars/pangolin-cream-2.svg",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-11-22T17:23:38.33859+00:00",
+      "updatedAt": "2026-11-22T17:23:39.043+00:00"
     },
     {
       "id": "usr_f6ebe8e32ca64431902b1bd46316a562",
@@ -289,6 +321,22 @@
       "updatedAt": "2026-11-22T16:22:45.732+00:00"
     },
     {
+      "id": "usr_3a1960b552df45fb9d268e7627dff448",
+      "studentId": "252134026",
+      "name": "Daiyan",
+      "email": "khdaiyan25@gmail.com",
+      "phone": null,
+      "role": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 5,
+      "profileImage": "/avatars/pangolin-cream-2.svg",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-11-22T17:55:31.822577+00:00",
+      "updatedAt": "2026-11-22T17:55:32.119+00:00"
+    },
+    {
       "id": "usr_d8e15c511322439baae91a4e4de5e291",
       "studentId": "252134028",
       "name": "Kamrul Hasan Tamim",
@@ -367,6 +415,22 @@
       "points": 0,
       "createdAt": "2026-11-22T16:20:40.26945+00:00",
       "updatedAt": "2026-11-22T16:20:38.882+00:00"
+    },
+    {
+      "id": "usr_134d130245b34b979abd4e2f5d3a34d5",
+      "studentId": "252134038",
+      "name": "Jubayer Hasan",
+      "email": "fahimhasan2819@gmail.com",
+      "phone": null,
+      "role": "STUDENT",
+      "batchId": "batch-9",
+      "batchName": "SWE 9th Batch",
+      "currentSemester": 5,
+      "profileImage": "/avatars/pangolin-cream-2.svg",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-11-22T17:33:23.778055+00:00",
+      "updatedAt": "2026-11-22T17:33:24.334+00:00"
     },
     {
       "id": "usr_97710dac6a2a44a782b6da225df27017",
@@ -463,6 +527,22 @@
       "points": 0,
       "createdAt": "2026-11-22T15:58:27.847911+00:00",
       "updatedAt": "2026-11-22T15:58:26.777+00:00"
+    },
+    {
+      "id": "usr_f80223d783914bc2923f7ed78cb7b040",
+      "studentId": "253134004",
+      "name": "Sumaiya Nanzin",
+      "email": "sumnaznin@gmail.com",
+      "phone": null,
+      "role": "STUDENT",
+      "batchId": "batch-10",
+      "batchName": "SWE 10th Batch",
+      "currentSemester": 4,
+      "profileImage": "/avatars/pangolin-cream-2.svg",
+      "status": "ACTIVE",
+      "points": 0,
+      "createdAt": "2026-11-22T17:14:03.548349+00:00",
+      "updatedAt": "2026-11-22T17:14:04.056+00:00"
     },
     {
       "id": "usr_f717817f4e804b22b61b862212290a25",
@@ -602,7 +682,7 @@
     "usr_cr_1": "$2b$10$VbMAq5Zgzq0dGLhnncJ3nOzA5Jm43THukkQm64D/v8S8sZ9pJeTw.",
     "usr_admin_1": "$2b$10$nqtovSW0XYtYHJ8i8VweTemyuekOxj49PcUAukwpfEonghZOmECVy",
     "usr_1786954698184": "$2b$10$mhCGGcjHaqgFiZ3Nq/lxzOD5AVO1appchN9w6kO6/dcup6Two4DnG",
-    "usr_swe_admin_central": "$2b$10$LPgrVjHDxxyjtyzqbpjdVOBx29kZ1Oh1Q894hJiRQC9y4wDWamP2i"
+    "usr_swe_admin_central": "$2b$10$RljkgjbnQzjWEyGBP15u6OLvshDwuZABdeSnSfXCM7WGuoMeQFYGW"
   },
   "batches": [
     {
@@ -3667,6 +3747,7 @@
       "category": "EXAM",
       "publishDate": "2026-08-28",
       "isImportant": true,
+      "attachmentUrl": null,
       "createdBy": "usr_68bf253ad3a242e79a883bb46ce99787",
       "createdByName": "Rashedul Hasan Mojumdar",
       "createdAt": "2026-08-28T07:51:21.439+00:00"
@@ -3678,6 +3759,7 @@
       "category": "HOLIDAY",
       "publishDate": "2026-08-09",
       "isImportant": true,
+      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-09T11:00:00+00:00"
@@ -3689,6 +3771,7 @@
       "category": "REGISTRATION",
       "publishDate": "2026-08-08",
       "isImportant": true,
+      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-08T10:00:00+00:00"
@@ -3700,6 +3783,7 @@
       "category": "SEMINAR",
       "publishDate": "2026-08-05",
       "isImportant": false,
+      "attachmentUrl": null,
       "createdBy": "user-admin-1",
       "createdByName": "Dr. Shahriar Hossain (Admin)",
       "createdAt": "2026-08-05T08:00:00+00:00"
@@ -4262,7 +4346,7 @@
       "uploaderBatchName": "SWE Department Archive",
       "status": "APPROVED",
       "rejectionReason": null,
-      "downloadCount": 104,
+      "downloadCount": 105,
       "createdAt": "2026-10-05T21:18:28.007+00:00",
       "verifiedAt": "2026-10-06T17:18:28.007+00:00"
     },
@@ -4374,7 +4458,7 @@
       "uploaderBatchName": "SWE Department Archive",
       "status": "APPROVED",
       "rejectionReason": null,
-      "downloadCount": 114,
+      "downloadCount": 115,
       "createdAt": "2026-10-05T17:18:28.007+00:00",
       "verifiedAt": "2026-10-06T17:18:28.007+00:00"
     },
@@ -5093,20 +5177,6 @@
       "specialization": null,
       "assignedCourses": [],
       "createdAt": "2026-08-29T13:59:05.137869+00:00"
-    },
-    {
-      "id": "fac-air",
-      "name": "A.I. Rahman",
-      "shortName": "AIR",
-      "designation": "Lecturer",
-      "department": "Electrical & Electronic Engineering",
-      "email": "air@metrouni.edu.bd",
-      "phone": null,
-      "officeRoom": "Room 109",
-      "photoUrl": null,
-      "specialization": null,
-      "assignedCourses": [],
-      "createdAt": "2026-10-06T18:01:36.411797+00:00"
     },
     {
       "id": "fac-6",
@@ -9732,18 +9802,18 @@
       "userRole": "STUDENT",
       "batchId": "batch-9",
       "batchName": "SWE 9th Batch",
-      "totalDurationSec": 170,
-      "totalSessions": 2,
-      "totalViews": 3,
+      "totalDurationSec": 1268,
+      "totalSessions": 7,
+      "totalViews": 11,
       "totalActions": 0,
-      "mobileEvents": 0,
-      "desktopEvents": 3,
+      "mobileEvents": 2,
+      "desktopEvents": 9,
       "firstSeenAt": "2026-11-22T16:59:06.257Z",
-      "lastActiveAt": "2026-11-22T17:14:14.023Z",
+      "lastActiveAt": "2026-11-23T03:29:09.393Z",
       "lastSessionId": "sess_1795367572554_j06kas",
-      "lastPath": "/dashboard",
-      "lastFeatureKey": "DASHBOARD",
-      "lastFeatureName": "Student Dashboard",
+      "lastPath": "/profile",
+      "lastFeatureKey": "PROFILE",
+      "lastFeatureName": "Student Profile & Docs",
       "lastDevice": "Desktop",
       "lastBrowser": "Firefox",
       "lastOs": "Windows",
@@ -9752,22 +9822,299 @@
           "featureKey": "DASHBOARD",
           "featureName": "Student Dashboard",
           "category": "ACADEMIC",
-          "views": 3,
+          "views": 8,
           "actions": 0,
-          "durationSec": 170,
-          "lastUsedAt": "2026-11-22T17:14:14.023Z"
+          "durationSec": 520,
+          "lastUsedAt": "2026-11-23T03:28:13.581Z"
+        },
+        "FACULTY": {
+          "featureKey": "FACULTY",
+          "featureName": "Faculty Directory",
+          "category": "ACADEMIC",
+          "views": 1,
+          "actions": 0,
+          "durationSec": 536,
+          "lastUsedAt": "2026-11-23T03:19:17.220Z"
+        },
+        "PROFILE": {
+          "featureKey": "PROFILE",
+          "featureName": "Student Profile & Docs",
+          "category": "PERSONAL",
+          "views": 2,
+          "actions": 0,
+          "durationSec": 212,
+          "lastUsedAt": "2026-11-23T03:29:09.393Z"
         }
       },
       "dailyStats": {
         "2026-11-22": {
           "date": "2026-11-22",
-          "durationSec": 170,
-          "views": 3,
+          "durationSec": 265,
+          "views": 4,
           "actions": 0,
-          "sessions": 2
+          "sessions": 4
+        },
+        "2026-11-23": {
+          "date": "2026-11-23",
+          "durationSec": 1003,
+          "views": 7,
+          "actions": 0,
+          "sessions": 3
         }
       },
       "recentEvents": [
+        {
+          "id": "evt-1795404493596-vhab0",
+          "featureKey": "PROFILE",
+          "featureName": "Student Profile & Docs",
+          "category": "PERSONAL",
+          "path": "/profile",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Profile & Docs",
+          "durationSec": 39,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:29:09.393Z"
+        },
+        {
+          "id": "evt-1795404369638-znnmk",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 122,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:28:13.581Z"
+        },
+        {
+          "id": "evt-1795404369629-djgxe",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 0,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:26:09.629Z"
+        },
+        {
+          "id": "evt-1795404182477-apae8",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 108,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:25:26.485Z"
+        },
+        {
+          "id": "evt-1795403958163-zyqjv",
+          "featureKey": "PROFILE",
+          "featureName": "Student Profile & Docs",
+          "category": "PERSONAL",
+          "path": "/profile",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Profile & Docs",
+          "durationSec": 173,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:22:53.761Z"
+        },
+        {
+          "id": "evt-1795403957220-0u7c2",
+          "featureKey": "FACULTY",
+          "featureName": "Faculty Directory",
+          "category": "ACADEMIC",
+          "path": "/faculty",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Faculty Directory",
+          "durationSec": 22,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T03:19:17.220Z"
+        },
+        {
+          "id": "evt-1795401965972-go1dz",
+          "featureKey": "FACULTY",
+          "featureName": "Faculty Directory",
+          "category": "ACADEMIC",
+          "path": "/faculty",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Faculty Directory",
+          "durationSec": 300,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T02:46:05.972Z"
+        },
+        {
+          "id": "evt-1795400475631-3xtpi",
+          "featureKey": "FACULTY",
+          "featureName": "Faculty Directory",
+          "category": "ACADEMIC",
+          "path": "/faculty",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Faculty Directory",
+          "durationSec": 214,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T02:25:15.639Z"
+        },
+        {
+          "id": "evt-1795400473060-d2e7t",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 3,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T02:21:13.060Z"
+        },
+        {
+          "id": "evt-1795400472915-qqimg",
+          "featureKey": "FACULTY",
+          "featureName": "Faculty Directory",
+          "category": "ACADEMIC",
+          "path": "/faculty",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Faculty Directory",
+          "durationSec": 0,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T02:21:12.915Z"
+        },
+        {
+          "id": "evt-1795400026129-tr3hr",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 7,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T02:13:46.129Z"
+        },
+        {
+          "id": "evt-1795399156849-z594g",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 0,
+          "deviceType": "Mobile",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T01:59:16.849Z"
+        },
+        {
+          "id": "evt-1795398692364-vbir7",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 15,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-23T01:52:37.383Z"
+        },
+        {
+          "id": "evt-1795372308764-ecqo8",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 3,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T18:31:48.764Z"
+        },
+        {
+          "id": "evt-1795370397473-im6n5",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 2,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:59:57.473Z"
+        },
+        {
+          "id": "evt-1795370083114-kb5d4",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 2,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:54:43.114Z"
+        },
+        {
+          "id": "evt-1795368804301-lpjio",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "HEARTBEAT",
+          "actionDetail": "Active on Student Dashboard",
+          "durationSec": 15,
+          "deviceType": "Desktop",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:33:24.301Z"
+        },
+        {
+          "id": "evt-1795367907471-wwwcu",
+          "featureKey": "DASHBOARD",
+          "featureName": "Student Dashboard",
+          "category": "ACADEMIC",
+          "path": "/dashboard",
+          "actionType": "VIEW",
+          "actionDetail": "Opened Student Dashboard",
+          "durationSec": 41,
+          "deviceType": "Mobile",
+          "browser": "Firefox",
+          "os": "Windows",
+          "timestamp": "2026-11-22T17:19:47.437Z"
+        },
         {
           "id": "evt-1795367575248-zqvdf",
           "featureKey": "DASHBOARD",
@@ -9776,11 +10123,11 @@
           "path": "/dashboard",
           "actionType": "VIEW",
           "actionDetail": "Opened Student Dashboard",
-          "durationSec": 60,
+          "durationSec": 92,
           "deviceType": "Desktop",
           "browser": "Firefox",
           "os": "Windows",
-          "timestamp": "2026-11-22T17:14:14.023Z"
+          "timestamp": "2026-11-22T17:17:21.015Z"
         },
         {
           "id": "evt-1795367421890-z5mzg",
@@ -9825,7 +10172,7 @@
           "timestamp": "2026-11-22T16:59:06.257Z"
         }
       ],
-      "updatedAt": "2026-11-22T17:14:14.023Z"
+      "updatedAt": "2026-11-23T03:29:09.393Z"
     }
   }
 }

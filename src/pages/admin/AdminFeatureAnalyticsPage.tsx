@@ -32,6 +32,7 @@ import {
   getActivityStatusMeta,
 } from '../../utils/usageFormat';
 import { formatStudentId } from '../../utils/studentId';
+import { safeFetchJson } from '../../lib/apiClient';
 
 type AnalyticsTab = 'STUDENTS' | 'FEATURES' | 'BATCHES' | 'RECOMMENDATIONS' | 'LIVE_FEED';
 type StatusFilter = 'ALL' | 'ONLINE' | 'TODAY' | 'THIS_WEEK' | 'INACTIVE' | 'NEVER';
@@ -65,11 +66,10 @@ export const AdminFeatureAnalyticsPage: React.FC = () => {
       else if (!silent) setIsLoading(true);
       try {
         const url = isManual ? '/api/analytics/overview?refresh=1' : '/api/analytics/overview';
-        const res = await fetch(url, {
+        const json = await safeFetchJson(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) {
-          const json = await res.json();
+        if (json && !json.error) {
           setData(json);
           if (isManual) {
             addToast('success', 'Live usage & activity data refreshed!');
@@ -107,14 +107,11 @@ export const AdminFeatureAnalyticsPage: React.FC = () => {
     if (!token) return;
     setIsLoadingUserDetail(true);
     try {
-      const res = await fetch(`/api/analytics/user/${encodeURIComponent(user.userId)}`, {
+      const json = await safeFetchJson(`/api/analytics/user/${encodeURIComponent(user.userId)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json?.data) {
-          setSelectedUser(json.data);
-        }
+      if (json?.data) {
+        setSelectedUser(json.data);
       }
     } catch {
       // Keep the already loaded dossier from overview

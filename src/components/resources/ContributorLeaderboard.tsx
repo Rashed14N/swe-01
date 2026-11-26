@@ -3,6 +3,7 @@ import { Award, Trophy, Star, FileText, CheckCircle, TrendingUp, ShieldCheck } f
 import { Contributor } from '../../types';
 import { getUserAvatarUrl } from '../../data/avatars';
 import { formatStudentId } from '../../utils/studentId';
+import { safeFetchJson } from '../../lib/apiClient';
 
 export const ContributorLeaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<Contributor[]>([]);
@@ -10,10 +11,9 @@ export const ContributorLeaderboard: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch('/api/resources/leaderboard')
-      .then(res => res.json())
-      .then(data => setLeaderboard(data.leaderboard || []))
-      .catch(console.error)
+    safeFetchJson('/api/resources/leaderboard')
+      .then(data => setLeaderboard(data?.leaderboard || []))
+      .catch(() => setLeaderboard([]))
       .finally(() => setIsLoading(false));
   }, []);
 

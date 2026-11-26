@@ -2,6 +2,7 @@
  * High-performance In-Memory & Session Cache with Stale-While-Revalidate (SWR) support.
  * Eliminates redundant network roundtrips and delivers instant 0ms transitions.
  */
+import { safeFetchJson } from '../lib/apiClient';
 
 interface CacheEntry<T> {
   data: T;
@@ -112,13 +113,7 @@ export async function fetchWithCache<T>(
   // 3. Perform network fetch
   const fetchPromise = (async () => {
     try {
-      const res = await fetch(url, options);
-      if (!res.ok) {
-        // If error, return stale cache if available
-        const stale = getStaleCache<T>(cacheKey);
-        return stale !== null ? stale : fallbackValue;
-      }
-      const data: T = await res.json();
+      const data: T = await safeFetchJson<T>(url, options, 2);
       setInCache(cacheKey, data, maxAgeMs);
       return data;
     } catch (err) {

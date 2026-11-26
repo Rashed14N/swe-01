@@ -27,6 +27,7 @@ import { ScheduleCourseExamModal } from '../components/courses/ScheduleCourseExa
 import { UploadTeacherFileModal } from '../components/courses/UploadTeacherFileModal';
 import { ClassTasksSection } from '../components/courses/ClassTasksSection';
 import { PostClassTaskModal } from '../components/courses/PostClassTaskModal';
+import { safeParseJsonOrFallback } from '../lib/apiClient';
 
 export const CourseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,23 +62,25 @@ export const CourseDetailPage: React.FC = () => {
     Promise.all([
       fetch(`/api/courses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-      }).then((res) => res.json()),
+      }).then((res) => safeParseJsonOrFallback(res, {} as any)),
       fetch('/api/class-tasks', {
         headers: { Authorization: `Bearer ${token}` },
-      }).then((res) => res.json()).catch(() => ({ tasks: [] }))
+      })
+        .then((res) => safeParseJsonOrFallback<{ tasks?: ClassTask[]; topics?: ClassTask[] }>(res, { tasks: [] }))
+        .catch(() => ({ tasks: [] as ClassTask[], topics: undefined as ClassTask[] | undefined }))
     ])
       .then(([courseData, tasksData]) => {
-        setCourse(courseData.course);
-        setFaculty(courseData.faculty);
-        setCourseExams(courseData.exams || []);
-        setResources(courseData.resources || { questions: [], notes: [], labs: [] });
+        if (courseData?.course) setCourse(courseData.course);
+        if (courseData?.faculty !== undefined) setFaculty(courseData.faculty);
+        setCourseExams(courseData?.exams || []);
+        setResources(courseData?.resources || { questions: [], notes: [], labs: [] });
         if (tasksData?.tasks) {
           setClassTasks(tasksData.tasks);
         } else if (tasksData?.topics) {
           setClassTasks(tasksData.topics);
         }
       })
-      .catch(console.error)
+      .catch(() => {})
       .finally(() => setIsLoading(false));
   }, [token, id]);
 

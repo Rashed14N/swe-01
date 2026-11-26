@@ -3,6 +3,20 @@
  * and handle transient "Starting Server..." proxy landing pages during server startup.
  */
 
+function isTransientProxyHtml(text: string, status: number): boolean {
+  const lower = text.toLowerCase();
+  return (
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    lower.includes('starting server') ||
+    lower.includes('starting the dev server') ||
+    lower.includes(':root { color-scheme: light dark; }') ||
+    lower.includes('<!doctype html') ||
+    lower.includes('<html')
+  );
+}
+
 export async function safeParseJson<T = any>(response: Response, retriesLeft: number = 3): Promise<T> {
   const contentType = response.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
@@ -25,10 +39,7 @@ export async function safeParseJson<T = any>(response: Response, retriesLeft: nu
       }
     }
 
-    const isStartingServer =
-      rawText.includes('Starting Server') ||
-      rawText.includes('starting the dev server') ||
-      rawText.includes(':root { color-scheme: light dark; }');
+    const isStartingServer = isTransientProxyHtml(rawText, response.status);
 
     // If server is currently booting up behind reverse proxy, retry automatically
     if (isStartingServer && retriesLeft > 0 && response.url) {
@@ -64,7 +75,7 @@ export async function safeParseJson<T = any>(response: Response, retriesLeft: nu
 export async function safeParseJsonOrFallback<T>(response: Response, fallback: T): Promise<T> {
   if (!response.ok) return fallback;
   try {
-    return await safeParseJson<T>(response);
+    return await safeParseJson<T>(response, 0);
   } catch {
     return fallback;
   }
@@ -72,7 +83,7 @@ export async function safeParseJsonOrFallback<T>(response: Response, fallback: T
 
 /**
  * Fetch wrapper that safely parses JSON responses and surfaces informative errors,
- * with automatic retries for server startup states.
+ * with automatic retries for transient reverse-proxy HTML / server startup states.
  */
 export async function safeFetchJson<T = any>(input: RequestInfo | URL, init?: RequestInit, retries: number = 3): Promise<T> {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -81,15 +92,15 @@ export async function safeFetchJson<T = any>(input: RequestInfo | URL, init?: Re
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json') && attempt < retries) {
         const text = await res.clone().text().catch(() => '');
-        if (text.includes('Starting Server') || text.includes(':root { color-scheme')) {
-          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        if (isTransientProxyHtml(text, res.status)) {
+          await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
           continue;
         }
       }
       return await safeParseJson<T>(res, 0);
     } catch (err: any) {
       if (attempt < retries && (err?.message?.includes('Starting Server') || err?.isNonJson)) {
-        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
         continue;
       }
       throw err;
@@ -97,5 +108,3 @@ export async function safeFetchJson<T = any>(input: RequestInfo | URL, init?: Re
   }
   throw new Error('Failed to fetch JSON response after retries');
 }
-
-

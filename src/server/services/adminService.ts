@@ -4,7 +4,11 @@ import { db } from '../db';
 import { sortFacultyByHierarchy } from '../../types';
 import { invalidateCache, uploadBase64ImageToStorage } from '../supabaseData';
 import { CGPA_STORE_AUDIT_ACTION, fetchAllStudentCGPAsFromSupabase } from '../cgpaStore';
-import { USAGE_STORE_AUDIT_ACTION } from '../analyticsStore';
+import {
+  USAGE_STORE_AUDIT_ACTION,
+  listAllUsageProfiles,
+  StoredUserUsageProfile,
+} from '../analyticsStore';
 import type {
   User,
   Batch,
@@ -183,6 +187,7 @@ export interface GetPaginatedUsersOptions {
   search?: string;
   batchId?: string;
   role?: string;
+  lastSeen?: string;
   page?: number;
   limit?: number;
 }
@@ -195,11 +200,102 @@ export interface PaginatedUsersResult {
   totalPages: number;
 }
 
+const LAST_SEEN_ONLINE_MS = 5 * 60 * 1000;
+const LAST_SEEN_DAY_MS = 24 * 60 * 60 * 1000;
+
+function matchesLastSeenFilter(
+  lastActiveIso: string | null | undefined,
+  filter: string,
+  nowMs: number,
+  todayKey: string
+): boolean {
+  const lastMs = lastActiveIso ? new Date(lastActiveIso).getTime() : 0;
+  const hasValidTs = Number.isFinite(lastMs) && lastMs > 0;
+  const diffMs = hasValidTs ? Math.max(0, nowMs - lastMs) : Infinity;
+
+  switch (filter.toUpperCase()) {
+    case 'RECENT_FIRST':
+      return true;
+    case 'ONLINE':
+      return hasValidTs && diffMs <= LAST_SEEN_ONLINE_MS;
+    case 'TODAY':
+      return hasValidTs && (diffMs <= LAST_SEEN_ONLINE_MS || lastActiveIso!.slice(0, 10) === todayKey);
+    case 'LAST_24H':
+      return hasValidTs && diffMs <= LAST_SEEN_DAY_MS;
+    case 'THIS_WEEK':
+      return hasValidTs && diffMs <= 7 * LAST_SEEN_DAY_MS;
+    case 'LAST_30D':
+      return hasValidTs && diffMs <= 30 * LAST_SEEN_DAY_MS;
+    case 'INACTIVE':
+      return hasValidTs && diffMs > 7 * LAST_SEEN_DAY_MS;
+    case 'NEVER':
+      return !hasValidTs;
+    default:
+      return true;
+  }
+}
+
+async function applyLastSeenFilterAndPaginate(
+  users: User[],
+  lastSeenFilter: string,
+  page: number,
+  limit: number
+): Promise<PaginatedUsersResult> {
+  const usageProfiles = await listAllUsageProfiles(false).catch(() => [] as StoredUserUsageProfile[]);
+  const profileByUserId = new Map<string, StoredUserUsageProfile>();
+  const profileByStudentId = new Map<string, StoredUserUsageProfile>();
+
+  for (const p of usageProfiles) {
+    profileByUserId.set(p.userId, p);
+    if (p.studentId) profileByStudentId.set(p.studentId, p);
+  }
+
+  const nowMs = Date.now();
+  const todayKey = new Date(nowMs).toISOString().slice(0, 10);
+  const normalizedFilter = lastSeenFilter.trim().toUpperCase();
+
+  const withLastActive = users
+    .map((u) => {
+      const prof = profileByUserId.get(u.id) || (u.studentId ? profileByStudentId.get(u.studentId) : undefined);
+      const lastActiveIso = prof?.lastActiveAt || null;
+      const lastMs = lastActiveIso ? new Date(lastActiveIso).getTime() : 0;
+      return {
+        user: u,
+        lastActiveIso,
+        lastMs: Number.isFinite(lastMs) ? lastMs : 0,
+      };
+    })
+    .filter((entry) => matchesLastSeenFilter(entry.lastActiveIso, normalizedFilter, nowMs, todayKey));
+
+  // Sort most recently active users first; for NEVER keep newest accounts first
+  withLastActive.sort((a, b) => {
+    if (normalizedFilter !== 'NEVER' && a.lastMs !== b.lastMs) {
+      return b.lastMs - a.lastMs;
+    }
+    const aCreated = a.user.createdAt ? new Date(a.user.createdAt).getTime() : 0;
+    const bCreated = b.user.createdAt ? new Date(b.user.createdAt).getTime() : 0;
+    return bCreated - aCreated;
+  });
+
+  const offset = (page - 1) * limit;
+  const total = withLastActive.length;
+  const pagedUsers = withLastActive.slice(offset, offset + limit).map((e) => e.user);
+
+  return {
+    users: pagedUsers,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
 export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Promise<PaginatedUsersResult> {
   const supabase = getServerSupabase();
   const page = Math.max(1, options.page || 1);
   const limit = Math.min(100, Math.max(1, options.limit || 20));
   const offset = (page - 1) * limit;
+  const lastSeenFilter = options.lastSeen?.trim() || '';
 
   if (supabase) {
     try {
@@ -216,7 +312,11 @@ export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Prom
         query = query.or(`name.ilike.%${s}%,student_id.ilike.%${s}%,email.ilike.%${s}%`);
       }
 
-      query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+      query = query.order('created_at', { ascending: false });
+
+      if (!lastSeenFilter) {
+        query = query.range(offset, offset + limit - 1);
+      }
 
       const { data, count, error } = await query;
       if (!error && data) {
@@ -238,6 +338,11 @@ export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Prom
           createdAt: row.created_at || new Date().toISOString(),
           updatedAt: row.updated_at || new Date().toISOString(),
         }));
+
+        if (lastSeenFilter) {
+          return applyLastSeenFilterAndPaginate(users, lastSeenFilter, page, limit);
+        }
+
         const total = count ?? users.length;
         return {
           users,
@@ -265,11 +370,18 @@ export async function getPaginatedUsers(options: GetPaginatedUsersOptions): Prom
       u.email?.toLowerCase().includes(s)
     );
   }
-  const total = filtered.length;
-  const paginated = filtered.slice(offset, offset + limit).map(u => ({
+
+  const enriched = filtered.map(u => ({
     ...u,
     cgpa: db.getStudentCGPA(u.id, u.studentId),
   }));
+
+  if (lastSeenFilter) {
+    return applyLastSeenFilterAndPaginate(enriched, lastSeenFilter, page, limit);
+  }
+
+  const total = enriched.length;
+  const paginated = enriched.slice(offset, offset + limit);
   return {
     users: paginated,
     total,
